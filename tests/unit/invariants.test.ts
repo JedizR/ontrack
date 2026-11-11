@@ -37,3 +37,31 @@ describe('the server boundary is a directory', () => {
     expect(readFileSync(f, 'utf8')).not.toMatch(/from\s+['"][./]*(server|api)\//);
   });
 });
+
+describe('numbers come from one place', () => {
+  const engine = src.filter((f) => f.includes(join('model', 'engine')));
+  const code = (f: string) =>
+    readFileSync(f, 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/\/\/.*$/gm, '')
+      .replace(/'(?:[^'\\\n]|\\.)*'|"(?:[^"\\\n]|\\.)*"|`(?:[^`\\]|\\.)*`/g, "''");
+
+  test.each(engine.filter((f) => !f.endsWith('constants.ts')))('%s has no numeric literal but 0 and 1', (f) => {
+    const literals = code(f).match(/(?<![\w.])\d+(?:\.\d+)?(?:e-?\d+)?/g) ?? [];
+    expect(literals.filter((n) => n !== '0' && n !== '1')).toEqual([]);
+  });
+  test.each(engine)('%s imports only from the engine', (f) => {
+    for (const [, path] of readFileSync(f, 'utf8').matchAll(/from\s+['"]([^'"]+)['"]/g)) expect(path).toMatch(/^\.\//);
+  });
+  // Signature values from constants.ts that have no other meaning in UI code.
+  const signature = ['7700', '370', '21.6', '6.25', '161', '1.45', '18.5', '6.8', '12500', '1350'];
+  test.each(src.filter((f) => !f.endsWith(join('engine', 'constants.ts'))))('%s inlines no science constant', (f) => {
+    const found = signature.filter((v) => new RegExp(`(?<![\\w.])${v.replace('.', '\\.')}(?![\\w.])`).test(code(f)));
+    expect(found).toEqual([]);
+  });
+  test('every source id has a row in docs/SOURCES.md', async () => {
+    const { C } = await import('../../src/lib/model/engine/constants');
+    const ledger = readFileSync('docs/SOURCES.md', 'utf8');
+    for (const id of new Set(Object.values(C).map((c) => c.source))) expect(ledger, id).toMatch(new RegExp(`^\\| ${id} \\|`, 'm'));
+  });
+});

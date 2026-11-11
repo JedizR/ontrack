@@ -10,7 +10,7 @@ Status is one of: not started, in progress, shipped, shipped with cuts, blocked.
 | --- | --- | --- | --- | --- |
 | M0 | Foundations | shipped with cuts | PR #4, merged, `v0.0.0` | Supabase MCP not added (needs browser sign in). `foods:build` waits for M5 |
 | M1 | Design system | shipped | PR #5, merged, `v0.1.0` | Rubric pass stands in for the owner's approval; gallery is on his review list |
-| M2 | Engine | not started | | |
+| M2 | Engine | shipped | PR #6, branch `m2-engine` | 19 sources checked; 3 values kept against their source, on the owner's review list |
 | M3 | Data, sync, sign-in | not started | | |
 | M4 | Onboarding and plan | not started | | |
 | M5 | Today and logging | not started | | |
@@ -28,6 +28,11 @@ Status is one of: not started, in progress, shipped, shipped with cuts, blocked.
 - Sign in, sync, vision: not built yet. Vercel holds `VITE_BACKEND=supabase`, the Supabase URL and keys, and `CRON_SECRET` for production and preview.
 
 ## Notes for the next milestone
+
+- Engine (M2): `src/lib/model/engine/`, import from `$lib/model/engine`. `plan(input)` returns the numbers a stored Plan carries (add `effectiveFrom`, `tdeeSource`, `source`). Derive, never store: `dayTarget(plan, { sex, mode, weekday, skipped })`, `dayMacros`, `tdeeAvg`, `effectiveRate`, `calorieStatus`, `proteinOnTrack`. Onboarding uses `guardrails`, `paceOptions`, `defaultPace`. `checkin(...)` returns stats, proposal and the new plan; `checkinDue`. `analyseProgram(sessions, { goal, experience, library: LIBRARY })` returns findings with `kind` and `source`; M7 words them in `en.ts`.
+- The engine takes day numbers, not date strings, and age, not birth year. `dates.ts` (M3 or M5) converts.
+- Every number is in `constants.ts` as `C` (value, unit, source, status, note) and `V` (values). The Science screen (M9) reads `C` and `docs/SOURCES.md`. An invariant test fails on any numeric literal but 0 and 1 in engine files.
+- `src/lib/data/exercises.ts` (71 exercises, `LIBRARY` by id) and `templates.ts` (four programs; `Session` there matches TECH-SPEC, move it to `shared/records.ts` in M3).
 
 - Node 22: run `nvm use` first. The machine default is 24.
 - Components (DESIGN.md section 7) are in `src/lib/components/`: `Button` (variant, size lg/md/sm, full), `Card` (hero, list), `Row` (title, caption string or snippet, value, leading, trailing, onclick), `Chip`, `Segmented`, `Stepper`, `Track` (value, target, zone [from, to], hero, label), `HeroNumber`, `WeekStrip`, `SourceLabel`, `SyncMark` (Header takes `sync`), `EmptyState`, `Skeleton`, `Toasts`, `Sheet` (footer snippet is the pinned action), `KeypadSheet` with `keypad.ask()` from `src/lib/keypad.svelte.ts`, `TrainIcon`, `TrackIcon`. Build screens from these.

@@ -2,9 +2,9 @@
 
 This file is the specification for `src/lib/model/engine/`. Engine version 1.
 
-**Status of the numbers.** Every value is provisional until the `science-check` skill has confirmed it against its primary source in M2 and recorded the result in `docs/SOURCES.md`. Compendium codes and MET values in section 5 marked "seen" were read on pacompendium.com on 2026-11-11 and still go through the check. Values marked "assumption" are engineering choices, not findings. They are labelled as such in the app.
+**Status of the numbers.** Every source was checked in M2 by the `science-check` skill. `docs/SOURCES.md` holds each verdict and `src/lib/model/engine/constants.ts` each value's status. Values marked "assumption" are engineering choices, not findings, and the app labels them Working assumption. Corrections the check made, and choices kept against a source, are listed under M2 in `docs/DECISIONS.md`.
 
-**Stance.** Equations give a starting estimate that is commonly within about 10 percent for most people (S18). The weekly check-in in section 10 is what makes a target accurate for one person. The app says so.
+**Stance.** Equations give a starting estimate. Mifflin-St Jeor predicted resting energy within 10 percent of measured in more people than any other equation, but one person's error can be larger (S18). The weekly check-in in section 10 is what makes a target accurate for one person. The app says so.
 
 ## 1. Inputs
 
@@ -19,7 +19,7 @@ Do not round intermediate values. Round only what is shown.
 
 ## 3. Daily movement outside workouts
 
-`baseline = BMR * factor`. The factor covers digestion and all movement except logged sessions. The step bands follow S3. The factors are assumptions (S4), chosen low because exercise is added separately, and corrected by the check-in.
+`baseline = BMR * factor`. The factor covers digestion and all movement except logged sessions. The step bands follow S3 (7,500 to 12,500 joins two of its bands). The factors are assumptions, chosen low because exercise is added separately, and corrected by the check-in. They sit below the FAO/WHO/UNU activity levels of 1.40 to 2.40, which include exercise (S4).
 
 | Level | Meaning shown to the user | Factor |
 | --- | --- | --- |
@@ -36,47 +36,50 @@ Do not round intermediate values. Round only what is shown.
 
 | Type | Light | Moderate | Hard | Basis |
 | --- | --- | --- | --- | --- |
-| `strength` | 3.5 | 5.0 | 6.0 | Codes 02054, 02052, 02050. Seen |
-| `circuit` | 3.5 | 5.0 | 7.5 | Codes 02034, 02035, 02040. Seen |
-| `cardio` | 4.0 | 6.8 | 9.0 | Codes 01010, 01200, 02049. Seen |
-| `mobility` | 2.3 | 2.8 | 4.0 | Codes 02175, 02105, 02160. Seen |
-| `walk` | 2.8 | 3.5 | 4.8 | Find the matching walking codes in M2 |
-| `sport` | 4.0 | 6.0 | 8.0 | Assumption: mid points of the light, moderate and vigorous bands |
+| `strength` | 3.5 | 5.0 | 6.0 | Codes 02054, 02052, 02050. Verified |
+| `circuit` | 3.5 | 5.0 | 7.5 | Codes 02034, 02035, 02040. Verified |
+| `cardio` | 4.0 | 6.8 | 9.0 | Codes 01010, 01200, 02049. Verified |
+| `mobility` | 2.3 | 2.8 | 4.0 | Codes 02175, 02105, 02160. Verified |
+| `walk` | 2.8 | 3.8 | 4.8 | Codes 17152, 17190, 17200 (slow, moderate, brisk on level ground). Verified |
+| `sport` | 4.0 | 6.0 | 8.0 | Assumption. There is no general sport code. 4.0 is moderate, 6.0 and 8.0 vigorous |
+
+Intensity bands (S5, S13): light 1.6 to 2.9 METs, moderate 3.0 to 5.9, vigorous 6.0 or more. One MET is about 1 kcal per kg per hour (S5).
 
 `eeeByWeekday[d]` is the sum of `EEE` for that weekday's sessions. `weeklyEEE` is the sum of the seven.
 
 ## 6. Maintenance and the goal adjustment
 
 - `tdeeAvg = baseline + weeklyEEE / 7`.
-- Energy per kg of body weight change: 7,700 kcal (S6). One value in both directions is an assumption that slightly overstates the cost of lean gain. The check-in absorbs the error.
+- Energy per kg of body weight change: 7,700 kcal, the 3,500 kcal per pound rule (S6). An assumption: S6 calls it an oversimplification that fits weight loss with over 30 kg of body fat and overstates the energy per kg for leaner people, and it says nothing about gain. The check-in absorbs the error.
 - Wanted change: `wanted = ratePctPerWeek / 100 * W * 7700 / 7`.
 
 | Goal | Pace options, percent of body weight per week | Default |
 | --- | --- | --- |
 | `lose` | gentle 0.25, steady 0.5, faster 0.75 (offered only at BMI 25 or more) | steady |
 | `maintain` | 0 | |
-| `gain` | lean 0.25, standard 0.5 | standard for beginners and for BMI under 18.5, otherwise lean |
+| `gain` | lean 0.25, standard 0.5 (advanced lifters: lean only) | standard for beginners and for BMI under 18.5, otherwise lean |
 
 Sources for the bands: S7 for gaining, S9 for losing.
 
 - `lose`: `delta = -min(wanted, 0.25 * tdeeAvg)`. Flag `deficitCap` if the cap applied.
-- `gain`: `delta = +min(wanted, 0.20 * tdeeAvg)`. Flag `surplusCap` if the cap applied.
+- `gain`: `delta = +min(wanted, 0.20 * tdeeAvg)`, or `0.10 * tdeeAvg` for advanced lifters (S7). Flag `surplusCap` if the cap applied.
 - `maintain`: `delta = 0`.
+- The rate is never faster than the paces offered at the current BMI (section 12), so a plan recomputed at a new weight keeps the guardrails. A lose goal under BMI 18.5 gets no deficit.
 
 ## 7. Daily targets
 
 - `matched` mode: `raw(d) = baseline + eee(d) + delta`, where `eee(d)` is that weekday's value, or 0 when every session that day is marked skipped.
 - `even` mode: `raw = tdeeAvg + delta`.
-- Floor (S14): 1,200 for the female equation, 1,500 for male, 1,350 for unspecified. If `raw` is below the floor the target is the floor and the plan carries the `floor` flag.
+- Floor: 1,200 for the female equation, 1,500 for male, 1,350 for unspecified. An assumption at or above S14's lower bounds for low calorie diets (1,000 to 1,200 for women, 1,200 to 1,600 for men). If `raw` is below the floor the target is the floor. The plan carries the `floor` flag when its lowest possible day, a rest or skipped day, is below the floor.
 - `target = round(raw / 10) * 10`.
-- The effective rate shown to the user is recomputed from the delta actually applied after caps and floors.
+- The effective rate shown to the user is recomputed from the delta actually applied after caps and floors, using the even mode target.
 
 ## 8. Macros
 
-- Protein per kg (S8, S9, S10): gain 1.8, lose 2.0, maintain 1.6. Reference weight is body weight, or the weight at BMI 25 for the user's height when BMI is over 30. `proteinG = round(perKg * refWeight)`.
+- Protein per kg (S8, S9, S10): gain 1.8, lose 2.0, maintain 1.6. Reference weight is body weight, capped at the weight at BMI 30 for the user's height, so protein never falls as weight rises. `proteinG = round(perKg * refWeight)`.
 - Fat (S7, S16): `fatG = round(max(0.25 * evenTarget / 9, 0.6 * W))`, where `evenTarget` is the unrounded even mode target after caps and floors.
-- Carbs are the remainder for each day: `carbsG = max(0, round((target - 4 * proteinG - 9 * fatG) / 4))`.
-- If protein and fat alone exceed the target, lower fat to `max(0.5 * W, (target - 4 * proteinG) / 9)`.
+- Carbs are the remainder for each day: `carbsG = max(0, round((target - 4 * proteinG - 9 * fatG) / 4))`. Energy per gram: 4, 4 and 9 kcal (S19).
+- If protein and fat alone exceed the lowest day target (a rest or skipped day, or the even target), lower fat to `max(0.5 * W, (target - 4 * proteinG) / 9)` for that target.
 
 Protein and fat are the same every day. Carbs move with the day's calories.
 
@@ -94,19 +97,19 @@ These bands are assumptions for feedback, not science. A day counts toward the w
 
 **Trend line for display.** Exponential smoothing over days with a weigh-in, `trend = prev + 0.1 * (kg - prev)`, starting at the first value (S17, a convention).
 
-**Rate for decisions.** Ordinary least squares slope over the raw weigh-ins of the last 21 days, in kg per day. Needs at least 8 weigh-ins spanning at least 14 days.
+**Rate for decisions.** Ordinary least squares slope over the raw weigh-ins of the last 21 days (the check-in day included), in kg per day. Needs at least 8 weigh-ins spanning at least 14 days, first to last inclusive. The observed rate in percent per week uses the trend weight.
 
 **Complete day.** A day is complete when the user closed it, or when it has at least two logged items and at least 50 percent of that day's target.
 
 **The check-in** runs on the user's chosen weekday when at least 14 days have passed since the plan started or last changed.
 
 1. Not enough weigh-ins: reason `need_data`, no change.
-2. Fewer than 10 complete days in the window: compute the rate only. `change = (targetRate - observedRate) / 100 * W * 7700 / 7`, signed for the goal, clamped to plus or minus 100. Reason `raise` or `lower`, or `on_track` when the change is under 50.
+2. Fewer than 10 complete days in the window: compute the rate only. `change = (targetRate - observedRate) / 100 * W * 7700 / 7`, where `targetRate` is the plan's effective rate signed for the goal, clamped to plus or minus 100. Reason `on_track` when the change is under 50. Otherwise the change moves the baseline and the plan is recomputed as in step 3, reason `raise` or `lower`.
 3. Otherwise:
-   - `tdeeObserved = meanIntake - slopeKgPerDay * 7700`, with the mean over complete days.
+   - `tdeeObserved = meanIntake - slopeKgPerDay * 7700`, with the mean over complete days. `meanTarget` is the mean target over every day in the window.
    - Adherence: if `meanIntake` is under 90 percent of `meanTarget` on a gain goal, or over 110 percent on a lose goal, the reason is `adherence` and no change is proposed. The message says the target was fine and the gap was intake.
-   - Else `tdeeNew = 0.5 * tdeeAvg + 0.5 * tdeeObserved`, clamped to within 10 percent of `tdeeAvg`. The new baseline is `tdeeNew - weeklyEEE / 7`. Recompute the plan from sections 6 to 8 with the current trend weight.
-   - If the even mode target moves by less than 50 kcal, reason `on_track`. Otherwise `raise` or `lower`, with the move clamped to plus or minus 200.
+   - Else `tdeeNew = 0.5 * tdeeAvg + 0.5 * tdeeObserved`, clamped to within 10 percent of `tdeeAvg`. The new baseline is `tdeeNew - weeklyEEE / 7`. Recompute the plan from sections 6 to 8 with the current trend weight, keeping the plan's exercise energy per weekday and resting energy.
+   - If the even mode target moves by less than 50 kcal, reason `on_track`. Otherwise `raise` or `lower`. A move over 200 shifts the baseline back so the even target moves 200. The proposal is the move rounded to 10.
 4. Accepting creates a new plan with `source: 'checkin'`, `tdeeSource: 'measured'`, effective from the next day. Keeping records the decision and changes nothing.
 
 ## 11. Training analysis
@@ -115,10 +118,10 @@ Computed from the program. One set counts 1 for each primary muscle and 0.5 for 
 
 | Check | Rule | Message when outside | Source |
 | --- | --- | --- | --- |
-| Weekly sets per muscle | Under 6 low. 6 to 9 building. 10 to 20 in range. Over 20 high | Add or remove sets to reach 10 to 20. Beginners are told 6 to 9 is a fine start | S11 |
-| Sessions per muscle per week | 2 or more | Train it twice a week | S12 |
-| Strength sessions per week | 2 or more. With a gain goal this is the first recommendation shown | Add strength sessions | S13 |
-| Cardio minutes per week | 150 to 300 moderate, with hard minutes counting double | Informational. With a gain goal and over 150 minutes: the app notes that the target already includes it | S13 |
+| Weekly sets per muscle | Under 5 low. 5 to 9 building. 10 to 20 in range. Over 20 high (20 is an assumption: S11 found too little data above 12 sets for a limit) | Add or remove sets to reach 10 to 20. Beginners are told 5 to 9 is a fine start | S11 |
+| Sessions per muscle per week | 2 or more. A session counts when the muscle is a primary target of one of its exercises | Train it twice a week | S12 |
+| Strength sessions per week | 2 or more strength or circuit sessions. With a gain goal this is the first recommendation shown | Add strength sessions | S13 |
+| Aerobic minutes per week | 150 to 300 moderate. Counts cardio, walk and sport sessions at 3 METs or more; sessions at 6 METs or more count double | Informational. With a gain goal and over 150 minutes: the app notes that the target already includes it | S13 |
 | Rest days | At least 1 day with no hard session | Add a rest day | Assumption |
 | Session length | Over 120 minutes | Informational | Assumption |
 
@@ -157,12 +160,12 @@ Mean target 2357.14, intake is 97.6 percent of it, so not an adherence case. tde
 
 **G. Check-in, adherence.** Same as F with mean intake 2050. Intake is 87 percent of target. Reason `adherence`, change 0.
 
-## 14. Sources to verify (the ledger starts here)
+## 14. Sources (verdicts in `docs/SOURCES.md`)
 
 | Id | Claim used | Citation to check |
 | --- | --- | --- |
 | S1 | Mifflin-St Jeor equation and constants | Mifflin MD, St Jeor ST, et al. Am J Clin Nutr. 1990;51(2):241-247 |
-| S2 | `370 + 21.6 * FFM` | Attributed to Katch and McArdle, and to Cunningham JJ, Am J Clin Nutr. 1991;54(6):963-969. Find which source states it |
+| S2 | `370 + 21.6 * FFM` | Cunningham JJ. Am J Clin Nutr. 1991;54(6):963-969 |
 | S3 | Step count bands | Tudor-Locke C, Bassett DR. Sports Med. 2004;34(1):1-8 |
 | S4 | Movement factors 1.20 to 1.60 | Assumption. Compare against FAO/WHO/UNU Human Energy Requirements, 2001 |
 | S5 | MET values and codes | Herrmann SD, et al. J Sport Health Sci. 2024;13(1):6-12. doi:10.1016/j.jshs.2023.10.010. Tables at pacompendium.com |
@@ -175,10 +178,11 @@ Mean target 2357.14, intake is 97.6 percent of it, so not an adherence case. tde
 | S12 | Training a muscle twice weekly | Schoenfeld BJ, Ogborn D, Krieger JW. Sports Med. 2016;46(11):1689-1697 |
 | S13 | 150 to 300 moderate minutes, strength on 2 or more days | Bull FC, et al. Br J Sports Med. 2020;54(24):1451-1462 |
 | S14 | Floors of 1,200 and 1,500 kcal | NHLBI, The Practical Guide: Identification, Evaluation, and Treatment of Overweight and Obesity in Adults, 2000 |
-| S15 | BMI 18.5 as the underweight threshold | WHO BMI classification |
+| S15 | BMI 18.5, 25 and 30, and 16 for severe thinness | WHO Technical Report Series 894, 2000; WHO EMRO field guide, 1995 |
 | S16 | Fat at 20 to 35 percent of energy | Institute of Medicine, Dietary Reference Intakes for macronutrients, 2005 |
 | S17 | Smoothing factor 0.1 | Convention. Assumption |
 | S18 | Accuracy of predictive equations | Frankenfield D, Roth-Yousey L, Compher C. J Am Diet Assoc. 2005;105(5):775-789 |
+| S19 | 4, 4 and 9 kcal per gram | FAO. Food energy: methods of analysis and conversion factors. Food and Nutrition Paper 77, 2003 |
 
 ## 15. What the app says about certainty
 
