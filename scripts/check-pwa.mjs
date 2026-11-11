@@ -9,7 +9,9 @@ const url = process.argv[2] ?? 'http://localhost:4173/';
 // a persistent profile: Chrome never reports incognito windows as installable
 const ctx = await chromium.launchPersistentContext(mkdtempSync(join(tmpdir(), 'pwa-check-')), { channel: 'chromium' });
 const page = ctx.pages()[0] ?? (await ctx.newPage());
-await page.goto(url);
+// Vercel previews sit behind deployment protection: the automation bypass sets a cookie the service worker also sends
+const bypass = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
+await page.goto(bypass ? `${url}?x-vercel-protection-bypass=${bypass}&x-vercel-set-bypass-cookie=true` : url);
 await page.evaluate(() => navigator.serviceWorker.ready);
 const cdp = await ctx.newCDPSession(page);
 const { installabilityErrors } = await cdp.send('Page.getInstallabilityErrors');
