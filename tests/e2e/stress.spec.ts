@@ -1,7 +1,7 @@
 // Device and text size matrix: layout checks on every screen.
 //   pnpm exec playwright test --project=stress   -> screenshots/stress/<device>/*.png
-import { test, expect, type Page } from '@playwright/test';
-import { open, signIn, space, useSpace, withPrefs } from './helpers';
+import { devices, expect, test, type Page } from '@playwright/test';
+import { keypadEnter, open, signIn, withPrefs } from './helpers';
 
 const DEVICES = [
   { name: 'iphone-15-pwa', width: 393, height: 793, mobile: true }, // home screen app: 852 minus the status bar
@@ -35,7 +35,7 @@ const smallTargets = (page: Page) => page.evaluate(() => [...document.querySelec
   .map((el) => `${(el.getAttribute('aria-label') || el.textContent || el.tagName).trim().slice(0, 24)} ${Math.round(el.getBoundingClientRect().width)}x${Math.round(el.getBoundingClientRect().height)}`));
 
 /** Text cut off inside a box (truncate or overflow hidden). */
-const clipped = (page: Page) => page.evaluate(() => [...document.querySelectorAll<HTMLElement>('main *, header *, nav *, [data-vaul-drawer] *')]
+const clipped = (page: Page) => page.evaluate(() => [...document.querySelectorAll<HTMLElement>('main *, header *, nav *, [data-vaul-drawer] *, [data-onboarding] *')]
   .filter((el) => el.childElementCount === 0 && (el.textContent ?? '').trim() && el.scrollWidth > el.clientWidth + 1 && getComputedStyle(el).overflow !== 'visible')
   .map((el) => (el.textContent ?? '').trim().slice(0, 20)));
 
@@ -50,7 +50,8 @@ const PAGES = [['gallery', '/gallery'], ['today-composed', '/gallery/today']] as
 
 async function checkPage(page: Page, name: string, dir: string) {
   expect(await overflow(page), `${name}: horizontal overflow`).toEqual([]);
-  expect(await page.getByTestId('header').evaluate((h) => h.scrollWidth - h.clientWidth), `${name}: header`).toBeLessThanOrEqual(1);
+  const header = page.getByTestId('header');
+  if (await header.count()) expect(await header.evaluate((h) => h.scrollWidth - h.clientWidth), `${name}: header`).toBeLessThanOrEqual(1);
   expect(await spill(page), `${name}: text spills out of a control`).toEqual([]);
   expect(await clipped(page), `${name}: clipped text`).toEqual([]);
   expect(await smallTargets(page), `${name}: tap targets under 44 px`).toEqual([]);
@@ -77,10 +78,15 @@ async function checkAll(page: Page, dir: string) {
   expect(await smallTargets(page), 'keypad: tap targets under 44 px').toEqual([]);
   await page.screenshot({ path: `${dir}/keypad.png` });
 
-  // the sign in and account sheets: their main action is on screen without scrolling
-  await useSpace(page, space('stress'));
-  await open(page);
-  await page.getByTestId('avatar').click();
+  // the sign in and account sheets: their main action is on screen without scrolling. Signed out, sign in opens from
+  // Welcome; the account in this test's space already has a plan, so signing in lands on Today
+  await open(page, '/gallery');
+  await page.evaluate(() => {
+    localStorage.removeItem('ontrack:mock-session');
+    localStorage.setItem('ot-ui', JSON.stringify({ ...JSON.parse(localStorage.getItem('ot-ui') ?? '{}'), lastUser: null }));
+  });
+  await page.goto('/');
+  await page.getByTestId('welcome-signin').click();
   await expect(page.getByTestId('signin-sheet')).toHaveCSS('transform', 'none');
   await expect(page.getByTestId('signin-send')).toBeInViewport({ ratio: 1 });
   await checkPage(page, 'signin', dir);
@@ -115,6 +121,78 @@ for (const d of PHONES) {
         await open(page);
         expect(await page.evaluate(() => document.documentElement.dataset.fs)).toBe(fs);
         await checkAll(page, `screenshots/fonts/${d.name}-${fs}`);
+      });
+    });
+  }
+}
+
+/** Every onboarding screen in order, with a check at each. Welcome to Your plan, with the advice, age and sheet stops. */
+async function walkOnboarding(page: Page, dir: string) {
+  const go = (id: string) => page.getByTestId(id).click();
+  const check = async (id: string, name: string) => { await page.getByTestId(id).waitFor(); await page.waitForTimeout(300); await checkPage(page, name, dir); };
+  await page.clock.setFixedTime(new Date('2026-11-11T10:00:00+07:00'));
+  await page.goto('/');
+  await check('install', 'install');
+  await go('install-continue');
+  await check('welcome', 'welcome');
+  await go('welcome-start');
+  await check('step-goal', 'goal');
+  await go('choice-lose');
+  await go('screen-medical');
+  await check('step-screening', 'screening');
+  await go('continue');
+  await check('step-advice', 'advice');
+  await go('back');
+  await go('screen-none');
+  await go('continue');
+  await check('step-sex', 'sex');
+  await go('choice-female');
+  await keypadEnter(page, '2012');
+  await check('step-young', 'young');
+  await go('back');
+  await go('field-year');
+  await keypadEnter(page, '1994');
+  await page.keyboard.press('Escape');
+  await page.getByTestId('keypad').waitFor({ state: 'detached' });
+  await go('field-height');
+  await keypadEnter(page, '165');
+  await keypadEnter(page, '82');
+  await check('step-body', 'body');
+  await go('continue');
+  await check('step-move', 'move');
+  await go('choice-light');
+  await check('step-train', 'train');
+  await go('train-choose');
+  await expect(page.getByTestId('templates-sheet')).toHaveCSS('transform', 'none');
+  await checkPage(page, 'templates', dir);
+  await page.keyboard.press('Escape');
+  await page.getByTestId('templates-sheet').waitFor({ state: 'detached' });
+  await go('continue');
+  await check('step-experience', 'experience');
+  await go('choice-beginner');
+  await check('step-pace', 'pace');
+  await go('choice-0.75');
+  await check('your-plan', 'plan');
+  // the main action of every step stays on screen
+  await expect(page.getByTestId('plan-save')).toBeInViewport({ ratio: 1 });
+}
+
+const IPHONE_UA = devices['iPhone 13'].userAgent;
+for (const d of DEVICES.filter((x) => x.mobile && x.width < x.height)) {
+  test.describe(d.name, () => {
+    test.use({ viewport: { width: d.width, height: d.height }, isMobile: true, hasTouch: true, deviceScaleFactor: 2, userAgent: IPHONE_UA });
+    test('onboarding layout holds', async ({ page }) => {
+      await walkOnboarding(page, `screenshots/stress/${d.name}/onboarding`);
+    });
+  });
+}
+for (const d of PHONES) {
+  for (const fs of ['m', 'l', 'xl'] as const) {
+    test.describe(`font ${fs} ${d.name}`, () => {
+      test.use({ viewport: { width: d.width, height: d.height }, isMobile: true, hasTouch: true, deviceScaleFactor: 2, userAgent: IPHONE_UA });
+      test('onboarding holds at this text size', async ({ page }) => {
+        await withPrefs(page, { theme: 'light', fontSize: fs });
+        await walkOnboarding(page, `screenshots/fonts/${d.name}-${fs}/onboarding`);
       });
     });
   }

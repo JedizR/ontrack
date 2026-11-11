@@ -1,4 +1,5 @@
-// Per-device state, not synced: theme, text size, last tab, and the last signed in user.
+// Per-device state, not synced: theme, text size, last tab, the last signed in user and the onboarding draft.
+import type { Draft } from '../flows/onboarding/draft';
 export type Theme = 'system' | 'light' | 'dark';
 /** system follows the device text size, mapped onto one of the three levels */
 export type FontSize = 'system' | 'm' | 'l' | 'xl';
@@ -7,8 +8,8 @@ export const FONT_SCALE = { m: 1, l: 1.15, xl: 1.3 } as const;
 // index.html reads the same key and fields before first paint
 export const PREFS_KEY = 'ot-ui';
 
-interface Saved { theme: Theme; fontSize: FontSize; tab: Tab; lastUser: string | null; lastEmail: string | null }
-const DEFAULTS: Saved = { theme: 'system', fontSize: 'system', tab: 0, lastUser: null, lastEmail: null };
+interface Saved { theme: Theme; fontSize: FontSize; tab: Tab; lastUser: string | null; lastEmail: string | null; draft: Draft | null }
+const DEFAULTS: Saved = { theme: 'system', fontSize: 'system', tab: 0, lastUser: null, lastEmail: null, draft: null };
 const load = (): Saved => {
   try { return { ...DEFAULTS, ...JSON.parse(localStorage.getItem(PREFS_KEY) ?? '{}') }; }
   catch { return { ...DEFAULTS }; }
@@ -29,6 +30,9 @@ class Prefs {
   set lastUser(v: string | null) { this.#s.lastUser = v; this.#save(); }
   get lastEmail() { return this.#s.lastEmail; }
   set lastEmail(v: string | null) { this.#s.lastEmail = v; this.#save(); }
+  /** onboarding answers before sign in, kept here so they survive the Google redirect (TECH-SPEC section 4) */
+  get draft() { return this.#s.draft; }
+  set draft(v: Draft | null) { this.#s.draft = v; this.#save(); }
   #save() { try { localStorage.setItem(PREFS_KEY, JSON.stringify($state.snapshot(this.#s))); } catch { /* private mode */ } }
 }
 

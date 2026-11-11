@@ -13,6 +13,8 @@
   import { session } from '$lib/session.svelte';
   import { sync } from '$lib/sync/engine.svelte';
   import { sheets } from '$lib/sheets.svelte';
+  import { keypad } from '$lib/keypad.svelte';
+  import { db } from '$lib/db/store.svelte';
   import type { SyncState } from '$lib/components/SyncMark.svelte';
 
   const TITLES = [t.tabs.today, t.tabs.train, t.tabs.progress];
@@ -26,13 +28,30 @@
   }
   $effect(() => { void loadTab(prefs.tab); });
 
-  // the sign in and account sheets (and the drawer code under them) load after the first paint, like the tabs
-  let SignIn = $state<Component<{ open: boolean }> | null>(null);
+  // the sign in, account and keypad sheets (and the drawer code under them) load after the first paint, like the tabs
+  let SignIn = $state<Component<{ open: boolean; title?: string }> | null>(null);
   let Account = $state<Component<{ open: boolean }> | null>(null);
+  let Keypad = $state<Component | null>(null);
   async function loadSheets() {
-    [SignIn, Account] = await Promise.all([import('./flows/signin/SignInSheet.svelte'), import('./settings/AccountSheet.svelte')]).then((m) => m.map((x) => x.default));
+    const [s, a, k] = await Promise.all([import('./flows/signin/SignInSheet.svelte'), import('./settings/AccountSheet.svelte'), import('$lib/components/KeypadSheet.svelte')]);
+    [SignIn, Account, Keypad] = [s.default, a.default, k.default];
   }
-  $effect(() => { if ((sheets.signin || sheets.account) && !SignIn) void loadSheets(); });
+  $effect(() => { if ((sheets.signin || sheets.account || keypad.open) && !SignIn) void loadSheets(); });
+
+  // First run, and a signed in account with no profile yet, go through onboarding (SCREENS.md section 1). A phone that
+  // is signed in but has never pulled shows Today's first load state: the account may already have a plan.
+  // While the last user's store opens, the shell: a returning user never sees Welcome flash by.
+  const onboarded = $derived(db.ready && !!db.get('profile', 'profile'));
+  const pulledOnce = $derived(sync.pulled || (db.ready && db.meta.cursor !== null));
+  const onboarding = $derived(db.ready ? !onboarded && pulledOnce && !prefs.draft?.saved : !prefs.lastUser);
+  let Onboarding = $state<Component | null>(null);
+  $effect(() => {
+    if (onboarding && !Onboarding) import('./flows/onboarding/Onboarding.svelte').then((m) => (Onboarding = m.default), (e) => console.error('onboarding failed to load', e));
+  });
+  // a draft meets the account after sign in: it becomes the plan, or the account's own plan wins
+  $effect(() => {
+    if (db.ready && sync.pulledNow && prefs.draft) import('./flows/onboarding/settle').then((m) => m.settle(), (e) => console.error('the plan could not be saved', e));
+  });
 
   // tab changes slide in from the side the finger came from; swiping wraps around
   let dir = $state(1);
@@ -73,6 +92,9 @@
   });
 </script>
 
+{#if onboarding}
+  {#if Onboarding}<Onboarding />{/if}
+{:else}
 <div class="bg-canvas relative mx-auto flex min-h-dvh w-full max-w-[480px] flex-col overflow-x-clip">
   <Header
     title={TITLES[prefs.tab]}
@@ -100,7 +122,9 @@
 
   <Dock tab={prefs.tab} onselect={(i) => void go(i)} {swipeOpts} />
 </div>
+{/if}
 
-{#if SignIn}<SignIn bind:open={sheets.signin} />{/if}
+{#if SignIn}<SignIn bind:open={sheets.signin} title={onboarding && prefs.draft?.at === 'plan' ? t.signin.save : t.signin.welcomeBack} />{/if}
 {#if Account}<Account bind:open={sheets.account} />{/if}
+{#if Keypad}<Keypad />{/if}
 <Toasts />
