@@ -2,6 +2,43 @@
 
 Changes to a doc's decision, and choices made on the owner's behalf. Newest first, one line each: what, why.
 
+## M2
+
+Science check (verdicts in `docs/SOURCES.md`):
+
+- Moderate walking is 3.8 MET, not 3.5 (code 17190); light and hard walking are codes 17152 and 17200. Why: the Compendium's level walking codes for slow, moderate and brisk pace.
+- Sport stays 4.0, 6.0, 8.0 MET as a working assumption; its stated basis changed. Why: they are not band mid points and the Compendium has no general sport code.
+- Low weekly volume is under 5 sets (was under 6); beginners are told 5 to 9 is a fine start. Why: S11's categories are under 5, 5 to 9 and 10 or more.
+- The 20 set ceiling stays, labelled an assumption. Why: S11 found too little data above 12 sets to set a limit.
+- Advanced lifters gaining are offered the lean pace only, and their surplus cap is 10 percent. Why: S7 gives about 0.25 percent a week and a 5 to 10 percent surplus for advanced lifters.
+- 7,700 kcal per kg stays, labelled a working assumption. Why: S6 says it overstates the energy per kg for leaner people, but a body fat dependent model is out of scope; the caps bound the deficit and the check-in corrects from measured weight.
+- Movement factors 1.20 to 1.60 stay, labelled a working assumption. Why: FAO/WHO/UNU's 1.40 to 2.40 includes exercise, which Ontrack adds per session; its sedentary office example is 1.53, so the seated start may be low and the check-in raises it.
+- Floors 1,200, 1,500 and 1,350 stay, labelled a working assumption. Why: S14 gives low calorie diet ranges, not floors; these sit at or above its lower bounds and the PRD guardrail sets them.
+- S2 cites Cunningham 1991 only. Why: it states 370 + 21.6 x FFM; no Katch and McArdle primary source was found.
+- The certainty stance no longer says "within about 10 percent for most people". Why: S18 says Mifflin-St Jeor was the most reliable equation, not that equations are within 10 percent for most.
+- The 4, 4, 9 kcal per gram factors got a source, S19 (FAO 2003). Why: macros use them and every number needs one.
+- BMI 16 for the doctor card is verified through a WHO EMRO guide citing WHO TRS 854. Why: TRS 854 itself could not be opened.
+
+Engine choices where the spec was silent or self contradictory:
+
+- Protein reference weight is body weight capped at the weight for BMI 30, instead of switching to the weight at BMI 25 above BMI 30. Why: the switch drops protein by about a sixth at BMI 30 and breaks the gate's "protein never falls when weight rises"; vector C is unchanged.
+- Aerobic minutes count cardio, walk and sport sessions at 3 METs or more, double at 6 or more, instead of "cardio, hard counts double". Why: S13 defines moderate and vigorous in METs and counts walking; moderate cardio (6.8) is vigorous by that definition.
+- Circuit sessions count as strength sessions. Why: S13's muscle-strengthening activity includes resistance circuits.
+- A session counts toward a muscle's frequency when the muscle is a primary target of one of its exercises. Why: section 11 does not say; direct work is the conservative reading.
+- The `floor` flag is set when the plan's lowest possible day (a rest or skipped day) falls under the floor. Why: matched mode and skips make any day a rest day, and the plan record has no calorie mode.
+- The effective rate uses the even target after floors. Why: the matched week averages to it unless a floor lifts only some days.
+- "Protein and fat exceed the target" is tested against the lowest day target. Why: fat is the same every day.
+- A plan never runs faster than the paces offered at its BMI; a lose goal under BMI 18.5 gets no deficit. Why: a check-in recomputes at a new weight and must keep the guardrails.
+- Check-in mean target is over every day in the window, mean intake over complete days. Why: vector F's 2,357.14 is the plan's weekly mean, which 12 complete days cannot produce.
+- Check-in, rate only: the target rate is the plan's effective rate, and the change moves the baseline before the plan is recomputed. The proposal is the even target's actual move rounded to 10, in both paths. Why: what the user accepts should equal the number shown.
+- A check-in move over 200 shifts the baseline back so the even target moves 200. Why: section 10 clamps the move, not the baseline.
+- A check-in keeps the plan's exercise energy per weekday and its resting energy, and uses the trend weight for everything else. Why: section 10 recomputes sections 6 to 8 only.
+- Weigh-ins span 14 days counting the first and last day. Why: the spec does not say; inclusive matches "two weeks of weigh-ins".
+- The engine takes day numbers, not date strings, for weigh-ins and check-in days. Why: `dates.ts` is the only place that touches `Date` and the engine imports nothing; M8 converts.
+- Trend smoothing and the slope live in `engine/trend.ts`, not `model/trend.ts`. Why: the check-in needs the slope and the engine imports nothing outside itself.
+- Unit conversions (7, 60, 100) live in `constants.ts` as `U`. Why: the gate's check is simplest as "no literal but 0 and 1 in engine files".
+- Exercise, template and template session names are data in `src/lib/data/`, not catalog strings. Why: like food names, they become the user's data once a program exists. Each template's "who it suits" line is M7's, in `en.ts`.
+
 ## M1
 
 - No Figma link and no images in `design/references/`, so `docs/DESIGN.md` and `design/` are used as they stand. Why: nothing to reconcile.
