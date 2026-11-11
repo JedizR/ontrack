@@ -40,16 +40,17 @@
 
   // First run, and a signed in account with no profile yet, go through onboarding (SCREENS.md section 1). A phone that
   // is signed in but has never pulled shows Today's first load state: the account may already have a plan.
+  // While the last user's store opens, the shell: a returning user never sees Welcome flash by.
   const onboarded = $derived(db.ready && !!db.get('profile', 'profile'));
   const pulledOnce = $derived(sync.pulled || (db.ready && db.meta.cursor !== null));
-  const onboarding = $derived(!onboarded && !(db.ready && (!pulledOnce || !!prefs.draft?.saved)));
+  const onboarding = $derived(db.ready ? !onboarded && pulledOnce && !prefs.draft?.saved : !prefs.lastUser);
   let Onboarding = $state<Component | null>(null);
   $effect(() => {
     if (onboarding && !Onboarding) void import('./flows/onboarding/Onboarding.svelte').then((m) => (Onboarding = m.default));
   });
   // a draft meets the account after sign in: it becomes the plan, or the account's own plan wins
   $effect(() => {
-    if (db.ready && pulledOnce && prefs.draft) void import('./flows/onboarding/settle').then((m) => m.settle());
+    if (db.ready && sync.pulledNow && prefs.draft) void import('./flows/onboarding/settle').then((m) => m.settle());
   });
 
   // tab changes slide in from the side the finger came from; swiping wraps around

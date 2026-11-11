@@ -4,9 +4,9 @@ Changes to a doc's decision, and choices made on the owner's behalf. Newest firs
 
 ## M4
 
-- Which screen opens: no store on the phone shows onboarding; a signed in phone that has never pulled shows Today's first load state; signed in and pulled with no profile shows onboarding again, from Welcome without "I already have an account". Why: sync rule 5, pull before deciding whether to show onboarding.
+- Which screen opens: no store on the phone shows onboarding; a signed in phone that has never pulled shows Today's first load state; signed in and pulled with no profile shows onboarding again, from Welcome, whose "I already have an account" then switches accounts. While the last user's store opens, the shell shows, never Welcome. Why: sync rule 5, pull before deciding whether to show onboarding.
 - The draft lives in prefs under `ot-ui`, field `draft`, not `ontrack:prefs`. Why: `ot-ui` is the prefs key since M0.
-- "Save my plan" marks the draft saved; it becomes records only once a signed in phone has pulled. A draft that meets an account with a profile is dropped without a message. Why: TECH-SPEC section 4; the account's plan is the one the person made before.
+- "Save my plan" marks the draft saved; it becomes records only once a signed in phone has pulled in this session (`sync.pulledNow`), never on an older pull, so a plan made since on another phone is not overwritten. A draft that meets an account with a profile is dropped without a message. Why: TECH-SPEC section 4; the account's plan is the one the person made before.
 - Leaving setup (from the eating disorder advice or the age screen) clears the draft and returns to Welcome.
 - Eating disorder advice: "Leave setup" is the main action; continuing gives a maintenance target only, as for the other two answers. Why: PRD section 7 advises against tracking and offers to exit; maintenance only is the safest way to continue.
 - Age is the current year minus the birth year, so 2008 passes in 2026. Why: only the year is asked.
@@ -28,7 +28,8 @@ Changes to a doc's decision, and choices made on the owner's behalf. Newest firs
 - The keypad sheet loads lazily in `App.svelte` with the sign in and account sheets, and onboarding is its own lazy chunk. Why: the first chunk stays small for the returning user.
 - New components: `Switch` (ink when on, never lime) and `Wordmark` (the mark inline, the name as live text).
 - Unit abbreviations and the hero captions ("kcal on training days") live under `after` in `en.ts`. Why: they continue a number and start in lower case.
-- Goal weight is stored on the plan and only checked against BMI 18.5, not against the goal's direction. Why: PRD section 7 sets only that rule.
+- Goal weight is stored on the plan and only checked against BMI 18.5 (and the 30 kg field minimum), not against the goal's direction; a later height change that puts it under BMI 18.5 drops it. Why: PRD section 7 sets only that rule.
+- The expected change on Your plan and the pace step is summed day by day in the chosen calorie mode, not taken from the engine's `effectiveRate`, which uses the even week. Why: in matched mode a floor can lift rest days only, which slows the change.
 - End to end: `open(page)` now signs in to a seeded account that has finished onboarding (vector A), `openFresh` starts a first run, and `withPrefs` merges into `ot-ui` instead of replacing it. Why: there is no signed out shell any more.
 
 ## M3

@@ -7,7 +7,7 @@
   import Button from '$lib/components/Button.svelte';
   import { t } from '$lib/i18n';
 
-  let { onstart, onsignin }: { onstart: () => void; /** absent when already signed in */ onsignin?: () => void } = $props();
+  let { onstart, onsignin }: { onstart: () => void; onsignin: () => void } = $props();
 </script>
 
 <section class="flex min-h-dvh flex-col px-5 pt-[calc(env(safe-area-inset-top)+16px)]" aria-label={t.app.name} data-testid="welcome">
@@ -27,6 +27,6 @@
   </div>
   <div class="flex flex-col gap-1 pb-[max(16px,env(safe-area-inset-bottom))]">
     <Button variant="primary" size="lg" full onclick={onstart} data-testid="welcome-start">{t.welcome.start}</Button>
-    {#if onsignin}<Button variant="plain" size="lg" full onclick={onsignin} data-testid="welcome-signin">{t.welcome.account}</Button>{/if}
+    <Button variant="plain" size="lg" full onclick={onsignin} data-testid="welcome-signin">{t.welcome.account}</Button>
   </div>
 </section>

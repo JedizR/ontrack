@@ -1,5 +1,5 @@
 // A plan turned into the numbers a screen shows: the day's target and the lines that sum to it.
-import { dayTarget, effectiveRate, floorFor, weeklyEee, U, type PlanNumbers, type Sex } from '$lib/model/engine';
+import { dayTarget, floorFor, rawTarget, tdeeAvg, weeklyEee, U, V, type CalorieMode, type PlanNumbers, type Sex } from '$lib/model/engine';
 
 type Week = Pick<PlanNumbers, 'baseline' | 'eeeByWeekday' | 'delta'>;
 
@@ -29,5 +29,13 @@ export function targetParts(p: Week & Pick<PlanNumbers, 'bmr'>, sex: Sex, eee: n
   return { bmr, movement: total - bmr - training - goal - floorLift, training, goal, floorLift, total };
 }
 
-/** The change a plan delivers after caps and floors, kg a week; positive either way, the goal gives the direction. */
-export const kgPerWeek = (p: PlanNumbers, sex: Sex) => (effectiveRate(p, sex) / U.percent) * p.weightKg;
+/**
+ * The change a plan delivers in a week, kg, after caps and floors; positive either way, the goal gives the direction.
+ * Summed day by day, because in matched mode a floor can lift rest days and leave training days alone.
+ */
+export function kgPerWeek(p: PlanNumbers, sex: Sex, mode: CalorieMode) {
+  let eaten = 0;
+  for (let weekday = 0; weekday < U.daysPerWeek; weekday++) eaten += rawTarget(p, { sex, mode, weekday });
+  const change = (eaten - U.daysPerWeek * tdeeAvg(p)) / V.kcalPerKg;
+  return p.goal === 'lose' ? 0 - change : change;
+}

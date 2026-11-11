@@ -13,7 +13,7 @@
   import { keypad } from '$lib/keypad.svelte';
   import { SOURCES } from '$lib/data/sources';
   import { t } from '$lib/i18n';
-  import { LIMITS, inputOf, type Draft } from './draft';
+  import { LIMITS, goalWeightOf, inputOf, minGoalWeightKg, type Draft } from './draft';
 
   let { d, year, set, back, onsave }: {
     d: Draft;
@@ -32,7 +32,7 @@
   const matched = $derived(!d.even && trainEee > 0);
   const parts = $derived(targetParts(n, sex, matched ? trainEee : evenEee(n)));
   const rest = $derived(targetWith(n, sex, 0));
-  const kg = $derived(kgPerWeek(n, sex));
+  const kg = $derived(kgPerWeek(n, sex, d.even ? 'even' : 'matched'));
   const expect = $derived(
     n.goal === 'maintain' || Math.round(kg * 10) === 0 ? t.plan.expectHold : (n.goal === 'lose' ? t.plan.expectLose : t.plan.expectGain)(weightText(kg, d.units)),
   );
@@ -82,7 +82,8 @@
     if (v === null) return;
     if (v === 0) return set({ goalWeightKg: undefined });
     const kg = metric ? v : lbToKg(v);
-    if (kg < g.minGoalWeightKg) return void (tuneError = t.plan.goalWeightLow(weightText(g.minGoalWeightKg, d.units)));
+    const min = minGoalWeightKg(d);
+    if (kg < min) return void (tuneError = t.plan.goalWeightLow(weightText(min, d.units)));
     if (kg > LIMITS.weightKg[1]) return void (tuneError = t.body.weightRange(weightText(LIMITS.weightKg[0], d.units, 0), weightText(LIMITS.weightKg[1], d.units, 0)));
     set({ goalWeightKg: round(kg, 2) });
   }
@@ -131,7 +132,7 @@
     <h2 class="text-heading mt-5">{t.plan.tune}</h2>
     <Card list>
       <Row title={t.plan.bodyFat} value={d.bodyFatPct ? `${num(d.bodyFatPct, 1)} ${t.after.percent}` : t.plan.noneYet} onclick={askBodyFat} testid="tune-bodyfat" />
-      <Row title={t.plan.goalWeight} value={d.goalWeightKg ? weightText(d.goalWeightKg, d.units) : t.plan.noneYet} onclick={askGoalWeight} testid="tune-goalweight" />
+      <Row title={t.plan.goalWeight} value={goalWeightOf(d) ? weightText(goalWeightOf(d)!, d.units) : t.plan.noneYet} onclick={askGoalWeight} testid="tune-goalweight" />
       <Row title={t.plan.even}>
         {#snippet trailing()}<Switch checked={!!d.even} label={t.plan.even} onchange={(even) => set({ even })} testid="tune-even" />{/snippet}
       </Row>

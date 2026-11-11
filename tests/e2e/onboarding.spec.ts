@@ -184,10 +184,15 @@ test('a returning user signs in from Welcome and lands on Today with the account
   await signIn(page); // through the install guide and Welcome's "I already have an account"
   await expect(page.getByTestId('tab-today')).toBeVisible();
   expect(await record(page, 'profile', 'profile')).toMatchObject({ birthYear: 2001 });
-  // a reload goes straight to Today
+  // a reload goes straight to Today, without Welcome or the install guide showing for a moment while the store opens
+  await page.addInitScript(() => {
+    new MutationObserver(() => {
+      if (document.querySelector('[data-testid="welcome"], [data-testid="install"]')) (window as unknown as { flashed: boolean }).flashed = true;
+    }).observe(document, { childList: true, subtree: true });
+  });
   await page.reload();
   await expect(page.getByTestId('tab-today')).toBeVisible();
-  await expect(page.getByTestId('welcome')).toHaveCount(0);
+  expect(await page.evaluate(() => (window as unknown as { flashed?: boolean }).flashed ?? false)).toBe(false);
 });
 
 test('a draft that meets an account with a plan is discarded', async ({ page }) => {
@@ -207,7 +212,7 @@ test('a signed in account without a plan goes through setup and saves without si
   await openFresh(page, s);
   await signIn(page, EMAIL, { shell: false });
   await expect(page.getByTestId('welcome')).toBeVisible();
-  await expect(page.getByTestId('welcome-signin')).toHaveCount(0);
+  await expect(page.getByTestId('welcome-signin')).toBeVisible(); // the way to switch to another account
   await onboard(page, { goal: 'gain' });
   await page.getByTestId('plan-save').click();
   await expect(page.getByTestId('tab-today')).toBeVisible();

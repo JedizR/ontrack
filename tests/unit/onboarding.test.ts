@@ -6,7 +6,7 @@ import { plan, type PlanNumbers } from '../../src/lib/model/engine';
 import { kgPerWeek, targetParts, targetWith, trainingDayEee } from '../../src/lib/model/day';
 import { cmToFtIn, ftInToCm, kgToLb, lbToKg } from '../../src/lib/model/units';
 import { weekdayOf } from '../../src/lib/model/dates';
-import { complete, inputOf, paceChoices, progress, programOf, route, toRecords, type Draft } from '../../src/flows/onboarding/draft';
+import { complete, goalWeightOf, inputOf, paceChoices, progress, programOf, route, toRecords, type Draft } from '../../src/flows/onboarding/draft';
 
 const YEAR = 2026;
 const A: Draft = {
@@ -82,6 +82,13 @@ describe('records', () => {
     expect(r.plan).toMatchObject({ goal: 'gain', ratePctPerWeek: 0.5, delta: 330, proteinG: 108, goalWeightKg: 66, effectiveFrom: '2026-11-11', tdeeSource: 'formula', source: 'onboarding' });
     expect(r.weight).toEqual({ date: '2026-11-11', kg: 60 });
   });
+  test('a goal weight that a later height change put under BMI 18.5 is dropped', () => {
+    const d: Draft = { ...A, goalWeightKg: 57 };
+    expect(goalWeightOf(d)).toBe(57);
+    expect(goalWeightOf({ ...d, heightCm: 180 })).toBeUndefined();
+    expect(toRecords({ ...d, heightCm: 180 }, '2026-11-11', '2026-11-11T03:00:00.000Z').plan).not.toHaveProperty('goalWeightKg');
+    expect(goalWeightOf({ ...A, heightCm: 100, goalWeightKg: 19 })).toBeUndefined(); // under what the database takes
+  });
 });
 
 describe('plan breakdown', () => {
@@ -91,7 +98,14 @@ describe('plan breakdown', () => {
     expect(targetWith(pA, 'male', trainingDayEee(pA))).toBe(2460);
     expect(targetWith(pA, 'male', 0)).toBe(2220);
     expect(targetParts(pA, 'male', 240)).toEqual({ bmr: 1574, movement: 316, training: 240, goal: 330, floorLift: 0, total: 2460 });
-    expect(kgPerWeek(pA, 'male')).toBeCloseTo(0.3, 1);
+    expect(kgPerWeek(pA, 'male', 'matched')).toBeCloseTo(0.3, 1);
+    expect(kgPerWeek(pA, 'male', 'even')).toBeCloseTo(0.3, 1);
+  });
+  test('a floor that lifts only rest days slows the change, and the expectation says so', () => {
+    const d: Draft = { ...A, sex: 'female', goal: 'lose', heightCm: 155, weightKg: 55, rate: 0.5, train: { kind: 'custom', days: 3, type: 'strength', minutes: 60, intensity: 'moderate' } };
+    const p = plan(inputOf(d, YEAR));
+    expect(p.flags).toContain('floor');
+    expect(kgPerWeek(p, 'female', 'matched')).toBeLessThan(kgPerWeek(p, 'female', 'even'));
   });
   test('the lines always add up to the target, floor included', () => {
     let floored = 0;

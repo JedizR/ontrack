@@ -24,7 +24,7 @@
   // the number Your plan leads with: a training day, or every day when there is no training or one target a day
   const training = $derived(!d.even && trainingDayEee(c.hold) > 0);
   const kcal = (p: PlanNumbers) => `${num(targetWith(p, sex, training ? trainingDayEee(p) : evenEee(p)))} ${t.after.kcal}`;
-  const weekly = (p: PlanNumbers) => weightText(kgPerWeek(p, sex), d.units);
+  const weekly = (p: PlanNumbers) => weightText(kgPerWeek(p, sex, d.even ? 'even' : 'matched'), d.units);
 
   const WHY = {
     noLose: t.pace.noLose(num(V.underweightBmi)),

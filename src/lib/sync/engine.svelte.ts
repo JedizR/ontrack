@@ -19,6 +19,8 @@ export class Sync {
   lastSyncAt = $state<number | null>(null);
   /** this device has finished a full pull since it was signed in */
   pulled = $state(false);
+  /** a pull has landed since sync last started: what the account holds now is on the phone, not an old copy */
+  pulledNow = $state(false);
   lastError = $state<string | null>(null);
 
   #store: Store;
@@ -37,6 +39,7 @@ export class Sync {
     this.#backend = backend;
     this.#failures = 0;
     this.pulled = this.#store.meta.cursor !== null;
+    this.pulledNow = false;
     this.lastSyncAt = this.#store.meta.lastSyncAt;
     // while backing off, an edit waits for the backoff instead of retrying at once (rule 6)
     this.#store.onLocalChange = () => { if (!this.#failures) this.schedule(); };
@@ -96,6 +99,7 @@ export class Sync {
       store.applyRemote(records);
       const now = Date.now();
       store.setCursor(cursor, now);
+      this.pulledNow = true;
       for (const mealId of store.thumbQueue()) {
         const blob = await store.thumb(mealId);
         if (blob) await backend.putThumb(mealId, blob).catch((e) => { if (!refused(e)) throw e; console.error('thumbnail refused', mealId); });

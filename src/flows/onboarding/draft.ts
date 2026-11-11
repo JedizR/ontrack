@@ -121,6 +121,11 @@ export function inputOf(d: Draft, year: number): PlanInput {
   };
 }
 
+/** The lowest goal weight offered: BMI 18.5 at this height (PRD section 7), and never under what the field accepts. */
+export const minGoalWeightKg = (d: Draft) => Math.max(guardrails({ age: 0, heightCm: d.heightCm ?? 0, weightKg: d.weightKg ?? 0 }).minGoalWeightKg, LIMITS.weightKg[0]);
+/** The goal weight, unless a later change of height put it below the minimum. */
+export const goalWeightOf = (d: Draft) => (d.goalWeightKg && d.goalWeightKg >= minGoalWeightKg(d) ? d.goalWeightKg : undefined);
+
 export type Why = 'noLose' | 'gentleOnly' | 'noFaster' | 'leanOnly';
 /** The paces offered for this draft, each with its plan, the one picked, and why any pace is missing. */
 export function paceChoices(d: Draft, year: number) {
@@ -161,7 +166,7 @@ export function toRecords(d: Draft, date: string, at: string): { profile: Profil
     plan: {
       ...numbers,
       effectiveFrom: date,
-      ...(d.goalWeightKg ? { goalWeightKg: d.goalWeightKg } : {}),
+      ...(goalWeightOf(d) ? { goalWeightKg: goalWeightOf(d) } : {}),
       tdeeSource: 'formula',
       source: 'onboarding',
     },

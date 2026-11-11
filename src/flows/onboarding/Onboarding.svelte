@@ -25,13 +25,13 @@
   import { dur, haptic } from '$lib/haptics';
   import { t } from '$lib/i18n';
   import { LIMITS, fresh, progress, step, type Draft, type Screen, type Screening } from './draft';
-  import { pulled, settle } from './settle';
+  import { settle } from './settle';
 
   const year = yearOf(today());
   const d = $derived(prefs.draft ?? fresh());
-  const signedIn = $derived(db.ready);
   // Safari on iPhone: the home screen app has its own storage, so the guide comes first on every visit until set up
-  let install = $state(isIOS() && !isStandalone() && !db.ready);
+  // (not once Save my plan was tapped: that visit is coming back from sign in)
+  let install = $state(isIOS() && !isStandalone() && !db.ready && !prefs.draft?.saved);
   let dir = $state<1 | -1>(1);
 
   function set(patch: Partial<Draft>) {
@@ -60,7 +60,8 @@
   function save() {
     haptic();
     set({ saved: true });
-    if (pulled()) settle();
+    // signed in: written now, or once this session's first pull lands (App settles it then)
+    if (db.ready) settle();
     else sheets.signin = true;
   }
 
@@ -118,7 +119,7 @@
     next({ birthYear: v });
   }
   // a first visit opens the keypad at once
-  $effect(() => { if (d.at === 'born' && !d.birthYear) void askYear(); });
+  $effect(() => { if (!install && d.at === 'born' && !d.birthYear) void askYear(); });
 </script>
 
 {#snippet cta(disabled: boolean, onclick: () => void)}
@@ -141,7 +142,8 @@
     {#key d.at}
       <div in:fly={{ x: 32 * dir, duration: dur(240) }}>
         {#if d.at === 'welcome'}
-          <Welcome onstart={() => next()} onsignin={signedIn ? undefined : () => (sheets.signin = true)} />
+          <!-- signed in to an account with no plan, this is also the way to switch to the right account -->
+          <Welcome onstart={() => next()} onsignin={() => (sheets.signin = true)} />
         {:else if d.at === 'goal'}
           <Step title={t.goal.q} onback={back} progress={prog} testid="step-goal">
             <Choices label={t.goal.q} options={GOALS} value={d.goal} onpick={(goal) => next(goal === d.goal ? {} : { goal, rate: undefined })} />
