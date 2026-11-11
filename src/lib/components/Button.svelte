@@ -26,7 +26,8 @@
     plain: 'text-ink group-active:bg-surface-2',
     danger: 'bg-surface-2 text-danger group-active:bg-surface-3',
   };
-  const SIZE = { lg: 'h-13 px-6 text-body font-semibold', md: 'h-11 px-5 text-callout font-medium', sm: 'h-9 px-4 text-callout font-medium' };
+  // a minimum height, so a full width label at the largest text can wrap to a second line instead of spilling out
+  const SIZE = { lg: 'min-h-13 px-6 py-2 text-body font-semibold', md: 'min-h-11 px-5 py-2 text-callout font-medium', sm: 'min-h-9 px-4 py-1 text-callout font-medium' };
 </script>
 
 <button
@@ -35,7 +36,7 @@
   {...rest}
 >
   <span
-    class="inline-flex items-center justify-center gap-2 rounded-full whitespace-nowrap transition-[transform,background-color] duration-[var(--d-press)] group-active:scale-[0.97] {full ? 'w-full' : ''} {LOOK[variant]} {SIZE[size]}"
+    class="inline-flex items-center justify-center gap-2 rounded-full transition-[transform,background-color] duration-[var(--d-press)] group-active:scale-[0.97] {full ? 'w-full text-center text-balance' : 'whitespace-nowrap'} {LOOK[variant]} {SIZE[size]}"
   >
     {@render children()}
   </span>

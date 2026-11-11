@@ -26,6 +26,7 @@ Changes to a doc's decision, and choices made on the owner's behalf. Newest firs
 - The birth year keypad opens by itself on a first visit and a valid year moves on; height then weight open by themselves the same way. Why: fewer taps toward 90 seconds.
 - The install guide shows on every visit in Safari on iPhone until onboarding is done, and is not remembered. Android and desktop skip it. Why: SCREENS.md section 3, "on every visit until done".
 - The keypad sheet loads lazily in `App.svelte` with the sign in and account sheets, and onboarding is its own lazy chunk. Why: the first chunk stays small for the returning user.
+- Buttons have a minimum height instead of a fixed one, and a full width label wraps to a second line at the largest text sizes instead of spilling. Why: on CI's Linux fonts "I already have an account" and "Continue in the browser" spilled at the SE's large text. Locally a wide font (Verdana) reproduces it.
 - New components: `Switch` (ink when on, never lime) and `Wordmark` (the mark inline, the name as live text).
 - Unit abbreviations and the hero captions ("kcal on training days") live under `after` in `en.ts`. Why: they continue a number and start in lower case.
 - Goal weight is stored on the plan and only checked against BMI 18.5 (and the 30 kg field minimum), not against the goal's direction; a later height change that puts it under BMI 18.5 drops it. Why: PRD section 7 sets only that rule.
