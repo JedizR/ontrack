@@ -13,6 +13,8 @@ Calorie and training tracker. Installed iPhone web app (Safari, Add to Home Scre
 | `pnpm test:e2e` | Playwright, iPhone viewport, light and dark, mock backend |
 | `pnpm screenshots` | Every screen and sheet into `screenshots/` |
 | `pnpm verify` | check + test + build + e2e smoke. Run before calling anything done |
+| `pnpm check:pwa <url>` | Installability and offline reload against a preview or `pnpm preview` |
+| `pnpm icons` | Regenerate the PWA icons from `design/brand/app-icon.svg` |
 | `pnpm foods:build` | Rebuild `src/lib/data/foods.json` from USDA data and `data/food-list.csv` |
 
 Node from `.nvmrc`, pnpm through corepack, every dependency pinned to an exact version.
@@ -44,6 +46,12 @@ These are the rules that are easy to break without noticing.
 - **Lime means on track.** It marks the primary action and progress that has reached its target. Nothing else is lime.
 - **iPhone rules.** Inputs at 16 px or larger. `touch-action: manipulation` globally. Respect safe areas. Never set `maximum-scale`. Test at 390 by 844 and at the iPhone SE size.
 - **Class names.** Never name a component class after a Tailwind utility (`block`, `flex`, `hidden`). It has bitten us before.
+
+## Gotchas
+
+- Node 22 through `nvm use`; the machine default is 24.
+- Vercel previews are behind Vercel Authentication. Use `vercel curl`, or pass `VERCEL_AUTOMATION_BYPASS_SECRET` to `pnpm check:pwa` and to Playwright with `E2E_BASE_URL`.
+- `vercel env add NAME env < file` takes the value from one stdin redirect. Confirm with `vercel env pull` into a scratch file, never into `.env.local`.
 
 ## Working agreements
 

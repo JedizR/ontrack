@@ -1,0 +1,57 @@
+{
+  "name": "ontrack",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "packageManager": "pnpm@12.15.0",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "dev": "VITE_BACKEND=mock VISION_PROVIDER=mock vite",
+    "dev:live": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "check": "svelte-check --tsconfig ./tsconfig.json",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "screenshots": "playwright test --project=screens",
+    "verify": "pnpm check && pnpm test && pnpm build && playwright test --grep @smoke",
+    "check:pwa": "node scripts/check-pwa.mjs",
+    "icons": "cp design/brand/app-icon.svg public/favicon.svg && pwa-assets-generator",
+    "format": "prettier --write ."
+  },
+  "dependencies": {
+    "@lucide/svelte": "1.62.0",
+    "@supabase/supabase-js": "2.119.0",
+    "bits-ui": "2.20.2",
+    "clsx": "2.1.1",
+    "d3-scale": "4.0.2",
+    "d3-shape": "3.2.0",
+    "idb-keyval": "6.3.0",
+    "svelte": "5.57.3",
+    "svelte-sonner": "1.2.2",
+    "vaul-svelte": "1.0.0-next.7",
+    "workbox-window": "7.4.1",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@google/genai": "3.0.0",
+    "@playwright/test": "1.64.1",
+    "@sveltejs/vite-plugin-svelte": "7.3.1",
+    "@tailwindcss/vite": "4.3.3",
+    "@types/d3-scale": "4.0.9",
+    "@types/d3-shape": "3.2.0",
+    "@types/node": "26.6.5",
+    "@vite-pwa/assets-generator": "2.0.0",
+    "prettier": "3.9.10",
+    "prettier-plugin-svelte": "4.1.1",
+    "svelte-check": "4.7.7",
+    "tailwindcss": "4.3.3",
+    "tsx": "4.23.15",
+    "typescript": "6.0.3",
+    "vite": "8.3.5",
+    "vite-plugin-pwa": "2.0.0",
+    "vitest": "5.0.5"
+  }
+}
