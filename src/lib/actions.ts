@@ -9,7 +9,7 @@ import { session } from '$lib/session.svelte';
 import { prefs } from '$lib/prefs.svelte';
 import { BackendError } from '$lib/backend';
 import type { FailKind } from '$lib/backend/types';
-import { ids, recSchema, SCHEMAS, type Checkin, type Collection, type DataOf, type Meal, type Plan, type Profile, type Program, type Saved, type SessionLog } from '../../shared/records';
+import { ids, recSchema, SCHEMAS, type Checkin, type Collection, type DataOf, type Meal, type Plan, type Profile, type Program, type Saved, type SessionLog, type Weight } from '../../shared/records';
 
 const uid = () => crypto.randomUUID();
 
@@ -44,6 +44,17 @@ export function useSaved(id: string, at: string) {
 export const logSession = (l: SessionLog) => write('slog', ids.slog(l.date, l.sessionKey), l);
 export const clearSessionLog = (date: string, key: string) => remove('slog', ids.slog(date, key));
 export const saveCheckin = (c: Checkin) => write('checkin', ids.checkin(c.date), c);
+/** The end of onboarding: profile, program, the first plan and the first weigh-in. All four are checked before any is written. */
+export function finishOnboarding(r: { profile: Profile; program: Program; plan: Plan; weight: Weight }) {
+  SCHEMAS.profile.parse(r.profile);
+  SCHEMAS.program.parse(r.program);
+  SCHEMAS.plan.parse(r.plan);
+  SCHEMAS.weight.parse(r.weight);
+  saveProgram(r.program);
+  savePlan(r.plan);
+  logWeight(r.weight.date, r.weight.kg);
+  saveProfile(r.profile); // last: a profile is what tells the app onboarding is done
+}
 export const closeDay = (date: string) => write('day', ids.day(date), { date, closed: true });
 export const reopenDay = (date: string) => write('day', ids.day(date), { date });
 
