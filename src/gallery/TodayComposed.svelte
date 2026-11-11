@@ -38,7 +38,9 @@
       {#each MACROS as m (m.label)}
         <div class="min-w-0">
           <div class="text-caption text-ink-2">{m.label}</div>
-          <div class="text-body"><span class="num font-semibold">{m.value}</span> <span class="text-ink-2">{t.after.ofGrams(num(m.target))}</span></div>
+          <!-- value and target on two lines, as the hero does, so the three columns stay level at every width and text size -->
+          <div class="text-body num font-semibold">{m.value}</div>
+          <div class="text-caption text-ink-2 whitespace-nowrap">{t.after.ofGrams(num(m.target))}</div>
           <div class="mt-2"><Track value={m.value} target={m.target} zone={m.zone} label="{m.label} {m.value} {t.after.ofGrams(num(m.target))}" /></div>
         </div>
       {/each}

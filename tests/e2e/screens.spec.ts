@@ -1,7 +1,7 @@
 // Visual review: every screen in its main states -> screenshots/<screen>/<state>-<theme>-<device>.png
 //   pnpm screenshots -- --grep "shell"
 import { test, type Page } from '@playwright/test';
-import { open } from './helpers';
+import { open, withPrefs } from './helpers';
 
 const SECTIONS = ['prefs', 'buttons', 'track', 'hero', 'rows', 'chips', 'sheets', 'week', 'feedback', 'states'];
 
@@ -84,6 +84,27 @@ for (const theme of ['light', 'dark'] as const) {
       });
     });
   }
+}
+
+// the largest text size on the smallest phone: the composed Today, the keypad, and every gallery section
+for (const theme of ['light', 'dark'] as const) {
+  test.describe(`${theme} se xl`, () => {
+    test.use({ colorScheme: theme, viewport: { width: 375, height: 667 } });
+    test('largest text', async ({ page }) => {
+      await withPrefs(page, { theme: 'system', fontSize: 'xl' });
+      await open(page, '/gallery/today');
+      await page.waitForTimeout(450);
+      await page.screenshot({ path: `screenshots/xl/today-${theme}-se.png` });
+      await open(page, '/gallery');
+      for (const s of SECTIONS) {
+        await page.locator(`[data-section="${s}"]`).evaluate((el) => scrollTo(0, el.getBoundingClientRect().top + scrollY - 52));
+        if (theme === 'light') await page.screenshot({ path: `screenshots/xl/${s}-${theme}-se.png` });
+      }
+      await page.getByRole('button', { name: 'Open the keypad' }).click();
+      await page.waitForTimeout(600);
+      await page.screenshot({ path: `screenshots/xl/keypad-${theme}-se.png` });
+    });
+  });
 }
 
 test.describe('wide', () => {

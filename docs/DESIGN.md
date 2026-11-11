@@ -100,7 +100,7 @@ Start from shadcn-svelte and restyle with tokens. Build these on top.
 | Sheet | vaul Drawer. Top radius 32, grabber 36 by 5, title in Heading, the main action pinned to the bottom above the safe area. Content scrolls under a hairline. Opens to content height, at most 92 percent of the screen |
 | Keypad | Ported from watermelon. Keys radius 12, height `clamp(46px, 6.4dvh, 60px)`, rounded numerals at 24. The amount shows in Display above the keys with its unit |
 | Stepper | Minus and plus as 44 px circles on `--surface-2` around a rounded number. Holding repeats |
-| Dock | A floating pill with three tabs and, to its right, the lime plus button, both 64 high, 14 above the safe area. Selected tab in ink with its label, others in `--ink-3` |
+| Dock | A floating pill with three tabs and, to its right, the lime plus button, both 64 high, 14 above the safe area. Selected tab in ink with its label, others in `--ink-2` (their labels are text, so `--ink-3` would fall below 4.5 to 1) |
 | Header | 52 high, opaque canvas, title on the left, sync mark and avatar on the right. A hairline appears once content scrolls under it |
 | Week strip | Seven equal cells: weekday letter, date in rounded 600, a 5 px dot in `--lime-ink` when that day was on track. Today is an ink pill |
 | Toast | Top centre inside the column, 16 from the edges, dark in both themes, one line, optional Undo. One at a time |
