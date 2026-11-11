@@ -1,0 +1,39 @@
+<!-- DESIGN.md section 7, Hero number: the one number a screen is about, its caption beneath, the counterpart on the right.
+     Digits count to a new value over 400 ms. -->
+<script lang="ts">
+  import { Tween } from 'svelte/motion';
+  import { cubicOut } from 'svelte/easing';
+  import { num } from '$lib/model/format';
+  import { dur } from '$lib/haptics';
+
+  let {
+    value,
+    caption,
+    side,
+    sideCaption,
+    reached = false,
+  }: {
+    value: number;
+    /** "of 2,460 kcal" */
+    caption: string;
+    /** the counterpart: a number ("620") or words ("On track") */
+    side: string;
+    /** "to go", "left", "over"; none when side is words */
+    sideCaption?: string;
+    /** side reads in lime ink: the target is reached */
+    reached?: boolean;
+  } = $props();
+
+  const shown = Tween.of(() => value, { duration: () => dur(400), easing: cubicOut });
+</script>
+
+<div class="flex items-end justify-between gap-4">
+  <div class="min-w-0">
+    <div class="text-hero num" data-testid="hero-value">{num(Math.round(shown.current))}</div>
+    <div class="text-caption text-ink-2">{caption}</div>
+  </div>
+  <div class="text-right">
+    <div class="text-heading {sideCaption ? 'num' : ''} {reached ? 'text-lime-ink' : ''}">{side}</div>
+    {#if sideCaption}<div class="text-caption text-ink-2">{sideCaption}</div>{/if}
+  </div>
+</div>

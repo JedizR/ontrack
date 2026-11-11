@@ -1,8 +1,9 @@
 <script lang="ts">
   import User from '@lucide/svelte/icons/user';
+  import SyncMark, { type SyncState } from './SyncMark.svelte';
   import { t } from '$lib/i18n';
 
-  let { title }: { title: string } = $props();
+  let { title, sync = 'idle' }: { title: string; sync?: SyncState } = $props();
 
   // a hairline appears once content scrolls under the header
   let scrolled = $state(false);
@@ -16,7 +17,7 @@
 >
   <div class="flex h-[var(--header-h)] items-center gap-3">
     <h1 class="text-title min-w-0 flex-1 truncate">{title}</h1>
-    <!-- the sync mark joins here in M3; it is hidden while idle -->
+    <SyncMark state={sync} />
     <div class="bg-surface-2 text-ink-2 grid size-9 place-items-center rounded-full" role="img" aria-label={t.shell.account}>
       <User size={20} strokeWidth={1.75} aria-hidden="true" />
     </div>

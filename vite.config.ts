@@ -50,6 +50,8 @@ export default defineConfig({
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version),
     __BUILD_DATE__: JSON.stringify(new Date().toISOString()),
+    // the component gallery at /gallery: dev server, local builds and Vercel previews, never production
+    __GALLERY__: JSON.stringify(process.env.VERCEL_ENV !== 'production'),
   },
   resolve: { alias: { $lib: fileURLToPath(new URL('./src/lib', import.meta.url)) } },
   build: { target: 'es2022' },

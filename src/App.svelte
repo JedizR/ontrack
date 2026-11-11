@@ -1,13 +1,14 @@
 <script lang="ts">
   import { onMount, type Component } from 'svelte';
   import { fly } from 'svelte/transition';
-  import { Toaster, toast } from 'svelte-sonner';
+  import { toast } from 'svelte-sonner';
   import { prefs, applyTheme, applyFontSize, type Tab } from '$lib/prefs.svelte';
   import { dur } from '$lib/haptics';
   import { swipe } from '$lib/swipe';
   import { t } from '$lib/i18n';
   import Header from '$lib/components/Header.svelte';
   import Dock from '$lib/components/Dock.svelte';
+  import Toasts from '$lib/components/Toasts.svelte';
   import Today from './tabs/Today.svelte';
 
   const TITLES = [t.tabs.today, t.tabs.train, t.tabs.progress];
@@ -79,22 +80,4 @@
   <Dock tab={prefs.tab} onselect={(i) => void go(i)} {swipeOpts} />
 </div>
 
-<!-- top centre so it never covers the dock or a sheet's main action; dark in both themes -->
-<Toaster
-  position="top-center"
-  visibleToasts={1}
-  duration={3000}
-  offset={{ top: 'calc(var(--header-h) + 16px + env(safe-area-inset-top))' }}
-  mobileOffset={{ top: 'calc(var(--header-h) + 16px + env(safe-area-inset-top))' }}
-  style="--width: min(calc(100vw - 32px), 448px)"
-  toastOptions={{
-    unstyled: true,
-    classes: {
-      toast: 'bg-toast text-toast-ink shadow-float flex w-full items-center gap-3 rounded-lg py-3 pr-2 pl-5 font-sans',
-      title: 'text-callout font-medium',
-      description: 'text-caption',
-      actionButton: 'bg-toast-ink text-toast text-callout ml-auto min-h-[var(--tap)] rounded-full px-4 font-medium',
-      icon: 'hidden',
-    },
-  }}
-/>
+<Toasts />
