@@ -4,7 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 import { env } from '../env.js';
 import { json } from '../http.js';
 
-const authorized = (header: string | null, secret: string) => {
+export const authorized = (header: string | null, secret: string) => {
   if (!secret || !header) return false; // never open when the secret is unset
   const a = Buffer.from(header);
   const b = Buffer.from(`Bearer ${secret}`);

@@ -1,6 +1,6 @@
 // The shell: header, three tabs, the dock. Runs in the light and dark projects (WebKit, 390 by 844).
 import { test, expect } from '@playwright/test';
-import { open, swipeOn } from './helpers';
+import { open, swipeAt, withPrefs } from './helpers';
 
 const title = (page: import('@playwright/test').Page) => page.getByRole('heading', { level: 1 });
 
@@ -27,17 +27,29 @@ test('tabs switch from the dock and the last tab is remembered', { tag: '@smoke'
   await expect(title(page)).toHaveText('Progress');
 });
 
-test('swiping moves between tabs and wraps around', async ({ page }) => {
+test('swiping anywhere between header and dock moves between tabs and wraps around', async ({ page }) => {
   await open(page);
-  await swipeOn(page, 'tab-today', -120);
+  await swipeAt(page, -120); // the empty middle of the screen, below the tab's content
   await expect(title(page)).toHaveText('Train');
-  await swipeOn(page, 'tab-train', 120);
+  await swipeAt(page, 120, { y: 140 }); // on the content
   await expect(title(page)).toHaveText('Today');
-  await swipeOn(page, 'tab-today', 120);
+  await swipeAt(page, 120);
   await expect(title(page)).toHaveText('Progress');
   // a short drag is not a swipe
-  await swipeOn(page, 'tab-progress', -30);
+  await swipeAt(page, -30);
   await expect(title(page)).toHaveText('Progress');
+});
+
+test('theme and text size are set before the app runs', { tag: '@smoke' }, async ({ page }) => {
+  // block the app bundle (dev source or built asset), so only the inline pre-paint script can set them
+  await page.route(/\/src\/main\.ts|\/assets\/index-.*\.js/, (r) => r.abort());
+  await withPrefs(page, { theme: 'dark', fontSize: 'xl' });
+  await page.goto('/');
+  const html = page.locator('html');
+  await expect(html).toHaveAttribute('data-theme', 'dark');
+  await expect(html).toHaveAttribute('data-fs', 'xl');
+  expect(await html.evaluate((h) => h.style.getPropertyValue('--fs'))).toBe('1.3');
+  await expect(page.getByTestId('dock')).toHaveCount(0);
 });
 
 test('the app sits in a 480 px column on wide screens', async ({ page }) => {

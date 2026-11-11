@@ -14,14 +14,15 @@ export const withPrefs = (page: Page, ui: object) =>
   page.addInitScript((v) => localStorage.setItem('ot-ui', v), JSON.stringify(ui));
 
 /**
- * A horizontal swipe on an element. The swipe action reads only clientX and clientY of the first touch, so plain
- * events with those fields work in every engine, including WebKit, which has no CDP touch input.
+ * A horizontal swipe starting at a point on screen (default: the empty middle of the page). The swipe action reads only
+ * clientX and clientY of the first touch, so plain events with those fields work in every engine, including WebKit,
+ * which has no CDP touch input.
  */
-export async function swipeOn(page: Page, testid: string, dx: number) {
-  await page.getByTestId(testid).evaluate((el, dx) => {
-    const r = el.getBoundingClientRect();
-    const x = r.left + r.width / 2;
-    const y = r.top + Math.min(r.height / 2, 200);
+export async function swipeAt(page: Page, dx: number, at: { x?: number; y?: number } = {}) {
+  await page.evaluate(({ dx, at }) => {
+    const x = at.x ?? innerWidth / 2;
+    const y = at.y ?? innerHeight / 2;
+    const el = document.elementFromPoint(x, y)!;
     const fire = (type: string, cx: number) => {
       const e = new Event(type, { bubbles: true });
       const touches = type === 'touchend' ? [] : [{ clientX: cx, clientY: y }];
@@ -31,5 +32,5 @@ export async function swipeOn(page: Page, testid: string, dx: number) {
     fire('touchstart', x);
     for (let i = 1; i <= 8; i++) fire('touchmove', x + (dx * i) / 8);
     fire('touchend', x + dx);
-  }, dx);
+  }, { dx, at });
 }

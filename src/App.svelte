@@ -56,10 +56,11 @@
   });
 </script>
 
-<div class="bg-canvas relative mx-auto min-h-dvh w-full max-w-[480px] overflow-x-clip">
+<div class="bg-canvas relative mx-auto flex min-h-dvh w-full max-w-[480px] flex-col overflow-x-clip">
   <Header title={TITLES[prefs.tab]} />
 
-  <main class="px-5 pb-[calc(env(safe-area-inset-bottom)+var(--dock-h)+40px)]" use:swipe={swipeOpts}>
+  <!-- flex-1: the whole area between header and dock takes swipes, not just the content -->
+  <main class="flex-1 px-5 pb-[calc(env(safe-area-inset-bottom)+var(--dock-h)+40px)]" use:swipe={swipeOpts}>
     <div style="transform: translateX({dragX}px); transition: {dragging ? 'none' : 'transform 240ms var(--ease-out)'}">
       {#key prefs.tab}
         <div in:fly={{ x: 40 * dir, duration: dur(220), opacity: 0.2 }}>

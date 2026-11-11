@@ -19,6 +19,7 @@ export const swipe: Action<HTMLElement, SwipeOpts> = (node, initial) => {
   let mode: 'off' | 'pending' | 'h' | 'v' = 'off';
 
   const start = (e: TouchEvent) => {
+    if (mode === 'h') opts.onCancel(); // a second finger mid-drag must not leave the page shifted
     mode = 'off';
     if (e.touches.length !== 1) return;
     if (document.querySelector('[data-vaul-drawer][data-state="open"], [data-onboarding]')) return;
