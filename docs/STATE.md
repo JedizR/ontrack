@@ -12,7 +12,7 @@ Status is one of: not started, in progress, shipped, shipped with cuts, blocked.
 | M1 | Design system | shipped | PR #5, merged, `v0.1.0` | Rubric pass stands in for the owner's approval; gallery is on his review list |
 | M2 | Engine | shipped | PR #6, merged, `v0.2.0` | 19 sources checked; 3 values kept against their source, on the owner's review list |
 | M3 | Data, sync, sign-in | shipped with cuts | PR #7, merged, `v0.3.0` | Conformance green on mock and live. Live sign in blocked: no Google client, no SMTP for codes. No Privacy and Terms line |
-| M4 | Onboarding and plan | shipped | PR #8 (`m4-onboarding`), not merged | Gate green on the mock. Saving on production waits for live sign in (M3 blockers). Templates without muscle balance until M7 |
+| M4 | Onboarding and plan | shipped with cuts | PR #8, merged, `v0.4.0` | Gate green on the mock. Saving on production waits for live sign in (M3 blockers). Templates without muscle balance until M7 |
 | M5 | Today and logging | not started | | |
 | M6 | Photo logging | not started | | |
 | M7 | Training | not started | | |
