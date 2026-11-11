@@ -1,7 +1,9 @@
 // Visual review: every screen in its main states -> screenshots/<screen>/<state>-<theme>-<device>.png
 //   pnpm screenshots -- --grep "shell"
 import { test, type Page } from '@playwright/test';
-import { open } from './helpers';
+import { open, withPrefs } from './helpers';
+
+const SECTIONS = ['prefs', 'buttons', 'track', 'hero', 'rows', 'chips', 'sheets', 'week', 'feedback', 'states'];
 
 const DEVICES = [
   { name: '390', width: 390, height: 844 },
@@ -26,8 +28,83 @@ for (const theme of ['light', 'dark'] as const) {
         await page.getByTestId('tab-2').click();
         await shot(page, 'shell', 'progress');
       });
+
+      // the component gallery, one shot per section with the section at the top, then the interaction states
+      test('gallery', async ({ page }) => {
+        await open(page, '/gallery');
+        for (const s of SECTIONS) {
+          await page.locator(`[data-section="${s}"]`).evaluate((el) => scrollTo(0, el.getBoundingClientRect().top + scrollY - 52));
+          await shot(page, 'gallery', s);
+        }
+        const at = async (s: string) => page.locator(`[data-section="${s}"]`).evaluate((el) => scrollTo(0, el.getBoundingClientRect().top + scrollY - 52));
+
+        await at('buttons');
+        const search = page.getByRole('button', { name: 'Search' });
+        await search.hover();
+        await page.mouse.down();
+        await page.waitForTimeout(200);
+        await page.screenshot({ path: `screenshots/gallery/pressed-button-${theme}-${d.name}.png` });
+        await page.mouse.up();
+
+        await at('hero');
+        const add = page.getByRole('button', { name: 'Add 250 kcal' });
+        await add.click();
+        await add.click();
+        await shot(page, 'gallery', 'hero-reached');
+        await add.click();
+        await add.click();
+        await shot(page, 'gallery', 'hero-over');
+
+        await at('sheets');
+        await page.getByRole('button', { name: 'Open a sheet' }).click();
+        await page.getByTestId('sample-sheet').waitFor();
+        await shot(page, 'gallery', 'sheet');
+        await page.keyboard.press('Escape');
+        await page.getByTestId('sample-sheet').waitFor({ state: 'detached' });
+
+        await page.getByRole('button', { name: 'Open the keypad' }).click();
+        await page.getByTestId('keypad').waitFor();
+        await shot(page, 'gallery', 'keypad-empty');
+        for (const k of ['2', '5', '0', '+', '1', '8', '0']) await page.locator(`[data-key="${k}"]`).click();
+        await shot(page, 'gallery', 'keypad-sum');
+        await page.getByTestId('keypad-save').click();
+        await page.getByTestId('keypad').waitFor({ state: 'detached' });
+
+        await at('feedback');
+        await page.getByRole('button', { name: 'Show an undo toast' }).click();
+        await shot(page, 'gallery', 'toast-undo');
+      });
+
+      // Today composed from the real components, next to the static reference mock
+      test('today composed', async ({ page }) => {
+        await open(page, '/gallery/today');
+        await shot(page, 'today', 'composed');
+        await page.goto(`/design/reference-today.html#${theme}`);
+        await shot(page, 'today', 'reference');
+      });
     });
   }
+}
+
+// the largest text size on the smallest phone: the composed Today, the keypad, and every gallery section
+for (const theme of ['light', 'dark'] as const) {
+  test.describe(`${theme} se xl`, () => {
+    test.use({ colorScheme: theme, viewport: { width: 375, height: 667 } });
+    test('largest text', async ({ page }) => {
+      await withPrefs(page, { theme: 'system', fontSize: 'xl' });
+      await open(page, '/gallery/today');
+      await page.waitForTimeout(450);
+      await page.screenshot({ path: `screenshots/xl/today-${theme}-se.png` });
+      await open(page, '/gallery');
+      for (const s of SECTIONS) {
+        await page.locator(`[data-section="${s}"]`).evaluate((el) => scrollTo(0, el.getBoundingClientRect().top + scrollY - 52));
+        if (theme === 'light') await page.screenshot({ path: `screenshots/xl/${s}-${theme}-se.png` });
+      }
+      await page.getByRole('button', { name: 'Open the keypad' }).click();
+      await page.waitForTimeout(600);
+      await page.screenshot({ path: `screenshots/xl/keypad-${theme}-se.png` });
+    });
+  });
 }
 
 test.describe('wide', () => {

@@ -9,7 +9,7 @@ Status is one of: not started, in progress, shipped, shipped with cuts, blocked.
 | | Milestone | Status | Branch or pull request | Note |
 | --- | --- | --- | --- | --- |
 | M0 | Foundations | shipped with cuts | PR #4, merged, `v0.0.0` | Supabase MCP not added (needs browser sign in). `foods:build` waits for M5 |
-| M1 | Design system | not started | | |
+| M1 | Design system | shipped | PR #5, branch `m1-design-system` | Rubric pass stands in for the owner's approval; gallery is on his review list |
 | M2 | Engine | not started | | |
 | M3 | Data, sync, sign-in | not started | | |
 | M4 | Onboarding and plan | not started | | |
@@ -30,11 +30,13 @@ Status is one of: not started, in progress, shipped, shipped with cuts, blocked.
 ## Notes for the next milestone
 
 - Node 22: run `nvm use` first. The machine default is 24.
-- Shell: `src/App.svelte`, `src/lib/components/{Header,Dock,TrackIcon}.svelte`, tabs in `src/tabs/`. The plus button and avatar do nothing yet. No shadcn component is generated yet; `components.json` is ready.
-- Tailwind classes map to tokens: `bg-canvas`, `text-ink-2`, `text-title`, `rounded-lg`, `font-rounded`, plus utilities `num`, `shadow-float`, `bar-glass`. Defaults are wiped, so a missing class means a missing token.
-- `tests/unit/invariants.test.ts` fails on raw hex, pixel font sizes, banned punctuation in `en.ts`, and `src/` importing `server/` or `api/`.
-- New screens: add a case to `tests/e2e/screens.spec.ts` and an entry to `SCREENS` in `stress.spec.ts`.
-- Open for M1: unselected tab labels use `--ink-3` as the Dock spec says, about 3.2 to 1 in light, below section 12's bar.
+- Components (DESIGN.md section 7) are in `src/lib/components/`: `Button` (variant, size lg/md/sm, full), `Card` (hero, list), `Row` (title, caption string or snippet, value, leading, trailing, onclick), `Chip`, `Segmented`, `Stepper`, `Track` (value, target, zone [from, to], hero, label), `HeroNumber`, `WeekStrip`, `SourceLabel`, `SyncMark` (Header takes `sync`), `EmptyState`, `Skeleton`, `Toasts`, `Sheet` (footer snippet is the pinned action), `KeypadSheet` with `keypad.ask()` from `src/lib/keypad.svelte.ts`, `TrainIcon`, `TrackIcon`. Build screens from these.
+- `KeypadSheet` is mounted only in the gallery so far; mount it once in `App.svelte` when a screen first uses `keypad.ask()`. Same for any shared sheet.
+- `/gallery` and `/gallery/today` exist on dev, local builds and previews (`__GALLERY__`), never production. `src/gallery/TodayComposed.svelte` is the layout M5's Today should follow; its numbers are sample fixtures.
+- `src/lib/actions.ts` holds `undoToast` and `dismissUndo` only. `src/lib/model/format.ts` has `num`. Captions that continue a number go under `after` in `en.ts`.
+- Tests: `tests/e2e/app.spec.ts` covers the gallery's keypad, sheet, track, stepper, toast and prefs. `screens.spec.ts` shoots each gallery section, the interaction states, and `screenshots/xl/` (SE at the largest text). `stress.spec.ts` runs the layout checks on the gallery, the composed Today and the open keypad at every device and text size.
+- Unselected tab labels are `--ink-2` now (M0 open item settled).
+- Playwright's WebKit does not draw `backdrop-filter`; the dock looks unblurred in screenshots. The owner checks it on the phone.
 - Checking a preview: `vercel curl <path> --deployment <url>`. `check:pwa` and Playwright with `E2E_BASE_URL` read `VERCEL_AUTOMATION_BYPASS_SECRET`. `vercel curl` makes one on the project if none exists.
 - For M3: `.env.local` holds `SUPABASE_DB_PASSWORD` and `VERCEL_OIDC_TOKEN`; never `vercel env pull .env.local` over it. The Supabase CLI pushes migrations without the password. Auth settings (site URL, redirects, email code) are not set yet.
 - Branch `pr-assets` holds PR screenshots only; never merge it.

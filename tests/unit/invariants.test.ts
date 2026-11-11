@@ -10,12 +10,17 @@ const files = (dir: string): string[] =>
     return statSync(p).isDirectory() ? files(p) : [p];
   });
 const src = files('src').filter((f) => /\.(ts|svelte)$/.test(f));
-const strings = (o: unknown): string[] => (typeof o === 'string' ? [o] : Object.values(o as object).flatMap(strings));
+// [path, text]; a function is called with '1' for each argument so its output is checked too
+const strings = (o: unknown, path = ''): [string, string][] =>
+  typeof o === 'string' ? [[path, o]]
+  : typeof o === 'function' ? [[path, o(...Array(o.length).fill('1'))]]
+  : Object.entries(o as object).flatMap(([k, v]) => strings(v, path ? `${path}.${k}` : k));
 
 describe('copy rules', () => {
-  test.each(strings(en))('%s', (s) => {
+  test.each(strings(en))('%s: %s', (path, s) => {
     expect(s).not.toMatch(/[–—·!]/); // en dash, em dash, middle dot, exclamation mark
-    expect(s[0]).toBe(s[0].toUpperCase()); // sentence case starts with a capital
+    // sentence case starts with a capital, except captions that continue a number ("620" then "to go")
+    if (!path.startsWith('after.')) expect(s[0]).toBe(s[0].toUpperCase());
   });
 });
 

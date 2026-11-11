@@ -45,18 +45,37 @@ const spill = (page: Page) => page.evaluate(() => [...document.querySelectorAll<
   .map((el) => (el.textContent ?? '').trim().slice(0, 20)));
 
 const SCREENS = [['today', 'tab-0'], ['train', 'tab-1'], ['progress', 'tab-2']] as const;
+/** pages opened by path: the component gallery and Today composed from it */
+const PAGES = [['gallery', '/gallery'], ['today-composed', '/gallery/today']] as const;
+
+async function checkPage(page: Page, name: string, dir: string) {
+  expect(await overflow(page), `${name}: horizontal overflow`).toEqual([]);
+  expect(await page.getByTestId('header').evaluate((h) => h.scrollWidth - h.clientWidth), `${name}: header`).toBeLessThanOrEqual(1);
+  expect(await spill(page), `${name}: text spills out of a control`).toEqual([]);
+  expect(await clipped(page), `${name}: clipped text`).toEqual([]);
+  expect(await smallTargets(page), `${name}: tap targets under 44 px`).toEqual([]);
+  await page.screenshot({ path: `${dir}/${name}.png`, fullPage: true });
+}
 
 async function checkAll(page: Page, dir: string) {
   for (const [name, tab] of SCREENS) {
     await page.getByTestId(tab).click();
     await page.waitForTimeout(300);
-    expect(await overflow(page), `${name}: horizontal overflow`).toEqual([]);
-    expect(await page.getByTestId('header').evaluate((h) => h.scrollWidth - h.clientWidth), `${name}: header`).toBeLessThanOrEqual(1);
-    expect(await spill(page), `${name}: text spills out of a control`).toEqual([]);
-    expect(await clipped(page), `${name}: clipped text`).toEqual([]);
-    expect(await smallTargets(page), `${name}: tap targets under 44 px`).toEqual([]);
-    await page.screenshot({ path: `${dir}/${name}.png` });
+    await checkPage(page, name, dir);
   }
+  for (const [name, path] of PAGES) {
+    await open(page, path);
+    await checkPage(page, name, dir);
+  }
+  // the keypad is the tallest sheet: its keys and its main action fit without scrolling
+  await open(page, '/gallery');
+  await page.getByRole('button', { name: 'Open the keypad' }).click();
+  await expect(page.getByTestId('keypad')).toHaveCSS('transform', 'none'); // the sheet has finished sliding up
+  await expect(page.getByTestId('keypad-save')).toBeInViewport({ ratio: 1 });
+  // portrait only: in landscape (not supported, the manifest locks portrait) the keys scroll under the pinned action
+  if (page.viewportSize()!.height > page.viewportSize()!.width) await expect(page.locator('[data-key="00"]')).toBeInViewport({ ratio: 1 });
+  expect(await smallTargets(page), 'keypad: tap targets under 44 px').toEqual([]);
+  await page.screenshot({ path: `${dir}/keypad.png` });
 }
 
 for (const d of DEVICES) {
