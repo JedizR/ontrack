@@ -11,7 +11,7 @@
   const bringing = $derived(!!session.user && !sync.pulled && sync.status === 'syncing');
 </script>
 
-<section aria-label={t.tabs.today} data-testid="tab-today" class="flex flex-col gap-4 pt-2">
+<section aria-label={t.tabs.today} data-testid="tab-today" class="flex flex-col gap-3 pt-2">
   {#if sync.status === 'auth'}
     <!-- SCREENS.md section 12, session expired: local data is untouched -->
     <Card data-testid="session-expired">
@@ -22,7 +22,7 @@
   {/if}
 
   {#if bringing}
-    <div class="flex flex-col gap-4" data-testid="bringing" aria-busy="true">
+    <div class="flex flex-col gap-3" data-testid="bringing" aria-busy="true">
       <p class="text-callout text-ink-2">{t.session.bringing}</p>
       <Skeleton class="h-56 rounded-xl" />
       <Skeleton class="h-24 rounded-lg" />

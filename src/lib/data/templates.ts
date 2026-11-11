@@ -1,18 +1,7 @@
 // The four starting programs named in PRD F7. Each lands inside the bands of docs/SCIENCE.md section 11 for every
 // muscle (tests/unit/data.test.ts checks). Weekday 0 is Monday.
-import type { Intensity, SessionType } from '$lib/model/engine';
+import type { Session } from '../../../shared/records';
 
-export type ProgramExercise = { exerciseId: string; sets: number; repsMin: number; repsMax: number };
-/** TECH-SPEC section 3 Session. */
-export type Session = {
-  key: string;
-  weekday: number;
-  name: string;
-  type: SessionType;
-  minutes: number;
-  intensity: Intensity;
-  exercises?: ProgramExercise[];
-};
 export type Template = { id: string; name: string; daysPerWeek: number; sessions: Session[] };
 
 // [id, sets, reps from, reps to]
