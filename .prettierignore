@@ -1,0 +1,7 @@
+docs
+design
+public
+dist
+screenshots
+pnpm-lock.yaml
+*.md
