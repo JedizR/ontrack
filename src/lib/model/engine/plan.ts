@@ -92,7 +92,7 @@ export function planFromBaseline(b: PlanBasis): PlanNumbers {
   const goal: Goal = b.maintainOnly ? 'maintain' : b.goal;
   // Never faster than the paces offered at this BMI, so a check-in at a new weight keeps the guardrails.
   const offered = paceOptions(goal, bmi(b.weightKg, b.heightCm), b.experience).map((o) => o.rate);
-  const rate = Math.min(b.ratePctPerWeek, Math.max(0, ...offered));
+  const rate = Math.max(0, Math.min(b.ratePctPerWeek, Math.max(0, ...offered)));
   const tdee = tdeeAvg(b);
   const wanted = (((rate / U.percent) * b.weightKg) * V.kcalPerKg) / U.daysPerWeek;
 

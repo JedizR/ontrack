@@ -220,7 +220,10 @@ describe('guardrails and paces', () => {
   });
   test('a plan never runs faster than the paces offered', () => {
     expect(plan({ ...B, weightKg: 52, ratePctPerWeek: 0.75 }).ratePctPerWeek).toBe(0.25); // BMI 19.1
-    expect(plan({ ...B, weightKg: 48, ratePctPerWeek: 0.5 }).delta).toBe(0); // BMI 17.6
+    const under = plan({ ...B, weightKg: 48, ratePctPerWeek: 0.5 }); // BMI 17.6
+    expect(under.delta).toBe(0);
+    expect(Object.is(effectiveRate(under, 'female'), 0)).toBe(true); // not -0
+    expect(plan({ ...B, ratePctPerWeek: -0.75 }).delta).toBe(0); // a negative rate never turns a lose goal into a surplus
   });
 });
 

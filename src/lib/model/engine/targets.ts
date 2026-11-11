@@ -33,7 +33,7 @@ export function dayMacros(p: Pick<PlanNumbers, 'proteinG' | 'fatG'>, target: num
 /** The rate the plan actually delivers after caps and floors, percent of body weight per week in the goal's direction. */
 export function effectiveRate(p: PlanNumbers, sex: Sex): number {
   const applied = rawTarget(p, { sex, mode: 'even', weekday: 0 }) - tdeeAvg(p);
-  const kgPerWeek = ((p.goal === 'lose' ? -applied : applied) * U.daysPerWeek) / V.kcalPerKg;
+  const kgPerWeek = ((p.goal === 'lose' ? 0 - applied : applied) * U.daysPerWeek) / V.kcalPerKg; // 0 - x: never -0
   return (kgPerWeek / p.weightKg) * U.percent;
 }
 

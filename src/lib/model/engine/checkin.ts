@@ -93,7 +93,9 @@ export function checkin(c: CheckinInput): CheckinResult {
     let move = moveOf(p);
     if (Math.abs(move) < V.onTrackChange) return result('on_track');
     if (Math.abs(move) > V.moveClamp) {
-      p = next(baselineNew + Math.sign(move) * V.moveClamp - move);
+      // Under a cap the even target moves 0.75 or 1.2 kcal per kcal of baseline, so scale the correction by that rate.
+      const perKcal = moveOf(next(baselineNew + 1)) - move || 1;
+      p = next(baselineNew + (Math.sign(move) * V.moveClamp - move) / perKcal);
       move = moveOf(p);
     }
     return result(move > 0 ? 'raise' : 'lower', roundTarget(move), p);

@@ -6,9 +6,11 @@ import {
   dayTarget,
   isComplete,
   plan,
+  rawTarget,
   type CheckinDay,
   type CheckinInput,
   type PlanInput,
+  type PlanNumbers,
   type WeighIn,
 } from '../../src/lib/model/engine';
 
@@ -75,9 +77,23 @@ describe('rules', () => {
     const onPace = checkin(window({ complete: 5, intake: 2300, kgPerDay: (0.005 * 60) / 7 }));
     expect(onPace.proposal).toEqual({ kcalChange: 0, reason: 'on_track' });
   });
-  test('the even target moves at most 200', () => {
-    const r = checkin(window({ complete: 12, intake: 2600, kgPerDay: -0.01 }));
-    expect(r.proposal).toEqual({ kcalChange: 200, reason: 'raise' });
+  test('the even target moves at most 200, also under a deficit or surplus cap', () => {
+    const even = (p: PlanNumbers) => rawTarget(p, { sex: 'male', mode: 'even', weekday: 0 });
+    const capped = (goal: 'lose' | 'gain', ratePctPerWeek: number, intake: number, kgPerDay: number, more: Partial<PlanInput> = {}) => {
+      const p = plan({ ...A, age: 30, heightCm: 185, weightKg: 120, neat: 'moving', goal, ratePctPerWeek, ...more });
+      const days = Array.from({ length: 21 }, (_, day) => ({ day, target: dayTarget(p, { sex: 'male', mode: 'matched', weekday: day % 7 }), intake, items: 3 }));
+      const weighIns = [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20].map((day) => ({ day, kg: 120 + kgPerDay * (day - 10) }));
+      const r = checkin({ today: 20, plan: p, profile: { ...profile, heightCm: 185 }, weighIns, days, trendKg: 120 });
+      return { p, r };
+    };
+    const lose = capped('lose', 0.75, 2600, 0); // 2,600 a day and no loss: maintenance is far lower than planned
+    expect(lose.p.flags).toEqual(['deficitCap']);
+    expect(lose.r.proposal).toEqual({ kcalChange: -200, reason: 'lower' });
+    expect(even(lose.r.plan!) - even(lose.p)).toBeCloseTo(-200, 6);
+    const gain = capped('gain', 0.5, 4200, -0.02, { neat: 'seated', sessions: [] }); // well over target and still losing
+    expect(gain.p.flags).toEqual(['surplusCap']);
+    expect(gain.r.proposal).toEqual({ kcalChange: 200, reason: 'raise' });
+    expect(even(gain.r.plan!) - even(gain.p)).toBeCloseTo(200, 6);
   });
   test('lower, and on track under 50', () => {
     expect(checkin(window({ complete: 12, intake: 2200, kgPerDay: 0.06 })).proposal).toEqual({ kcalChange: -140, reason: 'lower' });
