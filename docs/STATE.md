@@ -9,7 +9,7 @@ Status is one of: not started, in progress, shipped, shipped with cuts, blocked.
 | | Milestone | Status | Branch or pull request | Note |
 | --- | --- | --- | --- | --- |
 | M0 | Foundations | shipped with cuts | PR #4, merged, `v0.0.0` | Supabase MCP not added (needs browser sign in). `foods:build` waits for M5 |
-| M1 | Design system | shipped | PR #PRNUM, branch `m1-design-system` | Rubric pass stands in for the owner's approval; gallery is on his review list |
+| M1 | Design system | shipped | PR #5, branch `m1-design-system` | Rubric pass stands in for the owner's approval; gallery is on his review list |
 | M2 | Engine | not started | | |
 | M3 | Data, sync, sign-in | not started | | |
 | M4 | Onboarding and plan | not started | | |
