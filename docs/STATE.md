@@ -10,7 +10,7 @@ Status is one of: not started, in progress, shipped, shipped with cuts, blocked.
 | --- | --- | --- | --- | --- |
 | M0 | Foundations | shipped with cuts | PR #4, merged, `v0.0.0` | Supabase MCP not added (needs browser sign in). `foods:build` waits for M5 |
 | M1 | Design system | shipped | PR #5, merged, `v0.1.0` | Rubric pass stands in for the owner's approval; gallery is on his review list |
-| M2 | Engine | shipped | branch `m2-engine`, PR pending | 19 sources checked; 3 values kept against their source, on the owner's review list |
+| M2 | Engine | shipped | PR #6, branch `m2-engine` | 19 sources checked; 3 values kept against their source, on the owner's review list |
 | M3 | Data, sync, sign-in | not started | | |
 | M4 | Onboarding and plan | not started | | |
 | M5 | Today and logging | not started | | |
