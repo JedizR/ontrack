@@ -98,9 +98,6 @@
     /* iOS paints the status bar band with the page background */
     background: var(--canvas);
   }
-  @media (min-width: 481px) {
-    html, body { background: var(--surround); }
-  }
   body {
     margin: 0;
     font-family: var(--font-ui);
@@ -109,6 +106,10 @@
     color: var(--ink);
     background: var(--canvas);
     -webkit-font-smoothing: antialiased;
+  }
+  /* wide screens: the 480 px column sits on the surround colour (after body, so it wins) */
+  @media (min-width: 481px) {
+    html, body { background: var(--surround); }
   }
   button, input, textarea, select { font: inherit; color: inherit; }
   /* iOS zooms into inputs under 16 px */

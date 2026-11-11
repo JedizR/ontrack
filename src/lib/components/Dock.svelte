@@ -45,6 +45,6 @@
     data-testid="add"
     onclick={onadd}
   >
-    <Plus size={28} strokeWidth={2} />
+    <Plus size={24} strokeWidth={1.75} />
   </button>
 </div>
