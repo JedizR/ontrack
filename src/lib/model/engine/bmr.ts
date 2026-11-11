@@ -8,9 +8,10 @@ export type Intensity = 'light' | 'moderate' | 'hard';
 /** The part of a program session the energy maths needs. Weekday 0 is Monday. */
 export type SessionLike = { weekday: number; type: SessionType; minutes: number; intensity: Intensity };
 
-export const bmi = (kg: number, heightCm: number) => kg / (heightCm / U.cmPerM) ** 2;
+const squareM = (heightCm: number) => (heightCm / U.cmPerM) * (heightCm / U.cmPerM);
+export const bmi = (kg: number, heightCm: number) => kg / squareM(heightCm);
 /** The weight at a given BMI for this height. */
-export const weightAtBmi = (bmiValue: number, heightCm: number) => bmiValue * (heightCm / U.cmPerM) ** 2;
+export const weightAtBmi = (bmiValue: number, heightCm: number) => bmiValue * squareM(heightCm);
 
 const SEX_TERM: Record<Sex, number> = { male: V.mifflin.male, female: V.mifflin.female, unspecified: V.mifflinUnspecified };
 
