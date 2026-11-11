@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ontrack reference: Today</title>
+<link rel="stylesheet" href="tokens.css">
+<script>
+  // A static reference for layout, type and colour. Not production code.
+  // Add #dark or #light to the URL to force a theme. Otherwise it follows the system.
+  var t = location.hash.slice(1);
+  if (t !== 'dark' && t !== 'light') t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  document.documentElement.dataset.theme = t;
+</script>
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  html { background: var(--surround); }
+  body { font: 400 17px/24px var(--font-ui); color: var(--ink); -webkit-font-smoothing: antialiased; }
+  .app { max-width: 430px; min-height: 100dvh; margin: 0 auto; background: var(--canvas); padding: 14px 20px 132px; }
+  .num { font-family: var(--font-num); font-variant-numeric: tabular-nums; }
+  .muted { color: var(--ink-2); font-weight: 400; }
+  .label { font-size: 13px; line-height: 18px; font-weight: 500; color: var(--ink-2); }
+
+  header { display: flex; align-items: center; justify-content: space-between; height: 52px; }
+  h1 { font-size: 28px; line-height: 34px; font-weight: 600; letter-spacing: -0.01em; }
+  .avatar { width: 36px; height: 36px; border-radius: 999px; background: var(--surface-2); display: grid; place-items: center; font-size: 15px; font-weight: 600; }
+
+  .week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin: 8px 0 16px; }
+  .day { display: grid; justify-items: center; gap: 2px; padding: 8px 0 8px; border-radius: 16px; font-size: 13px; line-height: 18px; color: var(--ink-2); }
+  .day b { font: 600 17px/22px var(--font-num); color: var(--ink); }
+  .day i { width: 5px; height: 5px; border-radius: 999px; }
+  .day.ok i { background: var(--lime-ink); }
+  .day.today { background: var(--ink); color: var(--canvas); }
+  .day.today b { color: var(--canvas); }
+
+  .card { background: var(--surface); border-radius: 24px; padding: 20px; margin-bottom: 12px; }
+  .hero { border-radius: 32px; padding: 24px 20px 20px; }
+  .hero .top { display: flex; align-items: flex-end; justify-content: space-between; }
+  .big { font: 600 64px/64px var(--font-num); letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+  .side { text-align: right; }
+  .side .num { font-weight: 600; font-size: 20px; line-height: 26px; }
+
+  .track { position: relative; height: 14px; border-radius: 999px; background: var(--surface-2); margin: 18px 0 6px; overflow: hidden; }
+  .track .zone { position: absolute; top: 0; bottom: 0; right: 0; left: 86.4%; background: var(--line-strong); }
+  .track .fill { position: absolute; top: 0; bottom: 0; left: 0; border-radius: 999px; background: var(--ink); }
+  .track.reached .fill { background: var(--lime); }
+  .scale { display: flex; justify-content: space-between; }
+
+  .macros { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); }
+  .macros .v { font: 600 17px/22px var(--font-num); font-variant-numeric: tabular-nums; }
+  .macros .track { height: 6px; margin: 8px 0 0; }
+  .macros .track .zone { left: 81.8%; }
+
+  .rowline { display: flex; align-items: center; gap: 14px; }
+  .tile { width: 44px; height: 44px; border-radius: 12px; background: var(--surface-2); display: grid; place-items: center; flex: none; }
+  .grow { flex: 1; min-width: 0; }
+  .strong { font-weight: 600; }
+  .btn { height: 36px; padding: 0 16px; border-radius: 999px; border: 0; font: 500 15px/20px var(--font-ui); background: var(--surface-2); color: var(--ink); }
+
+  .section { display: flex; justify-content: space-between; align-items: baseline; margin: 20px 4px 10px; }
+  .section h2 { font-size: 20px; line-height: 26px; font-weight: 600; }
+  .list { padding: 6px 20px; }
+  .meal { display: flex; align-items: center; gap: 14px; padding: 14px 0; }
+  .meal + .meal { border-top: 1px solid var(--line); }
+  /* Stand-ins for the user's meal photos. Real thumbnails replace these. */
+  .thumb { width: 44px; height: 44px; border-radius: 12px; flex: none; background: #c98a3c; }
+  .thumb.two { background: #d9c9a3; }
+  .thumb.three { background: #6f8f4e; }
+  .kcal { font: 600 17px/22px var(--font-num); font-variant-numeric: tabular-nums; }
+
+  .dock { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(env(safe-area-inset-bottom) + 14px); width: min(390px, calc(100vw - 32px)); display: flex; gap: 10px; align-items: center; }
+  .bar { flex: 1; height: 64px; border-radius: 999px; display: grid; grid-template-columns: repeat(3, 1fr); align-items: center; padding: 0 8px; background: var(--bar-bg); -webkit-backdrop-filter: var(--blur-bar); backdrop-filter: var(--blur-bar); box-shadow: var(--shadow-float); }
+  .tab { display: grid; justify-items: center; gap: 2px; font-size: 11px; line-height: 14px; font-weight: 600; color: var(--ink-3); }
+  .tab.on { color: var(--ink); }
+  svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+  .plus { width: 64px; height: 64px; border-radius: 999px; border: 0; background: var(--lime); color: var(--on-lime); display: grid; place-items: center; box-shadow: var(--shadow-float); flex: none; }
+</style>
+</head>
+<body>
+<main class="app">
+  <header>
+    <h1>Today</h1>
+    <div class="avatar">J</div>
+  </header>
+
+  <nav class="week" aria-label="This week">
+    <div class="day ok">M<b>9</b><i></i></div>
+    <div class="day ok">T<b>10</b><i></i></div>
+    <div class="day today">W<b>11</b><i></i></div>
+    <div class="day">T<b>12</b><i></i></div>
+    <div class="day">F<b>13</b><i></i></div>
+    <div class="day">S<b>14</b><i></i></div>
+    <div class="day">S<b>15</b><i></i></div>
+  </nav>
+
+  <section class="card hero" aria-label="Calories">
+    <div class="top">
+      <div>
+        <div class="big">1,840</div>
+        <div class="label">of 2,460 kcal</div>
+      </div>
+      <div class="side">
+        <div class="num">620</div>
+        <div class="label">to go</div>
+      </div>
+    </div>
+    <!-- Scale runs 0 to 110 percent of target. Zone starts at 95 percent. Fill = 1840 / (2460 * 1.1). -->
+    <div class="track"><div class="zone"></div><div class="fill" style="width: 68%"></div></div>
+    <div class="scale"><span class="label">Training day</span><span class="label">On track from 2,340</span></div>
+
+    <div class="macros">
+      <div>
+        <div class="label">Protein</div>
+        <div class="v">84 <span class="muted">of 108 g</span></div>
+        <div class="track"><div class="zone"></div><div class="fill" style="width: 71%"></div></div>
+      </div>
+      <div>
+        <div class="label">Carbs</div>
+        <div class="v">236 <span class="muted">of 361 g</span></div>
+        <div class="track"><div class="fill" style="width: 59%"></div></div>
+      </div>
+      <div>
+        <div class="label">Fat</div>
+        <div class="v">52 <span class="muted">of 65 g</span></div>
+        <div class="track"><div class="fill" style="width: 73%"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card rowline" aria-label="Training">
+    <div class="tile"><svg viewBox="0 0 24 24"><path d="M6.5 6.5v11M17.5 6.5v11M3.5 9.5v5M20.5 9.5v5M6.5 12h11"/></svg></div>
+    <div class="grow">
+      <div class="strong">Push day</div>
+      <div class="label">Strength, 60 min. Adds 240 kcal</div>
+    </div>
+    <button class="btn">Done</button>
+  </section>
+
+  <div class="section"><h2>Meals</h2><span class="label">3 logged</span></div>
+  <section class="card list">
+    <div class="meal">
+      <div class="thumb"></div>
+      <div class="grow"><div class="strong">Chicken rice bowl</div><div class="label">12:40, Database</div></div>
+      <div class="kcal">720</div>
+    </div>
+    <div class="meal">
+      <div class="thumb two"></div>
+      <div class="grow"><div class="strong">Oats, banana and whey</div><div class="label">08:10, Database</div></div>
+      <div class="kcal">610</div>
+    </div>
+    <div class="meal">
+      <div class="thumb three"></div>
+      <div class="grow"><div class="strong">Basil pork with fried egg</div><div class="label">19:05, Estimate</div></div>
+      <div class="kcal">510</div>
+    </div>
+  </section>
+</main>
+
+<div class="dock">
+  <nav class="bar" aria-label="Tabs">
+    <div class="tab on"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="10" rx="5"/><circle cx="15" cy="7" r="1.6" fill="currentColor"/></svg>Today</div>
+    <div class="tab"><svg viewBox="0 0 24 24"><path d="M6.5 6.5v11M17.5 6.5v11M3.5 9.5v5M20.5 9.5v5M6.5 12h11"/></svg>Train</div>
+    <div class="tab"><svg viewBox="0 0 24 24"><path d="M4 16l5-5 4 3 7-7"/><path d="M15 7h5v5"/></svg>Progress</div>
+  </nav>
+  <button class="plus" aria-label="Add a meal"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+</div>
+</body>
+</html>

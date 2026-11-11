@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" role="img" aria-label="Ontrack">
+  <mask id="gap">
+    <rect width="64" height="64" fill="#fff"/>
+    <circle cx="42" cy="22" r="6.5" fill="#000"/>
+  </mask>
+  <rect x="13.25" y="22" width="37.5" height="20" rx="10" stroke="currentColor" stroke-width="4.5" mask="url(#gap)"/>
+  <circle cx="42" cy="22" r="4" fill="currentColor"/>
+</svg>

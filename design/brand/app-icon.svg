@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-label="Ontrack">
+  <rect width="1024" height="1024" fill="#131517"/>
+  <rect x="212" y="352" width="600" height="320" rx="160" fill="none" stroke="#D1FE17" stroke-width="72"/>
+  <circle cx="672" cy="352" r="104" fill="#131517"/>
+  <circle cx="672" cy="352" r="64" fill="#D1FE17"/>
+</svg>

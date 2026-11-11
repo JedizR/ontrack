@@ -1,0 +1,14 @@
+node_modules
+dist
+.vercel
+.env
+.env.*
+!.env.example
+screenshots
+test-results
+playwright-report
+.playwright-cli
+.backups
+data/usda
+supabase/.temp
+.DS_Store

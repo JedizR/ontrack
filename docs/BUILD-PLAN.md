@@ -1,0 +1,144 @@
+# Ontrack: build plan
+
+Ten milestones, each built in its own fresh context: a session when the owner is present, a subagent in an unattended run. Each has a goal, what to read, the steps, a gate that proves it is done, and what the owner checks. Start and finish every milestone with the `milestone` skill. In an unattended run, owner checks are recorded in `docs/BLOCKERS.md` and never hold up the build.
+
+| | Milestone | Outcome | Owner is needed for |
+| --- | --- | --- | --- |
+| M0 | Foundations | An empty, installable shell deployed with CI green | CLI logins |
+| M1 | Design system | Tokens, components and a gallery that looks like Ontrack | Approving the look on the iPhone |
+| M2 | Engine | The science engine with checked sources | Nothing |
+| M3 | Data, sync, sign-in | Local store, sync on both backends, Google and email code | Google client setup, sign-in test on the iPhone |
+| M4 | Onboarding and plan | First run through to a saved plan | A walkthrough |
+| M5 | Today and logging | Today, search, quick add, saved meals, weigh-ins | Using it for a day |
+| M6 | Photo logging | Camera to reviewed meal | A Gemini key, ten real meals |
+| M7 | Training | Program, analysis, training day targets | Entering a real program |
+| M8 | Progress and check-ins | Trends and the weekly correction | A review with seeded data |
+| M9 | Hardening and release | Settings, export, accessibility, speed, security, production | Full device check |
+
+Order: the look is settled before any screen is built (M1), and the logic is settled before any screen needs it (M2, M3). With the owner present, no screen work past M1 starts before he approves the gallery. In an unattended run a clean rubric pass stands in for that approval and the gallery goes on his review list.
+
+## M0 Foundations
+
+Read: this section, `docs/USER-INPUTS.md`, `docs/ARCHITECTURE.md` section 3.
+
+1. **Preflight.** Check and report once: Node against watermelon's `.nvmrc`, `corepack enable pnpm`, `gh auth status`, `vercel whoami`, `supabase projects list`, the Svelte MCP in `claude mcp list`, and the Playwright CLI (`npm install -g @playwright/cli@latest`, then `playwright-cli install --skills`).
+2. **Scout.** Run the `port-from-watermelon` scouting brief in the `repo-scout` subagent. Result: `docs/PORT-NOTES.md`.
+3. **Scaffold.** Copy the root configuration from watermelon (package manifest, Vite, Svelte, TypeScript, Tailwind, shadcn `components.json`, pnpm workspace, `.nvmrc`, Playwright, PWA assets) and strip what is specific to that app. Add the new dependencies and pin them. Create the layout in `docs/TECH-SPEC.md` section 2 with empty modules where needed.
+4. **Tokens.** `src/app.css` imports `design/tokens.css` and maps the tokens into the Tailwind theme. The pre-paint script sets theme and text size.
+5. **Shell.** The real header, three empty tabs and the dock, built from tokens, with tab switching.
+6. **Scripts.** Every command in `CLAUDE.md` works. `pnpm verify` is the single check.
+7. **Repository.** `git init`, a short `README.md`, first commit, `gh repo create ontrack --private --source=. --push`. CI passes on a pull request.
+8. **Supabase.** Create and link the project, write migration `0001_init.sql` from the tech spec, `supabase db push`, run the security advisors. Add the Supabase MCP at project scope, limited to this project's ref (confirm the current URL form in Supabase's docs).
+9. **Vercel.** Link the project, connect the repository, set the public environment variables, add `vercel.json` (fallback, cache headers, the daily cron), implement the keep-alive handler, deploy.
+10. **PWA.** Icons generated from `design/brand/app-icon.svg`. The installability script passes against the preview URL.
+
+Gate: `pnpm verify` green locally and in CI. The preview URL shows the shell in light and dark. `scripts/check-pwa.mjs` passes. The advisors report nothing. A screenshot of the shell at 390 by 844 is in the pull request.
+Owner checks: open the preview on the iPhone, add it to the home screen, confirm the icon and the full screen launch.
+
+## M1 Design system
+
+Read: `docs/DESIGN.md`, everything in `design/`, `docs/USER-INPUTS.md` sections 2 and 3.
+
+1. **Take in the owner's references.** If there is a Figma link, add the Figma MCP (`claude mcp add --transport http -s project figma https://mcp.figma.com/mcp`), read variables and the named frames one frame at a time, and reconcile them with `design/tokens.css` using the precedence rule. Look at every image in `design/references/`. Record each change and each deviation in `docs/DECISIONS.md`.
+2. **Components.** Add the shadcn-svelte pieces needed, restyle them, then build every component in `docs/DESIGN.md` section 7. Port the keypad, sheets, toasts, header behaviour, haptics, theme and text size from watermelon.
+3. **Gallery.** A development only screen showing every component in every state, plus a Today composed from the real components with the same content as `design/reference-today.html`.
+4. **Check.** Screens and stress projects cover the gallery. Run `verify-ui`. Put the reference mock and the composed Today side by side in the pull request, light and dark.
+
+Gate: the rubric passes on the gallery at three device sizes and three text sizes in both themes. The composed Today matches the reference in structure, spacing and type.
+Owner checks: the gallery on the iPhone. Approve, or say what to change.
+
+## M2 Engine
+
+Read: `docs/SCIENCE.md`.
+
+1. Run `science-check`. Result: `docs/SOURCES.md` with a verdict for every source id, and any corrected values applied to the spec, the vectors and `docs/DECISIONS.md`.
+2. Write `constants.ts` with value, unit, source id and status for every number.
+3. Implement resting energy, plan, daily targets, macros, on track status, trend, check-in and program analysis as pure functions.
+4. Tests: every vector in section 13, plus properties: a cap is never exceeded, a floor is never broken, protein never falls when weight rises, the matched week sums to the even week within rounding.
+5. Write the exercise library and the four templates, with their tests.
+
+Gate: all engine tests pass. Every source id has a row in `docs/SOURCES.md`. No constant is inlined outside `constants.ts` (a grep proves it).
+
+## M3 Data, sync, sign-in
+
+Read: `docs/TECH-SPEC.md` sections 3 to 7, `docs/PORT-NOTES.md`.
+
+1. Record types and zod schemas in `shared/records.ts`.
+2. Port the store and the outbox. Write `actions.ts` for profile, plan, weight, meal, saved, program, session log, check-in and day, with undo where a delete exists.
+3. Write the mock backend and its Vite middleware. Port the sync engine onto the `Backend` interface.
+4. Write the conformance suite. Make it pass on the mock.
+5. Write the Supabase backend. Make the same suite pass against the real project with a test user.
+6. Build the sign in sheet with Google and the email code, the session expired state, sign out with the wipe, and the account deletion handler.
+7. `pnpm dev:live` runs the app against the real services.
+
+Gate: the conformance suite is green on both backends. An end to end test logs data offline in one browser context, reconnects, and sees it in a second context.
+Owner checks: set up the Google client. On the iPhone, in the installed app: sign in with Google, close and reopen, sign out, sign in with an email code. Report anything that opens Safari or loses the session.
+
+## M4 Onboarding and plan
+
+Read: `docs/SCREENS.md` sections 3 to 5, `docs/PRD.md` F2 and section 7.
+
+Build the install guide, welcome, the nine steps, the guardrail screens, Your plan with its breakdown and fine tuning, and the hand over to sign in with the draft surviving the redirect.
+
+Gate: end to end tests for each goal, for each guardrail path, and for a returning user. The flow completes in under 90 seconds by stopwatch. `verify-ui` passes on every step.
+Owner checks: run it twice on the iPhone, once as yourself and once as someone trying to lose weight.
+
+## M5 Today and logging
+
+Read: `docs/SCREENS.md` sections 6 and 7, `docs/TECH-SPEC.md` section 9.
+
+1. Draft `data/food-list.csv`, write the build script, generate `foods.json`.
+2. Today in full: week strip, hero with the track, macros, cards, training card as a stub until M7, meal list, undo.
+3. Add sheet, Search with portions, Quick add, Recent and Saved, the Meal sheet.
+4. Weigh in sheet and the weigh-in prompt.
+
+Gate: end to end tests for F3, F5 and F6, including logging while offline. The food build fails when a nutrient is missing (a test proves it). `verify-ui` passes. Logging a recent meal takes two taps.
+Owner checks: use it for a full day with search and quick add only. Note every moment of friction.
+
+## M6 Photo logging
+
+Read: `docs/TECH-SPEC.md` sections 7 and 8, `docs/SCREENS.md` section 7.
+
+1. The analyze handler, quota, provider interface, mock provider with fixtures, the Gemini provider. Confirm the current Flash model id and its options in Google's docs first.
+2. Capture, resize, thumbnail, upload queue.
+3. The Review sheet with every state, the oil control, Describe.
+4. With the owner's development key: run the owner's ten meal photos, write what the model got right and wrong into `docs/EVAL-NOTES.md`, and tune the prompt once against them.
+
+Gate: end to end tests for F4 on the mock, covering success, not food, limit, offline and provider failure. The handler rejects a missing token, an oversized body and a bad schema. The median time to a review sheet on the live key is under 8 seconds.
+Owner checks: provide the Gemini key. Photograph ten real meals over two days, at least five of them Thai dishes.
+
+## M7 Training
+
+Read: `docs/SCREENS.md` section 8, `docs/SCIENCE.md` sections 4, 5, 7 and 11.
+
+Build the Train tab, the session sheet, the exercise picker, templates, the analysis and recommendations, session done and skipped on Today, and matched targets everywhere a target is shown.
+
+Gate: end to end tests for F7 and F8. Changing a program creates a new plan from the next day and leaves past days as they were. `verify-ui` passes.
+Owner checks: enter your real program and say whether the recommendations are right.
+
+## M8 Progress and check-ins
+
+Read: `docs/SCREENS.md` sections 9 and 10, `docs/SCIENCE.md` section 10.
+
+Build the chart, the Progress cards, history, and the check-in flow. Add a development only data seeder that creates weeks of realistic logs for each check-in outcome.
+
+Gate: end to end tests for F9 and F11 using the seeder, one per check-in reason. Vectors F and G drive the screens to the expected proposal. `verify-ui` passes.
+Owner checks: walk through each seeded check-in and judge whether the sentence matches what the numbers show.
+
+## M9 Hardening and release
+
+1. Settings in full, exports, The science, Report a problem.
+2. Privacy and Terms as plain language drafts in `public/`, marked for the owner's review.
+3. Gain mode easy adds, the finish day control, and anything cut from earlier milestones and recorded in `docs/STATE.md`.
+4. Accessibility pass against `docs/DESIGN.md` section 12. The stress matrix over every screen.
+5. Speed: bundle report against the budgets in the PRD, lazy chunks confirmed, start time measured with a year of seeded data.
+6. Offline pass: every feature in airplane mode.
+7. Security: advisors, a scan of the build output for secrets, quota tests, the account deletion test.
+8. Production: environment variables and the production Gemini key in Vercel, the budget alert, the production smoke test, `README.md`, tag `v1.0.0`.
+
+Gate: every bar in `docs/PRD.md` section 8 is measured and met, with the numbers in the pull request. All feature tests pass.
+Owner checks, on the iPhone, installed: sign in, onboard, log by every method, weigh in, edit a program, go offline and log, come back online, switch theme and text size, export, sign out and back in on a second device if one is available.
+
+## After v1
+
+Thai food table and Thai language. Barcode scanning. Set by set logging. Push reminders. A dietitian's review of the guardrails and copy before any public launch.
