@@ -2,6 +2,38 @@
 
 Changes to a doc's decision, and choices made on the owner's behalf. Newest first, one line each: what, why.
 
+## M3
+
+- The Backend interface gains `auth.googleEnabled()`, read from Supabase's public auth settings. Why: the Google button is hidden while the project has no Google provider, instead of being a dead button.
+- `onChange` passes the email with the user id. Why: the account sheet shows it without a second call.
+- The pull loop (rule 3) lives in one helper, `pullPages`, used by both backends. Later pages start at the last timestamp seen, inclusive, and drop rows already seen. Why: a strict `>` can skip rows that share a timestamp across a page boundary.
+- An empty string cursor means "pulled before, the server had nothing". Why: rule 5 needs to know a device has pulled once even when the account is empty.
+- The device refuses data over 32 KB per record although the database allows 64 KB. Why: jsonb text spaces out JSON, so a record near 64 KB on the device could be refused by the server.
+- A batch the server refuses as a whole is resent one record at a time, and a refused record is set aside (kept on the phone, out of the outbox, logged). Why: one bad record would otherwise block every later change.
+- While sync is backing off, a local edit waits for the backoff instead of retrying at once. Why: rule 6.
+- Client schemas use `zod/mini`. Why: the full zod build added about 20 KB gzip to the first chunk; mini has the same checks.
+- The sign in and account sheets are lazy chunks, preloaded 800 ms after start like the tabs. Why: the drawer code doubled the first chunk.
+- Sign out wipes the user's IndexedDB keys (`clear`) rather than deleting the database, then reloads. Why: the open connection blocks a delete until the page unloads.
+- Sign out on Supabase is `scope: 'local'`; if the server cannot be told (offline), the session keys on this phone are removed anyway. Why: other phones stay signed in, and an offline sign out must still sign out.
+- An expired access token that cannot be refreshed for lack of network is treated as offline, not as signed out; only a SIGNED_OUT event ends the session. Why: SCREENS.md section 12 says offline changes nothing else.
+- A different account signing in on a phone that holds unsent changes for the last one is signed out again, and the expired card names the account to use. With nothing unsent, the last account's data is wiped first. Why: the unsent changes would otherwise be stranded in a store nobody opens.
+- Deleting the account stops sync before the request. Why: a round in flight could recreate rows or a thumbnail after the server emptied them.
+- The account rows (email, backup, sign out, delete) sit in an Account sheet opened from the avatar until Settings exists (M9). Signed out, the avatar opens sign in. Why: the avatar was inert and sign in needs a way in before Welcome (M4).
+- Delete account is confirmed by typing the account's email. Why: a typed word would have to live in the catalog in lower case, and the email is unambiguous.
+- The six code boxes are drawn over one hidden input with `autocomplete="one-time-code"`. Why: iOS fills the code from Mail and a paste lands whole; auto advance comes free.
+- The code step also has a pinned "Sign in" button, though six digits submit on their own. Why: a sheet keeps its main action pinned (DESIGN.md section 7).
+- Supabase cannot tell a wrong code from an expired one (both are `otp_expired`), so the sheet says "expired" when more than 10 minutes have passed since sending. Why: the two states in SCREENS.md section 5.
+- The sign in sheet has no Privacy and Terms small print yet. Why: those pages arrive with Settings in M9; a link to nothing would be a dead link. M9 adds the line.
+- The mock accepts the code 123456 (printed by the dev server) and its Google button signs in `google.user@example.com` through a real redirect. Its tokens name their space and epoch, so a restarted dev server keeps you signed in and `POST /__mock/expire` ends a space's sessions.
+- `window.ontrack` (actions, store, sync) exists in dev builds only, so end to end tests can log data until the logging screens exist (M5).
+- `pnpm dev:live` and `pnpm test:live` read the Supabase URL and keys from the Supabase CLI into the environment (`scripts/live-env.sh`). Why: no key is written to disk and `.env.local` is never touched.
+- The live conformance run makes its test users with the secret key (an admin generated one time code, no email) and deletes them through the real `DELETE /api/account` handler, falling back to an admin sweep for users whose sessions it ended.
+- Supabase auth settings pushed with `supabase config push`: site URL `https://ontrack-black.vercel.app`; redirects `http://localhost:5173/**`, the production URL and `https://ontrack-*-jedizrs-projects.vercel.app/**`; email codes 6 digits, 10 minutes, one send per 30 s. Other declared settings were set to the project's current values so nothing else changed.
+- The email code template was not changed: Supabase refuses template edits on the free plan's built in mailer. See `docs/BLOCKERS.md`.
+- `fake-indexeddb` 6.2.7 (dev only, the newest release over a week old). Why: the conformance suite runs the real store and engine as two devices.
+- `Session` (the program session type) now comes from `shared/records.ts`; `templates.ts` imports it. Why: STATE.md asked for the move in M3.
+- `dates.ts` waits for M5. Why: nothing in M3 converts dates.
+
 ## M2
 
 Science check (verdicts in `docs/SOURCES.md`):

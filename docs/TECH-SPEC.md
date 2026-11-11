@@ -184,7 +184,8 @@ The engine and both backends implement these rules. `tests/unit/sync-conformance
 export interface Backend {
   auth: {
     session(): Promise<{ userId: string; email?: string } | null>;
-    onChange(cb: (s: { userId: string } | null) => void): () => void;
+    onChange(cb: (s: { userId: string; email?: string } | null) => void): () => void;
+    googleEnabled(): Promise<boolean>;                 // false hides the Google button (M3)
     signInWithGoogle(): Promise<void>;                 // leaves the page
     sendEmailCode(email: string): Promise<void>;
     verifyEmailCode(email: string, code: string): Promise<void>;

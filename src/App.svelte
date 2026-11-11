@@ -58,7 +58,7 @@
     applyTheme();
     applyFontSize();
     void session.boot();
-    const preload = setTimeout(() => { void loadTab(1); void loadTab(2); void loadSheets(); }, 800);
+    const preload = setTimeout(() => { void loadTab(1); void loadTab(2); loadSheets().catch(() => undefined); }, 800); // a failed preload retries on first open
 
     if (import.meta.env.PROD) {
       import('virtual:pwa-register').then(({ registerSW }) => {

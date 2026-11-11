@@ -6,6 +6,24 @@ Everything that needs you, in one place. Newest first within each section.
 
 Each entry: what is blocked, what Claude tried, the exact steps for you, and what to tell Claude afterwards.
 
+### Google sign in (M3)
+
+- **Blocked:** the Google OAuth client, so the Google provider in Supabase is off and the app hides "Continue with Google" on the live backend. Everything else for Google is built and tested against the mock.
+- **Tried:** the CLI (there is no `gcloud` on this Mac, and gcloud cannot create OAuth web clients anyway), then your browser through Yab: every tab, even `example.com`, stayed blank and timed out, so the console never loaded. Nothing was created in Google Cloud.
+- **Steps:**
+  1. In the Google Cloud console create a project `ontrack` (no billing account).
+  2. Google Auth Platform: Branding, app name Ontrack, your address as support and developer contact. Audience: External, leave it in Testing, add your address as a test user.
+  3. Clients, Create client, Web application, name "Ontrack Supabase". Authorized redirect URI: `https://sbexrpzbzkzofnbpaauu.supabase.co/auth/v1/callback`. Download the JSON when it shows the secret.
+  4. In Supabase, Authentication, Sign In / Providers, Google: turn it on and paste the client id and secret. Or tell Claude where the JSON is and it pushes it with the CLI.
+- **Then tell Claude:** "The Google client is set up."
+
+### Email codes need SMTP (M3)
+
+- **Blocked:** email code sign in on the live backend. Supabase's free built in mailer refuses edits to its email templates, and the default template sends a link, not the 6 digit code. A link opens Safari, which does not share storage with the installed app, so it cannot sign the app in. Until this or Google works, nobody can sign in on production, so nothing can be saved there yet (the device store is per account). Both paths work against the mock with `pnpm dev`.
+- **Tried:** `supabase config push` with a code template (`supabase/templates/code.html`): refused with "Email template modification is not available for free tier projects using the default email provider". There is no other route on the free plan.
+- **Steps:** create a Gmail app password (Google account, Security, App passwords). In Supabase, Authentication, Emails, SMTP Settings: host `smtp.gmail.com`, port 587, your Gmail address as user and sender, the app password. Then in `supabase/config.toml` uncomment the two `[auth.email.template.*]` blocks and run `supabase config push`, or ask Claude to.
+- **Then tell Claude:** "SMTP is set up, push the code template."
+
 ### Supabase MCP for Claude (M0, optional)
 
 - **Blocked:** the Supabase MCP server at project scope. Nothing else waits on it; the Supabase CLI covers migrations and advisors.
@@ -18,6 +36,12 @@ Each entry: what is blocked, what Claude tried, the exact steps for you, and wha
 ## Needs your eyes
 
 Each entry: what to look at (URL or screenshot paths), what to look for, and which milestone it belongs to.
+
+### M3: sign in and sync on your iPhone
+
+- **Where:** after both entries above are done, the pull request's Vercel preview or `https://ontrack-black.vercel.app` once merged, installed to the home screen. Until then, `pnpm dev` on the Mac shows the same flow against the mock (code 123456). Screenshots: `screenshots/signin/`, `screenshots/account/`, `screenshots/today/session-expired-*` and `bringing-*` after `pnpm screenshots`.
+- **Look for:** in the installed app: tap the avatar, Continue with Google, and check it comes back into the app (not Safari) signed in. Close the app fully and reopen: still signed in. Avatar, Sign out. Then sign in with an email code: the code arrives, iOS offers it above the keyboard, and it signs in. Report anything that opens Safari or loses the session. Also look at the sign in sheet with the keyboard up, the six code boxes, and the shake on a wrong code.
+- **Decided for you:** the M3 list in `docs/DECISIONS.md`, notably the account sheet on the avatar until Settings, typing your email to delete the account, and no Privacy and Terms line until M9.
 
 ### M2: three science calls kept against their source (optional)
 
