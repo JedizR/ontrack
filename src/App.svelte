@@ -10,6 +10,12 @@
   import Dock from '$lib/components/Dock.svelte';
   import Toasts from '$lib/components/Toasts.svelte';
   import Today from './tabs/Today.svelte';
+  import SignInSheet from './flows/signin/SignInSheet.svelte';
+  import AccountSheet from './settings/AccountSheet.svelte';
+  import { session } from '$lib/session.svelte';
+  import { sync } from '$lib/sync/engine.svelte';
+  import { sheets } from '$lib/sheets.svelte';
+  import type { SyncState } from '$lib/components/SyncMark.svelte';
 
   const TITLES = [t.tabs.today, t.tabs.train, t.tabs.progress];
 
@@ -39,9 +45,13 @@
     onCancel: () => { dragging = false; dragX = 0; },
   };
 
+  // the header's dot: an expired session and a failing sync both need attention
+  const MARK: Record<typeof sync.status, SyncState> = { idle: 'idle', syncing: 'syncing', offline: 'offline', error: 'attention', auth: 'attention' };
+
   onMount(() => {
     applyTheme();
     applyFontSize();
+    void session.boot();
     const preload = setTimeout(() => { void loadTab(1); void loadTab(2); }, 800);
 
     if (import.meta.env.PROD) {
@@ -58,7 +68,12 @@
 </script>
 
 <div class="bg-canvas relative mx-auto flex min-h-dvh w-full max-w-[480px] flex-col overflow-x-clip">
-  <Header title={TITLES[prefs.tab]} />
+  <Header
+    title={TITLES[prefs.tab]}
+    sync={MARK[sync.status]}
+    signedIn={!!session.user}
+    onaccount={() => (session.user ? (sheets.account = true) : (sheets.signin = true))}
+  />
 
   <!-- flex-1: the whole area between header and dock takes swipes, not just the content -->
   <main class="flex-1 px-5 pb-[calc(env(safe-area-inset-bottom)+var(--dock-h)+40px)]" use:swipe={swipeOpts}>
@@ -80,4 +95,6 @@
   <Dock tab={prefs.tab} onselect={(i) => void go(i)} {swipeOpts} />
 </div>
 
+<SignInSheet bind:open={sheets.signin} />
+<AccountSheet bind:open={sheets.account} />
 <Toasts />

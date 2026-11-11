@@ -11,6 +11,13 @@
   --text-*: initial;
   --radius-*: initial;
   --shadow-*: initial;
+
+  /* a wrong code: the boxes shake once */
+  --animate-shake: shake 360ms var(--ease-out);
+  @keyframes shake {
+    20%, 60% { transform: translateX(-8px); }
+    40%, 80% { transform: translateX(8px); }
+  }
 }
 
 /* Theme names differ from token names on purpose: a theme variable with the same name as its token would be circular. */

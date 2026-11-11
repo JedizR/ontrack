@@ -5,7 +5,7 @@
 import type { Connect, Plugin } from 'vite';
 import { createHash } from 'node:crypto';
 import { z } from 'zod';
-import { recSchema, type Rec } from '../shared/records';
+import { recSchema, type Rec } from '../shared/records.ts';
 
 /** The only code the mock accepts. The dev server prints it when a code is "sent". */
 export const MOCK_CODE = '123456';
@@ -13,8 +13,8 @@ export const MOCK_GOOGLE_EMAIL = 'google.user@example.com';
 const PAGE_MAX = 1000;
 
 type Row = { userId: string; rec: Rec; ts: number };
-type Space = { epoch: number; rows: Map<string, Row>; thumbs: Map<string, Uint8Array>; lastTs: number };
-type Token = { u: string; e: string; ep: number };
+type Space = { epoch: number; rows: Map<string, Row>; thumbs: Map<string, ArrayBuffer>; lastTs: number };
+type Token = { u: string; e: string; ep: number; s: string };
 
 const json = (status: number, body: unknown, headers: Record<string, string> = {}) =>
   new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', ...headers } });
@@ -41,18 +41,17 @@ export function createMockServer() {
     if (!spaces.has(name)) spaces.set(name, { epoch: 0, rows: new Map(), thumbs: new Map(), lastTs: 0 });
     return spaces.get(name)!;
   };
-  const session = (space: Space, email: string) => {
+  const session = (name: string, email: string) => {
     const userId = userIdFor(email);
-    return { token: encode({ u: userId, e: email, ep: space.epoch }), userId, email };
-  };
-  const userOf = (req: Request, space: Space) => {
-    const t = decode(req.headers.get('authorization')?.replace(/^Bearer /, '') ?? '');
-    return t && t.ep === space.epoch ? t.u : null;
+    return { token: encode({ u: userId, e: email, ep: spaceOf(name).epoch, s: name }), userId, email };
   };
 
   return async function handle(req: Request): Promise<Response> {
     const url = new URL(req.url);
-    const space = spaceOf(req.headers.get('x-mock-space') ?? url.searchParams.get('space') ?? 'default');
+    const token = decode(req.headers.get('authorization')?.replace(/^Bearer /, '') ?? '');
+    // a token knows its space, so the app's own fetch to /api/account needs no mock header
+    const name = req.headers.get('x-mock-space') ?? url.searchParams.get('space') ?? token?.s ?? 'default';
+    const space = spaceOf(name);
     const path = url.pathname.replace(/^\/__mock/, '');
     const body = async <T>(schema: z.ZodType<T>) => schema.safeParse(await req.json().catch(() => null));
 
@@ -60,7 +59,7 @@ export function createMockServer() {
       // the provider round trip: back to the app with a session in the fragment, as a redirect sign-in would
       const back = new URL(url.searchParams.get('redirect') ?? '/', url.origin);
       if (back.origin !== url.origin) return fail(400, 'bad_request');
-      back.hash = `mock-session=${encodeURIComponent(JSON.stringify(session(space, MOCK_GOOGLE_EMAIL)))}`;
+      back.hash = `mock-session=${encodeURIComponent(JSON.stringify(session(name, MOCK_GOOGLE_EMAIL)))}`;
       return new Response(null, { status: 302, headers: { Location: back.toString() } });
     }
     if (path === '/auth/code') {
@@ -73,14 +72,14 @@ export function createMockServer() {
       const b = await body(verifyBody);
       if (!b.success) return fail(400, 'bad_request');
       if (b.data.code !== MOCK_CODE) return fail(400, 'wrong_code');
-      return json(200, { ok: true, ...session(space, b.data.email) });
+      return json(200, { ok: true, ...session(name, b.data.email) });
     }
     if (path === '/expire') {
       space.epoch++;
       return json(200, { ok: true });
     }
 
-    const userId = userOf(req, space);
+    const userId = token && token.ep === space.epoch && token.s === name ? token.u : null;
     if (!userId) return fail(401, 'unauthorized');
 
     if (path === '/push') {
@@ -109,7 +108,7 @@ export function createMockServer() {
     if (path.startsWith('/thumb/')) {
       const k = `${userId}/${decodeURIComponent(path.slice('/thumb/'.length))}`;
       if (req.method === 'PUT') {
-        space.thumbs.set(k, new Uint8Array(await req.arrayBuffer()));
+        space.thumbs.set(k, await req.arrayBuffer());
         return json(200, { ok: true });
       }
       const bytes = space.thumbs.get(k);

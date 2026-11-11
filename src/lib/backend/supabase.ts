@@ -56,8 +56,9 @@ export function createSupabaseBackend(sb: SupabaseClient, settingsUrl?: string, 
         check(await sb.auth.verifyOtp({ email, token: code, type: 'email' }));
       },
       async signOut() {
-        // this device only: other phones stay signed in
-        check(await sb.auth.signOut({ scope: 'local' }));
+        // this device only: other phones stay signed in. Offline the server cannot be told; the session here goes anyway
+        const r = await sb.auth.signOut({ scope: 'local' });
+        if (r.error && typeof localStorage !== 'undefined') for (const k of Object.keys(localStorage)) if (k.startsWith('ontrack:auth')) localStorage.removeItem(k);
       },
     },
 
