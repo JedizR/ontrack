@@ -4,6 +4,7 @@ Changes to a doc's decision, and choices made on the owner's behalf. Newest firs
 
 ## M0
 
+- Unselected tab labels use `--ink-3`, as the Dock row in DESIGN.md section 7 says, though that is about 3.2 to 1 on the light dock and section 12 reserves `--ink-3` for large or non essential text. Kept for now; the icon, position and the selected state carry the meaning. M1 settles it.
 - The plus button and the header avatar render but do nothing yet: the plus opens Add in M5, the avatar opens Settings when Settings exists. Why: the shell is the M0 outcome and its layout must be real; there is nothing to open yet.
 - Supabase MCP not added. Why: it needs a browser sign in, which the unattended run may not do. The CLI (`supabase db advisors --remote`) covers advisors. See `docs/BLOCKERS.md`.
 - No branch protection on `main`. Why: GitHub Free has none for private repositories. The rule is held by habit and CI.

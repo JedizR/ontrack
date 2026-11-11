@@ -9,7 +9,13 @@ export default defineConfig({
   fullyParallel: true,
   retries: process.env.CI ? 1 : 0,
   reporter: [['list']],
-  use: { baseURL: process.env.E2E_BASE_URL ?? `http://localhost:${PORT}`, trace: 'retain-on-failure', actionTimeout: 8000 },
+  use: {
+    baseURL: process.env.E2E_BASE_URL ?? `http://localhost:${PORT}`,
+    trace: 'retain-on-failure',
+    actionTimeout: 8000,
+    // E2E_BASE_URL may be a Vercel preview behind deployment protection
+    extraHTTPHeaders: process.env.VERCEL_AUTOMATION_BYPASS_SECRET ? { 'x-vercel-protection-bypass': process.env.VERCEL_AUTOMATION_BYPASS_SECRET } : undefined,
+  },
   webServer: process.env.E2E_BASE_URL ? undefined : {
     command: `pnpm vite --port ${PORT} --strictPort`,
     url: `http://localhost:${PORT}`,
