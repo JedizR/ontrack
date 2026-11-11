@@ -28,6 +28,8 @@
 
   const Z = { base: 'z-50', nested: 'z-[55]', top: 'z-[60]' };
   let scrolled = $state(false);
+  // the content is rebuilt on every open, scrolled to the top
+  $effect(() => { if (open) scrolled = false; });
 </script>
 
 <!-- repositionInputs off: on iOS it offsets the sheet by the keyboard height while iOS also pans the viewport -->
@@ -35,7 +37,7 @@
   <Drawer.Content class={Z[layer]} overlayClass={Z[layer]} data-testid={testid}>
     <div class="flex items-center gap-2 pt-1 pr-2 pl-5 transition-shadow duration-[var(--d-ui)] {scrolled ? 'shadow-[0_1px_0_var(--line)]' : ''}">
       <Drawer.Title class="text-heading min-w-0 flex-1 truncate text-left">{title}</Drawer.Title>
-      <button class="text-ink-2 active:bg-surface-2 grid size-11 flex-none place-items-center rounded-full" aria-label={t.sheet.close} onclick={() => (open = false)}>
+      <button class="text-ink-2 active:bg-surface-2 grid size-11 flex-none place-items-center rounded-full" aria-label={t.sheet.close} onclick={() => { open = false; onclose?.(); }}>
         <X size={24} strokeWidth={1.75} />
       </button>
     </div>

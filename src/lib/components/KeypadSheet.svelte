@@ -17,6 +17,8 @@
   const o = $derived(keypad.opts);
   const value = $derived(evalSum(expr));
   const canSave = $derived(value > 0 || (!!o?.allowZero && expr !== ''));
+  // while one amount is being typed, show its fraction as typed ("72." and "72.0"), so "." and "0" visibly land
+  const shown = $derived(!expr.includes('+') && expr.includes('.') ? num(Math.trunc(value)) + expr.slice(expr.indexOf('.')) : num(value));
 
   // every ask() assigns a fresh opts object: reset the amount for it
   $effect(() => {
@@ -52,7 +54,7 @@
     <div aria-live="polite">
       <div class="text-caption text-ink-2 h-[1lh] truncate" data-testid="keypad-expr">{expr.includes('+') ? expr.split('+').join(' + ') : (o?.hint ?? '')}</div>
       <div class="flex items-baseline gap-2" data-testid="keypad-value">
-        <span class="text-display num truncate">{num(value)}</span>
+        <span class="text-display num truncate">{shown}</span>
         <span class="text-heading text-ink-2">{o?.unit}</span>
       </div>
     </div>

@@ -26,6 +26,11 @@ describe('keypad expressions', () => {
     expect(press(['1', '.', '5'], { decimal: false, plus: true })).toBe('15');
     expect(press(['1', '2', 'back'])).toBe('1');
   });
+  it('holds "00" to the same limits as two zeros', () => {
+    expect(press(['1', '.', '5', '00'])).toBe('1.50');
+    expect(press(['1', '2', '3', '4', '5', '6', '7', '8', '00'])).toBe('123456780');
+    expect(press(['00', '5'])).toBe('5');
+  });
   it('starts empty for no value so the first key replaces it', () => {
     expect(exprFrom(0)).toBe('');
     expect(exprFrom(72.456)).toBe('72.46');

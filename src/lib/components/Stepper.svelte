@@ -22,14 +22,21 @@
     return true;
   }
 
-  // a press steps once; holding repeats after 400 ms, every 80 ms, until the edge
+  // A tap steps once, on click, so a scroll or sheet drag that starts on a button changes nothing.
+  // Holding repeats after 400 ms, every 80 ms, until the edge; the click that ends a repeating hold is skipped.
   let timer: ReturnType<typeof setTimeout> | undefined;
+  let repeated = false;
+  const stop = () => clearTimeout(timer);
   function hold(d: 1 | -1) {
-    if (!nudge(d)) return;
-    const again = (ms: number) => (timer = setTimeout(() => { if (nudge(d)) again(80); }, ms));
+    stop();
+    repeated = false;
+    const again = (ms: number) => (timer = setTimeout(() => { repeated = true; if (nudge(d)) again(80); }, ms));
     again(400);
   }
-  const stop = () => clearTimeout(timer);
+  function tap(d: 1 | -1) {
+    if (repeated) repeated = false;
+    else nudge(d);
+  }
   $effect(() => stop);
 </script>
 
@@ -45,7 +52,7 @@
     onpointerleave={stop}
     onpointercancel={stop}
     oncontextmenu={(e) => e.preventDefault()}
-    onclick={(e) => { if (e.detail === 0) nudge(d); /* keyboard; pointer presses step on pointerdown */ }}
+    onclick={() => tap(d)}
   >
     <Icon size={24} strokeWidth={1.75} />
   </button>

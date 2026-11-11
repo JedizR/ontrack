@@ -36,7 +36,8 @@
   role="progressbar"
   aria-valuemin={0}
   aria-valuemax={Math.round(max)}
-  aria-valuenow={Math.round(value)}
+  aria-valuenow={Math.round(Math.min(value, max))}
+  aria-label={label}
   aria-valuetext={label}
   data-reached={reached}
 >

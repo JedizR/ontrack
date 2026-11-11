@@ -18,11 +18,12 @@ export function pressKey(expr: string, key: string, opts: { decimal: boolean; pl
       if (!opts.decimal || term.includes('.')) return expr;
       return expr + (term === '' ? '0.' : '.');
     default: {
-      // digits and '00'; cap decimals at 2 and length at 9 per term
+      // '00' is two zeros, each held to the limits below
+      if (key === '00') return pressKey(pressKey(expr, '0', opts), '0', opts);
+      // digits: cap decimals at 2 and length at 9 per term
       if (term.includes('.') && term.split('.')[1].length >= 2) return expr;
       if (term.replace('.', '').length >= 9) return expr;
-      if (term === '0') return expr.slice(0, -1) + (key === '00' ? '0' : key);
-      if (term === '' && key === '00') return expr + '0';
+      if (term === '0') return expr.slice(0, -1) + key;
       return expr + key;
     }
   }
