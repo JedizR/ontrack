@@ -20,7 +20,8 @@
     "verify": "pnpm check && pnpm test && pnpm build && playwright test --grep @smoke",
     "check:pwa": "node scripts/check-pwa.mjs",
     "icons": "cp design/brand/app-icon.svg public/favicon.svg && pwa-assets-generator",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "foods:build": "tsx scripts/build-foods.ts"
   },
   "dependencies": {
     "@lucide/svelte": "1.62.0",
