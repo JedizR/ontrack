@@ -1,7 +1,7 @@
 // Device and text size matrix: layout checks on every screen.
 //   pnpm exec playwright test --project=stress   -> screenshots/stress/<device>/*.png
 import { test, expect, type Page } from '@playwright/test';
-import { open, withPrefs } from './helpers';
+import { open, signIn, space, useSpace, withPrefs } from './helpers';
 
 const DEVICES = [
   { name: 'iphone-15-pwa', width: 393, height: 793, mobile: true }, // home screen app: 852 minus the status bar
@@ -31,7 +31,7 @@ const overflow = (page: Page) => page.evaluate(() => {
 
 /** Visible tap targets smaller than 44 px in either direction. */
 const smallTargets = (page: Page) => page.evaluate(() => [...document.querySelectorAll<HTMLElement>('button, a[href], input, [role="radio"], [role="switch"]')]
-  .filter((el) => { const r = el.getBoundingClientRect(); const s = getComputedStyle(el); return r.width > 0 && r.height > 0 && s.visibility !== 'hidden' && s.opacity !== '0' && (r.width < 44 || r.height < 44); })
+  .filter((el) => { const r = el.getBoundingClientRect(); const s = getComputedStyle(el); return r.width > 0 && r.height > 0 && s.visibility !== 'hidden' && s.opacity !== '0' && (r.width < 43.5 || r.height < 43.5); }) // sub-pixel layout can draw a 44 px box at 43.9
   .map((el) => `${(el.getAttribute('aria-label') || el.textContent || el.tagName).trim().slice(0, 24)} ${Math.round(el.getBoundingClientRect().width)}x${Math.round(el.getBoundingClientRect().height)}`));
 
 /** Text cut off inside a box (truncate or overflow hidden). */
@@ -76,6 +76,19 @@ async function checkAll(page: Page, dir: string) {
   if (page.viewportSize()!.height > page.viewportSize()!.width) await expect(page.locator('[data-key="00"]')).toBeInViewport({ ratio: 1 });
   expect(await smallTargets(page), 'keypad: tap targets under 44 px').toEqual([]);
   await page.screenshot({ path: `${dir}/keypad.png` });
+
+  // the sign in and account sheets: their main action is on screen without scrolling
+  await useSpace(page, space('stress'));
+  await open(page);
+  await page.getByTestId('avatar').click();
+  await expect(page.getByTestId('signin-sheet')).toHaveCSS('transform', 'none');
+  await expect(page.getByTestId('signin-send')).toBeInViewport({ ratio: 1 });
+  await checkPage(page, 'signin', dir);
+  await signIn(page);
+  await page.getByTestId('avatar').click();
+  await expect(page.getByTestId('account-sheet')).toHaveCSS('transform', 'none');
+  if (page.viewportSize()!.height > page.viewportSize()!.width) await expect(page.getByTestId('account-delete')).toBeInViewport({ ratio: 1 });
+  await checkPage(page, 'account', dir);
 }
 
 for (const d of DEVICES) {

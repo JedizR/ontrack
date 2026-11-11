@@ -93,6 +93,10 @@
   }
 </script>
 
+{#snippet message()}
+  <p class="text-callout mt-3 min-h-5 {error === t.signin.sentAgain ? 'text-ink-2' : 'text-danger'}" role="alert" data-testid="signin-error">{error}</p>
+{/snippet}
+
 <Sheet bind:open {title} layer="base" testid="signin-sheet">
   <p class="text-callout text-ink-2">{t.signin.lead}</p>
 
@@ -122,6 +126,7 @@
         data-testid="signin-email"
       />
     </form>
+    {@render message()}
   {:else}
     <p class="text-body mt-5">{t.signin.codeSent(email.trim())}</p>
     <div class="relative mt-4 {shake ? 'animate-shake' : ''}" onanimationend={() => (shake = false)}>
@@ -145,6 +150,7 @@
         data-testid="signin-code"
       />
     </div>
+    {@render message()}
     <div class="mt-3 flex flex-wrap items-center gap-x-2">
       <Button variant="plain" size="sm" class="-ml-4" disabled={wait > 0 || busy} onclick={() => send(true)} data-testid="signin-resend">
         {wait > 0 ? t.signin.sendAgainIn(String(wait)) : t.signin.sendAgain}
@@ -153,9 +159,6 @@
     </div>
   {/if}
 
-  <p class="text-callout mt-3 min-h-5 {error === t.signin.sentAgain ? 'text-ink-2' : 'text-danger'}" role="alert" data-testid="signin-error">
-    {error}
-  </p>
 
   {#snippet footer()}
     {#if step === 'email'}

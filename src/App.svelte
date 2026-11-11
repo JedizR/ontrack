@@ -10,8 +10,6 @@
   import Dock from '$lib/components/Dock.svelte';
   import Toasts from '$lib/components/Toasts.svelte';
   import Today from './tabs/Today.svelte';
-  import SignInSheet from './flows/signin/SignInSheet.svelte';
-  import AccountSheet from './settings/AccountSheet.svelte';
   import { session } from '$lib/session.svelte';
   import { sync } from '$lib/sync/engine.svelte';
   import { sheets } from '$lib/sheets.svelte';
@@ -27,6 +25,14 @@
     if (i === 2 && !Progress) Progress = (await import('./tabs/Progress.svelte')).default;
   }
   $effect(() => { void loadTab(prefs.tab); });
+
+  // the sign in and account sheets (and the drawer code under them) load after the first paint, like the tabs
+  let SignIn = $state<Component<{ open: boolean }> | null>(null);
+  let Account = $state<Component<{ open: boolean }> | null>(null);
+  async function loadSheets() {
+    [SignIn, Account] = await Promise.all([import('./flows/signin/SignInSheet.svelte'), import('./settings/AccountSheet.svelte')]).then((m) => m.map((x) => x.default));
+  }
+  $effect(() => { if ((sheets.signin || sheets.account) && !SignIn) void loadSheets(); });
 
   // tab changes slide in from the side the finger came from; swiping wraps around
   let dir = $state(1);
@@ -52,7 +58,7 @@
     applyTheme();
     applyFontSize();
     void session.boot();
-    const preload = setTimeout(() => { void loadTab(1); void loadTab(2); }, 800);
+    const preload = setTimeout(() => { void loadTab(1); void loadTab(2); void loadSheets(); }, 800);
 
     if (import.meta.env.PROD) {
       import('virtual:pwa-register').then(({ registerSW }) => {
@@ -95,6 +101,6 @@
   <Dock tab={prefs.tab} onselect={(i) => void go(i)} {swipeOpts} />
 </div>
 
-<SignInSheet bind:open={sheets.signin} />
-<AccountSheet bind:open={sheets.account} />
+{#if SignIn}<SignIn bind:open={sheets.signin} />{/if}
+{#if Account}<Account bind:open={sheets.account} />{/if}
 <Toasts />

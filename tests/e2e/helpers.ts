@@ -34,3 +34,19 @@ export async function swipeAt(page: Page, dx: number, at: { x?: number; y?: numb
     fire('touchend', x + dx);
   }, { dx, at });
 }
+
+export const EMAIL = 'me@example.com';
+/** A fresh world on the mock backend for one test; two contexts in one space are two phones on one account. */
+export const space = (name: string) => `e2e-${name}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+export const useSpace = (page: Page, s: string) => page.addInitScript((v) => localStorage.setItem('ontrack:mock-space', v), s);
+
+/** Sign in through the sheet with the mock's code. Opens the sheet from the avatar unless it is already open. */
+export async function signIn(page: Page, email = EMAIL) {
+  const sheet = page.getByTestId('signin-sheet');
+  if (!(await sheet.isVisible())) await page.getByTestId('avatar').click();
+  await page.getByTestId('signin-email').fill(email);
+  await page.getByTestId('signin-send').click();
+  await page.getByTestId('signin-code').fill('123456');
+  await expect(sheet).toBeHidden();
+  await expect(page.getByTestId('avatar')).toHaveAttribute('aria-label', 'Account');
+}

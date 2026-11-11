@@ -1,6 +1,7 @@
 // Record types and their zod schemas (TECH-SPEC section 3). Used by the app, the mock backend and the tests.
 // Weekdays are 0 for Monday to 6 for Sunday. Dates are YYYY-MM-DD strings in the device's calendar.
-import { z } from 'zod';
+// zod/mini: the same schemas at a fraction of the bundle, because actions.ts ships in the first chunk
+import * as z from 'zod/mini';
 
 export const COLLECTIONS = ['profile', 'plan', 'weight', 'meal', 'saved', 'program', 'slog', 'checkin', 'day'] as const;
 export type Collection = (typeof COLLECTIONS)[number];
@@ -20,16 +21,19 @@ export type Rec<T = unknown> = {
   data: T;
 };
 
-const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
-const weekday = z.number().int().min(0).max(6);
-const kcal = z.number().min(0).max(100000);
-const grams = z.number().min(0).max(10000);
+const num = (min: number, max: number) => z.number().check(z.gte(min), z.lte(max));
+const int = (min: number, max = Number.MAX_SAFE_INTEGER) => z.int().check(z.gte(min), z.lte(max));
+const str = (min: number, max: number) => z.string().check(z.minLength(min), z.maxLength(max));
+const date = z.string().check(z.regex(/^\d{4}-\d{2}-\d{2}$/));
+const weekday = int(0, 6);
+const kcal = num(0, 100000);
+const grams = num(0, 10000);
 
 export const profileSchema = z.object({
   sex: z.enum(['male', 'female', 'unspecified']),
-  birthYear: z.number().int().min(1900).max(2100),
-  heightCm: z.number().min(50).max(272),
-  bodyFatPct: z.number().min(2).max(70).optional(),
+  birthYear: int(1900, 2100),
+  heightCm: num(50, 272),
+  bodyFatPct: z.optional(num(2, 70)),
   neat: z.enum(['seated', 'light', 'moving', 'physical']),
   experience: z.enum(['beginner', 'intermediate', 'advanced']),
   units: z.enum(['metric', 'imperial']),
@@ -42,86 +46,85 @@ export const profileSchema = z.object({
 export const planSchema = z.object({
   effectiveFrom: date,
   goal: z.enum(['lose', 'maintain', 'gain']),
-  ratePctPerWeek: z.number().min(0).max(5),
-  goalWeightKg: z.number().min(20).max(400).optional(),
-  weightKg: z.number().min(20).max(400),
+  ratePctPerWeek: num(0, 5),
+  goalWeightKg: z.optional(num(20, 400)),
+  weightKg: num(20, 400),
   bmr: kcal,
   baseline: kcal,
-  eeeByWeekday: z.array(kcal).length(7),
-  delta: z.number().min(-5000).max(5000),
+  eeeByWeekday: z.array(kcal).check(z.length(7)),
+  delta: num(-5000, 5000),
   proteinG: grams,
   fatG: grams,
   flags: z.array(z.enum(['floor', 'deficitCap', 'surplusCap', 'maintainOnly'])),
   tdeeSource: z.enum(['formula', 'measured']),
-  engineVersion: z.number().int().min(1),
+  engineVersion: int(1),
   source: z.enum(['onboarding', 'checkin', 'edit']),
 });
 
-export const weightSchema = z.object({ date, kg: z.number().min(20).max(400) });
+export const weightSchema = z.object({ date, kg: num(20, 400) });
 
 export const mealItemSchema = z.object({
-  name: z.string().min(1).max(120),
-  grams: z.number().min(0).max(10000).optional(),
+  name: str(1, 120),
+  grams: z.optional(num(0, 10000)),
   kcal,
   protein: grams,
   carbs: grams,
   fat: grams,
   source: z.enum(['db', 'estimate', 'manual']),
-  foodId: z.string().max(80).optional(),
-  confidence: z.enum(['high', 'medium', 'low']).optional(),
+  foodId: z.optional(str(0, 80)),
+  confidence: z.optional(z.enum(['high', 'medium', 'low'])),
 });
 
 export const mealSchema = z.object({
   date,
   at: z.string(),
-  title: z.string().max(120),
+  title: str(0, 120),
   method: z.enum(['photo', 'text', 'search', 'quick', 'saved']),
-  items: z.array(mealItemSchema).max(30),
-  thumb: z.literal(true).optional(),
-  ai: z.object({ model: z.string().max(80), raw: z.unknown().optional() }).optional(),
+  items: z.array(mealItemSchema).check(z.maxLength(30)),
+  thumb: z.optional(z.literal(true)),
+  ai: z.optional(z.object({ model: str(0, 80), raw: z.optional(z.unknown()) })),
 });
 
 export const savedSchema = z.object({
-  title: z.string().min(1).max(120),
-  items: z.array(mealItemSchema).min(1).max(30),
-  uses: z.number().int().min(0),
+  title: str(1, 120),
+  items: z.array(mealItemSchema).check(z.minLength(1), z.maxLength(30)),
+  uses: int(0),
   lastUsedAt: z.string(),
 });
 
 export const sessionSchema = z.object({
-  key: z.string().min(1).max(20),
+  key: str(1, 20),
   weekday,
-  name: z.string().min(1).max(60),
+  name: str(1, 60),
   type: z.enum(['strength', 'circuit', 'cardio', 'sport', 'mobility', 'walk']),
-  minutes: z.number().int().min(1).max(600),
+  minutes: int(1, 600),
   intensity: z.enum(['light', 'moderate', 'hard']),
-  exercises: z
-    .array(z.object({ exerciseId: z.string().min(1).max(80), sets: z.number().int().min(1).max(20), repsMin: z.number().int().min(1).max(100), repsMax: z.number().int().min(1).max(100) }))
-    .max(20)
-    .optional(),
+  exercises: z.optional(
+    z.array(z.object({ exerciseId: str(1, 80), sets: int(1, 20), repsMin: int(1, 100), repsMax: int(1, 100) })).check(z.maxLength(20)),
+  ),
 });
 
-export const programSchema = z.object({ name: z.string().max(60), sessions: z.array(sessionSchema).max(28) });
+export const programSchema = z.object({ name: str(0, 60), sessions: z.array(sessionSchema).check(z.maxLength(28)) });
 
-export const sessionLogSchema = z.object({ date, sessionKey: z.string().min(1).max(20), status: z.enum(['done', 'skipped']) });
+export const sessionLogSchema = z.object({ date, sessionKey: str(1, 20), status: z.enum(['done', 'skipped']) });
 
 export const checkinSchema = z.object({
   date,
   stats: z.object({
-    days: z.number().int().min(0),
-    weighIns: z.number().int().min(0),
-    completeDays: z.number().int().min(0),
-    ratePctPerWeek: z.number().nullable(),
-    meanIntake: z.number().nullable(),
+    days: int(0),
+    weighIns: int(0),
+    completeDays: int(0),
+    ratePctPerWeek: z.nullable(z.number()),
+    meanIntake: z.nullable(z.number()),
     meanTarget: z.number(),
-    tdeeObserved: z.number().nullable(),
+    tdeeObserved: z.nullable(z.number()),
   }),
   proposal: z.object({ kcalChange: z.number(), reason: z.enum(['on_track', 'raise', 'lower', 'adherence', 'need_data']) }),
-  decision: z.enum(['accepted', 'kept']).optional(),
-  planId: z.string().max(80).optional(),
+  decision: z.optional(z.enum(['accepted', 'kept'])),
+  planId: z.optional(str(0, 80)),
 });
 
-export const daySchema = z.object({ date, closed: z.literal(true).optional() });
+export const daySchema = z.object({ date, closed: z.optional(z.literal(true)) });
 
 export const SCHEMAS = {
   profile: profileSchema,
@@ -133,7 +136,7 @@ export const SCHEMAS = {
   slog: sessionLogSchema,
   checkin: checkinSchema,
   day: daySchema,
-} satisfies Record<Collection, z.ZodType>;
+} satisfies Record<Collection, z.ZodMiniType>;
 
 export type Profile = z.infer<typeof profileSchema>;
 export type Plan = z.infer<typeof planSchema>;
@@ -161,8 +164,8 @@ export const ids = {
 /** The record envelope as the database accepts it. Both backends check it before a write. */
 export const recSchema = z.object({
   collection: z.enum(COLLECTIONS),
-  id: z.string().min(1).max(MAX_ID),
-  updatedAt: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
-  deleted: z.literal(true).optional(),
-  data: z.record(z.string(), z.unknown()).refine((d) => new TextEncoder().encode(JSON.stringify(d)).length <= MAX_DATA_BYTES, 'too_large'),
+  id: str(1, MAX_ID),
+  updatedAt: int(0),
+  deleted: z.optional(z.literal(true)),
+  data: z.record(z.string(), z.unknown()).check(z.refine((d) => new TextEncoder().encode(JSON.stringify(d)).length <= MAX_DATA_BYTES, 'too_large')),
 });

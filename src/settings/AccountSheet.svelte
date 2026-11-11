@@ -3,7 +3,6 @@
 <script lang="ts">
   import { untrack } from 'svelte';
   import Sheet from '$lib/components/Sheet.svelte';
-  import Card from '$lib/components/Card.svelte';
   import Row from '$lib/components/Row.svelte';
   import Button from '$lib/components/Button.svelte';
   import { t } from '$lib/i18n';
@@ -43,12 +42,19 @@
   }
 </script>
 
-<Sheet bind:open title={mode === 'main' ? t.account.title : t.account.delete} layer="base" testid="account-sheet">
+{#snippet confirm()}
+  <Button variant="danger" size="lg" full disabled={!matches || busy} onclick={remove} data-testid="delete-confirm-button">
+    {busy ? t.account.deleting : t.account.delete}
+  </Button>
+{/snippet}
+
+<!-- the sheet is already a surface, so the rows sit on it directly, on the gutter -->
+<Sheet bind:open title={mode === 'main' ? t.account.title : t.account.delete} layer="base" testid="account-sheet" footer={mode === 'delete' ? confirm : undefined}>
   {#if mode === 'main'}
-    <Card list>
+    <div>
       <Row title={t.account.email} caption={email} />
       <Row title={t.account.backup} caption={db.pending > 0 ? t.account.waiting(num(db.pending)) : t.account.backedUp} />
-    </Card>
+    </div>
     {#if unsent}
       <p class="text-callout text-attention mt-4" role="alert" data-testid="account-unsent">{t.account.unsent(num(db.pending))}</p>
     {/if}
@@ -78,14 +84,4 @@
     <p class="text-callout text-danger mt-3 min-h-5" role="alert">{error}</p>
     <Button variant="plain" size="sm" class="-ml-4" disabled={busy} onclick={() => (mode = 'main')}>{t.account.back}</Button>
   {/if}
-
-  {#snippet footer()}
-    {#if mode === 'delete'}
-      <Button variant="danger" size="lg" full disabled={!matches || busy} onclick={remove} data-testid="delete-confirm-button">
-        {busy ? t.account.deleting : t.account.delete}
-      </Button>
-    {:else}
-      <Button size="lg" full onclick={() => (open = false)}>{t.today.done}</Button>
-    {/if}
-  {/snippet}
 </Sheet>

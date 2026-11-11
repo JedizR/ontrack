@@ -9,11 +9,12 @@
   },
   "scripts": {
     "dev": "VITE_BACKEND=mock VISION_PROVIDER=mock vite",
-    "dev:live": "vite",
+    "dev:live": "sh scripts/live-env.sh vite",
     "build": "vite build",
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "test": "vitest run",
+    "test:live": "SUPABASE_TEST_EMAIL=ontrack.conformance@example.com sh scripts/live-env.sh vitest run tests/unit/sync-conformance.test.ts",
     "test:e2e": "playwright test",
     "screenshots": "playwright test --project=screens",
     "verify": "pnpm check && pnpm test && pnpm build && playwright test --grep @smoke",

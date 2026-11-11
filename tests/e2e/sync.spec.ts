@@ -2,30 +2,19 @@
 // server space; two browser contexts in one space are two phones on one account. Data is logged through the real
 // actions (window.ontrack, dev only) until the logging screens exist.
 import { expect, test, type Browser, type Page } from '@playwright/test';
+import { EMAIL, signIn, space, useSpace } from './helpers';
 
 type Hook = { ontrack: { actions: Record<string, (...a: unknown[]) => unknown>; db: { pending: number; ready: boolean; get(c: string, id: string): unknown }; sync: { status: string } } };
-const EMAIL = 'me@example.com';
-const space = (name: string) => `e2e-${name}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 
 /** A phone: a fresh browser context in the given space, on Today. */
 async function phone(browser: Browser, s: string) {
   const context = await browser.newContext();
-  await context.addInitScript((v) => localStorage.setItem('ontrack:mock-space', v), s);
   const page = await context.newPage();
+  await useSpace(page, s);
   await page.goto('/');
   await expect(page.getByTestId('dock')).toBeVisible();
   await expect.poll(() => page.evaluate(() => 'ontrack' in window)).toBe(true);
   return { context, page };
-}
-
-async function signIn(page: Page, email = EMAIL) {
-  const sheet = page.getByTestId('signin-sheet');
-  if (!(await sheet.isVisible())) await page.getByTestId('avatar').click();
-  await page.getByTestId('signin-email').fill(email);
-  await page.getByTestId('signin-send').click();
-  await page.getByTestId('signin-code').fill('123456');
-  await expect(sheet).toBeHidden();
-  await expect(page.getByTestId('avatar')).toHaveAttribute('aria-label', 'Account');
 }
 
 const pending = (page: Page) => page.evaluate(() => (window as unknown as Hook).ontrack.db.pending);
@@ -96,6 +85,7 @@ test('an expired session asks to sign in again and keeps what was logged', async
   expect(await weight(page, '2026-11-10')).toEqual({ date: '2026-11-10', kg: 80 });
 
   await page.getByTestId('session-signin').click();
+  await expect(page.getByTestId('signin-sheet')).toBeVisible();
   await signIn(page);
   await expect(page.getByTestId('session-expired')).toBeHidden();
   await expect.poll(() => pending(page)).toBe(0);

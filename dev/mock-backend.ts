@@ -4,7 +4,7 @@
 // which keeps parallel tests apart. Tokens carry their space's epoch, so POST /__mock/expire ends every session in it.
 import type { Connect, Plugin } from 'vite';
 import { createHash } from 'node:crypto';
-import { z } from 'zod';
+import * as z from 'zod/mini';
 import { recSchema, type Rec } from '../shared/records.ts';
 
 /** The only code the mock accepts. The dev server prints it when a code is "sent". */
@@ -32,8 +32,8 @@ const decode = (s: string): Token | null => {
 
 const emailBody = z.object({ email: z.email() });
 const verifyBody = z.object({ email: z.email(), code: z.string() });
-const pushBody = z.object({ records: z.array(recSchema).max(100) });
-const pullBody = z.object({ after: z.string().nullable(), limit: z.number().int().min(1).max(PAGE_MAX) });
+const pushBody = z.object({ records: z.array(recSchema).check(z.maxLength(100)) });
+const pullBody = z.object({ after: z.nullable(z.string()), limit: z.int().check(z.gte(1), z.lte(PAGE_MAX)) });
 
 export function createMockServer() {
   const spaces = new Map<string, Space>();
@@ -53,7 +53,7 @@ export function createMockServer() {
     const name = req.headers.get('x-mock-space') ?? url.searchParams.get('space') ?? token?.s ?? 'default';
     const space = spaceOf(name);
     const path = url.pathname.replace(/^\/__mock/, '');
-    const body = async <T>(schema: z.ZodType<T>) => schema.safeParse(await req.json().catch(() => null));
+    const body = async <T>(schema: z.ZodMiniType<T>) => schema.safeParse(await req.json().catch(() => null));
 
     if (req.method === 'GET' && path === '/auth/google') {
       // the provider round trip: back to the app with a session in the fragment, as a redirect sign-in would
@@ -124,19 +124,25 @@ export function createMockServer() {
 }
 
 /** Node request in, web Request to the handler, Response back out. Shared with dev/api-middleware.ts. */
-export const toMiddleware = (handle: (r: Request) => Promise<Response>): Connect.NextHandleFunction => async (req, res) => {
-  const chunks: Buffer[] = [];
-  for await (const c of req) chunks.push(c as Buffer);
-  const headers = new Headers();
-  for (const [k, v] of Object.entries(req.headers)) if (typeof v === 'string') headers.set(k, v);
-  const hasBody = req.method !== 'GET' && req.method !== 'HEAD';
-  const request = new Request(`http://${req.headers.host}${req.originalUrl ?? req.url}`, { method: req.method, headers, body: hasBody ? Buffer.concat(chunks) : undefined });
-  const out = await handle(request).catch((e) => {
+export const toMiddleware = (handle: (r: Request) => Promise<Response>): Connect.NextHandleFunction => (req, res) => {
+  const run = async () => {
+    const chunks: Buffer[] = [];
+    for await (const c of req) chunks.push(c as Buffer);
+    const headers = new Headers();
+    for (const [k, v] of Object.entries(req.headers)) if (typeof v === 'string') headers.set(k, v);
+    const hasBody = req.method !== 'GET' && req.method !== 'HEAD';
+    const request = new Request(`http://${req.headers.host}${req.originalUrl ?? req.url}`, { method: req.method, headers, body: hasBody ? Buffer.concat(chunks) : undefined });
+    const out = await handle(request);
+    res.writeHead(out.status, Object.fromEntries(out.headers));
+    res.end(Buffer.from(await out.arrayBuffer()));
+  };
+  // a page closed mid-request aborts the body stream; that must not take the dev server down
+  run().catch((e) => {
+    if (req.destroyed || res.destroyed) return;
     console.error(e);
-    return fail(500, 'server_error');
+    if (!res.headersSent) res.writeHead(500, { 'Content-Type': 'application/json' });
+    res.end('{"ok":false,"error":"server_error"}');
   });
-  res.writeHead(out.status, Object.fromEntries(out.headers));
-  res.end(Buffer.from(await out.arrayBuffer()));
 };
 
 /** Mounts the mock at /__mock, and at /api/account when the app runs on the mock backend. */
