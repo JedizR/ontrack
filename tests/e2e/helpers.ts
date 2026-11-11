@@ -19,6 +19,14 @@ export async function openFresh(page: Page, s = space('fresh')) {
   return s;
 }
 
+/** Past Safari's install guide, if it shows, to Welcome. */
+export async function toWelcome(page: Page) {
+  const install = page.getByTestId('install-continue');
+  await expect(install.or(page.getByTestId('welcome'))).toBeVisible();
+  if (await install.isVisible()) await install.click();
+  await expect(page.getByTestId('welcome')).toBeVisible();
+}
+
 /** Seed per-device prefs (theme, text size, last tab) before the app loads, over what the app saved itself. */
 export const withPrefs = (page: Page, ui: object) =>
   page.addInitScript((v) => localStorage.setItem('ot-ui', JSON.stringify({ ...JSON.parse(localStorage.getItem('ot-ui') ?? '{}'), ...JSON.parse(v) })), JSON.stringify(ui));
@@ -155,8 +163,7 @@ export async function onboard(page: Page, a: Answers) {
     await page.getByTestId('field-height').click();
     await keypadEnter(page, ft);
     await keypadEnter(page, inches);
-    await page.getByTestId('field-weight').click();
-    await keypadEnter(page, a.weight ?? '132');
+    await keypadEnter(page, a.weight ?? '132'); // weight follows height while it is empty
   } else {
     await keypadEnter(page, a.height ?? '175');
     await keypadEnter(page, a.weight ?? '60');

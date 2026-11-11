@@ -181,7 +181,7 @@
           <Step title={t.born.q} onback={back} progress={prog} testid="step-born">
             <div class="flex flex-col gap-3">
               <Field label={t.born.field} value={d.birthYear ? String(d.birthYear) : null} onclick={askYear} testid="field-year" />
-              <p class="text-callout text-danger min-h-5" role="alert">{yearError}</p>
+              <p class="text-callout text-attention min-h-5" role="alert">{yearError}</p>
             </div>
             {#snippet footer()}{@render cta(!d.birthYear, () => next())}{/snippet}
           </Step>

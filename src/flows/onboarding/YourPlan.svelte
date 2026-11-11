@@ -60,13 +60,14 @@
     ].filter((l, i) => i < 2 || l.value !== 0) as { key: string; label: string; value: number; note?: string; basis: Basis[] }[],
   );
   let opened = $state<string | null>(null);
-  const signed = (v: number, first: boolean) => (first || v < 0 ? num(v) : `+${num(v)}`);
+  const kcal = (v: string) => `${v} ${t.after.kcal}`;
+  const signed = (v: number, first: boolean) => kcal(first || v < 0 ? num(v) : `+${num(v)}`);
 
   let tuneError = $state('');
   const round = (x: number, places: number) => Math.round(x * 10 ** places) / 10 ** places;
   async function askBodyFat() {
     tuneError = '';
-    const v = await keypad.ask({ title: t.plan.bodyFat, unit: t.units.percent, decimal: true, value: d.bodyFatPct ?? null, allowZero: true, hint: t.plan.bodyFatHint });
+    const v = await keypad.ask({ title: t.plan.bodyFat, unit: t.after.percent, decimal: true, value: d.bodyFatPct ?? null, allowZero: true, hint: t.plan.bodyFatHint });
     if (v === null) return;
     if (v === 0) return set({ bodyFatPct: undefined });
     const { min, max } = V.bodyFatRange;
@@ -77,7 +78,7 @@
     tuneError = '';
     const metric = d.units === 'metric';
     const was = d.goalWeightKg ? round(metric ? d.goalWeightKg : kgToLb(d.goalWeightKg), 1) : null;
-    const v = await keypad.ask({ title: t.plan.goalWeight, unit: metric ? t.units.kg : t.units.lb, decimal: true, value: was, allowZero: true, hint: t.plan.goalWeightHint });
+    const v = await keypad.ask({ title: t.plan.goalWeight, unit: metric ? t.after.kg : t.after.lb, decimal: true, value: was, allowZero: true, hint: t.plan.goalWeightHint });
     if (v === null) return;
     if (v === 0) return set({ goalWeightKg: undefined });
     const kg = metric ? v : lbToKg(v);
@@ -98,11 +99,11 @@
 
     <Card hero data-testid="plan-hero">
       <p class="text-hero num" data-testid="plan-kcal">{num(parts.total)}</p>
-      <p class="text-caption text-ink-2 mt-2">{matched ? t.plan.onTraining : t.plan.perDay}</p>
+      <p class="text-caption text-ink-2 mt-2">{matched ? t.after.kcalTraining : t.after.kcalDay}</p>
       {#if matched}<p class="text-callout num mt-3" data-testid="plan-rest">{t.plan.onRest(num(rest))}</p>{/if}
       <div class="border-line mt-5 border-t pt-5">
         <p class="text-display num" data-testid="plan-protein">{num(n.proteinG)}</p>
-        <p class="text-caption text-ink-2 mt-1">{t.plan.protein}</p>
+        <p class="text-caption text-ink-2 mt-1">{t.after.proteinDay}</p>
       </div>
     </Card>
 
@@ -119,23 +120,23 @@
               {#each l.basis as b (b.source)}<span class="mt-1 block">{SOURCES[b.source]?.cite}</span>{/each}
               {#if l.basis.some((b) => b.status === 'assumption')}<span class="mt-1 block">{t.plan.assumption}</span>{/if}
             {:else}
-              <span class="block">{t.plan.source(l.basis.map((b) => SOURCES[b.source]?.short).join(', '))}</span>
+              <span class="block">{t.plan.source(l.basis.map((b) => SOURCES[b.source]?.short).join('; '))}</span>
             {/if}
           {/snippet}
         </Row>
       {/each}
-      <Row title={t.plan.total} value={num(parts.total)} testid="line-total" />
+      <Row title={t.plan.total} value={kcal(num(parts.total))} testid="line-total" />
     </Card>
 
     <h2 class="text-heading mt-5">{t.plan.tune}</h2>
     <Card list>
-      <Row title={t.plan.bodyFat} value={d.bodyFatPct ? `${num(d.bodyFatPct, 1)} ${t.units.percent}` : t.plan.noneYet} onclick={askBodyFat} testid="tune-bodyfat" />
+      <Row title={t.plan.bodyFat} value={d.bodyFatPct ? `${num(d.bodyFatPct, 1)} ${t.after.percent}` : t.plan.noneYet} onclick={askBodyFat} testid="tune-bodyfat" />
       <Row title={t.plan.goalWeight} value={d.goalWeightKg ? weightText(d.goalWeightKg, d.units) : t.plan.noneYet} onclick={askGoalWeight} testid="tune-goalweight" />
       <Row title={t.plan.even} caption={t.plan.evenLine}>
         {#snippet trailing()}<Switch checked={!!d.even} label={t.plan.even} onchange={(even) => set({ even })} testid="tune-even" />{/snippet}
       </Row>
     </Card>
-    <p class="text-callout text-danger min-h-5" role="alert" data-testid="tune-error">{tuneError}</p>
+    <p class="text-callout text-attention min-h-5" role="alert" data-testid="tune-error">{tuneError}</p>
   </div>
   {#snippet footer()}
     <Button variant="primary" size="lg" full onclick={onsave} data-testid="plan-save">{t.plan.save}</Button>

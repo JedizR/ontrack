@@ -25,14 +25,14 @@
     error = '';
     let cm: number;
     if (d.units === 'metric') {
-      const v = await keypad.ask({ title: t.body.height, unit: t.units.cm, decimal: true, value: d.heightCm ? round(d.heightCm, 0) : null });
+      const v = await keypad.ask({ title: t.body.height, unit: t.after.cm, decimal: true, value: d.heightCm ? round(d.heightCm, 0) : null });
       if (v === null) return false;
       cm = v;
     } else {
       const was = d.heightCm ? cmToFtIn(d.heightCm) : null;
-      const ft = await keypad.ask({ title: t.body.feet, unit: t.units.ft, value: was?.ft });
+      const ft = await keypad.ask({ title: t.body.feet, unit: t.after.ft, value: was?.ft });
       if (ft === null) return false;
-      const inches = await keypad.ask({ title: t.body.inches, unit: t.units.in, value: was?.inches, allowZero: true });
+      const inches = await keypad.ask({ title: t.body.inches, unit: t.after.in, value: was?.inches, allowZero: true });
       if (inches === null) return false;
       cm = ftInToCm(ft, inches);
     }
@@ -49,7 +49,7 @@
     error = '';
     const metric = d.units === 'metric';
     const shown = d.weightKg ? round(metric ? d.weightKg : kgToLb(d.weightKg), 1) : null;
-    const v = await keypad.ask({ title: t.body.weight, unit: metric ? t.units.kg : t.units.lb, decimal: true, value: shown });
+    const v = await keypad.ask({ title: t.body.weight, unit: metric ? t.after.kg : t.after.lb, decimal: true, value: shown });
     if (v === null) return false;
     const kg = metric ? v : lbToKg(v);
     const [lo, hi] = LIMITS.weightKg;
@@ -61,10 +61,12 @@
     return true;
   }
 
-  // on a first visit the keypad opens at once: height, then weight
-  onMount(() => {
-    if (!d.heightCm) void askHeight().then((ok) => { if (ok && !d.weightKg) void askWeight(); });
-  });
+  /** Height, then weight straight after while it is still empty. */
+  async function askBoth() {
+    if ((await askHeight()) && !d.weightKg) await askWeight();
+  }
+  // on a first visit the keypad opens at once
+  onMount(() => { if (!d.heightCm) void askBoth(); });
 </script>
 
 <Step title={t.body.q} caption={t.body.caption} onback={back} {progress} testid="step-body">
@@ -75,9 +77,9 @@
       options={[{ value: 'metric' as Units, label: t.body.metric }, { value: 'imperial' as Units, label: t.body.imperial }]}
       onchange={(units) => { error = ''; set({ units }); }}
     />
-    <Field label={t.body.height} value={d.heightCm ? heightText(d.heightCm, d.units) : null} onclick={askHeight} testid="field-height" />
+    <Field label={t.body.height} value={d.heightCm ? heightText(d.heightCm, d.units) : null} onclick={askBoth} testid="field-height" />
     <Field label={t.body.weight} value={d.weightKg ? weightText(d.weightKg, d.units) : null} onclick={askWeight} testid="field-weight" />
-    <p class="text-callout text-danger min-h-5" role="alert">{error}</p>
+    <p class="text-callout text-attention min-h-5" role="alert">{error}</p>
   </div>
   {#snippet footer()}
     <Button variant="primary" size="lg" full disabled={!d.heightCm || !d.weightKg} onclick={next} data-testid="continue">{t.onboarding.continue}</Button>

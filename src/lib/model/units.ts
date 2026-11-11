@@ -17,10 +17,10 @@ export function cmToFtIn(cm: number) {
 
 /** A weight in the user's units, "72.5 kg" or "159.8 lb". */
 export const weightText = (kg: number, u: Units, decimals = 1) =>
-  u === 'metric' ? `${num(kg, decimals)} ${t.units.kg}` : `${num(kgToLb(kg), decimals)} ${t.units.lb}`;
+  u === 'metric' ? `${num(kg, decimals)} ${t.after.kg}` : `${num(kgToLb(kg), decimals)} ${t.after.lb}`;
 /** A height in the user's units, "175 cm" or "5 ft 9 in". */
 export function heightText(cm: number, u: Units) {
-  if (u === 'metric') return `${num(cm, 0)} ${t.units.cm}`;
+  if (u === 'metric') return `${num(cm, 0)} ${t.after.cm}`;
   const { ft, inches } = cmToFtIn(cm);
   return t.units.ftIn(String(ft), String(inches));
 }

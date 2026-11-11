@@ -11,7 +11,7 @@ const kcal = (page: Page) => page.getByTestId('plan-kcal').innerText();
 /** The breakdown's lines add up to the target shown. */
 async function sumsExactly(page: Page) {
   const values = await page.getByTestId('plan-breakdown').locator('[data-testid^="line-"]').evaluateAll((rows) =>
-    rows.map((r) => [r.getAttribute('data-testid'), Number(r.querySelector('.num')!.textContent!.replace(/[,+]/g, ''))] as const));
+    rows.map((r) => [r.getAttribute('data-testid'), Number(r.querySelector('.num')!.textContent!.replace(/[,+]| kcal/g, ''))] as const));
   const total = values.find(([k]) => k === 'line-total')![1];
   expect(values.filter(([k]) => k !== 'line-total').reduce((a, [, v]) => a + v, 0)).toBe(total);
   expect(Number((await kcal(page)).replace(/,/g, ''))).toBe(total);

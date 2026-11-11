@@ -23,7 +23,7 @@
   const sex = $derived<Sex>(d.sex ?? 'unspecified');
   // the number Your plan leads with: a training day, or every day when there is no training or one target a day
   const training = $derived(!d.even && trainingDayEee(c.hold) > 0);
-  const kcal = (p: PlanNumbers) => num(targetWith(p, sex, training ? trainingDayEee(p) : evenEee(p)));
+  const kcal = (p: PlanNumbers) => `${num(targetWith(p, sex, training ? trainingDayEee(p) : evenEee(p)))} ${t.after.kcal}`;
   const weekly = (p: PlanNumbers) => weightText(kgPerWeek(p, sex), d.units);
 
   const WHY = {
@@ -42,9 +42,7 @@
 
 <Step title={t.pace.q} onback={back} {progress} testid="step-pace">
   <div class="flex flex-col gap-3">
-    <div class="flex items-baseline justify-between gap-3">
-      <span class="text-callout text-ink-2 font-medium">{training ? t.pace.trainingDay : t.pace.perDay}</span>
-    </div>
+    <span class="text-callout text-ink-2 font-medium">{training ? t.pace.trainingDay : t.pace.perDay}</span>
     <Choices label={t.pace.q} {options} value={picked} onpick={(rate) => next({ rate })} />
     {#if c.why}<p class="text-callout text-ink-2" data-testid="pace-why">{WHY[c.why]}</p>{/if}
   </div>
