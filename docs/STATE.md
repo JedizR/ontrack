@@ -11,7 +11,7 @@ Status is one of: not started, in progress, shipped, shipped with cuts, blocked.
 | M0 | Foundations | shipped with cuts | PR #4, merged, `v0.0.0` | Supabase MCP not added (needs browser sign in). `foods:build` waits for M5 |
 | M1 | Design system | shipped | PR #5, merged, `v0.1.0` | Rubric pass stands in for the owner's approval; gallery is on his review list |
 | M2 | Engine | shipped | PR #6, merged, `v0.2.0` | 19 sources checked; 3 values kept against their source, on the owner's review list |
-| M3 | Data, sync, sign-in | shipped with cuts | branch `m3-data-sync`, PR pending | Conformance green on mock and live. Live sign in blocked: no Google client, no SMTP for codes. No Privacy and Terms line |
+| M3 | Data, sync, sign-in | shipped with cuts | PR #7 | Conformance green on mock and live. Live sign in blocked: no Google client, no SMTP for codes. No Privacy and Terms line |
 | M4 | Onboarding and plan | not started | | |
 | M5 | Today and logging | not started | | |
 | M6 | Photo logging | not started | | |
