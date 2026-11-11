@@ -2,6 +2,35 @@
 
 Changes to a doc's decision, and choices made on the owner's behalf. Newest first, one line each: what, why.
 
+## M4
+
+- Which screen opens: no store on the phone shows onboarding; a signed in phone that has never pulled shows Today's first load state; signed in and pulled with no profile shows onboarding again, from Welcome without "I already have an account". Why: sync rule 5, pull before deciding whether to show onboarding.
+- The draft lives in prefs under `ot-ui`, field `draft`, not `ontrack:prefs`. Why: `ot-ui` is the prefs key since M0.
+- "Save my plan" marks the draft saved; it becomes records only once a signed in phone has pulled. A draft that meets an account with a profile is dropped without a message. Why: TECH-SPEC section 4; the account's plan is the one the person made before.
+- Leaving setup (from the eating disorder advice or the age screen) clears the draft and returns to Welcome.
+- Eating disorder advice: "Leave setup" is the main action; continuing gives a maintenance target only, as for the other two answers. Why: PRD section 7 advises against tracking and offers to exit; maintenance only is the safest way to continue.
+- Age is the current year minus the birth year, so 2008 passes in 2026. Why: only the year is asked.
+- Field limits: birth year from 110 years ago to this year, height 100 to 250 cm, weight 30 to 300 kg, body fat 5 to 60 percent (the engine's range). Why: wider than any adult, inside the database checks.
+- The experience question is skipped only when the week typed in has no strength or circuit session. "I will set this up later" and programs still ask it; skipped means beginner. Why: experience changes the gain pace and cap.
+- A typed week spreads its sessions from Monday (2: Mon Thu, 3: Mon Wed Fri, 4: Mon Tue Thu Fri, then consecutive). The session name is the type's label. Defaults: 3 days, strength, 60 minutes, moderate.
+- A program picked in Templates stays when coming back to step 7, unless the controls are changed ("Using Upper lower 4 days" says so).
+- Templates in M4 lists name, days a week and who it suits; the "who it suits" lines are in `en.ts` now. Muscle balance per template and the replace confirm wait for M7.
+- The pace step, when the guardrails remove every loss pace (BMI under 18.5), offers one "Hold your weight" option with the reason. It also explains the faster pace starting at BMI 25 and the lean only pace for advanced lifters. Why: one line saying why for every missing option.
+- The pace figures and the Your plan hero show a typical training day: the mean exercise energy of the days that have a session. With no sessions, or the same target every day, one number. Why: a program can have sessions of different lengths.
+- The breakdown shows whole kcal; the rounding to the 10 kcal target lands on daily movement, itself an estimate. A lift to the floor is its own line. Why: the lines must sum exactly to the target.
+- Each breakdown line shows its first source when closed and every citation, with Working assumption where it applies, when tapped, in place rather than in a sheet. Short names and citations live in `src/lib/data/sources.ts`. Why: The science screen is M9; one line of caption per row.
+- Flags sit below Fine tune, in the spec's order; the doctor card (BMI under 16) sits at the top on `--attention-soft`. Why: rubric 14; the doctor card is health guidance and comes first.
+- Onboarding's input messages (out of range, goal weight refused) use `--attention`, not `--danger`. Why: danger is never for weight.
+- The check-in weekday is the weekday the plan started. Why: the first check-in falls two weeks later on the same day.
+- Single choice questions move on as soon as an answer is tapped and still show Continue, for coming back to an answered step.
+- The birth year keypad opens by itself on a first visit and a valid year moves on; height then weight open by themselves the same way. Why: fewer taps toward 90 seconds.
+- The install guide shows on every visit in Safari on iPhone until onboarding is done, and is not remembered. Android and desktop skip it. Why: SCREENS.md section 3, "on every visit until done".
+- The keypad sheet loads lazily in `App.svelte` with the sign in and account sheets, and onboarding is its own lazy chunk. Why: the first chunk stays small for the returning user.
+- New components: `Switch` (ink when on, never lime) and `Wordmark` (the mark inline, the name as live text).
+- Unit abbreviations and the hero captions ("kcal on training days") live under `after` in `en.ts`. Why: they continue a number and start in lower case.
+- Goal weight is stored on the plan and only checked against BMI 18.5, not against the goal's direction. Why: PRD section 7 sets only that rule.
+- End to end: `open(page)` now signs in to a seeded account that has finished onboarding (vector A), `openFresh` starts a first run, and `withPrefs` merges into `ot-ui` instead of replacing it. Why: there is no signed out shell any more.
+
 ## M3
 
 - The Backend interface gains `auth.googleEnabled()`, read from Supabase's public auth settings. Why: the Google button is hidden while the project has no Google provider, instead of being a dead button.

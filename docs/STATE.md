@@ -12,7 +12,7 @@ Status is one of: not started, in progress, shipped, shipped with cuts, blocked.
 | M1 | Design system | shipped | PR #5, merged, `v0.1.0` | Rubric pass stands in for the owner's approval; gallery is on his review list |
 | M2 | Engine | shipped | PR #6, merged, `v0.2.0` | 19 sources checked; 3 values kept against their source, on the owner's review list |
 | M3 | Data, sync, sign-in | shipped with cuts | PR #7, merged, `v0.3.0` | Conformance green on mock and live. Live sign in blocked: no Google client, no SMTP for codes. No Privacy and Terms line |
-| M4 | Onboarding and plan | not started | | |
+| M4 | Onboarding and plan | shipped | `m4-onboarding`, PR pending merge | Gate green on the mock. Saving on production waits for live sign in (M3 blockers). Templates without muscle balance until M7 |
 | M5 | Today and logging | not started | | |
 | M6 | Photo logging | not started | | |
 | M7 | Training | not started | | |
@@ -54,3 +54,11 @@ M3 (data, sync, sign-in):
 - Mock backend: `dev/mock-backend.ts`, code 123456, spaces per test (`useSpace`, `signIn` in `tests/e2e/helpers.ts`), `POST /__mock/expire`. `window.ontrack` in dev for tests that log data before the screens exist.
 - `DELETE /api/account` is real (`server/handlers/account.ts`), mounted on the dev server for `dev:live`.
 - Branch `pr-assets` holds PR screenshots only; never merge it.
+
+M4 (onboarding and plan):
+- `App.svelte` decides the screen: `onboarding` (no store, or signed in and pulled with no profile) mounts the lazy `src/flows/onboarding/Onboarding.svelte`; otherwise the shell. A saved draft meets the account in `settle.ts` after the first pull.
+- Draft and its logic: `src/flows/onboarding/draft.ts` (pure: `route`, `inputOf`, `paceChoices`, `programOf`, `toRecords`). `actions.finishOnboarding` writes profile, program, plan and the first weigh-in.
+- Reuse for Today and How it is calculated: `src/lib/model/day.ts` (`targetWith`, `targetParts` whose lines sum to the target, `trainingDayEee`, `evenEee`, `kgPerWeek`), `src/lib/model/units.ts` (`weightText`, `heightText`, conversions), `src/lib/model/dates.ts` (`today`, `nowIso`, `yearOf`, `weekdayOf`; M5 adds the rest), `src/lib/data/sources.ts` (short names and citations).
+- `KeypadSheet` is now mounted once in `App.svelte` (lazy). New components `Switch` and `Wordmark`.
+- Tests: `open(page)` signs in to a seeded onboarded account (vector A, 60 kg weigh-in on `TODAY`); `openFresh`, `toWelcome`, `seedAccount`, `onboard(page, answers)`, `keypadEnter` in `tests/e2e/helpers.ts`. `onboarding.spec.ts` runs in the light project; stress walks onboarding on every phone and text size.
+- Gate evidence: 13 onboarding tests (each goal, each guardrail, returning user, draft discarded, signed in without a plan, reload). An automated run takes about 10 s; the hardgainer path is 25 taps and 9 keypad digits before sign in.

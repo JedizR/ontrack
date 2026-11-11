@@ -37,6 +37,12 @@ Each entry: what is blocked, what Claude tried, the exact steps for you, and wha
 
 Each entry: what to look at (URL or screenshot paths), what to look for, and which milestone it belongs to.
 
+### M4: onboarding on your iPhone, twice
+
+- **Where:** the pull request's Vercel preview in Safari on the iPhone for the install guide, then the installed app. Saving the plan needs sign in, so the last step waits for the two M3 entries above; until then `pnpm dev` on the Mac runs the whole flow against the mock (code 123456). Screenshots: `screenshots/onboarding/` after `pnpm screenshots -- --grep onboarding` (every step, light and dark, 390, SE and Pro Max), and `screenshots/stress/*/onboarding/` for every device and text size.
+- **Look for:** run it once as yourself (Build muscle) and once as someone losing weight. In Safari: do the install steps match the menu on your iOS version (the button beside the address bar, Share, View More, Add to Home Screen)? Time each run with a stopwatch from Get started to Save my plan: under 90 seconds. The keypad opens by itself for the birth year and for height then weight; is that welcome or abrupt? Do the numbers on Your plan look right for you, and does tapping a line of "How this was calculated" show its source? Close the app on any step and reopen: it should come back to the same step. Then Save my plan, sign in, and land on Today.
+- **Decided for you:** the M4 list in `docs/DECISIONS.md`, notably the eating disorder screen's main action being Leave setup, the typed week's weekdays, the training day hero being an average training day, and no Privacy and Terms line until M9.
+
 ### M3: sign in and sync on your iPhone
 
 - **Where:** after both entries above are done, the pull request's Vercel preview or `https://ontrack-black.vercel.app` once merged, installed to the home screen. Until then, `pnpm dev` on the Mac shows the same flow against the mock (code 123456). Screenshots: `screenshots/signin/`, `screenshots/account/`, `screenshots/today/session-expired-*` and `bringing-*` after `pnpm screenshots`.

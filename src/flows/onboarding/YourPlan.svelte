@@ -54,10 +54,10 @@
     [
       { key: 'bmr', label: t.plan.bmr, value: parts.bmr, basis: [bodyFat ? C.cunningham : C.mifflin] },
       { key: 'movement', label: t.plan.movement, value: parts.movement, basis: [C.neat] },
-      { key: 'training', label: t.plan.training, value: parts.training, note: matched ? t.plan.howTraining : t.plan.howEven, basis: [C.metStrength] },
+      { key: 'training', label: t.plan.training, value: parts.training, basis: [C.metStrength] },
       { key: 'goal', label: t.plan.goal, value: parts.goal, basis: [n.goal === 'lose' ? C.losePace : C.gainPace, C.kcalPerKg] },
       { key: 'floor', label: t.plan.floorLift, value: parts.floorLift, basis: [C.floor] },
-    ].filter((l, i) => i < 2 || l.value !== 0) as { key: string; label: string; value: number; note?: string; basis: Basis[] }[],
+    ].filter((l, i) => i < 2 || l.value !== 0) as { key: string; label: string; value: number; basis: Basis[] }[],
   );
   let opened = $state<string | null>(null);
   const kcal = (v: string) => `${v} ${t.after.kcal}`;
@@ -108,19 +108,19 @@
     </Card>
 
     <p class="text-body mt-2" data-testid="plan-expect">{expect} {t.plan.estimate}</p>
-    {#each flags as f (f)}<p class="text-callout text-attention" data-testid="plan-flag">{f}</p>{/each}
 
     <h2 class="text-heading mt-5">{t.plan.how}</h2>
+    <p class="text-callout text-ink-2 -mt-2">{matched ? t.plan.howTraining : t.plan.howEven}</p>
     <Card list data-testid="plan-breakdown">
       {#each lines as l, i (l.key)}
         <Row title={l.label} value={signed(l.value, i === 0)} onclick={() => (opened = opened === l.key ? null : l.key)} testid="line-{l.key}">
+          <!-- one line closed (the first source), every citation and its status open -->
           {#snippet caption()}
-            {#if l.note}<span class="block">{l.note}</span>{/if}
             {#if opened === l.key}
               {#each l.basis as b (b.source)}<span class="mt-1 block">{SOURCES[b.source]?.cite}</span>{/each}
               {#if l.basis.some((b) => b.status === 'assumption')}<span class="mt-1 block">{t.plan.assumption}</span>{/if}
             {:else}
-              <span class="block">{t.plan.source(l.basis.map((b) => SOURCES[b.source]?.short).join('; '))}</span>
+              <span class="block">{SOURCES[l.basis[0].source]?.short}</span>
             {/if}
           {/snippet}
         </Row>
@@ -132,10 +132,11 @@
     <Card list>
       <Row title={t.plan.bodyFat} value={d.bodyFatPct ? `${num(d.bodyFatPct, 1)} ${t.after.percent}` : t.plan.noneYet} onclick={askBodyFat} testid="tune-bodyfat" />
       <Row title={t.plan.goalWeight} value={d.goalWeightKg ? weightText(d.goalWeightKg, d.units) : t.plan.noneYet} onclick={askGoalWeight} testid="tune-goalweight" />
-      <Row title={t.plan.even} caption={t.plan.evenLine}>
+      <Row title={t.plan.even}>
         {#snippet trailing()}<Switch checked={!!d.even} label={t.plan.even} onchange={(even) => set({ even })} testid="tune-even" />{/snippet}
       </Row>
     </Card>
+    {#each flags as f (f)}<p class="text-callout text-attention" data-testid="plan-flag">{f}</p>{/each}
     <p class="text-callout text-attention min-h-5" role="alert" data-testid="tune-error">{tuneError}</p>
   </div>
   {#snippet footer()}
