@@ -1,6 +1,6 @@
 // GET /api/cron/keepalive: one trivial query a day so the free Supabase project is not paused for inactivity.
 import { timingSafeEqual } from 'node:crypto';
-import { createClient } from '@supabase/supabase-js';
+import { admin } from '../auth.js';
 import { env } from '../env.js';
 import { json } from '../http.js';
 
@@ -13,8 +13,7 @@ export const authorized = (header: string | null, secret: string) => {
 
 export async function keepalive(request: Request): Promise<Response> {
   if (!authorized(request.headers.get('authorization'), env('CRON_SECRET'))) return json(401, { ok: false, error: 'unauthorized' });
-  const db = createClient(env('SUPABASE_URL'), env('SUPABASE_SECRET_KEY'), { auth: { persistSession: false } });
-  const { error } = await db.from('records').select('id').limit(1);
+  const { error } = await admin().from('records').select('id').limit(1);
   if (error) {
     console.error('keepalive failed', error.code);
     return json(502, { ok: false, error: 'provider_error' });

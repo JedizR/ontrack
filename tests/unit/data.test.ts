@@ -56,3 +56,8 @@ describe('templates', () => {
     }
   });
 });
+
+test('every template saves as a program record', async () => {
+  const { programSchema } = await import('../../shared/records');
+  for (const tpl of TEMPLATES) expect(programSchema.safeParse({ name: tpl.name, sessions: tpl.sessions }).success, tpl.id).toBe(true);
+});

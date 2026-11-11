@@ -1,7 +1,7 @@
 // Visual review: every screen in its main states -> screenshots/<screen>/<state>-<theme>-<device>.png
 //   pnpm screenshots -- --grep "shell"
 import { test, type Page } from '@playwright/test';
-import { open, withPrefs } from './helpers';
+import { open, signIn, space, useSpace, withPrefs } from './helpers';
 
 const SECTIONS = ['prefs', 'buttons', 'track', 'hero', 'rows', 'chips', 'sheets', 'week', 'feedback', 'states'];
 
@@ -73,6 +73,51 @@ for (const theme of ['light', 'dark'] as const) {
         await at('feedback');
         await page.getByRole('button', { name: 'Show an undo toast' }).click();
         await shot(page, 'gallery', 'toast-undo');
+      });
+
+      // SCREENS.md sections 5, 11 (account) and 12 (session expired, first load)
+      test('signin', async ({ page }) => {
+        const s = space('screens');
+        await useSpace(page, s);
+        await open(page);
+        await page.getByTestId('avatar').click();
+        await page.getByTestId('signin-send').waitFor();
+        await shot(page, 'signin', 'email');
+        await page.getByTestId('signin-email').fill('me@example.com');
+        await page.getByTestId('signin-send').click();
+        await page.getByTestId('signin-code').waitFor();
+        await page.getByTestId('signin-code').fill('12');
+        await shot(page, 'signin', 'code');
+        await page.getByTestId('signin-code').fill('000000');
+        await page.getByText('That code did not match').waitFor();
+        await page.waitForTimeout(400);
+        await shot(page, 'signin', 'wrong-code');
+        await page.getByTestId('signin-code').fill('123456');
+        await page.getByTestId('signin-sheet').waitFor({ state: 'detached' });
+
+        await page.getByTestId('avatar').click();
+        await page.getByTestId('account-sheet').waitFor();
+        await shot(page, 'account', 'main');
+        await page.getByTestId('account-delete').click();
+        await page.getByTestId('delete-confirm').fill('me@');
+        await shot(page, 'account', 'delete');
+        await page.keyboard.press('Escape');
+        await page.getByTestId('account-sheet').waitFor({ state: 'detached' });
+
+        await page.request.post('/__mock/expire', { headers: { 'x-mock-space': s } });
+        await page.evaluate(() => (window as unknown as { ontrack: { sync: { run(): Promise<void> } } }).ontrack.sync.run());
+        await page.getByTestId('session-expired').waitFor();
+        await shot(page, 'today', 'session-expired');
+      });
+
+      test('first load', async ({ page }) => {
+        await useSpace(page, space('first-load'));
+        // hold the first pull so the first load state stays on screen
+        await page.route('**/__mock/pull', () => {});
+        await open(page);
+        await signIn(page);
+        await page.getByTestId('bringing').waitFor();
+        await shot(page, 'today', 'bringing');
       });
 
       // Today composed from the real components, next to the static reference mock

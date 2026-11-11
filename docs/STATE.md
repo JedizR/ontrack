@@ -11,7 +11,7 @@ Status is one of: not started, in progress, shipped, shipped with cuts, blocked.
 | M0 | Foundations | shipped with cuts | PR #4, merged, `v0.0.0` | Supabase MCP not added (needs browser sign in). `foods:build` waits for M5 |
 | M1 | Design system | shipped | PR #5, merged, `v0.1.0` | Rubric pass stands in for the owner's approval; gallery is on his review list |
 | M2 | Engine | shipped | PR #6, merged, `v0.2.0` | 19 sources checked; 3 values kept against their source, on the owner's review list |
-| M3 | Data, sync, sign-in | not started | | |
+| M3 | Data, sync, sign-in | shipped with cuts | PR #7 | Conformance green on mock and live. Live sign in blocked: no Google client, no SMTP for codes. No Privacy and Terms line |
 | M4 | Onboarding and plan | not started | | |
 | M5 | Today and logging | not started | | |
 | M6 | Photo logging | not started | | |
@@ -25,7 +25,9 @@ Status is one of: not started, in progress, shipped, shipped with cuts, blocked.
 - Hosting: real. Vercel `jedizrs-projects/ontrack`, Hobby, Git connected. Previews sit behind Vercel Authentication. Production domain `ontrack-black.vercel.app` goes live on the first merge to `main`.
 - Database: real. Supabase `ontrack`, ref `sbexrpzbzkzofnbpaauu`, Singapore, free plan. Migration `0001_init.sql` applied. Security advisors clean.
 - Keep-alive: real. `/api/cron/keepalive`, daily 03:17 UTC, answered 200 on the preview.
-- Sign in, sync, vision: not built yet. Vercel holds `VITE_BACKEND=supabase`, the Supabase URL and keys, and `CRON_SECRET` for production and preview.
+- Sync and account deletion: real, checked by `pnpm test:live` (the conformance suite against the project, test users made and deleted). Security advisors clean.
+- Sign in: built for both providers, live on neither yet. Google provider off (no OAuth client; the app hides the button). Email codes need custom SMTP before Supabase lets the template carry the code. Both are in `docs/BLOCKERS.md`. Auth settings (site URL, redirects, 6 digit codes, 10 minutes, 30 s resend) are pushed.
+- Vision: not built yet. Vercel holds `VITE_BACKEND=supabase`, the Supabase URL and keys, and `CRON_SECRET` for production and preview.
 
 ## Notes for the next milestone
 
@@ -43,5 +45,12 @@ Status is one of: not started, in progress, shipped, shipped with cuts, blocked.
 - Unselected tab labels are `--ink-2` now (M0 open item settled).
 - Playwright's WebKit does not draw `backdrop-filter`; the dock looks unblurred in screenshots. The owner checks it on the phone.
 - Checking a preview: `vercel curl <path> --deployment <url>`. `check:pwa` and Playwright with `E2E_BASE_URL` read `VERCEL_AUTOMATION_BYPASS_SECRET`. `vercel curl` makes one on the project if none exists.
-- For M3: `.env.local` holds `SUPABASE_DB_PASSWORD` and `VERCEL_OIDC_TOKEN`; never `vercel env pull .env.local` over it. The Supabase CLI pushes migrations without the password. Auth settings (site URL, redirects, email code) are not set yet.
+- `.env.local` holds `SUPABASE_DB_PASSWORD` and `VERCEL_OIDC_TOKEN`; never `vercel env pull .env.local` over it. `pnpm dev:live` and `pnpm test:live` take keys from the Supabase CLI (`scripts/live-env.sh`), nothing on disk. Local `pnpm build` uses the mock (`.env.local` seems to set `VITE_BACKEND=mock`); Vercel builds use Supabase.
+
+M3 (data, sync, sign-in):
+- Records and zod/mini schemas in `shared/records.ts` (`ids` makes the deterministic ids). Store `src/lib/db/store.svelte.ts` (`db.live(c)`, `db.get(c, id)`, maps in `db.data`), sync `src/lib/sync/engine.svelte.ts` (`sync.status`, `sync.pulled`), backends in `src/lib/backend/`, session in `src/lib/session.svelte.ts` (`session.user`, `session.backend`). Screens read the store; writes go through `src/lib/actions.ts` (profile, plan, program, weight, meal, thumb, saved, session log, check-in, day; deletes return undo; `undoToast` for the toast).
+- The store opens only for a signed in user. M4's onboarding draft lives in prefs (`ot-ui`, which now also holds `lastUser` and `lastEmail`) and becomes records after the first pull (`sync.pulled`).
+- `SignInSheet` takes a `title` ("Save your plan" for M4). App-wide sheets open through `sheets` in `src/lib/sheets.svelte.ts`; they are lazy chunks mounted in `App.svelte`. The avatar opens the account sheet (`src/settings/AccountSheet.svelte`); M9's Settings takes it over and adds the Privacy and Terms line to the sign in sheet.
+- Mock backend: `dev/mock-backend.ts`, code 123456, spaces per test (`useSpace`, `signIn` in `tests/e2e/helpers.ts`), `POST /__mock/expire`. `window.ontrack` in dev for tests that log data before the screens exist.
+- `DELETE /api/account` is real (`server/handlers/account.ts`), mounted on the dev server for `dev:live`.
 - Branch `pr-assets` holds PR screenshots only; never merge it.

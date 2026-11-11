@@ -5,6 +5,8 @@ import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import { fileURLToPath } from 'node:url';
 import { readFileSync } from 'node:fs';
+import { mockBackend } from './dev/mock-backend.ts';
+import { devApi } from './dev/api-middleware.ts';
 
 const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8'));
 
@@ -15,6 +17,8 @@ export default defineConfig({
   plugins: [
     tailwindcss(),
     svelte(),
+    mockBackend(),
+    devApi(),
     VitePWA({
       registerType: 'prompt',
       injectRegister: false,
@@ -44,7 +48,7 @@ export default defineConfig({
         // the gallery chunk exists on previews only and is never needed offline
         globIgnores: ['**/Gallery-*'],
         navigateFallback: '/index.html',
-        navigateFallbackDenylist: [/^\/api\//],
+        navigateFallbackDenylist: [/^\/api\//, /^\/__mock\//],
         cleanupOutdatedCaches: true,
       },
     }),

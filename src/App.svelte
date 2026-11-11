@@ -10,6 +10,10 @@
   import Dock from '$lib/components/Dock.svelte';
   import Toasts from '$lib/components/Toasts.svelte';
   import Today from './tabs/Today.svelte';
+  import { session } from '$lib/session.svelte';
+  import { sync } from '$lib/sync/engine.svelte';
+  import { sheets } from '$lib/sheets.svelte';
+  import type { SyncState } from '$lib/components/SyncMark.svelte';
 
   const TITLES = [t.tabs.today, t.tabs.train, t.tabs.progress];
 
@@ -21,6 +25,14 @@
     if (i === 2 && !Progress) Progress = (await import('./tabs/Progress.svelte')).default;
   }
   $effect(() => { void loadTab(prefs.tab); });
+
+  // the sign in and account sheets (and the drawer code under them) load after the first paint, like the tabs
+  let SignIn = $state<Component<{ open: boolean }> | null>(null);
+  let Account = $state<Component<{ open: boolean }> | null>(null);
+  async function loadSheets() {
+    [SignIn, Account] = await Promise.all([import('./flows/signin/SignInSheet.svelte'), import('./settings/AccountSheet.svelte')]).then((m) => m.map((x) => x.default));
+  }
+  $effect(() => { if ((sheets.signin || sheets.account) && !SignIn) void loadSheets(); });
 
   // tab changes slide in from the side the finger came from; swiping wraps around
   let dir = $state(1);
@@ -39,10 +51,14 @@
     onCancel: () => { dragging = false; dragX = 0; },
   };
 
+  // the header's dot: an expired session and a failing sync both need attention
+  const MARK: Record<typeof sync.status, SyncState> = { idle: 'idle', syncing: 'syncing', offline: 'offline', error: 'attention', auth: 'attention' };
+
   onMount(() => {
     applyTheme();
     applyFontSize();
-    const preload = setTimeout(() => { void loadTab(1); void loadTab(2); }, 800);
+    void session.boot();
+    const preload = setTimeout(() => { void loadTab(1); void loadTab(2); loadSheets().catch(() => undefined); }, 800); // a failed preload retries on first open
 
     if (import.meta.env.PROD) {
       import('virtual:pwa-register').then(({ registerSW }) => {
@@ -58,7 +74,12 @@
 </script>
 
 <div class="bg-canvas relative mx-auto flex min-h-dvh w-full max-w-[480px] flex-col overflow-x-clip">
-  <Header title={TITLES[prefs.tab]} />
+  <Header
+    title={TITLES[prefs.tab]}
+    sync={MARK[sync.status]}
+    signedIn={!!session.user}
+    onaccount={() => (session.user ? (sheets.account = true) : (sheets.signin = true))}
+  />
 
   <!-- flex-1: the whole area between header and dock takes swipes, not just the content -->
   <main class="flex-1 px-5 pb-[calc(env(safe-area-inset-bottom)+var(--dock-h)+40px)]" use:swipe={swipeOpts}>
@@ -80,4 +101,6 @@
   <Dock tab={prefs.tab} onselect={(i) => void go(i)} {swipeOpts} />
 </div>
 
+{#if SignIn}<SignIn bind:open={sheets.signin} />{/if}
+{#if Account}<Account bind:open={sheets.account} />{/if}
 <Toasts />
