@@ -19,7 +19,7 @@
     <h1 class="text-title min-w-0 flex-1 truncate">{title}</h1>
     <SyncMark state={sync} />
     <div class="bg-surface-2 text-ink-2 grid size-9 place-items-center rounded-full" role="img" aria-label={t.shell.account}>
-      <User size={20} strokeWidth={1.75} aria-hidden="true" />
+      <User size={24} strokeWidth={1.75} aria-hidden="true" />
     </div>
   </div>
 </header>

@@ -24,13 +24,13 @@
 
 <!-- floating pill with three tabs, and the lime plus button to its right, 14 px above the safe area.
      Unselected tabs are ink-2, not the spec's ink-3: their labels are text and need 4.5 to 1 (docs/DECISIONS.md). -->
-<div class="fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+14px)] z-30 mx-auto flex max-w-[480px] items-center gap-2.5 px-4" data-testid="dock">
+<div class="fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+14px)] z-30 mx-auto flex max-w-[480px] items-center gap-3 px-4" data-testid="dock">
   <nav class="bar-glass shadow-float grid h-[var(--dock-h)] flex-1 grid-cols-3 items-center rounded-full px-2" aria-label={t.tabs.label} use:swipe={swipeOpts}>
     {#each TABS as item, i (item.label)}
       {@const Icon = item.icon}
       {@const on = tab === i}
       <button
-        class="grid h-[var(--tap)] min-w-0 place-items-center content-center gap-0.5 rounded-full transition-[color,transform] duration-[var(--d-press)] active:scale-[0.97] {on ? 'text-ink' : 'text-ink-2'}"
+        class="grid h-[var(--tap)] min-w-0 place-items-center content-center gap-1 rounded-full transition-[color,transform] duration-[var(--d-press)] active:scale-[0.97] {on ? 'text-ink' : 'text-ink-2'}"
         aria-current={on ? 'page' : undefined}
         data-testid="tab-{i}"
         onclick={() => onselect(i as Tab)}

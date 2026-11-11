@@ -10,9 +10,9 @@ export const WEEK = ['09', '10', '11', '12', '13', '14', '15'].map((d) => ({ dat
 export const KCAL = { target: 2460, zone: [2340, 2830] as [number, number] };
 export const PROTEIN_ZONE: [number, number] = [97.2, Infinity];
 
-/** in the reference's order; the stand-in photos are flat colour squares, as in the reference */
+/** newest first, as SCREENS.md section 6 asks (the reference lists them out of order); the stand-in photos are flat colour squares, as in the reference */
 export const MEALS = [
+  { name: 'Basil pork with fried egg', time: '19:05', source: 'estimate', kcal: 510, photo: meal3 },
   { name: 'Chicken rice bowl', time: '12:40', source: 'database', kcal: 720, photo: meal1 },
   { name: 'Oats, banana and whey', time: '08:10', source: 'database', kcal: 610, photo: meal2 },
-  { name: 'Basil pork with fried egg', time: '19:05', source: 'estimate', kcal: 510, photo: meal3 },
 ] as const;

@@ -11,7 +11,8 @@ Changes to a doc's decision, and choices made on the owner's behalf. Newest firs
 - The gallery picks the text size with chips, not a segmented control. Why: four options at the largest text clip in a segmented control on the SE.
 - New tokens: `--scrim` behind an open sheet, and `--t-key` (24, scaling like Display) for keypad numerals. Why: section 7 asks for both and tokens.css had neither.
 - Sheets are `--surface` with no shadow, over the scrim. They keep watermelon's 44 px close button beside the title. Why: section 4 puts sheets on surface; only the dock and toasts float; the button is a visible, named way to dismiss.
-- In the composed Today, reference spacings off the 4 px grid (2, 6, 10, 14, 18) are rounded to the grid. Why: rubric 6.
+- Reference spacings off the 4 px grid (2, 6, 10, 14, 18) are rounded to the grid, in the composed Today and in the dock (plus button gap 12, icon to label 4). Why: rubric 6.
+- The composed Today lists meals newest first, not in the reference's order. Why: SCREENS.md section 6 says newest first.
 - Row hairlines are inset to the text, not full width as in the reference. Why: section 7 says inset.
 - Row titles wrap to two lines and captions wrap, rather than truncate. Why: truncation cut "Adds 240 kcal" to "Adds 2..."; the reference wraps the same caption.
 - Macro columns show the value and "of 108 g" on two lines, not one. Why: the reference's single line wraps unevenly at 390 (carbs) and at large text, which puts the three tracks at different heights.
