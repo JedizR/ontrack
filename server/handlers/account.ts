@@ -18,6 +18,7 @@ export async function account(request: Request): Promise<Response> {
     if (!list.data.length) break;
     const removed = await db.storage.from(BUCKET).remove(list.data.map((o) => `${user.id}/${o.name}`));
     if (removed.error) return failed('remove', removed.error);
+    if (!removed.data.length) break; // only folder entries are left, which hold nothing
   }
   const rows = await db.from('records').delete().eq('user_id', user.id);
   if (rows.error) return failed('records', rows.error);

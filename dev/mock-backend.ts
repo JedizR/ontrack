@@ -33,7 +33,7 @@ const decode = (s: string): Token | null => {
 const emailBody = z.object({ email: z.email() });
 const verifyBody = z.object({ email: z.email(), code: z.string() });
 const pushBody = z.object({ records: z.array(recSchema).check(z.maxLength(100)) });
-const pullBody = z.object({ after: z.nullable(z.string()), limit: z.int().check(z.gte(1), z.lte(PAGE_MAX)) });
+const pullBody = z.object({ after: z.nullable(z.string()), inclusive: z.optional(z.boolean()), limit: z.int().check(z.gte(1), z.lte(PAGE_MAX)) });
 
 export function createMockServer() {
   const spaces = new Map<string, Space>();
@@ -99,7 +99,7 @@ export function createMockServer() {
       if (!b.success) return fail(400, 'bad_request');
       const after = b.data.after ? Date.parse(b.data.after) : -Infinity;
       const rows = [...space.rows.values()]
-        .filter((r) => r.userId === userId && r.ts > after)
+        .filter((r) => r.userId === userId && (b.data.inclusive ? r.ts >= after : r.ts > after))
         .sort((a, z) => a.ts - z.ts)
         .slice(0, b.data.limit)
         .map((r) => ({ rec: r.rec, ts: new Date(r.ts).toISOString() }));

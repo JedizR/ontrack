@@ -74,7 +74,7 @@ export function createMockBackend(opts: { base?: string; fetch?: typeof fetch; s
       await post('/push', { records });
     },
     pull(cursor) {
-      return pullPages(cursor, async (after) => ((await (await post('/pull', { after, limit: PULL_PAGE }))!.json()) as { rows: { rec: Rec; ts: string }[] }).rows);
+      return pullPages(cursor, async (after, inclusive) => ((await (await post('/pull', { after, inclusive, limit: PULL_PAGE }))!.json()) as { rows: { rec: Rec; ts: string }[] }).rows);
     },
     async putThumb(mealId, blob) {
       await call(`/thumb/${encodeURIComponent(mealId)}`, { method: 'PUT', body: blob });

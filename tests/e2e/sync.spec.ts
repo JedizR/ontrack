@@ -92,6 +92,27 @@ test('an expired session asks to sign in again and keeps what was logged', async
   await context.close();
 });
 
+test('another account cannot take over a phone that holds unsent changes', async ({ browser }) => {
+  const s = space('wrong-account');
+  const { page, context } = await phone(browser, s);
+  await signIn(page);
+  await page.request.post('/__mock/expire', { headers: { 'x-mock-space': s } });
+  await weigh(page, '2026-11-07', 77);
+  await expect(page.getByTestId('session-expired')).toBeVisible();
+
+  await page.getByTestId('session-signin').click();
+  await expect(page.getByTestId('signin-sheet')).toBeVisible();
+  await signIn(page, 'someone.else@example.com').catch(() => undefined); // refused: the avatar stays on Sign in
+  await expect(page.getByTestId('session-expired')).toContainText('The changes on this phone belong to me@example.com');
+  expect(await weight(page, '2026-11-07')).toEqual({ date: '2026-11-07', kg: 77 });
+
+  await page.getByTestId('session-signin').click();
+  await expect(page.getByTestId('signin-sheet')).toBeVisible();
+  await signIn(page);
+  await expect.poll(() => pending(page)).toBe(0);
+  await context.close();
+});
+
 test('signing out sends what is waiting, then deletes the data from the phone', async ({ browser }) => {
   const { page, context } = await phone(browser, space('signout'));
   await signIn(page);

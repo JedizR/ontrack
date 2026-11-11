@@ -9,13 +9,15 @@ import { session } from '$lib/session.svelte';
 import { prefs } from '$lib/prefs.svelte';
 import { BackendError } from '$lib/backend';
 import type { FailKind } from '$lib/backend/types';
-import { ids, SCHEMAS, type Checkin, type Collection, type DataOf, type Meal, type Plan, type Profile, type Program, type Saved, type SessionLog } from '../../shared/records';
+import { ids, recSchema, SCHEMAS, type Checkin, type Collection, type DataOf, type Meal, type Plan, type Profile, type Program, type Saved, type SessionLog } from '../../shared/records';
 
 const uid = () => crypto.randomUUID();
 
 function write<C extends Collection>(c: C, id: string, data: DataOf[C]) {
   if (!db.ready) throw new Error('not signed in');
-  return db.put(c, id, SCHEMAS[c].parse(data) as DataOf[C]);
+  const parsed = SCHEMAS[c].parse(data) as DataOf[C];
+  recSchema.parse({ collection: c, id, updatedAt: 0, data: parsed }); // the id and size the database accepts
+  return db.put(c, id, parsed);
 }
 /** Tombstones the record and returns how to bring it back. */
 function remove(c: Collection, id: string): () => void {
@@ -78,24 +80,29 @@ export async function signOut(force = false): Promise<'ok' | 'unsent'> {
   if (db.pending > 0 && !force) return 'unsent';
   session.leaving = true;
   sync.stop();
-  await session.backend?.auth.signOut().catch(() => undefined);
-  await db.wipe();
-  prefs.lastUser = null;
-  location.reload();
+  try {
+    await session.backend?.auth.signOut().catch(() => undefined);
+    await db.wipe();
+  } finally {
+    // the session is gone either way; a fresh start shows the signed out app
+    prefs.lastUser = null;
+    prefs.lastEmail = null;
+    location.reload();
+  }
   return 'ok';
 }
 
 /** Deletes the account and everything in it on the server, then signs out here. */
 export async function deleteAccount(): Promise<Result> {
   const token = await session.backend?.accessToken();
-  if (!token) return 'auth';
-  let res: Response;
-  try {
-    res = await fetch('/api/account', { method: 'DELETE', headers: { authorization: `Bearer ${token}` } });
-  } catch {
-    return 'network';
+  if (!token || !session.backend) return 'auth';
+  // nothing may reach the account while it is being deleted
+  sync.stop();
+  const res = await fetch('/api/account', { method: 'DELETE', headers: { authorization: `Bearer ${token}` } }).catch(() => null);
+  if (!res?.ok) {
+    sync.start(session.backend);
+    return !res ? 'network' : res.status === 401 ? 'auth' : 'server';
   }
-  if (!res.ok) return res.status === 401 ? 'auth' : 'server';
   await signOut(true);
   return 'ok';
 }

@@ -161,6 +161,7 @@ describe.each(harnesses)('sync conformance: $name', (h) => {
     const many = Array.from({ length: 620 }, (_, i) => rec(`p${i}`, 1));
     for (let i = 0; i < many.length; i += 100) await b.push(many.slice(i, i + 100));
     const { records } = await b.pull(null);
+    expect(records.length).toBe(620); // pages overlap by their boundary timestamp; nothing comes twice
     expect(new Set(records.map((r) => r.id)).size).toBe(620);
   });
 
@@ -232,6 +233,18 @@ describe.each(harnesses)('sync conformance: $name', (h) => {
 
     one.sync.stop();
     two.sync.stop();
+  });
+
+  test('a record the server refuses is set aside and never blocks the rest', async () => {
+    const b = await signIn('l');
+    const one = await device(b);
+    one.store.put('weight', 'x'.repeat(81), { date: '2026-11-12', kg: 80 }); // past the id limit, as a bug might
+    one.store.put('weight', 'weight:2026-11-12', { date: '2026-11-12', kg: 80 });
+    await one.sync.run();
+    expect(one.sync.status).toBe('idle');
+    expect(one.store.pending).toBe(0);
+    expect((await b.pull(null)).records.map((r) => r.id)).toEqual(['weight:2026-11-12']);
+    one.sync.stop();
   });
 
   test('an expired session stops sync with status auth and keeps the data', async () => {

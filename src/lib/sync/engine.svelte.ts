@@ -3,6 +3,7 @@
 // unless something needs the user.
 import { db as defaultStore, type Store } from '$lib/db/store.svelte';
 import { BackendError, PUSH_BATCH, type Backend } from '$lib/backend/types';
+import type { Rec } from '../../../shared/records';
 
 export type SyncStatus = 'idle' | 'syncing' | 'offline' | 'error' | 'auth';
 
@@ -11,6 +12,7 @@ const EVERY_MS = 5 * 60_000;
 const BACKOFF_MS = 2000;
 const BACKOFF_MAX_MS = 5 * 60_000;
 const offline = () => typeof navigator !== 'undefined' && navigator.onLine === false;
+const refused = (e: unknown) => e instanceof BackendError && e.kind === 'bad_request';
 
 export class Sync {
   status = $state<SyncStatus>('idle');
@@ -34,9 +36,10 @@ export class Sync {
   start(backend: Backend) {
     this.#backend = backend;
     this.#failures = 0;
-    this.pulled = !!this.#store.meta.cursor;
+    this.pulled = this.#store.meta.cursor !== null;
     this.lastSyncAt = this.#store.meta.lastSyncAt;
-    this.#store.onLocalChange = () => this.schedule();
+    // while backing off, an edit waits for the backoff instead of retrying at once (rule 6)
+    this.#store.onLocalChange = () => { if (!this.#failures) this.schedule(); };
     this.#listen();
     this.status = offline() ? 'offline' : 'idle';
     this.schedule(0);
@@ -84,7 +87,7 @@ export class Sync {
     try {
       // rule 5: push, then pull
       for (let batch = store.outboxBatch(PUSH_BATCH); batch.length; batch = store.outboxBatch(PUSH_BATCH)) {
-        await backend.push(batch);
+        await this.#push(backend, batch);
         if (backend !== this.#backend) return; // signed out mid-flight
         store.ack(batch); // a record edited while in flight stays queued and goes in the next batch
       }
@@ -95,7 +98,7 @@ export class Sync {
       store.setCursor(cursor, now);
       for (const mealId of store.thumbQueue()) {
         const blob = await store.thumb(mealId);
-        if (blob) await backend.putThumb(mealId, blob);
+        if (blob) await backend.putThumb(mealId, blob).catch((e) => { if (!refused(e)) throw e; console.error('thumbnail refused', mealId); });
         await store.thumbSent(mealId);
       }
       this.#failures = 0;
@@ -116,6 +119,23 @@ export class Sync {
       this.#failures++;
       this.status = offline() ? 'offline' : 'error';
       this.schedule(Math.min(BACKOFF_MAX_MS, BACKOFF_MS * 2 ** (this.#failures - 1)));
+    }
+  }
+
+  /**
+   * A batch the server refuses as a whole (one record it cannot store) would block every later change forever. Send
+   * that batch one by one instead; a refused record stays on this phone, out of the outbox, and is logged.
+   */
+  async #push(backend: Backend, batch: Rec[]) {
+    try {
+      await backend.push(batch);
+    } catch (e) {
+      if (!refused(e) || batch.length === 1) {
+        if (refused(e)) console.error('record refused by the server', batch[0].collection, batch[0].id);
+        else throw e;
+        return;
+      }
+      for (const r of batch) await this.#push(backend, [r]);
     }
   }
 

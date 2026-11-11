@@ -103,6 +103,7 @@ export const en = {
   session: {
     expired: 'Sign in again to keep backing up',
     expiredLead: 'Your data is safe on this phone.',
+    wrongAccount: (email: string) => `The changes on this phone belong to ${email}. Sign in with that account to back them up.`,
     bringing: 'Bringing your data over',
   },
   sheet: { close: 'Close' },

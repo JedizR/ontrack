@@ -6,6 +6,7 @@
   import { sync } from '$lib/sync/engine.svelte';
   import { session } from '$lib/session.svelte';
   import { sheets } from '$lib/sheets.svelte';
+  import { prefs } from '$lib/prefs.svelte';
 
   // a new device after sign in: nothing local yet, the first pull is on its way
   const bringing = $derived(!!session.user && !sync.pulled && sync.status === 'syncing');
@@ -16,7 +17,9 @@
     <!-- SCREENS.md section 12, session expired: local data is untouched -->
     <Card data-testid="session-expired">
       <p class="text-body font-semibold">{t.session.expired}</p>
-      <p class="text-callout text-ink-2 mt-1">{t.session.expiredLead}</p>
+      <p class="text-callout text-ink-2 mt-1">
+        {session.wrongAccount && prefs.lastEmail ? t.session.wrongAccount(prefs.lastEmail) : t.session.expiredLead}
+      </p>
       <Button variant="neutral" class="mt-3" onclick={() => (sheets.signin = true)} data-testid="session-signin">{t.shell.signIn}</Button>
     </Card>
   {/if}

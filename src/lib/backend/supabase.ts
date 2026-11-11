@@ -21,22 +21,35 @@ const check = (r: { error: Parameters<typeof kindOf>[0] | null; status?: number 
 };
 
 export function createSupabaseBackend(sb: SupabaseClient, settingsUrl?: string, key?: string): Backend {
+  /**
+   * The current session. An expired token that cannot be refreshed for lack of network comes back as no session with
+   * a retryable error: that is offline, not signed out, so it throws `network` and the engine backs off.
+   */
+  const current = async () => {
+    const { data, error } = await sb.auth.getSession();
+    if (error && kindOf(error) === 'network') throw new BackendError('network');
+    return data.session;
+  };
   const userId = async () => {
-    const { data } = await sb.auth.getSession();
-    if (!data.session) throw new BackendError('auth');
-    return data.session.user.id;
+    const s = await current();
+    if (!s) throw new BackendError('auth');
+    return s.user.id;
   };
   let google: Promise<boolean> | null = null;
 
   return {
     auth: {
       async session() {
-        const { data } = await sb.auth.getSession();
-        return data.session && { userId: data.session.user.id, email: data.session.user.email };
+        const s = await current();
+        return s && { userId: s.user.id, email: s.user.email };
       },
       onChange(cb) {
-        // Supabase asks that the callback not call back into the client synchronously
-        const { data } = sb.auth.onAuthStateChange((_e, s) => void setTimeout(() => cb(s && { userId: s.user.id, email: s.user.email })));
+        const { data } = sb.auth.onAuthStateChange((event, s) => {
+          // only a sign out ends the session; a missing session at start can be an offline refresh (see current)
+          if (!s && event !== 'SIGNED_OUT') return;
+          // Supabase asks that the callback not call back into the client synchronously
+          setTimeout(() => cb(s && { userId: s.user.id, email: s.user.email }));
+        });
         return () => data.subscription.unsubscribe();
       },
       googleEnabled() {
@@ -70,9 +83,9 @@ export function createSupabaseBackend(sb: SupabaseClient, settingsUrl?: string, 
 
     async pull(cursor) {
       await userId();
-      return pullPages(cursor, async (after) => {
+      return pullPages(cursor, async (after, inclusive) => {
         let q = sb.from('records').select('collection,id,data,updated_at,deleted,server_ts').order('server_ts').limit(PULL_PAGE);
-        if (after) q = q.gt('server_ts', after);
+        if (after) q = inclusive ? q.gte('server_ts', after) : q.gt('server_ts', after);
         const r = await q;
         check(r);
         return ((r.data ?? []) as Row[]).map((row) => ({
@@ -95,8 +108,7 @@ export function createSupabaseBackend(sb: SupabaseClient, settingsUrl?: string, 
       return r.data;
     },
     async accessToken() {
-      const { data } = await sb.auth.getSession();
-      return data.session?.access_token ?? null;
+      return (await current().catch(() => null))?.access_token ?? null;
     },
   };
 }

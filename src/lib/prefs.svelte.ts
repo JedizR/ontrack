@@ -7,8 +7,8 @@ export const FONT_SCALE = { m: 1, l: 1.15, xl: 1.3 } as const;
 // index.html reads the same key and fields before first paint
 export const PREFS_KEY = 'ot-ui';
 
-interface Saved { theme: Theme; fontSize: FontSize; tab: Tab; lastUser: string | null }
-const DEFAULTS: Saved = { theme: 'system', fontSize: 'system', tab: 0, lastUser: null };
+interface Saved { theme: Theme; fontSize: FontSize; tab: Tab; lastUser: string | null; lastEmail: string | null }
+const DEFAULTS: Saved = { theme: 'system', fontSize: 'system', tab: 0, lastUser: null, lastEmail: null };
 const load = (): Saved => {
   try { return { ...DEFAULTS, ...JSON.parse(localStorage.getItem(PREFS_KEY) ?? '{}') }; }
   catch { return { ...DEFAULTS }; }
@@ -27,6 +27,8 @@ class Prefs {
   /** whose local store opens at start, before the session is restored */
   get lastUser() { return this.#s.lastUser; }
   set lastUser(v: string | null) { this.#s.lastUser = v; this.#save(); }
+  get lastEmail() { return this.#s.lastEmail; }
+  set lastEmail(v: string | null) { this.#s.lastEmail = v; this.#save(); }
   #save() { try { localStorage.setItem(PREFS_KEY, JSON.stringify($state.snapshot(this.#s))); } catch { /* private mode */ } }
 }
 
