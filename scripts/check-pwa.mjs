@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Installability + offline check via Chrome's own CDP audit.  node scripts/check-pwa.mjs <url>
+// Installability and offline check through Chrome's own CDP audit.  pnpm check:pwa <url>  (default: pnpm preview)
 import { chromium } from '@playwright/test';
 import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -19,7 +19,7 @@ console.log('installability errors:', installabilityErrors.length ? installabili
 await page.reload(); // let the SW take control
 await ctx.setOffline(true);
 await page.reload();
-const ok = await page.getByTestId('hero').isVisible().catch(() => false);
+const ok = await page.getByTestId('dock').isVisible().catch(() => false);
 console.log('offline reload renders the app:', ok);
 await ctx.close();
 process.exit(installabilityErrors.length || !ok ? 1 : 0);
