@@ -46,11 +46,11 @@
   const onboarding = $derived(db.ready ? !onboarded && pulledOnce && !prefs.draft?.saved : !prefs.lastUser);
   let Onboarding = $state<Component | null>(null);
   $effect(() => {
-    if (onboarding && !Onboarding) void import('./flows/onboarding/Onboarding.svelte').then((m) => (Onboarding = m.default));
+    if (onboarding && !Onboarding) import('./flows/onboarding/Onboarding.svelte').then((m) => (Onboarding = m.default), (e) => console.error('onboarding failed to load', e));
   });
   // a draft meets the account after sign in: it becomes the plan, or the account's own plan wins
   $effect(() => {
-    if (db.ready && sync.pulledNow && prefs.draft) void import('./flows/onboarding/settle').then((m) => m.settle());
+    if (db.ready && sync.pulledNow && prefs.draft) import('./flows/onboarding/settle').then((m) => m.settle(), (e) => console.error('the plan could not be saved', e));
   });
 
   // tab changes slide in from the side the finger came from; swiping wraps around
