@@ -4,7 +4,6 @@
   import Step from './Step.svelte';
   import Stepper from '$lib/components/Stepper.svelte';
   import Chip from '$lib/components/Chip.svelte';
-  import Segmented from '$lib/components/Segmented.svelte';
   import Button from '$lib/components/Button.svelte';
   import Sheet from '$lib/components/Sheet.svelte';
   import Row from '$lib/components/Row.svelte';
@@ -57,9 +56,14 @@
       <span class={label}>{t.train.minutes}</span>
       <Stepper bind:value={minutes} min={MINUTES.min} max={MINUTES.max} step={MINUTES.step} label={t.train.minutes} />
     </div>
-    <div class="flex flex-col gap-2">
+    <!-- chips, not a segmented control: three options clip in one at the largest text on the SE -->
+    <div class="flex flex-col gap-1">
       <span class={label}>{t.train.intensity}</span>
-      <Segmented bind:value={intensity} label={t.train.intensity} options={INTENSITIES.map((i) => ({ value: i, label: t.train.intensities[i] }))} />
+      <div class="flex flex-wrap gap-x-2" role="group" aria-label={t.train.intensity}>
+        {#each INTENSITIES as i (i)}
+          <Chip selected={intensity === i} onclick={() => (intensity = i)}>{t.train.intensities[i]}</Chip>
+        {/each}
+      </div>
     </div>
     {#if program}<p class="text-callout" data-testid="train-using">{t.train.using(program.name)}</p>{/if}
     <div class="flex flex-col gap-1">

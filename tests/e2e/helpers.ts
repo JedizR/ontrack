@@ -10,19 +10,22 @@ export async function open(page: Page, path = '/') {
   await expect(page.getByTestId('dock')).toBeVisible();
 }
 
+/** The dev server compiles the lazy onboarding chunk on first request, which is slow with every worker asking at once. */
+const FIRST_PAINT = 15_000;
+
 /** Open the app signed out, on a fresh phone: the install guide in Safari on iPhone, Welcome elsewhere. */
 export async function openFresh(page: Page, s = space('fresh')) {
   await page.clock.setFixedTime(new Date(`${TODAY}T10:00:00+07:00`));
   await useSpace(page, s);
   await page.goto('/');
-  await expect(page.getByTestId('install').or(page.getByTestId('welcome'))).toBeVisible();
+  await expect(page.getByTestId('install').or(page.getByTestId('welcome'))).toBeVisible({ timeout: FIRST_PAINT });
   return s;
 }
 
 /** Past Safari's install guide, if it shows, to Welcome. */
 export async function toWelcome(page: Page) {
   const install = page.getByTestId('install-continue');
-  await expect(install.or(page.getByTestId('welcome'))).toBeVisible();
+  await expect(install.or(page.getByTestId('welcome'))).toBeVisible({ timeout: FIRST_PAINT });
   if (await install.isVisible()) await install.click();
   await expect(page.getByTestId('welcome')).toBeVisible();
 }
@@ -68,7 +71,7 @@ export async function signIn(page: Page, email = EMAIL, { shell = true } = {}) {
     const avatar = page.getByTestId('avatar');
     const install = page.getByTestId('install-continue');
     const welcome = page.getByTestId('welcome-signin');
-    await expect(avatar.or(install).or(welcome)).toBeVisible();
+    await expect(avatar.or(install).or(welcome)).toBeVisible({ timeout: FIRST_PAINT });
     if (await install.isVisible()) await install.click();
     await (await avatar.isVisible() ? avatar : welcome).click();
   }
@@ -141,7 +144,7 @@ export type Answers = {
 /** From Welcome (or the install guide) to Your plan. Defaults are vector A of docs/SCIENCE.md. */
 export async function onboard(page: Page, a: Answers) {
   const install = page.getByTestId('install-continue');
-  await expect(install.or(page.getByTestId('welcome-start'))).toBeVisible();
+  await expect(install.or(page.getByTestId('welcome-start'))).toBeVisible({ timeout: FIRST_PAINT });
   if (await install.isVisible()) await install.click();
   await page.getByTestId('welcome-start').click();
   await page.getByTestId(`choice-${a.goal}`).click();
