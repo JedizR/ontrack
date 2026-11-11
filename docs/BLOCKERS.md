@@ -9,7 +9,7 @@ Each entry: what is blocked, what Claude tried, the exact steps for you, and wha
 ### Google sign in (M3)
 
 - **Blocked:** the Google OAuth client, so the Google provider in Supabase is off and the app hides "Continue with Google" on the live backend. Everything else for Google is built and tested against the mock.
-- **Tried:** the CLI (there is no `gcloud` on this Mac, and gcloud cannot create OAuth web clients anyway), then your browser through Yab: every tab, even `example.com`, stayed blank and timed out, so the console never loaded. Nothing was created in Google Cloud.
+- **Tried:** the CLI (there is no `gcloud` on this Mac, and gcloud cannot create OAuth web clients anyway), then your browser through Yab: every tab, even `example.com`, stayed blank and timed out, so the console never loaded. Nothing was created in Google Cloud. Retried after M3 from two Yab spaces: no answer within 25 s both times.
 - **Steps:**
   1. In the Google Cloud console create a project `ontrack` (no billing account).
   2. Google Auth Platform: Branding, app name Ontrack, your address as support and developer contact. Audience: External, leave it in Testing, add your address as a test user.
