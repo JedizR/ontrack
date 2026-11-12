@@ -14,6 +14,7 @@
     unit = '',
     label,
     testid,
+    column = false,
   }: {
     value: number;
     step?: number;
@@ -23,6 +24,8 @@
     /** what is counted, "grams" */
     label: string;
     testid?: string;
+    /** steppers stacked in rows: the number right aligned and the unit in a fixed slot, so rows form columns */
+    column?: boolean;
   } = $props();
 
   const fit = (v: number) => Math.min(max, Math.max(min, v));
@@ -83,7 +86,7 @@
 
 <div class="flex items-center gap-2" data-testid={testid}>
   {@render key(-1)}
-  <label class="active:bg-surface-2 flex h-11 items-baseline justify-center gap-1 rounded-sm px-1 transition-colors duration-[var(--d-press)]" style="min-width: calc({longest + 1}ch + {unit ? 2 : 0}em)">
+  <label class="active:bg-surface-2 flex h-11 items-baseline {column ? 'justify-end' : 'justify-center'} gap-1 rounded-sm px-1 transition-colors duration-[var(--d-press)]" style="min-width: calc({longest + 1}ch + {unit ? (column ? 2.7 : 2) : 0}em)">
     <input
       type="text"
       inputmode={step % 1 ? 'decimal' : 'numeric'}
@@ -91,15 +94,15 @@
       autocomplete="off"
       aria-label={label}
       value={String(value)}
-      class="num h-11 min-w-11 bg-transparent text-center font-semibold outline-none focus-visible:underline"
-      style="width: {(editing ? longest : Math.max(String(value).length, 1)) + 0.5}ch; font-size: max(16px, var(--t-heading))"
+      class="num h-11 min-w-11 bg-transparent {column ? 'text-right' : 'text-center'} font-semibold outline-none focus-visible:underline"
+      style="width: {(editing || column ? longest : Math.max(String(value).length, 1)) + 0.5}ch; font-size: max(16px, var(--t-heading))"
       data-vaul-no-drag
       onfocus={(e) => { editing = true; e.currentTarget.select(); }}
       onkeydown={(e) => { if (e.key === 'Enter') e.currentTarget.blur(); }}
       onchange={(e) => typed(e.currentTarget)}
       onblur={(e) => { editing = false; typed(e.currentTarget); }}
     />
-    {#if unit}<span class="text-ink-2 text-callout font-semibold" aria-hidden="true">{unit}</span>{/if}
+    {#if unit}<span class="text-ink-2 text-callout font-semibold {column ? 'w-[2.4em]' : ''}" aria-hidden="true">{unit}</span>{/if}
   </label>
   {@render key(1)}
 </div>

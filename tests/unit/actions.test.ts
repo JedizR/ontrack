@@ -2,9 +2,10 @@
 import 'fake-indexeddb/auto';
 import { beforeAll, expect, test, vi } from 'vitest';
 import { db } from '../../src/lib/db/store.svelte';
-import { changeProgram, deleteMeal, logAgain, logSaved, logWeight, saveMeal, savePlan, saveProfile, saveProgram, saveSaved } from '../../src/lib/actions';
-import { dayView, planFor } from '../../src/lib/model/day';
-import type { Plan, Session } from '../../shared/records';
+import { changeProgram, deleteMeal, forgetFood, logAgain, logSaved, logWeight, rememberFoods, saveMeal, savePlan, saveProfile, saveProgram, saveSaved } from '../../src/lib/actions';
+import { foodKey, withMine } from '../../src/lib/data/foods';
+import { dayView, mealSource, planFor } from '../../src/lib/model/day';
+import type { MealItem, Plan, Session } from '../../shared/records';
 
 beforeAll(() => db.open('actions-test'));
 
@@ -66,4 +67,32 @@ test('a program change starts a plan tomorrow; today and the days before keep th
   expect(db.get('program', 'program')).toEqual({ name: '', sessions });
   expect(planFor(db.live('plan'), '2026-11-12')?.source).toBe('onboarding');
   vi.useRealTimers();
+});
+
+test('remembered nutrition: per 100 g under the table id or the normalised name, never a value no food has', () => {
+  const padThai: MealItem = { name: 'Pad thai with shrimp', grams: 350, kcal: 600, protein: 24, carbs: 52.7, fat: 23.9, source: 'yours', foodId: 'pad-thai-shrimp' };
+  const soup: MealItem = { name: 'Khao Soi, with chicken!', grams: 400, kcal: 600, protein: 30, carbs: 50, fat: 30, source: 'yours' };
+  const typo: MealItem = { name: 'Butter', grams: 10, kcal: 1000, protein: 0, carbs: 0, fat: 10, source: 'yours', foodId: 'butter' };
+  const lard: MealItem = { name: 'Lard', grams: 4.3, kcal: 39, protein: 0, carbs: 0, fat: 4.3, source: 'yours', foodId: 'lard' };
+  const noGrams: MealItem = { name: 'Snack', kcal: 200, protein: 1, carbs: 30, fat: 8, source: 'yours' };
+  rememberFoods([padThai, soup, typo, noGrams, lard]);
+  expect(foodKey(soup)).toBe('name:khao soi with chicken');
+  expect(foodKey({ name: '叉烧饭' })).toBe('name:叉烧饭');
+  expect(db.get('food', 'pad-thai-shrimp')).toEqual({ name: 'Pad thai with shrimp', per100: { kcal: 171.43, protein: 6.86, carbs: 15.06, fat: 6.83 } });
+  expect(withMine({ ...padThai, kcal: 1 }, db.get('food', 'pad-thai-shrimp')!.per100)).toMatchObject({ kcal: 600, protein: 24, carbs: 52.7, fat: 23.9 });
+  expect(db.get('food', 'name:khao soi with chicken')?.per100.kcal).toBe(150);
+  expect(db.get('food', 'butter')).toBeUndefined();
+  expect(db.get('food', 'lard')?.per100.kcal).toBe(906.98); // a teaspoon of lard, past the 900 of pure fat
+  expect(db.live('food')).toHaveLength(3);
+  // applied at another weight, and back to the same numbers at the same weight
+  const again = withMine({ ...padThai, kcal: 515, source: 'db' }, db.get('food', 'pad-thai-shrimp')!.per100);
+  expect(again).toMatchObject({ kcal: 600, source: 'yours' });
+  expect(withMine({ ...padThai, grams: 175 }, db.get('food', 'pad-thai-shrimp')!.per100).kcal).toBe(300);
+  const undo = forgetFood('pad-thai-shrimp');
+  expect(db.get('food', 'pad-thai-shrimp')).toBeUndefined();
+  undo();
+  expect(db.get('food', 'pad-thai-shrimp')).toBeDefined();
+  // a meal's label: any estimate first, then Yours
+  expect(mealSource([padThai, { ...padThai, source: 'db' }])).toBe('yours');
+  expect(mealSource([padThai, { ...padThai, source: 'estimate' }])).toBe('estimate');
 });

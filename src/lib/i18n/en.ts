@@ -142,6 +142,8 @@ export const en = {
     grams: 'Grams',
     add: (kcal: string) => `Add ${kcal} kcal`,
     macros: (p: string, c: string, f: string) => `${p} g protein, ${c} g carbs, ${f} g fat`,
+    from: (source: string) => `Values from ${source}.`,
+    terms: 'Terms of use',
   },
   quick: {
     title: 'Quick add',
@@ -167,6 +169,9 @@ export const en = {
     portions: { half: 'Half', same: 'Same', more: 'One and a half', double: 'Double' },
     total: (kcal: string, protein: string) => `${kcal} kcal, ${protein} g protein`,
     empty: 'No items left. Add one, or delete the meal.',
+    correct: 'Correct',
+    useDefault: 'Use default values',
+    remembered: 'Ontrack remembers your numbers for this food.',
   },
   weigh: {
     title: 'Weigh in',
@@ -188,6 +193,7 @@ export const en = {
     database: 'Database',
     estimate: 'Estimate',
     manual: 'Quick add',
+    yours: 'Yours',
   },
   sync: {
     syncing: 'Backing up your changes',

@@ -2,6 +2,45 @@
 
 What the vision model got right and wrong on real photos, and what changed because of it. Newest first.
 
+## N1, 12 November 2026: Thai photos before and after the Thai table
+
+**What changed between the passes.** Before: `main` at v0.8.0, 512 foods (USDA SR Legacy) and the M6 prompt. After: this branch, 571 foods (138 Thai, from SG FoodID and USDA FNDDS added to SR Legacy) and one prompt change: a whole dish in the catalog is one item with its `food_id`, rather than its parts. Nothing else; `est_per_100g` is still asked for (below).
+
+**Method.** As in M6: `scripts/eval-vision.ts` (1024 px JPEG at 0.8, the system prompt with the catalog, the schema, the zod check and resolution against the table), timing the provider call alone from the Mac, `gemini-3.6-flash` with thinking at minimal, the free development key. The "before" pass ran from a worktree of `main`. Eight Thai photos from Wikimedia Commons, kept outside the repository: M6's six Thai photos (numbers 1 to 6 in the M6 table below) plus [Phat Thai kung, Chang Khien street stall](https://commons.wikimedia.org/wiki/File:Phat_Thai_kung_Chang_Khien_street_stall.jpg) (Takeaway, CC BY-SA 3.0) and [Mango sticky rice served in Thailand](https://commons.wikimedia.org/wiki/File:Mango_sticky_rice_served_in_Thailand.jpg) (Arthur Taksin, CC BY 4.0). Every photo has one answer per pass. The free tier answered 503 or timed out on five calls, which were retried once after a pause; with the retries the run used about 21 requests, the day's allowance.
+
+### Results
+
+| Photo | Before: items (from the table), kcal, time | After: items (from the table), kcal, time |
+| --- | --- | --- |
+| Pad kra pao crispy pork, rice | 2 (1), 782, 17.8 s | 2 (1), 676, 30.0 s |
+| Khao man kai | 5 (2), 522, 3.9 s | 1 (1) Khao man kai, 515, 3.7 s |
+| Beef green curry | 1 (0), 508, 3.4 s | 1 (0), 473, 10.3 s |
+| Khao soi | 1 (0), 560, 8.3 s | 1 (0), 672, 22.0 s |
+| Massaman beef, brown rice | 2 (1), 551, 17.0 s | 2 (1), 540, 3.4 s |
+| Som tam, sticky rice, kai yang, jaew | 4 (1), 826, 4.6 s | 4 (2), 695, 4.8 s |
+| Pad thai with shrimp | 7 (5), 645, 6.4 s | 1 (1) Pad thai with shrimp, 515, 4.5 s |
+| Mango sticky rice | 3 (1), 555, 4.1 s | 1 (1) Mango sticky rice, 571, 28.1 s |
+
+| | Before | After |
+| --- | --- | --- |
+| Items that resolve to the table | 11 of 25 (44 percent) | 7 of 13 (54 percent) |
+| Photos whose dish resolves whole | 0 of 8 | 3 of 8 (khao man kai, pad thai, mango sticky rice) |
+| Calories that come from the table | 1,086 of 4,949 (22 percent) | 2,633 of 4,657 (57 percent) |
+| Items per photo | 3.1 | 1.6 |
+| Reply size, mean characters | 691 | 409 (41 percent shorter) |
+| Time to an answer, median (fastest four) | 5.5 s (3.4 to 4.6 s) | 7.6 s (3.4 to 4.8 s) |
+
+**Reading it.**
+- The table now carries the dish when the dish is there. Pad thai was seven items (four from the table, the noodles an estimate); it is now one line of FNDDS pad thai with shrimp. Khao man kai was five items with "oily rice" estimated; it is now SG FoodID's laboratory analysis of the whole plate. Mango sticky rice was three items; it is now one.
+- Dishes the table does not have stay estimates: khao soi, massaman, beef green curry (the table has green curry with chicken, and the model rightly did not use it for beef), crispy pork kra pao (the table has minced pork), som tam and kai yang. These are the gap a Thai table would close (`docs/BLOCKERS.md`, the INMU licence).
+- Time: the free tier dominated both passes. The four fastest answers took the same 3.4 to 4.8 s; the slow ones (17 to 30 s) came while it was answering 503 to other calls, and the after pass hit more of them. A median from eight free tier calls cannot show a change of this size. What the change does cut deterministically is output: replies are 41 percent shorter, because a dish is one line instead of three to seven.
+- `est_per_100g` was kept. For items with a `food_id` it is 14 percent of a reply before and somewhat more after (most items now match), about 0.3 s of output at Flash speeds, well inside the free tier's noise; and it is the fallback when a `food_id` is not in the table. Drop it when the billed key gives stable timings that show the saving (`docs/DECISIONS.md`).
+
+### Open
+
+- Measure time to a review sheet on the deployed function with the billed key (M9), where a median means something.
+- The owner's own Thai meals (the N1 owner check).
+
 ## M6, 12 November 2026: ten Wikimedia Commons photos
 
 The owner's own photos were not available in this unattended run, so this used the fallback in `STARTING_PROMPT.md`: ten freely licensed food photos from Wikimedia Commons, six of them Thai, kept outside the repository. The owner's ten real meals are still an owner check (`docs/BLOCKERS.md`).

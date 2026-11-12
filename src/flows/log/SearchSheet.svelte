@@ -1,7 +1,8 @@
 <!-- SCREENS.md section 7, Search: a field with focus, results with kcal for the default portion, Recent foods while the
-     field is empty. A result opens the portion step, with a back chevron to the results: live calories, portion chips,
-     grams on a stepper that can be typed, Add. Opened from a meal (Replace, Add an item), Add hands the item back
-     instead of logging a meal. -->
+     field is empty. A result opens the portion step, with a back chevron to the results: live calories, the source and
+     its citation, portion chips, grams on a stepper that can be typed, Add. A food the user corrected before uses their
+     numbers, labelled Yours, with Use default values (F15). Opened from a meal (Replace, Add an item), Add hands the
+     item back instead of logging a meal. -->
 <script lang="ts">
   import { untrack } from 'svelte';
   import Sheet from '$lib/components/Sheet.svelte';
@@ -13,8 +14,10 @@
   import { view } from '$lib/view.svelte';
   import Stepper from '$lib/components/Stepper.svelte';
   import SearchIcon from '@lucide/svelte/icons/search';
+  import SourceLabel from '$lib/components/SourceLabel.svelte';
   import { db } from '$lib/db/store.svelte';
-  import { deleteMeal, saveMeal, undoToast } from '$lib/actions';
+  import { deleteMeal, forgetFood, saveMeal, undoToast } from '$lib/actions';
+  import { FOOD_SOURCES } from '$lib/data/sources';
   import { itemFor, loadFoods, searchFoods, type Food } from '$lib/data/foods';
   import { recentFoods } from '$lib/model/day';
   import { stampOn } from '$lib/model/dates';
@@ -45,8 +48,11 @@
       return food ? [{ food, grams: r.grams ?? food.portions[0].grams }] : [];
     }),
   );
-  const kcalFor = (f: Food, grams: number) => num(Math.round((f.per100.kcal * grams) / 100));
-  const item = $derived(picked ? itemFor(picked.food, picked.grams) : null);
+  /** the user's own numbers for a food, per 100 g, when they corrected it before */
+  const mine = (f: Food) => db.get('food', f.id)?.per100;
+  const kcalFor = (f: Food, grams: number) => num(Math.round(((mine(f) ?? f.per100).kcal * grams) / 100));
+  const item = $derived(picked ? itemFor(picked.food, picked.grams, mine(picked.food)) : null);
+  const cite = $derived(picked ? FOOD_SOURCES[picked.food.source.set] : null);
 
 
   function add() {
@@ -91,7 +97,11 @@
           <span class="text-heading text-ink-2">{t.after.kcal}</span>
         </div>
         {#if item}<p class="text-caption text-ink-2 mt-2">{t.search.macros(num(item.protein, 1), num(item.carbs, 1), num(item.fat, 1))}</p>{/if}
+        <p class="text-caption text-ink-2 mt-1" data-testid="portion-source"><SourceLabel source={item?.source === 'yours' ? 'yours' : 'database'} /></p>
       </div>
+      {#if item?.source === 'yours'}
+        <Button variant="plain" size="sm" class="-my-2 -ml-4 self-start" onclick={() => picked && forgetFood(picked.food.id)} data-testid="portion-default">{t.meal.useDefault}</Button>
+      {/if}
       <div class="-mx-6 flex gap-2 overflow-x-auto px-6" role="group" aria-label={t.search.portion}>
         {#each picked.food.portions as p (p.label)}
           <Chip selected={picked.grams === p.grams} onclick={() => { if (picked) picked.grams = p.grams; }}>{p.label}</Chip>
@@ -101,6 +111,13 @@
         <span class="text-body font-semibold">{t.search.grams}</span>
         <Stepper bind:value={picked.grams} step={10} min={1} max={MAX_GRAMS} unit={t.after.g} label={t.after.grams} testid="portion-grams" />
       </div>
+      <!-- the citation is the table's; the user's own numbers are not its -->
+      {#if cite && item?.source !== 'yours'}
+        <p class="text-caption text-ink-2" data-testid="portion-cite">
+          {t.search.from(cite.name)}
+          {#if cite.terms}<a href={cite.terms} target="_blank" rel="noopener" class="relative underline after:absolute after:-inset-x-2 after:-inset-y-4">{t.search.terms}</a>{/if}
+        </p>
+      {/if}
     </div>
   {:else}
     <div class="relative">

@@ -7,7 +7,7 @@
   import Button from '$lib/components/Button.svelte';
   import { sheets } from '$lib/sheets.svelte';
   import { db } from '$lib/db/store.svelte';
-  import { deleteMeal, saveAsMeal, saveMeal, undoToast } from '$lib/actions';
+  import { deleteMeal, rememberFoods, saveAsMeal, saveMeal, undoToast } from '$lib/actions';
   import { totals } from '$lib/model/day';
   import { atTime, timeOf } from '$lib/model/dates';
   import { num } from '$lib/model/format';
@@ -47,6 +47,7 @@
   function save() {
     if (!id || !edited || !items.length) return;
     saveMeal(edited, id);
+    rememberFoods(lines.filter((l) => l.corrected).map(scaled));
     close();
     toast(t.toast.changesSaved);
   }

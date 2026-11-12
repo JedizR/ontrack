@@ -61,7 +61,7 @@ Everything a user owns is a record in a named collection. Weekdays are numbered 
 // shared/records.ts
 export type Collection =
   | 'profile' | 'plan' | 'weight' | 'meal' | 'saved'
-  | 'program' | 'slog' | 'checkin' | 'day';
+  | 'program' | 'slog' | 'checkin' | 'day' | 'food';
 
 export type Rec<T = unknown> = {
   collection: Collection;
@@ -110,7 +110,7 @@ export type MealItem = {
   name: string;
   grams?: number;
   kcal: number; protein: number; carbs: number; fat: number;
-  source: 'db' | 'estimate' | 'manual';
+  source: 'db' | 'estimate' | 'manual' | 'yours';   // yours: the user's remembered numbers for the food (F15)
   foodId?: string;
   confidence?: 'high' | 'medium' | 'low';
 };
@@ -153,7 +153,13 @@ export type Checkin = {               // id: `checkin:${date}`
 };
 
 export type Day = { date: string; closed?: true };            // id: `day:${date}`
+
+// Remembered nutrition (F15), what the user corrected a food to. id: the food's table id, or `name:` and its
+// normalised name (lower case, accents dropped, Thai script kept) when it has none; at most 80 characters.
+export type FoodMemory = { name: string; per100: { kcal: number; protein: number; carbs: number; fat: number } };
 ~~~
+
+Remembered nutrition is written by `rememberFoods` when a Review or Meal sheet is saved with items the user corrected (per 100 g, two decimals, from the item's numbers and grams; an item without grams or past 900 kcal in 100 g is not remembered) and removed by `forgetFood` ("Use default values"). It is applied on the device: to a photo or description's items after the server's resolution, and to Search's results and portion step. The server never sees it.
 
 Derived and never stored: day totals, the day's target, on track status, trend weight, weekly averages. They are functions in `src/lib/model/`.
 
@@ -162,7 +168,7 @@ Device only, kept in `localStorage` under `ontrack:prefs` and never synced: them
 ## 4. On the device
 
 - One idb-keyval store per user, named `ontrack-<userId>`. Keys: `r:<collection>:<id>` holds a `Rec`. `outbox` holds the keys changed since the last successful push. `meta` holds `{ schemaVersion, cursor, lastSyncAt }`. `blob:<mealId>` holds a thumbnail. `blobq` holds meal ids waiting to upload.
-- At start the store reads every record into `$state` maps, one per collection. Screens read from these maps. Schema changes are handled by numbered migrations in `src/lib/db/migrations.ts`, as in watermelon.
+- At start the store reads every record into `$state` maps, one per collection. Screens read from these maps. Schema changes are handled by numbered migrations in `src/lib/db/migrations.ts`, as in watermelon. A migration takes the records and the meta. Adding a collection needs one: an older version on another device skips the new collection's records but moves its cursor past them, so the migration sets a cursor back to the epoch (schema 2, N1), which pulls everything once without the first load state.
 - Every mutation goes through `actions.ts`: validate with zod, stamp `updatedAt` with `Date.now()`, write memory, write IndexedDB, add the key to the outbox, wake the sync engine. Actions that delete return an undo function.
 - Onboarding happens before sign-in. Answers live in the prefs draft so they survive the Google redirect. After sign-in and the first pull: if the account already has a profile, the draft is discarded. If not, the draft becomes the profile, program and first plan.
 
@@ -210,7 +216,7 @@ export interface Backend {
 create table public.records (
   user_id    uuid        not null default auth.uid() references auth.users (id) on delete cascade,
   collection text        not null check (collection in
-               ('profile','plan','weight','meal','saved','program','slog','checkin','day')),
+               ('profile','plan','weight','meal','saved','program','slog','checkin','day','food')),   -- 'food' from 0002
   id         text        not null check (char_length(id) between 1 and 80),
   data       jsonb       not null check (octet_length(data::text) <= 65536),
   updated_at bigint      not null,
@@ -356,7 +362,7 @@ System prompt, in `server/vision/prompt.ts`. Tune it against real photos in M6, 
 ~~~
 You identify food for a nutrition log. Reply with JSON only, matching the schema.
 
-- List each distinct component of the meal as its own item (rice, curry, fried egg), not the dish as one line, unless the dish itself is in the catalog.
+- When a whole dish is in the catalog (pad thai, khao man kai, pad kra pao pork with rice and fried egg, boat noodles), give it as one item with that food_id rather than its parts. Otherwise list each distinct component as its own item (rice, curry, fried egg).
 - For each item estimate the edible weight in grams as served. Use visible cues: plate and bowl size, cutlery, hands, packaging. Give your single best number.
 - If an item matches a catalog entry, set food_id to that entry's id. Match the food and how it was cooked. If nothing fits well, set food_id to null.
 - Always fill est_per_100g from your own knowledge of the food as cooked.
@@ -384,20 +390,24 @@ On the device before upload: draw the capture to a canvas at 1024 px on the long
 ~~~ts
 type Food = {
   id: string;                 // slug, stable forever
-  name: string;               // plain display name
-  aliases: string[];          // search terms
+  name: string;               // plain display name; a Thai dish by its common romanised name
+  aliases: string[];          // search terms, Thai script included
   per100: { kcal: number; protein: number; carbs: number; fat: number; fiber?: number };
   portions: Array<{ label: string; grams: number }>;   // first is the default
-  tags: Array<'dense' | 'protein' | 'drink' | 'oil' | 'staple'>;
-  source: { set: 'usda-sr-legacy'; fdcId: number };
+  tags: Array<'dense' | 'protein' | 'drink' | 'oil' | 'staple' | 'thai'>;
+  source: { set: 'usda-sr-legacy' | 'usda-fndds' | 'sg-foodid'; id: string };   // the food's id in that table
 };
 ~~~
 
-- `data/food-list.csv` is the curated list: `id, name, aliases, fdc_id, portions, tags`. Claude drafts it in M5 and the script validates every `fdc_id` against the downloaded data.
-- `scripts/build-foods.ts` downloads the USDA FoodData Central SR Legacy CSV archive into `data/usda/`, reads energy, protein, carbohydrate, fat and fibre for each listed food, and writes the JSON. It fails on a missing id or a missing nutrient.
-- Coverage for v1, at least 350 foods: staples and grains cooked and raw (40), meat, poultry, fish and eggs by common cut and cooking method (70), dairy and alternatives (30), fruit (40), vegetables (50), legumes, nuts and seeds (30), oils, fats and sauces (25), breads, noodles and breakfast foods (30), snacks and sweets (20), drinks (15). At least 25 foods carry the `dense` tag for gain mode.
+- `data/food-list.csv` is the curated list: `id, name, aliases, source_id, portions, tags`. A numeric `source_id` is a USDA FoodData Central id, looked up in SR Legacy, then FNDDS; one like `F05060092` is an SG FoodID id. Claude drafts the list (M5, N1) and the script validates every id against the data.
+- Three tables (N1; sources and terms in `docs/DECISIONS.md`):
+  - USDA SR Legacy (2018) and FNDDS 2021 to 2023 (public domain, CC0): the script downloads their CSV archives into `data/usda/` and `data/usda/fndds/` (gitignored). FNDDS names nutrients by number (208 energy), SR Legacy by id (1008).
+  - SG FoodID, Health Promotion Board, Singapore (licence: use and redistribution, commercial or not, with a conspicuous notice of the source and a link to the terms): no bulk file, so the API's answer for each listed food (`https://pphtpc.hpb.gov.sg/bff/v1/food-portal/foods/details/<id>`) is kept verbatim in `data/sgfoodid/foods.json` with its URL and the date read, under `foods.json.sha256`. The script fetches a listed food the extract lacks and fails if the file no longer matches its checksum. Values are `baseFoodNutrients`, per 100 g edible portion; null or a negative number is missing.
+- The script reads energy, protein, carbohydrate, fat and fibre for each listed food and writes the JSON. It fails on a missing id or a missing nutrient (fibre is optional). A unit test checks the extract's checksum and that every SG FoodID food carries its values exactly.
+- Search's portion step cites the food's table under the numbers (`FOOD_SOURCES` in `src/lib/data/sources.ts`); for SG FoodID with the date read and a link to its terms. The citation hides while the numbers are the user's own.
+- Coverage: 571 foods. v1 asked for at least 350: staples and grains cooked and raw (40), meat, poultry, fish and eggs by common cut and cooking method (70), dairy and alternatives (30), fruit (40), vegetables (50), legumes, nuts and seeds (30), oils, fats and sauces (25), breads, noodles and breakfast foods (30), snacks and sweets (20), drinks (15). At least 25 foods carry the `dense` tag for gain mode. N1: at least 80 carry `thai`, each with a Thai script alias (138 at N1).
 - Two entries have fixed ids used by the oil control: `oil-vegetable` and `butter`.
-- Search on the device is a small scored match over `name` and `aliases`: prefix beats word start beats substring, shorter names win ties. No library.
+- Search on the device is a small scored match over `name` and `aliases`: prefix beats word start beats substring, shorter names win ties. No library. Normalising keeps Thai script (U+0E00 to U+0E7F); Thai has no spaces, so a Thai query matches by prefix or substring.
 
 ## 10. Exercise library and templates
 

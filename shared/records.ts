@@ -3,7 +3,7 @@
 // zod/mini: the same schemas at a fraction of the bundle, because actions.ts ships in the first chunk
 import * as z from 'zod/mini';
 
-export const COLLECTIONS = ['profile', 'plan', 'weight', 'meal', 'saved', 'program', 'slog', 'checkin', 'day'] as const;
+export const COLLECTIONS = ['profile', 'plan', 'weight', 'meal', 'saved', 'program', 'slog', 'checkin', 'day', 'food'] as const;
 export type Collection = (typeof COLLECTIONS)[number];
 
 /** The database checks id at 1 to 80 characters and data at 64 KB as jsonb text, which spaces out JSON.stringify's
@@ -87,7 +87,8 @@ export const mealItemSchema = z.object({
   protein: grams,
   carbs: grams,
   fat: grams,
-  source: z.enum(['db', 'estimate', 'manual']),
+  /** yours: the user's own numbers for this food (F15) */
+  source: z.enum(['db', 'estimate', 'manual', 'yours']),
   foodId: z.optional(str(0, 80)),
   confidence: z.optional(z.enum(['high', 'medium', 'low'])),
 });
@@ -129,6 +130,14 @@ export const checkinSchema = z.object({
 
 export const daySchema = z.object({ date, closed: z.optional(z.literal(true)) });
 
+/** Remembered nutrition (F15): the values a user corrected a food to, per 100 g. The id is the food's table id, or
+ * `name:` and its normalised name when it has none (`foodKey` in src/lib/data/foods.ts). Pure fat is about 900 kcal
+ * (lard is 902 in the table); past 1,000 is a typo. */
+export const foodSchema = z.object({
+  name: str(1, 120),
+  per100: z.object({ kcal: num(0, 1000), protein: num(0, 100), carbs: num(0, 100), fat: num(0, 100) }),
+});
+
 export const SCHEMAS = {
   profile: profileSchema,
   plan: planSchema,
@@ -139,6 +148,7 @@ export const SCHEMAS = {
   slog: sessionLogSchema,
   checkin: checkinSchema,
   day: daySchema,
+  food: foodSchema,
 } satisfies Record<Collection, z.ZodMiniType>;
 
 export type Profile = z.infer<typeof profileSchema>;
@@ -152,6 +162,7 @@ export type Program = z.infer<typeof programSchema>;
 export type SessionLog = z.infer<typeof sessionLogSchema>;
 export type Checkin = z.infer<typeof checkinSchema>;
 export type Day = z.infer<typeof daySchema>;
+export type FoodMemory = z.infer<typeof foodSchema>;
 export type DataOf = { [C in Collection]: z.infer<(typeof SCHEMAS)[C]> };
 
 /** Deterministic ids for one-per-user and one-per-day records, so two devices converge instead of duplicating. */

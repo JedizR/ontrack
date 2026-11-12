@@ -11,7 +11,7 @@
   import Skeleton from '$lib/components/Skeleton.svelte';
   import { sheets } from '$lib/sheets.svelte';
   import { view } from '$lib/view.svelte';
-  import { analyzeMeal, logReviewed, saveAsMeal, undoToast, type Analyzed } from '$lib/actions';
+  import { analyzeMeal, logReviewed, rememberFoods, saveAsMeal, undoToast, type Analyzed } from '$lib/actions';
   import { preparePhoto } from '$lib/photo';
   import { itemFor, loadFoods, type Food } from '$lib/data/foods';
   import { totals } from '$lib/model/day';
@@ -21,7 +21,7 @@
   import { toast } from 'svelte-sonner';
   import { t } from '$lib/i18n';
   import ItemList from './ItemList.svelte';
-  import { lineOf, scaled, type Line } from './items';
+  import { lineOf, lineWithMine, scaled, type Line } from './items';
   import type { AnalysisItem, AnalyzeRequest } from '../../../shared/analysis';
   import type { Meal, MealItem } from '../../../shared/records';
 
@@ -84,7 +84,8 @@
     }
     const { analysis } = res;
     title = analysis.title;
-    lines = analysis.items.map((i) => lineOf(toItem(i)));
+    // the model named it and weighed it; numbers the user corrected for that food before come back as Yours (F15)
+    lines = analysis.items.map((i) => lineWithMine(toItem(i)));
     hidden = analysis.items.some((i) => i.hiddenFat);
     ai = JSON.stringify(analysis.raw).length > RAW_MAX ? { model: analysis.model } : { model: analysis.model, raw: analysis.raw };
     status = 'ready';
@@ -129,6 +130,7 @@
     const undo = await logReviewed(meal, kind === 'photo' ? thumb : null).catch(() => null);
     saving = false;
     if (!undo) return void toast(t.review.notSaved);
+    rememberFoods(lines.filter((l) => l.corrected).map(scaled));
     if (keep) saveAsMeal(meal, name);
     close();
     haptic();
@@ -148,9 +150,9 @@
 <Sheet bind:open={() => sheets.review !== null, (v) => { if (!v) close(); }} title={t.review.title} layer="base" testid="review-sheet" footer={status === 'ready' ? footer : undefined}>
   {#if kind === 'photo'}
     {#if photoUrl}
-      <img src={photoUrl} alt={t.review.photo} class="shadow-card aspect-[4/3] w-full rounded-lg object-cover" data-testid="review-photo" />
+      <img src={photoUrl} alt={t.review.photo} class="shadow-card aspect-[4/3] w-full rounded-md object-cover" data-testid="review-photo" />
     {:else if status === 'loading'}
-      <Skeleton class="aspect-[4/3] w-full rounded-lg" />
+      <Skeleton class="aspect-[4/3] w-full rounded-md" />
     {/if}
   {/if}
 

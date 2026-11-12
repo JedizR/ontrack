@@ -6,11 +6,24 @@ Everything that needs you, in one place. Newest first within each section.
 
 Each entry: what is blocked, what Claude tried, the exact steps for you, and what to tell Claude afterwards.
 
-None open. Resolved items are at the end of this file.
+### N1: a Thai food composition table Ontrack may use
+
+- **Blocked:** nutrition from a Thai source. N1 ships 138 Thai foods from SG FoodID (Singapore) and USDA FNDDS, but dishes those tables lack stay model estimates: khao soi, massaman, red and panang curry, beef green curry, tom kha, som tam, larb, nam tok, kai yang, moo ping, pad see ew, khao kha moo and most Thai desserts (`docs/EVAL-NOTES.md`, N1).
+- **Tried:** the three Thai sources and their terms (`docs/DECISIONS.md`, N1). The INMU Thai Food Composition Database (online version 3, August 2025, 313 dishes) lets non-commercial users use the data, but asks that reproducing or distributing it be applied for by email, and it has no downloadable file. The Department of Health's 2018 table is a scanned PDF whose website forbids distribution without permission. The ASEAN database has 29 Thai dishes under INMU's terms. Asking permission means sending email, which Claude may not do.
+- **Your steps:** email the Institute of Nutrition, Mahidol University, at `kunchit.jud@mahidol.ac.th` (copy `piyanut.sri@mahidol.ac.th`). Ask for (1) permission to include the per 100 g energy, protein, fat, carbohydrate and fibre of the Thai FCD's mixed dishes (group T, "Mixed foods: main dishes, one-plate dishes, desserts, snacks") in Ontrack, a free calorie tracker, with "Thai Food Composition Database, INMU, Mahidol University" cited under each food, and (2) the data as a CSV or Excel file. If they send a file, put it outside the repository.
+- **Then tell Claude:** "INMU allows Ontrack to use the Thai FCD; the file is at <path>" (Claude adds it as a fourth table in `pnpm foods:build`, with the licence in `docs/DECISIONS.md`), or "INMU said no".
 
 ## Needs your eyes
 
 Each entry: what to look at (URL or screenshot paths), what to look for, and which milestone it belongs to.
+
+### N1: five Thai meals you eat often, and Yours
+
+- **Where:** the pull request's Vercel preview in Safari on the iPhone, or `pnpm dev` on the Mac against the mock (code 123456; photos are answered by fixtures there, so use Search). Screenshots: `screenshots/thai/` after `pnpm screenshots -- --grep thai` (Thai script search, a Thai dish's portion step with its citation, the Review of a Thai dish, Correct open, Yours in Review and in Search; light and dark, 390, SE and Pro Max), and `screenshots/fonts/*-xl/logging/review-correct.png` for the largest text. A few are on branch `pr-assets`, folder `n1/`.
+- **Log five Thai meals you eat often**, by photo and by Search, typing Thai script once (ข้าวมันไก่, กะเพรา, ก๋วยเตี๋ยว). Judge the numbers: do the calories for a plate of khao man kai, pad kra pao with rice and egg, boat noodles or pad thai look right for the plates you buy? Portions are drafted (a plate about 350 g, a noodle soup about 450 g); say if your usual plate is far off.
+- **Then try Yours:** open an item, Correct, change the calories, add the meal. Log the same food again (photo or Search): it reads Yours with your number. Open it and tap Use default values: the table's number comes back. On a second device signed in to the same account, the remembered number arrives after a sync.
+- **Decide:** whether Thai-Chinese dishes measured in Singapore (khao man kai, khao mu daeng, jok) are close enough to yours; and whether "Use default values" should also be offered in Today's Meal sheet for a food Ontrack has no table entry for (it is not, today).
+- **Decided for you:** the N1 list in `docs/DECISIONS.md`, notably SG FoodID and FNDDS as the table while no Thai source is licensed, the names and portions, keeping `est_per_100g`, remembering on save rather than on each change, and step 0.5 for macros.
 
 ### M8: each seeded check-in, and Progress, on your iPhone
 

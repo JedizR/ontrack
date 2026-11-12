@@ -91,13 +91,15 @@ After capture: the Review sheet opens immediately with the photo at the top and 
 
 **Review sheet.**
 - The photo, full width, radius 24. The title, editable.
-- One row per item: name, grams with a stepper, calories, and the source label. Tapping a row expands it: portion chips (Half, Same, One and a half, Double), protein, carbs and fat, "Replace" opening Search, "Remove".
+- One row per item: name, grams with a stepper, calories, and the source label (Database, Estimate, or Yours). Tapping a row expands it: portion chips (Half, Same, One and a half, Double), protein, carbs and fat, "Replace" opening Search, "Correct", "Remove".
+- "Correct" (N1, F15) shows calories, protein, carbs and fat as labelled rows of typed steppers in one column, and "Ontrack remembers your numbers for this food." The item then reads Yours. Saving the meal remembers the numbers per 100 g for that food; the next photo, description or search of it uses them.
+- An item that reads Yours, opened, offers a plain "Use default values": the table's or the model's numbers come back at the same grams and the remembered ones are forgotten.
 - If any item is flagged for hidden fat: a control "Cooked with oil?" with None, 1 tsp, 1 tbsp.
 - "Add an item" opening Search.
 - Pinned at the bottom: totals for calories and protein, a "Save meal" toggle, and the primary button "Add 720 kcal".
 - Errors replace the skeleton with a message and two buttons: "Try again" and "Add by hand". Not food: "We could not find food in that photo". Limit: "You have used today's 40 photo analyses. Search and quick add still work". Offline: "Photo analysis needs a connection".
 
-**Search.** A field with focus, results as rows with kcal per default portion. Tapping a result opens a portion step, with a back chevron to the results: calories in Display, portion chips from the table, grams on a stepper of 10 whose number can be typed, "Add". With an empty field, show Recent foods.
+**Search.** A field with focus, results as rows with kcal per default portion. Thai script finds Thai foods. Tapping a result opens a portion step, with a back chevron to the results: calories in Display, macros, the source label, portion chips from the table, grams on a stepper of 10 whose number can be typed, the table's citation ("Values from SG FoodID, Health Promotion Board, Singapore, read on 12 November 2026. Terms of use"), "Add". A food with remembered numbers shows them, labelled Yours, with "Use default values" above the chips and no citation. With an empty field, show Recent foods.
 
 **Describe.** A text area: "What did you eat?" with the hint "Two eggs, toast with butter and a latte". "Analyse" leads to the same Review sheet without a photo.
 
