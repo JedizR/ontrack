@@ -208,6 +208,10 @@ for (const theme of ['light', 'dark'] as const) {
         await page.evaluate(() => scrollTo(0, document.body.scrollHeight));
         await shot(page, 'today', 'typical-end');
         await page.evaluate(() => scrollTo(0, 0));
+        await page.getByTestId('weigh-open').click();
+        await sheet('picker', 'weigh');
+        await page.keyboard.press('Escape');
+        await page.getByTestId('picker').waitFor({ state: 'detached' });
         await page.getByTestId('session-done').click();
         await page.getByTestId('week').getByRole('button', { name: /November 10/ }).click();
         await shot(page, 'today', 'past-day');
