@@ -4,7 +4,7 @@ What the vision model got right and wrong on real photos, and what changed becau
 
 ## N3, 12 November 2026: Thai values from the Thai Food Composition Database
 
-**What changed.** 670 foods, 236 tagged `thai`. 98 new Thai foods, 93 of them dishes, snacks and desserts with no table entry before (khao soi, massaman, red, panang and yellow curries, tom kha, som tam, larb, khao kha moo, pad see ew, kai yang, moo daeng, tod man, the khanom and the coconut desserts among them), and 17 existing Thai foods moved to the Thai source. 115 foods now read their values from INMU's Thai Food Composition Database: 23 from the owner's file and 92 from INMU's own pages, snapshotted in `data/thai/`. 24 of them have one value derived by Atwater (14 energy, 10 carbohydrate), marked in `foods.json`. Sources and rules: `docs/DECISIONS.md`, N3.
+**What changed.** 670 foods, 236 tagged `thai`. 98 new Thai foods, 93 of them dishes, snacks and desserts with no table entry before (khao soi, massaman, red, panang and yellow curries, tom kha, som tam, larb, khao kha moo, pad see ew, kai yang, moo daeng, tod man, the khanom and the coconut desserts among them), and 17 existing Thai foods moved to the Thai source. 115 foods now read their values from INMU's Thai Food Composition Database: 23 from the owner's file and 92 from INMU's own pages, snapshotted in `data/thai/`. 23 of them have one value derived by Atwater (13 energy, 10 carbohydrate), marked in `foods.json`. Sources and rules: `docs/DECISIONS.md`, N3.
 
 **Rows of the owner's file left out** (the build prints them with the reason; none of these foods is on the list):
 - Energy against 4p + 4c + 9f off by more than 25 percent or 40 kcal: C2 roasted white sesame (356 kcal against 949), C14 dried snap bean (157 against 257).

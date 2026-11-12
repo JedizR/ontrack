@@ -28,15 +28,17 @@ export function loadFoods(): Promise<Food[]> {
 /** Lower case, accents dropped, Thai script kept (U+0E00 to U+0E7F), anything else a space. */
 export const norm = (s: string) => s.toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9\u0e00-\u0e7f ]+/g, ' ').replace(/\s+/g, ' ').trim();
 
-/** 3 prefix, 2 word start, 1 substring, 0 no match: of the query against one name or alias. */
+/** 4 the whole name, 3 prefix, 2 word start, 1 substring, 0 no match: of the query against one name or alias. */
 function score(text: string, q: string) {
   const s = norm(text);
+  if (s === q) return 4;
   if (s.startsWith(q)) return 3;
   if (s.includes(` ${q}`)) return 2;
   return s.includes(q) ? 1 : 0;
 }
 
-/** Scored match over name and aliases: prefix beats word start beats substring, shorter names win ties. No library. */
+/** Scored match over name and aliases: a whole match beats prefix beats word start beats substring, shorter names win
+ * ties. No library. */
 export function searchFoods(foods: Food[], query: string, limit = 30): Food[] {
   const q = norm(query);
   if (!q) return [];

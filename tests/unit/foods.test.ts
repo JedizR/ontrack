@@ -71,6 +71,13 @@ describe('foods:build', () => {
     expect(readInmuPage(page([row('Energy, by calculation', '101'), row('Total energy - by calculation', '-'), row('Protein, total', '7.90'), row('Fat, total', '6.05'), row('Carbohydrate, available', '3.03'), row('Carbohydrate, total', '-'), row('Dietary fibre', '1.4')])).values)
       .toEqual({ kcal: 101, carbs: 3.03, protein: 7.9, fat: 6.05, fiber: 1.4 });
   });
+  test('reads real Thai FCD pages: a full one, and one with total energy beside available carbohydrate', () => {
+    const page = (code: string) => readFileSync(new URL(`inmu/${code}.html`, THAI), 'utf8');
+    expect(readInmuPage(page('T10'))).toEqual({ code: 'T10', values: { kcal: 70, protein: 3.05, fat: 2.67, carbs: 8.23, fiber: 0.4 } });
+    const t8 = readInmuPage(page('T8'));
+    expect(t8.values).toMatchObject({ kcal: 216, protein: 19.5, fat: 9.8, carbs: 12.5 });
+    expect(complete(t8.values)).toEqual({ values: t8.values }); // nothing derived: both are on the page
+  });
   test('reads quoted CSV fields', () => {
     expect(csvLine('"1","a, b","say ""hi"""')).toEqual(['1', 'a, b', 'say "hi"']);
   });
@@ -143,6 +150,8 @@ describe('search', () => {
     expect(searchFoods(list, 'KHAO').map((f) => f.name)).toEqual(['White rice']);
     expect(searchFoods([food('Café latte')], 'cafe').length).toBe(1);
     expect(searchFoods([food('Pad thai', ['ผัดไทย']), food('Thai milk tea', ['ชาเย็น'])], 'ผัดไทย').map((f) => f.name)).toEqual(['Pad thai']);
+    // a whole match beats the prefix of a shorter name
+    expect(searchFoods([food('Khao tom mat', ['ข้าวต้มมัด']), food('Plain rice soup', ['ข้าวต้ม'])], 'ข้าวต้ม').map((f) => f.name)).toEqual(['Plain rice soup', 'Khao tom mat']);
     expect(searchFoods(list, '  ')).toEqual([]);
   });
   test('the real table finds everyday foods', () => {
@@ -158,6 +167,9 @@ describe('search', () => {
     expect(top('ส้มตำ')).toBe('Som tam');
     expect(top('khao kha moo')).toBe('Khao kha moo');
     expect(top('ไก่ย่าง')).toBe('Kai yang');
+    expect(top('ก๋วยเตี๋ยว')).toBe('Rice noodles');
+    expect(top('green curry')).toBe('Green curry with chicken');
+    expect(top('massaman')).toBe('Massaman curry with beef');
   });
 });
 

@@ -206,8 +206,9 @@ export function readOwner(csv: string): Table {
   const lines = csv.split(/\r?\n/).filter((l) => l.trim());
   if (lines[0] !== OWNER_HEADER) throw new Error(`the owner's extract must start with: ${OWNER_HEADER}`);
   const rows = new Map<string, Values>();
-  for (const line of lines.slice(1)) {
+  for (const [n, line] of lines.slice(1).entries()) {
     const f = csvLine(line);
+    if (f.length !== 10) throw new Error(`the owner's extract, row ${n + 2}: expected 10 fields, found ${f.length}`);
     rows.set(`owner:${f[0].trim()}`, { protein: thaiNumber(f[5]), fat: thaiNumber(f[6]), kcal: thaiNumber(f[7]), carbs: thaiNumber(f[8]), fiber: thaiNumber(f[9]) });
   }
   return thaiTable('thai-fcd-owner', "Thai FCD (the owner's extract)", rows, OWNER_OUT);
@@ -215,15 +216,15 @@ export function readOwner(csv: string): Table {
 
 const INMU = 'https://inmu.mahidol.ac.th/thaifcd/';
 const INMU_GROUP: Record<string, number> = { A: 70, B: 71, C: 73, D: 74, E: 75, F: 76, G: 77, H: 78, J: 79, K: 80, M: 81, N: 72, Q: 82, S: 83, T: 84, U: 85, Z: 69 };
-// energy and carbohydrate are read as a pair: from available carbohydrate, or where a page has neither, from total
-const INMU_PAIRS = [['Energy, by calculation', 'Carbohydrate, available'], ['Total energy - by calculation', 'Carbohydrate, total']] as const;
 export type InmuPages = { source: string; terms: string; pages: Record<string, { file: string; url: string; read: string; sha256: string }> };
 
 /** One page of the online Thai FCD as its server answers it: the food's code and its values per 100 g edible portion. */
 export function readInmuPage(html: string): { code?: string; values: Values } {
   const code = /Food Code:\s*<\/div>\s*<div[^>]*>([^<]+)</.exec(html)?.[1].trim();
   const cell = (label: string) => thaiNumber(new RegExp(`<td[^>]*>${label}</td>\\s*<td[^>]*>[^<]*</td>\\s*<td[^>]*>([^<]*)</td>`).exec(html)?.[1]);
-  const [kcal, carbs] = INMU_PAIRS.map(([e, c]) => [cell(e), cell(c)]).find((pair) => pair.some((x) => x !== undefined)) ?? [];
+  // a page gives energy and carbohydrate by available carbohydrate, or only as totals; complete() checks the pair
+  const kcal = cell('Energy, by calculation') ?? cell('Total energy - by calculation');
+  const carbs = cell('Carbohydrate, available') ?? cell('Carbohydrate, total');
   return { code, values: { kcal, carbs, protein: cell('Protein, total'), fat: cell('Fat, total'), fiber: cell('Dietary fibre') } };
 }
 
@@ -257,6 +258,8 @@ async function inmuPages(dir: string, wanted: string[]): Promise<Table> {
       const res = await fetch(answer);
       if (!res.ok) throw new Error(`Thai FCD ${code}: ${res.status}`);
       const text = await res.text();
+      const read = readInmuPage(text).code;
+      if (read !== code) throw new Error(`Thai FCD ${code}: ${answer} answered the page of ${read ?? 'no food'}`);
       writeFileSync(`${dir}/inmu/${code}.html`, text);
       pages.pages[code] = { file: `inmu/${code}.html`, url, read, sha256: sha256(text) };
       await new Promise((r) => setTimeout(r, 1000)); // one page a second, gently
