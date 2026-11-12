@@ -19,8 +19,10 @@ Status is one of: not started, in progress, shipped, shipped with cuts, blocked.
 | D1 | Design refresh (owner, after M7) | shipped | PR #12, merged, `v0.7.1` | OneFin identity in light and dark, wheels and typed steppers instead of the keypad, browser first (no install guide). The look by eye and the wheels by thumb, and the template licence, are on the owner's list |
 | M8 | Progress and check-ins | shipped | PR #13, merged, `v0.8.0` | Gate green on the mock: one test per check-in reason on the seeder, vectors F and G on screen. Whether each seeded sentence matches its numbers is on the owner's list |
 | N1 | Thai foods and remembered nutrition (owner, after M8) | shipped with cuts | PR #15, merged, `v0.8.1` | Gate green on the mock, conformance green on both backends. No Thai source may be used yet (INMU licence on the owner's list), so 138 Thai foods come from SG FoodID and FNDDS. Eval: dish matches 0 to 3 of 8, table calories 22 to 57 percent |
-| N2 | Supplements (owner, after N1) | shipped | PR #17 | Gate green on the mock, conformance green on both backends. Plus, the supplement, Add; creatine as taken. Setup asks the scoops you take (half steps would make 1 to 2 two taps). Plant protein from USDA's soy powder; casein, gainer, creatine from the label |
-| T1 | Gain pace and hybrid training (owner's friends, after N2) | not started | | F19, F20. A faster gain pace for lean people, strength and cardio planned together, training on Progress |
+| N2 | Supplements (owner, after N1) | shipped | PR #17, merged, `v0.8.2` | Gate green on the mock, conformance green on both backends. Plus, the supplement, Add; creatine as taken. Setup asks the scoops you take (half steps would make 1 to 2 two taps). Plant protein from USDA's soy powder; casein, gainer, creatine from the label |
+| B1 | Barcode scanning (owner: a main feature, after N2) | not started | | F22. Camera scan in the browser, saved products, Open Food Facts, label photo read by the model |
+| N3 | Thai nutrition from Thai sources (owner, after B1) | not started | | Thai pages and the owner's finds, snapshotted and cited; the app stays English |
+| T1 | Gain pace and hybrid training (owner's friends, after N3) | not started | | F19, F20. A faster gain pace for lean people, strength and cardio planned together, training on Progress |
 | O1 | Onboarding redesign (owner, after T1) | not started | | Least effort, engaging, personalizing; words chosen for click-through. Research in `ontrack-design/onboarding/` |
 | L1 | Landing page (owner, after O1) | not started | | For signed-out visitors, OneFin style with scroll animations; replaces Welcome |
 | S1 | Friends, profiles and the food map (owner, after L1) | not started | | F16, F17. Friends by request, optional program on the profile, opt-in meal photos on a map at rounded photo locations |
@@ -37,6 +39,8 @@ Status is one of: not started, in progress, shipped, shipped with cuts, blocked.
 - Vision: real. `/api/analyze` with `gemini-3.6-flash`, minimal thinking. Vercel holds `VISION_PROVIDER=gemini`, `GEMINI_MODEL`, and `GEMINI_API_KEY` (the development key, free tier: 20 requests a day per model) for production and preview, plus `VITE_BACKEND=supabase`, the Supabase URL and keys, and `CRON_SECRET`. The key's file is `~/.config/ontrack/gemini-api-key`; `scripts/live-env.sh` reads it for `dev:live` and `eval:vision`.
 
 ## Notes for the next milestone
+
+- Owner's call after N2 (for O1, which sets up supplements in onboarding): the supplement setup follows the label. The user copies the "per serving" values as printed and says how many scoops make one serving, and Ontrack works out per scoop; mass gainer tubs list several scoops per serving. Milk amounts show in ml, not grams. This closes the N2 question in BLOCKERS.
 
 N2 (supplements):
 - Data: collection `supplement` (`supplementSchema` in `shared/records.ts`: name, kind, scoopG, perScoop, lastScoops, lastMix). A logged supplement is a meal with method `supplement`; its first item carries `supplementId` and `scoops`, then the milk as a table item. Store schema 3 (cursor to the epoch again); Supabase `0003_supplement.sql`. Conformance has a supplement round trip and migrations from 1 and 2.
