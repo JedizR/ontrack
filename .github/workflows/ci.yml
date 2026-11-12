@@ -1,34 +1,92 @@
 name: ci
+# Quick on every pull request and push to main: the same checks as `pnpm verify`, plus the end to end
+# files the pull request changed. Full (every end to end test, screenshots, stress) only on a release tag (v1 and later),
+# a pull request labelled `full-ci`, or a manual run. Docs-only changes skip CI (docs/SOURCES.md is
+# read by a unit test, so it still counts).
 on:
   pull_request:
+    types: [opened, synchronize, reopened, labeled]
+    paths: ['**', '!**/*.md', '!docs/**', 'docs/SOURCES.md']
   push:
     branches: [main]
+    tags: ['v[1-9]*'] # releases only; milestone tags (v0.x) run nothing
+    paths: ['**', '!**/*.md', '!docs/**', 'docs/SOURCES.md']
+  workflow_dispatch:
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
+env:
+  TZ: Asia/Bangkok
+  VITE_BACKEND: mock
+  VISION_PROVIDER: mock
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
-    env:
-      TZ: Asia/Bangkok
-      VITE_BACKEND: mock
-      VISION_PROVIDER: mock
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
       - run: corepack enable pnpm
+      - id: store
+        run: echo "path=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v6
+        with:
+          path: ${{ steps.store.outputs.path }}
+          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+      - uses: actions/cache@v6
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
       - run: pnpm test
       - run: pnpm build
-      - run: pnpm exec playwright install --with-deps webkit chromium
-      - run: pnpm test:e2e
+      - run: pnpm exec playwright install --with-deps webkit
+      - run: pnpm exec playwright test --grep @smoke
+      - name: end to end files this pull request changed
+        if: github.event_name == 'pull_request'
+        run: |
+          git fetch --no-tags --depth=1 origin ${{ github.base_ref }}
+          pnpm exec playwright test --only-changed=FETCH_HEAD --project=light --project=dark --pass-with-no-tests
       - uses: actions/upload-artifact@v7
         if: failure()
         with:
-          name: playwright-traces
+          name: playwright-traces-quick
+          path: test-results
+          retention-days: 7
+
+  full:
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v') || contains(github.event.pull_request.labels.*.name, 'full-ci')
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+      - run: corepack enable pnpm
+      - id: store
+        run: echo "path=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v6
+        with:
+          path: ${{ steps.store.outputs.path }}
+          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+      - uses: actions/cache@v6
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-full-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps webkit chromium
+      - run: pnpm exec playwright test --shard=${{ matrix.shard }}/3
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: playwright-traces-full-${{ matrix.shard }}
           path: test-results
           retention-days: 7
