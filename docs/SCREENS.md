@@ -200,7 +200,7 @@ The common case, the morning shake: plus, the Whey row, Add. Three taps when the
 7. "Check-ins" list: date, the change made or kept, opening the stored check-in.
 8. "History": opens a month list where any day opens in the Today view.
 
-Empty states say what is needed: "Weigh in on 8 days across two weeks to see your trend and get your first check-in". With no sessions planned in the period, the training card says "Plan your week on Train to see your sessions here" with a button "Plan your week" that opens Train.
+Empty states say what is needed: "Weigh in on 8 days across two weeks to see your trend and get your first check-in". With no program, the training card says "Plan your week on Train to see your sessions here" with a button "Plan your week" that opens Train; with a program whose first session is still to come, "Sessions you mark done on Today will show here".
 
 **Weigh in sheet.** A wheel in the user's unit (whole and tenths) starting at the last weigh-in, the hint "One a day. A new one replaces it.", "Save 82.4 kg".
 

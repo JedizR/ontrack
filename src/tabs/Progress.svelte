@@ -32,6 +32,7 @@
   const plans = $derived(db.live('plan'));
   const today = $derived(view.today);
   const plan = $derived(planFor(plans, today));
+  const hasProgram = $derived(!!db.get('program', 'program')?.sessions.length);
 
   const RANGES = [{ value: 28, label: t.progress.weeks4 }, { value: 91, label: t.progress.months3 }, { value: 0, label: t.progress.all }];
   let range = $state(28);
@@ -72,7 +73,8 @@
   const training = $derived.by(() => {
     const sum = (k: 'planned' | 'done' | 'strength' | 'cardioMinutes') => weeks.reduce((a, w) => a + w.training[k], 0);
     const per = U.daysPerWeek / Math.max(span + 1, U.daysPerWeek);
-    return { planned: sum('planned'), done: sum('done'), strength: sum('strength') * per, cardio: Math.round(sum('cardioMinutes') * per) };
+    // rounded as shown, so the words and the track agree on whether the target is reached
+    return { planned: sum('planned'), done: sum('done'), strength: Math.round(sum('strength') * per * 10) / 10, cardio: Math.round(sum('cardioMinutes') * per) };
   });
   const sessionBars = $derived(weeks.map(({ training: k }) => ({ avg: k.done, target: k.planned, reached: k.planned > 0 && k.done >= k.planned })));
 
@@ -186,7 +188,11 @@
           {@render meter(t.progress.cardio, t.progress.cardioLine(num(training.cardio), num(V.aerobicMinutes.min), num(V.aerobicMinutes.max)), training.cardio, V.aerobicMinutes.max, [V.aerobicMinutes.min, V.aerobicMinutes.max], 'progress-cardio')}
         </div>
       {:else}
-        <div class="mt-2"><EmptyState text={t.progress.trainingNone} action={t.progress.planWeek} onaction={() => { prefs.tab = 1; scrollTo({ top: 0 }); }} /></div>
+        <!-- with a program whose first session is still to come there is nothing to plan, only to wait for -->
+        <div class="mt-2">
+          {#if hasProgram}<EmptyState text={t.progress.trainingSoon} />
+          {:else}<EmptyState text={t.progress.trainingNone} action={t.progress.planWeek} onaction={() => { prefs.tab = 1; scrollTo({ top: 0 }); }} />{/if}
+        </div>
       {/if}
     </Card>
 

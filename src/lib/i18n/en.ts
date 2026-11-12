@@ -583,6 +583,7 @@ export const en = {
     cardio: 'Cardio',
     cardioLine: (min: string, from: string, to: string) => `${min} of ${from} to ${to} minutes a week on average`,
     trainingNone: 'Plan your week on Train to see your sessions here.',
+    trainingSoon: 'Sessions you mark done on Today will show here.',
     planWeek: 'Plan your week',
     checkins: 'Check-ins',
     checkinsNone: 'Your first check-in comes two weeks after your plan starts.',
