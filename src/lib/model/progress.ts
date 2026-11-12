@@ -1,7 +1,10 @@
 // Progress and the weekly check-in, from the stored records (SCREENS.md sections 9 and 10, SCIENCE.md section 10):
 // each day's numbers as Today shows them, weeks of them, the weight trend, and the check-in's input. Pure: callers
 // pass the records in, so the same code runs on the store, the seeder and the tests.
-import { checkin, checkinDue, isComplete, planFromBaseline, smooth, V, U, type CheckinInput, type CheckinResult } from '$lib/model/engine';
+import {
+  aerobicBand, aerobicMinutes, checkin, checkinDue, isComplete, planFromBaseline, smooth, STRENGTH, V, U,
+  type AerobicBand, type CheckinInput, type CheckinResult,
+} from '$lib/model/engine';
 import { dayView, planFor } from './day';
 import { addDays, daysBetween, lastWeek, weekdayOf } from './dates';
 import type { Collection, DataOf, Meal, Plan, Profile, Session, SessionLog, Weight } from '../../../shared/records';
@@ -23,8 +26,36 @@ export function checkinDueOn(plans: PlanRec[], checkinWeekday: number, date: str
 }
 
 export type Records = { profile: Profile; plans: PlanRec[]; sessions: Session[]; logs: SessionLog[]; meals: Meal[]; weights: Weight[]; closed: string[] };
-export type DayStats = { date: string; target: number; intake: number; protein: number; items: number; closed: boolean; onTrack: boolean; complete: boolean };
-export type WeekStats = { start: string; days: DayStats[]; meanIntake: number | null; meanTarget: number; meanProtein: number | null; onTrack: number };
+type Planned = { session: Omit<Session, 'exercises'>; status?: SessionLog['status'] };
+export type DayStats = {
+  date: string; target: number; intake: number; protein: number; items: number; closed: boolean; onTrack: boolean; complete: boolean;
+  /** The day's sessions as Today shows them, each with its done or skipped mark */
+  sessions: Planned[];
+};
+/**
+ * Progress's training card (PRD F20) for a week, from the done and skipped marks: sessions planned, done and skipped;
+ * strength sessions done (against `V.strengthSessions`); moderate-equivalent cardio minutes done, against the WHO range.
+ */
+export type TrainingStats = { planned: number; done: number; skipped: number; strength: number; cardioMinutes: number; cardioBand: AerobicBand };
+export type WeekStats = {
+  start: string; days: DayStats[]; meanIntake: number | null; meanTarget: number; meanProtein: number | null; onTrack: number;
+  training: TrainingStats;
+};
+
+/** A week's training from its days: a session counts as done only when marked done. */
+export function trainingOf(days: DayStats[]): TrainingStats {
+  const all = days.flatMap((d) => d.sessions);
+  const done = all.filter((s) => s.status === 'done').map((s) => s.session);
+  const cardioMinutes = aerobicMinutes(done);
+  return {
+    planned: all.length,
+    done: done.length,
+    skipped: all.filter((s) => s.status === 'skipped').length,
+    strength: done.filter((s) => STRENGTH.has(s.type)).length,
+    cardioMinutes,
+    cardioBand: aerobicBand(cardioMinutes),
+  };
+}
 
 const mean = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null);
 
@@ -50,7 +81,9 @@ export function account(r: Records) {
     // a supplement taken with no calories (creatine) is not a logged food: it does not make a day complete
     const items = meals.reduce((a, m) => a + m.items.filter((i) => i.kcal > 0 || !i.supplementId).length, 0);
     const d = { target: v.target, intake: v.eaten.kcal, items, closed: closed.has(date) };
-    return { date, ...d, protein: v.eaten.protein, onTrack: meals.length > 0 && v.status === 'on', complete: isComplete({ day: 0, ...d }) };
+    return {
+      date, ...d, protein: v.eaten.protein, onTrack: meals.length > 0 && v.status === 'on', complete: isComplete({ day: 0, ...d }), sessions: v.sessions,
+    };
   }
 
   /** `n` weeks of seven days, the last ending on `end`, oldest first. Averages are over complete days. */
@@ -65,6 +98,8 @@ export function account(r: Records) {
         meanTarget: mean(days.map((d) => d.target)) ?? 0,
         meanProtein: mean(complete.map((d) => d.protein)),
         onTrack: days.filter((d) => d.onTrack).length,
+        // before the account began nothing was planned
+        training: trainingOf(days.filter((d) => !first || d.date >= first)),
       };
     });
   }

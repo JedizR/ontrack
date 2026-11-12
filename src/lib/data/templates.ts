@@ -1,5 +1,6 @@
-// The four starting programs named in PRD F7. Each lands inside the bands of docs/SCIENCE.md section 11 for every
-// muscle (tests/unit/data.test.ts checks). Weekday 0 is Monday.
+// The four starting programs named in PRD F7 and two that mix strength and cardio (F20). Each lands inside the bands of
+// docs/SCIENCE.md section 11 for every muscle (tests/unit/data.test.ts checks). Weekday 0 is Monday.
+import type { Experience, Goal, Intensity } from '$lib/model/engine';
 import type { Session } from '../../../shared/records';
 
 export type Template = { id: string; name: string; daysPerWeek: number; sessions: Session[] };
@@ -15,54 +16,50 @@ const session = (key: string, weekday: number, name: string, minutes: number, li
   intensity: 'moderate',
   exercises: lines.map(([exerciseId, sets, repsMin, repsMax]) => ({ exerciseId, sets, repsMin, repsMax })),
 });
+// Cardio after the lifting on a shared day, as S22 advises; the session list keeps that order
+const cardio = (key: string, weekday: number, name: string, minutes: number, intensity: Intensity): Session =>
+  ({ key, weekday, name, type: 'cardio', minutes, intensity });
+
+const FULL_BODY: Session[] = [
+  session('a', 0, 'Full body A', 75, [
+    ['back-squat', 3, 5, 8], ['bench-press', 4, 6, 10], ['barbell-row', 3, 6, 10], ['romanian-deadlift', 2, 8, 12],
+    ['lateral-raise', 2, 12, 15], ['barbell-curl', 2, 8, 12], ['triceps-pushdown', 2, 10, 15],
+    ['standing-calf-raise', 3, 10, 15], ['plank', 2, 30, 60],
+  ]),
+  session('b', 2, 'Full body B', 75, [
+    ['deadlift', 3, 3, 6], ['incline-db-press', 3, 8, 12], ['lat-pulldown', 3, 8, 12], ['leg-press', 3, 10, 15],
+    ['db-shoulder-press', 2, 8, 12], ['hammer-curl', 2, 10, 15], ['seated-calf-raise', 4, 12, 20],
+    ['hanging-leg-raise', 2, 8, 15],
+  ]),
+  session('c', 4, 'Full body C', 75, [
+    ['front-squat', 3, 6, 10], ['db-bench-press', 3, 8, 12], ['seated-cable-row', 3, 8, 12],
+    ['lying-leg-curl', 4, 10, 15], ['hip-thrust', 2, 8, 12], ['overhead-cable-extension', 2, 10, 15],
+    ['incline-db-curl', 2, 10, 15], ['lateral-raise', 2, 12, 15], ['standing-calf-raise', 3, 10, 15],
+    ['cable-crunch', 2, 10, 15],
+  ]),
+];
+const UPPER_LOWER: Session[] = [
+  session('a', 0, 'Upper A', 70, [
+    ['bench-press', 4, 5, 8], ['barbell-row', 4, 6, 10], ['overhead-press', 3, 6, 10], ['lat-pulldown', 3, 8, 12],
+    ['barbell-curl', 3, 8, 12], ['triceps-pushdown', 3, 10, 15],
+  ]),
+  session('b', 1, 'Lower A', 70, [
+    ['back-squat', 4, 5, 8], ['romanian-deadlift', 3, 8, 12], ['leg-extension', 3, 10, 15],
+    ['lying-leg-curl', 3, 10, 15], ['standing-calf-raise', 5, 10, 15], ['hanging-leg-raise', 3, 8, 15],
+  ]),
+  session('c', 3, 'Upper B', 70, [
+    ['incline-db-press', 4, 8, 12], ['seated-cable-row', 4, 8, 12], ['pull-up', 3, 6, 10], ['cable-fly', 3, 10, 15],
+    ['lateral-raise', 3, 12, 15], ['hammer-curl', 3, 10, 15], ['overhead-cable-extension', 3, 10, 15],
+  ]),
+  session('d', 4, 'Lower B', 70, [
+    ['deadlift', 3, 3, 6], ['leg-press', 4, 10, 15], ['seated-leg-curl', 3, 10, 15], ['hip-thrust', 3, 8, 12],
+    ['seated-calf-raise', 5, 12, 20], ['cable-crunch', 4, 10, 15],
+  ]),
+];
 
 export const TEMPLATES: Template[] = [
-  {
-    id: 'full-body-3',
-    name: 'Full body 3 days',
-    daysPerWeek: 3,
-    sessions: [
-      session('a', 0, 'Full body A', 75, [
-        ['back-squat', 3, 5, 8], ['bench-press', 4, 6, 10], ['barbell-row', 3, 6, 10], ['romanian-deadlift', 2, 8, 12],
-        ['lateral-raise', 2, 12, 15], ['barbell-curl', 2, 8, 12], ['triceps-pushdown', 2, 10, 15],
-        ['standing-calf-raise', 3, 10, 15], ['plank', 2, 30, 60],
-      ]),
-      session('b', 2, 'Full body B', 75, [
-        ['deadlift', 3, 3, 6], ['incline-db-press', 3, 8, 12], ['lat-pulldown', 3, 8, 12], ['leg-press', 3, 10, 15],
-        ['db-shoulder-press', 2, 8, 12], ['hammer-curl', 2, 10, 15], ['seated-calf-raise', 4, 12, 20],
-        ['hanging-leg-raise', 2, 8, 15],
-      ]),
-      session('c', 4, 'Full body C', 75, [
-        ['front-squat', 3, 6, 10], ['db-bench-press', 3, 8, 12], ['seated-cable-row', 3, 8, 12],
-        ['lying-leg-curl', 4, 10, 15], ['hip-thrust', 2, 8, 12], ['overhead-cable-extension', 2, 10, 15],
-        ['incline-db-curl', 2, 10, 15], ['lateral-raise', 2, 12, 15], ['standing-calf-raise', 3, 10, 15],
-        ['cable-crunch', 2, 10, 15],
-      ]),
-    ],
-  },
-  {
-    id: 'upper-lower-4',
-    name: 'Upper lower 4 days',
-    daysPerWeek: 4,
-    sessions: [
-      session('a', 0, 'Upper A', 70, [
-        ['bench-press', 4, 5, 8], ['barbell-row', 4, 6, 10], ['overhead-press', 3, 6, 10], ['lat-pulldown', 3, 8, 12],
-        ['barbell-curl', 3, 8, 12], ['triceps-pushdown', 3, 10, 15],
-      ]),
-      session('b', 1, 'Lower A', 70, [
-        ['back-squat', 4, 5, 8], ['romanian-deadlift', 3, 8, 12], ['leg-extension', 3, 10, 15],
-        ['lying-leg-curl', 3, 10, 15], ['standing-calf-raise', 5, 10, 15], ['hanging-leg-raise', 3, 8, 15],
-      ]),
-      session('c', 3, 'Upper B', 70, [
-        ['incline-db-press', 4, 8, 12], ['seated-cable-row', 4, 8, 12], ['pull-up', 3, 6, 10], ['cable-fly', 3, 10, 15],
-        ['lateral-raise', 3, 12, 15], ['hammer-curl', 3, 10, 15], ['overhead-cable-extension', 3, 10, 15],
-      ]),
-      session('d', 4, 'Lower B', 70, [
-        ['deadlift', 3, 3, 6], ['leg-press', 4, 10, 15], ['seated-leg-curl', 3, 10, 15], ['hip-thrust', 3, 8, 12],
-        ['seated-calf-raise', 5, 12, 20], ['cable-crunch', 4, 10, 15],
-      ]),
-    ],
-  },
+  { id: 'full-body-3', name: 'Full body 3 days', daysPerWeek: 3, sessions: FULL_BODY },
+  { id: 'upper-lower-4', name: 'Upper lower 4 days', daysPerWeek: 4, sessions: UPPER_LOWER },
   {
     id: 'push-pull-legs-6',
     name: 'Push pull legs 6 days',
@@ -110,4 +107,38 @@ export const TEMPLATES: Template[] = [
       ]),
     ],
   },
+  // Cardio at 6.8 METs counts double (S13), so 3 x 25 minutes make the WHO's 150. Every day is a leg day: cycling (S25)
+  {
+    id: 'full-body-cardio-3',
+    name: 'Full body and cardio 3 days',
+    daysPerWeek: 3,
+    sessions: FULL_BODY.flatMap((s) => [s, cardio(`${s.key}2`, s.weekday, 'Cycling', 25, 'moderate')]),
+  },
+  // Runs after the upper days, none on the lower days; a long easy ride on Saturday at 4 METs counts once
+  {
+    id: 'upper-lower-cardio-5',
+    name: 'Upper lower and cardio 5 days',
+    daysPerWeek: 5,
+    sessions: [
+      ...UPPER_LOWER.flatMap((s) => (s.name.startsWith('Upper') ? [s, cardio(`${s.key}2`, s.weekday, 'Run', 25, 'moderate')] : [s])),
+      cardio('e', 5, 'Long easy ride', 50, 'light'),
+    ],
+  },
 ];
+
+/** The answer to "What do you train?" (O1, onboarding RESEARCH section 11). */
+export type TrainKind = 'lifting' | 'cardio' | 'both';
+
+/**
+ * The template to suggest for a week (onboarding RESEARCH section 5), or null. Both: a hybrid from 3 days. Cardio only, or no
+ * training yet, with a gain goal: Minimal 2 days, for F10's two strength sessions. Lifting: by days and experience.
+ */
+export function suggestTemplate(kind: TrainKind, days: number, experience: Experience, goal: Goal): string | null {
+  const novice = experience === 'beginner';
+  if (kind === 'both' && days > 2) return days >= 5 && !novice ? 'upper-lower-cardio-5' : 'full-body-cardio-3';
+  if (kind === 'cardio' || days === 0) return goal === 'gain' ? 'minimal-2' : null;
+  // lifting, or both on one or two days: no hybrid fits, so the two strength sessions
+  if (days <= 2) return 'minimal-2';
+  if (days === 3 || (days === 4 && novice)) return 'full-body-3';
+  return days === 4 || novice ? 'upper-lower-4' : 'push-pull-legs-6';
+}

@@ -6,7 +6,7 @@ import { plan, type PlanNumbers } from '../../src/lib/model/engine';
 import { kgPerWeek, targetParts, targetWith, trainingDayEee } from '../../src/lib/model/day';
 import { cmToFtIn, ftInToCm, kgToLb, lbToKg } from '../../src/lib/model/units';
 import { weekdayOf } from '../../src/lib/model/dates';
-import { complete, goalWeightOf, inputOf, paceChoices, progress, programOf, route, toRecords, type Draft } from '../../src/flows/onboarding/draft';
+import { complete, goalWeightOf, inputOf, paceChoices, progress, programOf, route, sessionsFor, toRecords, type Draft } from '../../src/flows/onboarding/draft';
 
 const YEAR = 2026;
 const A: Draft = {
@@ -61,6 +61,15 @@ describe('guardrails', () => {
     expect(paceChoices({ ...A, goal: 'lose', weightKg: 60 }, YEAR)).toMatchObject({ options: [{ name: 'gentle' }], why: 'gentleOnly' });
     expect(paceChoices({ ...A, goal: 'lose', weightKg: 70 }, YEAR).why).toBe('noFaster');
     expect(paceChoices({ ...A, goal: 'lose', weightKg: 90 }, YEAR)).toMatchObject({ options: [{}, {}, { name: 'faster' }], why: null, picked: 0.5 });
+  });
+  test('the faster gain pace stays off the pace screen until T1b labels it', () => {
+    expect(paceChoices(A, YEAR).options.map((o) => o.name)).toEqual(['lean', 'standard']);
+  });
+  test('a pace no longer offered after an answer changed falls back to the default; 0 still holds', () => {
+    expect(inputOf({ ...A, weightKg: 65, rate: 0.75 }, YEAR).ratePctPerWeek).toBe(0.5); // BMI 21.2: no faster gain pace
+    expect(inputOf({ ...A, rate: 0.25 }, YEAR).ratePctPerWeek).toBe(0.25);
+    expect(inputOf({ ...A, rate: 0 }, YEAR).ratePctPerWeek).toBe(0);
+    expect(inputOf({ ...A, goal: 'lose', weightKg: 70, rate: 0.75 }, YEAR).ratePctPerWeek).toBe(0.5); // BMI 22.9: steady
   });
   test('advanced lifters gaining get the lean pace only', () => {
     expect(paceChoices({ ...A, experience: 'advanced' }, YEAR)).toMatchObject({ options: [{ name: 'lean' }], why: 'leanOnly', picked: 0.25 });
@@ -127,4 +136,23 @@ test('units convert both ways', () => {
   expect(ftInToCm(5, 9)).toBeCloseTo(175.26, 2);
   expect(weekdayOf('2026-11-16')).toBe(0);
   expect(weekdayOf('2026-11-15')).toBe(6);
+});
+
+describe('"What do you train?" (O1, F20)', () => {
+  const shape = (kind: 'lifting' | 'cardio' | 'both', days: number) => sessionsFor(kind, days).map((s) => [s.weekday, s.type, s.minutes]);
+  test('lifting: an hour of strength on each day, spread over the week', () => {
+    expect(shape('lifting', 3)).toEqual([[0, 'strength', 60], [2, 'strength', 60], [4, 'strength', 60]]);
+  });
+  test('cardio: half an hour each day', () => {
+    expect(shape('cardio', 2)).toEqual([[0, 'cardio', 30], [3, 'cardio', 30]]);
+  });
+  test('both: the two take turns, lifting first', () => {
+    expect(shape('both', 4)).toEqual([[0, 'strength', 60], [1, 'cardio', 30], [3, 'strength', 60], [4, 'cardio', 30]]);
+    expect(shape('both', 1)).toEqual([[0, 'strength', 60]]);
+  });
+  test('no days, no sessions; every week saves as a program', () => {
+    expect(sessionsFor('both', 0)).toEqual([]);
+    for (const kind of ['lifting', 'cardio', 'both'] as const)
+      for (let days = 0; days <= 7; days++) expect(SCHEMAS.program.safeParse({ name: '', sessions: sessionsFor(kind, days) }).success).toBe(true);
+  });
 });

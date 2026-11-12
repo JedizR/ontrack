@@ -2,7 +2,7 @@
 import { describe, expect, test } from 'vitest';
 import { analyseProgram, MUSCLES, type Experience, type Goal } from '../../src/lib/model/engine';
 import { EXERCISES, LIBRARY } from '../../src/lib/data/exercises';
-import { TEMPLATES } from '../../src/lib/data/templates';
+import { suggestTemplate, TEMPLATES } from '../../src/lib/data/templates';
 
 const EQUIPMENT = ['barbell', 'dumbbell', 'machine', 'cable', 'bodyweight', 'other'];
 
@@ -26,8 +26,25 @@ describe('exercise library', () => {
 });
 
 describe('templates', () => {
-  test('the four programs named in the PRD', () => {
-    expect(TEMPLATES.map((t) => t.name)).toEqual(['Full body 3 days', 'Upper lower 4 days', 'Push pull legs 6 days', 'Minimal 2 days']);
+  test('the four programs named in the PRD and two that mix strength and cardio (F20)', () => {
+    expect(TEMPLATES.map((t) => t.name)).toEqual([
+      'Full body 3 days', 'Upper lower 4 days', 'Push pull legs 6 days', 'Minimal 2 days',
+      'Full body and cardio 3 days', 'Upper lower and cardio 5 days',
+    ]);
+  });
+  test('the hybrids show their arrangement points; the others have none', () => {
+    const points = (id: string) =>
+      analyseProgram(TEMPLATES.find((t) => t.id === id)!.sessions, { goal: 'gain', experience: 'intermediate', library: LIBRARY }).hybrid;
+    expect(points('full-body-cardio-3').map((p) => [p.kind, p.weekdays])).toEqual([['liftFirst', [0, 2, 4]], ['spaceOut', [0, 2, 4]], ['legDayCardio', [0, 2, 4]]]);
+    expect(points('upper-lower-cardio-5').map((p) => [p.kind, p.weekdays])).toEqual([['liftFirst', [0, 3]], ['spaceOut', [0, 3]]]);
+    for (const id of ['full-body-3', 'upper-lower-4', 'push-pull-legs-6', 'minimal-2']) expect(points(id), id).toEqual([]);
+  });
+  test('the hybrids reach the WHO 150 cardio minutes', () => {
+    for (const id of ['full-body-cardio-3', 'upper-lower-cardio-5']) {
+      const a = analyseProgram(TEMPLATES.find((t) => t.id === id)!.sessions, { goal: 'lose', experience: 'intermediate', library: LIBRARY });
+      expect(a.aerobicMinutes, id).toBe(150);
+      expect(a.strengthSessions, id).toBeGreaterThanOrEqual(2);
+    }
   });
   test.each(TEMPLATES)('$name is well formed', (t) => {
     expect(new Set(t.sessions.map((s) => s.weekday)).size).toBe(t.daysPerWeek);
@@ -60,4 +77,26 @@ describe('templates', () => {
 test('every template saves as a program record', async () => {
   const { programSchema } = await import('../../shared/records');
   for (const tpl of TEMPLATES) expect(programSchema.safeParse({ name: tpl.name, sessions: tpl.sessions }).success, tpl.id).toBe(true);
+});
+
+describe('the template suggested for "What do you train?" (onboarding RESEARCH section 5)', () => {
+  test.each([
+    ['both', 2, 'intermediate', 'gain', 'minimal-2'],
+    ['both', 3, 'beginner', 'gain', 'full-body-cardio-3'],
+    ['both', 5, 'beginner', 'lose', 'full-body-cardio-3'],
+    ['both', 5, 'intermediate', 'maintain', 'upper-lower-cardio-5'],
+    ['cardio', 4, 'beginner', 'gain', 'minimal-2'],
+    ['cardio', 4, 'beginner', 'lose', null],
+    ['lifting', 0, 'beginner', 'gain', 'minimal-2'],
+    ['lifting', 0, 'beginner', 'maintain', null],
+    ['lifting', 2, 'advanced', 'gain', 'minimal-2'],
+    ['lifting', 3, 'intermediate', 'gain', 'full-body-3'],
+    ['lifting', 4, 'beginner', 'gain', 'full-body-3'],
+    ['lifting', 4, 'intermediate', 'gain', 'upper-lower-4'],
+    ['lifting', 6, 'beginner', 'lose', 'upper-lower-4'],
+    ['lifting', 6, 'advanced', 'lose', 'push-pull-legs-6'],
+  ] as const)('%s, %i days, %s, %s: %s', (kind, days, experience, goal, id) => {
+    expect(suggestTemplate(kind, days, experience, goal)).toBe(id);
+    if (id) expect(TEMPLATES.map((t) => t.id)).toContain(id);
+  });
 });

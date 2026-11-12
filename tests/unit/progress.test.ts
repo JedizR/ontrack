@@ -2,7 +2,7 @@
 // docs/SCIENCE.md come out of the screens' own path. Also when a check-in is due.
 import { describe, expect, test } from 'vitest';
 import { OUTCOMES, seedRecords } from '../../dev/seed';
-import { account, checkinDueOn, type Records } from '../../src/lib/model/progress';
+import { account, checkinDueOn, trainingOf, type DayStats, type Records } from '../../src/lib/model/progress';
 import { dayTarget, eeeByWeekday } from '../../src/lib/model/engine';
 import type { Plan, Rec } from '../../shared/records';
 
@@ -83,5 +83,29 @@ describe('due', () => {
   });
   test('a program change does not restart the count', () => {
     expect(checkinDueOn([plan('2026-10-28', 'onboarding'), plan('2026-11-06', 'edit')], 2, '2026-11-11')).toBe(true);
+  });
+});
+
+describe('the training card (F20)', () => {
+  test('from the seeded marks: four sessions planned a week, all done but today\'s', () => {
+    const weeks = account(records(seedRecords('on_track', TODAY))).weeks(TODAY, 4);
+    expect(weeks.slice(0, 3).map((w) => w.training)).toEqual(Array(3).fill({ planned: 4, done: 4, skipped: 0, strength: 4, cardioMinutes: 0, cardioBand: 'below' }));
+    expect(weeks[3].training).toMatchObject({ planned: 4, done: 3, strength: 3 }); // today's session is not marked yet
+  });
+  test('a week before the account began plans nothing', () => {
+    expect(account(records(seedRecords('on_track', TODAY))).weeks(TODAY, 5)[0].training).toMatchObject({ planned: 0, done: 0 });
+  });
+  test('done and skipped marks, strength sessions, and cardio minutes against the WHO range', () => {
+    const s = (key: string, type: 'strength' | 'cardio' | 'walk', minutes: number, intensity: 'light' | 'moderate' | 'hard' = 'moderate') =>
+      ({ key, weekday: 0, name: key, type, minutes, intensity });
+    const day = (sessions: DayStats['sessions']) => ({ sessions }) as DayStats;
+    const t = trainingOf([
+      day([{ session: s('lift', 'strength', 60), status: 'done' }, { session: s('bike', 'cardio', 40), status: 'done' }]), // 6.8 METs: double
+      day([{ session: s('lift2', 'strength', 60), status: 'skipped' }, { session: s('walk', 'walk', 45), status: 'done' }]), // 3.8 METs: once
+      day([{ session: s('run', 'cardio', 30) }]), // not marked: not done
+    ]);
+    expect(t).toEqual({ planned: 5, done: 3, skipped: 1, strength: 1, cardioMinutes: 125, cardioBand: 'below' });
+    expect(trainingOf([day([{ session: s('bike', 'cardio', 80), status: 'done' }])]).cardioBand).toBe('inRange');
+    expect(trainingOf([day([{ session: s('bike', 'cardio', 160), status: 'done' }])]).cardioBand).toBe('above');
   });
 });

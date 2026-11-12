@@ -50,7 +50,10 @@ export function paceOptions(goal: Goal, bmiValue: number, experience: Experience
   if (goal === 'maintain') return [];
   if (goal === 'gain') {
     const lean: Pace = { name: 'lean', rate: V.gainPace.lean };
-    return experience === 'advanced' ? [lean] : [lean, { name: 'standard', rate: V.gainPace.standard }];
+    if (experience === 'advanced') return [lean];
+    const paces: Pace[] = [lean, { name: 'standard', rate: V.gainPace.standard }];
+    // the faster pace (F19) only for lean people; the surplus cap still applies to it
+    return bmiValue < V.fasterGainMaxBmi ? [...paces, { name: 'faster', rate: V.gainPaceFaster }] : paces;
   }
   if (bmiValue < V.underweightBmi) return [];
   const p = V.losePace;
@@ -63,7 +66,7 @@ export function paceOptions(goal: Goal, bmiValue: number, experience: Experience
   return bmiValue >= V.fasterPaceMinBmi ? all : all.slice(0, -1);
 }
 
-/** Steady for losing; standard for gaining beginners and underweight people, lean otherwise. */
+/** Steady for losing; standard for gaining beginners and underweight people, lean otherwise. Faster is never the default. */
 export function defaultPace(goal: Goal, bmiValue: number, experience: Experience): Pace | undefined {
   const options = paceOptions(goal, bmiValue, experience);
   const want = goal === 'lose' ? 'steady' : experience === 'beginner' || bmiValue < V.underweightBmi ? 'standard' : 'lean';
@@ -90,8 +93,9 @@ export function plan(p: PlanInput): PlanNumbers {
 export function planFromBaseline(b: PlanBasis): PlanNumbers {
   const flags: Flag[] = b.maintainOnly ? ['maintainOnly'] : [];
   const goal: Goal = b.maintainOnly ? 'maintain' : b.goal;
-  // Never faster than the paces offered at this BMI, so a check-in at a new weight keeps the guardrails.
-  const offered = paceOptions(goal, bmi(b.weightKg, b.heightCm), b.experience).map((o) => o.rate);
+  // Never faster than the paces offered at this BMI, so a check-in at a new weight keeps the guardrails. A gain pace is
+  // limited by experience only: the faster pace's BMI limit decides who may choose it, and once chosen it holds (F19).
+  const offered = paceOptions(goal, goal === 'gain' ? 0 : bmi(b.weightKg, b.heightCm), b.experience).map((o) => o.rate);
   const rate = Math.max(0, Math.min(b.ratePctPerWeek, Math.max(0, ...offered)));
   const tdee = tdeeAvg(b);
   const wanted = (((rate / U.percent) * b.weightKg) * V.kcalPerKg) / U.daysPerWeek;
