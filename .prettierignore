@@ -5,3 +5,4 @@ dist
 screenshots
 pnpm-lock.yaml
 *.md
+data
