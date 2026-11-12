@@ -1,6 +1,6 @@
 # Ontrack: build plan
 
-Ten milestones and nine the owner added (D1, N1, N2, B1, N3, T1, O1, L1, S1), each built in its own fresh context: a session when the owner is present, a subagent in an unattended run. Each has a goal, what to read, the steps, a gate that proves it is done, and what the owner checks. Start and finish every milestone with the `milestone` skill. In an unattended run, owner checks are recorded in `docs/BLOCKERS.md` and never hold up the build.
+Ten milestones and ten the owner added (D1, N1, N2, B1, D2, N3, T1, O1, L1, S1), each built in its own fresh context: a session when the owner is present, a subagent in an unattended run. Each has a goal, what to read, the steps, a gate that proves it is done, and what the owner checks. Start and finish every milestone with the `milestone` skill. In an unattended run, owner checks are recorded in `docs/BLOCKERS.md` and never hold up the build.
 
 | | Milestone | Outcome | Owner is needed for |
 | --- | --- | --- | --- |
@@ -16,6 +16,7 @@ Ten milestones and nine the owner added (D1, N1, N2, B1, N3, T1, O1, L1, S1), ea
 | N1 | Thai foods and remembered nutrition | Thai dishes from a published table, corrections remembered | Logging five usual Thai meals |
 | N2 | Supplements | Whey, creatine and the like logged by scoop in three taps | Logging the morning shake for a few days |
 | B1 | Barcode scanning | Scan a packaged food and log it exactly | Scanning ten packaged foods |
+| D2 | Visual refinement | Clean flat actions, glass and gradients only where they help | The new look on the iPhone |
 | N3 | Thai nutrition from Thai sources | Thai dishes with numbers from Thai pages and the owner's finds | Sending Thai nutrient facts they find |
 | T1 | Gain pace and hybrid training | A faster gain pace, strength and cardio planned together, training on Progress | The friends who asked trying it |
 | O1 | Onboarding redesign | Engaging, least effort onboarding that personalizes the app | Doing it cold, timed |
@@ -23,7 +24,7 @@ Ten milestones and nine the owner added (D1, N1, N2, B1, N3, T1, O1, L1, S1), ea
 | S1 | Friends, profiles and the food map | Friends, a profile with an optional program, shared meal photos on a map | A second account as a friend |
 | M9 | Hardening and release | Settings, export, accessibility, speed, security, production | Full device check |
 
-After M8 the order is N1, N2, B1, N3, T1, O1, L1, S1, then M9. It follows the owner's MoSCoW and RICE prioritization: B1 is Must (the owner made barcode scanning a main feature); N1, N2, N3, T1 and L1 are Should, with N2 the highest RICE score of the features not yet built, (high value for little effort), S1 is Could, and M9 hardens everything last. O1 comes after N2 and T1 so onboarding can personalize with supplements, the faster pace and hybrid templates, and before L1 because the landing page leads into it.
+After M8 the order is N1, N2, B1, D2, N3, T1, O1, L1, S1, then M9. D2 comes straight after B1 so every later screen is built on the refined look. It follows the owner's MoSCoW and RICE prioritization: B1 is Must (the owner made barcode scanning a main feature); N1, N2, N3, T1 and L1 are Should, with N2 the highest RICE score of the features not yet built, (high value for little effort), S1 is Could, and M9 hardens everything last. O1 comes after N2 and T1 so onboarding can personalize with supplements, the faster pace and hybrid templates, and before L1 because the landing page leads into it.
 
 Order: the look is settled before any screen is built (M1), and the logic is settled before any screen needs it (M2, M3). With the owner present, no screen work past M1 starts before he approves the gallery. In an unattended run a clean rubric pass stands in for that approval and the gallery goes on his review list.
 
@@ -176,6 +177,25 @@ Read: `docs/PRD.md` F5, F15 and F22, `docs/SCREENS.md` section 7, `docs/TECH-SPE
 
 Gate: end to end tests on the mock: a known barcode fixture logs in the fewest taps; an unknown one goes through a label photo fixture, is saved, and scans again offline; camera denied falls back to typing. Unit tests for check digits, Open Food Facts parsing and the label reader's schema, plus the decoder reading barcodes from fixture images. Conformance green on both backends. `verify-ui` passes. Live camera scanning goes on the owner's list, since the test browser has no camera.
 Owner checks: scan ten packaged foods at home or in a convenience store.
+
+## D2 Visual refinement
+
+Why: the owner's feedback on D1. The 3D gradient button goes. Ontrack adopts OneFin's clean pieces instead: the "Withdraw" card (a flat solid pill on a white card, light grey stat tiles, all on a lavender surface) and its glassmorphism done right (the invoice card: one gradient header, a frosted "Paid" pill, a floating "Direct pay" chip with a thin white border, ghost cards stacked behind). Gradients and glass go on a few elements only. Think before applying: adopt each OneFin pattern because it helps that screen, and write the reason in `docs/DESIGN.md`.
+
+Read: `docs/DESIGN.md` and the invariants in `CLAUDE.md`. References in `/Users/admin/destination/ontrack-design/onefin/`: `owner-picks/` (the owner's two screenshots: what to adopt), `site/motion/frames/` (every site video as a JPG sequence with a contact sheet), `site/components/`, `IDENTITY.md`. No OneFin artwork ships.
+
+1. Audit every gradient, 3D effect, glow and blur in the app today, with a keep or change verdict and the reason.
+2. Buttons: the primary action becomes a flat solid pill like "Withdraw": no gradient, no inner highlight, no coloured glow, and a clear pressed state. Secondary actions are light tiles or text. The dock's plus follows the same flat rule. Choose the primary fill (ink like Withdraw, or flat violet) by contrast and by how it reads next to violet surfaces in both themes. Rewrite the "Violet means act" invariant in `CLAUDE.md` and `docs/DESIGN.md` to match.
+3. Rules in `docs/DESIGN.md`:
+   - Where glass is allowed: small floating chips and pills over a coloured or gradient surface, sheet backdrops, the dock.
+   - What glass is made of: backdrop blur, a 1 px translucent white border, a soft shadow, and a fallback for browsers without blur.
+   - At most one hero element per screen may carry a gradient.
+   - Content cards stay solid (white, or the dark equivalent) so numbers stay readable.
+4. Apply the rules to every component and screen, through tokens only.
+5. Borrow the reference's number styling (the decimal part in a lighter ink) where it helps reading, for example weight.
+
+Gate: no gradient or glow on any button, proved by a test over the component styles. `verify-ui` passes, with the design critic judging against the owner's two picks. The pull request shows before and after for Today, an onboarding step, Add, a sheet and the dock, in light and dark.
+Owner checks: the refined look on the iPhone in Safari.
 
 ## N3 Thai nutrition from Thai sources
 
