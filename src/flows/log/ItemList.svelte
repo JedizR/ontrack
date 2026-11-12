@@ -49,17 +49,19 @@
     if (now[key] === v) return;
     lines[i] = { base: { ...now, [key]: v, source: 'yours' }, factor: 1, original: l.original ?? (l.base.source === 'yours' ? undefined : l.base), corrected: true };
   }
-  /** Forgets the food's remembered numbers and puts back the table's or the model's at the same grams. */
+  /** Puts back the table's or the model's numbers at the same grams, then forgets the food's remembered ones. Nothing is
+   * forgotten when the default cannot be found (the table not loaded offline). */
   async function useDefault(i: number) {
     const l = lines[i];
-    const now = scaled(l);
-    forgetFood(foodKey(now));
+    const was = scaled(l);
     let def: MealItem | undefined = l.original;
-    if (!def && now.foodId) {
-      const food = (await loadFoods().catch(() => [])).find((f) => f.id === now.foodId);
-      if (food) def = itemFor(food, now.grams ?? food.portions[0].grams);
+    if (!def && was.foodId) {
+      const food = (await loadFoods().catch(() => [])).find((f) => f.id === was.foodId);
+      if (food) def = itemFor(food, was.grams ?? food.portions[0].grams);
     }
     if (!def || lines[i] !== l) return;
+    const now = scaled(l); // the grams may have moved while the table loaded
+    forgetFood(foodKey(now));
     lines[i] = { base: def, factor: def.grams && now.grams ? now.grams / def.grams : 1 };
     correcting = null;
   }

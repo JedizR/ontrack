@@ -114,9 +114,10 @@ export function readUsda(set: keyof typeof USDA, dir: string, wanted: Set<string
   for (const line of readFileSync(`${dir}/food_nutrient.csv`, 'utf8').split('\n').slice(1)) {
     const f = csvLine(line);
     const key = byNutrient.get(f[2]);
-    if (!wanted.has(f[1]) || !key || f[3] === '') continue;
+    const v = Number(f[3]);
+    if (!wanted.has(f[1]) || !key || f[3] === '' || !Number.isFinite(v)) continue; // not a number is missing, and fails
     if (!values.has(f[1])) values.set(f[1], {});
-    values.get(f[1])![key] = Number(f[3]);
+    values.get(f[1])![key] = v;
   }
   return { set, name: USDA[set].name, ids, values };
 }

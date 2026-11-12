@@ -35,6 +35,7 @@ Remembered nutrition (step 4):
 - Words (the owner's rule on designed words, from the conductor): "Correct", "Use default values", "Yours", "Ontrack remembers your numbers for this food."; plain, no pressure, no emoji.
 - Store schema 2: the migration sets a device's cursor to the epoch, not null, so it pulls everything once (records of `food` an older version skipped) without showing the first load state.
 - Supabase migration `0002_food.sql` widens the records collection check; the records table's row level security covers the new rows as it covers every collection. Pushed to the live project with `supabase db push --remote`; the conformance suite passes on both backends with a food test. Its cleanup hook now has 60 s, since deleting each test user is a network call.
+- Known limits, from the code review: an older version of the app still open on another device refuses to save a meal that holds a Yours item (its schema lacks the label) until it takes the update; Undo after adding a reviewed meal takes back the meal but not the numbers it remembered; "Use default values" forgets at once, even if the sheet is then closed. "Use default values" forgets only once the default is found, so an offline phone without the table loses nothing.
 - From the design critic: the Review photo's radius is 24 as SCREENS.md says (it was 32 since D1), the citation's link has a 44 px tap area. Left: the open item's grams stepper keeps its M6 place under the name, so it does not share the Correct rows' column.
 
 ## M8

@@ -61,7 +61,8 @@ export function logSaved(id: string, date: string, at: string) {
 }
 /** Keep a meal to log again from Saved. */
 /** Remembers the numbers the user corrected these items to, per 100 g, for the next time each food is logged (F15).
- * An item without grams, or with values no food has (over 900 kcal in 100 g, a typo), is not remembered. */
+ * An item without grams, or with values no food has (over 1,000 kcal or 100 g of a macro in 100 g, a typo), is not
+ * remembered. */
 export function rememberFoods(items: MealItem[]) {
   for (const i of items) {
     const data = { name: i.name, per100: per100Of(i) };

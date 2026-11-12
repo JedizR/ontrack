@@ -57,8 +57,9 @@ export function itemFor(f: Food, grams: number, mine?: Per100): MealItem {
   return { name: f.name, grams, ...at(mine ?? f.per100, grams), source: mine ? 'yours' : 'db', foodId: f.id };
 }
 
-/** Where remembered nutrition is kept for an item: its table id, or its normalised name when it has none. */
-export const foodKey = (i: { foodId?: string | null; name: string }) => i.foodId || `name:${norm(i.name)}`.slice(0, 80);
+/** Where remembered nutrition is kept for an item: its table id, or its normalised name when it has none (a name in a
+ * script `norm` drops, Chinese say, keeps its own lower case so two such names never share one memory). */
+export const foodKey = (i: { foodId?: string | null; name: string }) => i.foodId || `name:${norm(i.name) || i.name.trim().toLowerCase()}`.slice(0, 80);
 /** The item at its grams with the user's values per 100 g, labelled Yours. */
 export const withMine = (i: MealItem, mine: Per100): MealItem => ({ ...i, ...at(mine, i.grams ?? 0), source: 'yours' });
 /** An item's values per 100 g, to two decimals so the same grams give back the same numbers; null without grams. */

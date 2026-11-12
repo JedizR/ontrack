@@ -131,10 +131,11 @@ export const checkinSchema = z.object({
 export const daySchema = z.object({ date, closed: z.optional(z.literal(true)) });
 
 /** Remembered nutrition (F15): the values a user corrected a food to, per 100 g. The id is the food's table id, or
- * `name:` and its normalised name when it has none (`foodKey` in src/lib/data/foods.ts). 900 kcal is pure fat. */
+ * `name:` and its normalised name when it has none (`foodKey` in src/lib/data/foods.ts). Pure fat is about 900 kcal
+ * (lard is 902 in the table); past 1,000 is a typo. */
 export const foodSchema = z.object({
   name: str(1, 120),
-  per100: z.object({ kcal: num(0, 900), protein: num(0, 100), carbs: num(0, 100), fat: num(0, 100) }),
+  per100: z.object({ kcal: num(0, 1000), protein: num(0, 100), carbs: num(0, 100), fat: num(0, 100) }),
 });
 
 export const SCHEMAS = {
