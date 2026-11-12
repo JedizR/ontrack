@@ -21,6 +21,7 @@
   import SourceLabel from '$lib/components/SourceLabel.svelte';
   import Skeleton from '$lib/components/Skeleton.svelte';
   import TrainIcon from '$lib/components/TrainIcon.svelte';
+  import Thumb from '../flows/log/Thumb.svelte';
   import { sync } from '$lib/sync/engine.svelte';
   import { session } from '$lib/session.svelte';
   import { sheets } from '$lib/sheets.svelte';
@@ -179,12 +180,17 @@
       <h2 class="text-heading">{t.today.meals}</h2>
       {#if meals.length}<span class="text-caption text-ink-2" data-testid="meal-count">{t.today.logged(num(meals.length))}</span>{/if}
     </div>
+    {#snippet tile(Icon: Component<{ size?: number; strokeWidth?: number }>)}
+      <div class="bg-surface-2 text-ink-2 grid size-full place-items-center"><Icon size={24} strokeWidth={1.75} /></div>
+    {/snippet}
     <Card list aria-label={t.today.meals} data-testid="meals">
       {#each meals as { id, data: m } (id)}
         {@const Icon = ICON[m.method]}
         <SwipeRow ondelete={() => remove(id)} testid="meal">
           <Row title={titleOf(m)} value={num(Math.round(totals(m.items).kcal))} onclick={() => (sheets.meal = id)}>
-            {#snippet leading()}<div class="bg-surface-2 text-ink-2 grid size-full place-items-center"><Icon size={24} strokeWidth={1.75} /></div>{/snippet}
+            {#snippet leading()}
+              {#if m.thumb}<Thumb {id} class="size-full">{#snippet fallback()}{@render tile(Icon)}{/snippet}</Thumb>{:else}{@render tile(Icon)}{/if}
+            {/snippet}
             {#snippet caption()}{timeOf(m.at)}, <SourceLabel source={mealSource(m.items)} />{/snippet}
           </Row>
         </SwipeRow>

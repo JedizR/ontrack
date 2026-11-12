@@ -1,0 +1,9 @@
+{
+  "is_food": true,
+  "title": "Chicken rice",
+  "items": [
+    { "name": "Rice cooked in chicken stock", "grams": 200, "portion_note": "One plate", "food_id": null, "est_per_100g": { "kcal": 170, "protein_g": 3, "carbs_g": 30, "fat_g": 4 }, "confidence": "medium", "hidden_fat": true },
+    { "name": "Poached chicken breast", "grams": 120, "portion_note": "Sliced, about a palm", "food_id": "chicken-breast-poached", "est_per_100g": { "kcal": 151, "protein_g": 29, "carbs_g": 0, "fat_g": 3 }, "confidence": "high", "hidden_fat": false },
+    { "name": "Cucumber", "grams": 40, "portion_note": "A few slices", "food_id": "cucumber", "est_per_100g": { "kcal": 15, "protein_g": 0.7, "carbs_g": 3.6, "fat_g": 0.1 }, "confidence": "high", "hidden_fat": false }
+  ]
+}

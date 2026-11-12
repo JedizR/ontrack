@@ -15,7 +15,7 @@
     unstyled: true,
     classes: {
       toast: 'bg-toast text-toast-ink shadow-float flex w-full items-center gap-3 rounded-lg py-2 pr-2 pl-5 font-sans min-h-14',
-      title: 'text-callout font-medium',
+      title: 'text-callout font-medium line-clamp-1',
       description: 'text-caption',
       actionButton: 'bg-toast-ink text-toast text-callout ml-auto min-h-[var(--tap)] flex-none rounded-full px-4 font-medium active:opacity-80',
       icon: 'hidden',

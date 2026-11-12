@@ -21,9 +21,11 @@
     "check:pwa": "node scripts/check-pwa.mjs",
     "icons": "cp design/brand/app-icon.svg public/favicon.svg && pwa-assets-generator",
     "format": "prettier --write .",
-    "foods:build": "tsx scripts/build-foods.ts"
+    "foods:build": "tsx scripts/build-foods.ts",
+    "eval:vision": "sh scripts/live-env.sh tsx scripts/eval-vision.ts"
   },
   "dependencies": {
+    "@google/genai": "3.0.0",
     "@lucide/svelte": "1.62.0",
     "@supabase/supabase-js": "2.119.0",
     "bits-ui": "2.20.2",
@@ -38,7 +40,6 @@
     "zod": "4.6.7"
   },
   "devDependencies": {
-    "@google/genai": "3.0.0",
     "@playwright/test": "1.64.1",
     "@sveltejs/vite-plugin-svelte": "7.3.1",
     "@tailwindcss/vite": "4.3.3",

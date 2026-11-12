@@ -1,7 +1,7 @@
 // Device and text size matrix: layout checks on every screen.
 //   pnpm exec playwright test --project=stress   -> screenshots/stress/<device>/*.png
 import { devices, expect, test, type Page } from '@playwright/test';
-import { MEALS, keypadEnter, open, signIn, withPrefs } from './helpers';
+import { MEALS, keypadEnter, open, signIn, takePhoto, withPrefs } from './helpers';
 
 const DEVICES = [
   { name: 'iphone-15-pwa', width: 393, height: 793, mobile: true }, // home screen app: 852 minus the status bar
@@ -226,6 +226,10 @@ async function walkLogging(page: Page, dir: string) {
   await close('quick-sheet');
   await page.getByTestId('meal').first().getByRole('button').click();
   await sheet('meal-sheet', 'meal', 'meal-save');
+  await close('meal-sheet');
+  await takePhoto(page, true);
+  await expect(page.getByTestId('meal-item').first()).toBeVisible();
+  await sheet('review-sheet', 'review', 'review-add');
 }
 for (const d of DEVICES.filter((x) => x.mobile)) {
   test.describe(d.name, () => {

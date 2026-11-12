@@ -1,4 +1,5 @@
-// Per-device state, not synced: theme, text size, last tab, the last signed in user and the onboarding draft.
+// Per-device state, not synced: theme, text size, last tab, the last signed in user, the onboarding draft, and whether
+// the photo notice has been seen.
 import type { Draft } from '../flows/onboarding/draft';
 export type Theme = 'system' | 'light' | 'dark';
 /** system follows the device text size, mapped onto one of the three levels */
@@ -8,8 +9,8 @@ export const FONT_SCALE = { m: 1, l: 1.15, xl: 1.3 } as const;
 // index.html reads the same key and fields before first paint
 export const PREFS_KEY = 'ot-ui';
 
-interface Saved { theme: Theme; fontSize: FontSize; tab: Tab; lastUser: string | null; lastEmail: string | null; draft: Draft | null }
-const DEFAULTS: Saved = { theme: 'system', fontSize: 'system', tab: 0, lastUser: null, lastEmail: null, draft: null };
+interface Saved { theme: Theme; fontSize: FontSize; tab: Tab; lastUser: string | null; lastEmail: string | null; draft: Draft | null; photoOk: boolean }
+const DEFAULTS: Saved = { theme: 'system', fontSize: 'system', tab: 0, lastUser: null, lastEmail: null, draft: null, photoOk: false };
 const load = (): Saved => {
   try { return { ...DEFAULTS, ...JSON.parse(localStorage.getItem(PREFS_KEY) ?? '{}') }; }
   catch { return { ...DEFAULTS }; }
@@ -33,6 +34,9 @@ class Prefs {
   /** onboarding answers before sign in, kept here so they survive the Google redirect (TECH-SPEC section 4) */
   get draft() { return this.#s.draft; }
   set draft(v: Draft | null) { this.#s.draft = v; this.#save(); }
+  /** the photo privacy notice was accepted (SCREENS.md section 7, first use) */
+  get photoOk() { return this.#s.photoOk; }
+  set photoOk(v: boolean) { this.#s.photoOk = v; this.#save(); }
   #save() { try { localStorage.setItem(PREFS_KEY, JSON.stringify($state.snapshot(this.#s))); } catch { /* private mode */ } }
 }
 

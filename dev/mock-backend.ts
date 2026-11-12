@@ -1,4 +1,5 @@
-// In-memory stand-in for Supabase: the same sync rules, a fake sign-in, thumbnails and DELETE /api/account.
+// In-memory stand-in for Supabase: the same sync rules, a fake sign-in, thumbnails, DELETE /api/account, and
+// POST /api/analyze through the real handler with the mock vision provider and an in-memory quota.
 // A web standard handler, so unit tests call it directly and the Vite plugin below mounts it for dev and e2e.
 // Every request names a space (header x-mock-space, or ?space= on the Google redirect); each space is its own world,
 // which keeps parallel tests apart. Tokens carry their space's epoch, so POST /__mock/expire ends every session in it.
@@ -6,6 +7,9 @@ import type { Connect, Plugin } from 'vite';
 import { createHash } from 'node:crypto';
 import * as z from 'zod/mini';
 import { recSchema, type Rec } from '../shared/records.ts';
+import { analyze } from '../server/handlers/analyze.ts';
+import { envInt } from '../server/env.ts';
+import { fixture, isFixture, mockProvider } from '../server/vision/mock.ts';
 
 /** The only code the mock accepts. The dev server prints it when a code is "sent". */
 export const MOCK_CODE = '123456';
@@ -13,7 +17,8 @@ export const MOCK_GOOGLE_EMAIL = 'google.user@example.com';
 const PAGE_MAX = 1000;
 
 type Row = { userId: string; rec: Rec; ts: number };
-type Space = { epoch: number; rows: Map<string, Row>; thumbs: Map<string, ArrayBuffer>; lastTs: number };
+/** vision: the fixture every analysis returns until cleared; ai: analyses per user and day, aiFrom where a count starts */
+type Space = { epoch: number; rows: Map<string, Row>; thumbs: Map<string, ArrayBuffer>; lastTs: number; vision: string | null; ai: Map<string, number>; aiFrom: number };
 type Token = { u: string; e: string; ep: number; s: string };
 
 const json = (status: number, body: unknown, headers: Record<string, string> = {}) =>
@@ -34,11 +39,12 @@ const emailBody = z.object({ email: z.email() });
 const verifyBody = z.object({ email: z.email(), code: z.string() });
 const pushBody = z.object({ records: z.array(recSchema).check(z.maxLength(100)) });
 const pullBody = z.object({ after: z.nullable(z.string()), inclusive: z.optional(z.boolean()), limit: z.int().check(z.gte(1), z.lte(PAGE_MAX)) });
+const visionBody = z.object({ fixture: z.optional(z.nullable(z.string())), used: z.optional(z.int().check(z.gte(0))) });
 
 export function createMockServer() {
   const spaces = new Map<string, Space>();
   const spaceOf = (name: string) => {
-    if (!spaces.has(name)) spaces.set(name, { epoch: 0, rows: new Map(), thumbs: new Map(), lastTs: 0 });
+    if (!spaces.has(name)) spaces.set(name, { epoch: 0, rows: new Map(), thumbs: new Map(), lastTs: 0, vision: null, ai: new Map(), aiFrom: 0 });
     return spaces.get(name)!;
   };
   const session = (name: string, email: string) => {
@@ -78,6 +84,17 @@ export function createMockServer() {
       space.epoch++;
       return json(200, { ok: true });
     }
+    if (path === '/vision') {
+      // tests: { fixture } answers every analysis with it (null clears), { used } sets where today's count starts
+      const b = await body(visionBody);
+      if (!b.success || (b.data.fixture && !isFixture(b.data.fixture))) return fail(400, 'bad_request');
+      if (b.data.fixture !== undefined) space.vision = b.data.fixture;
+      if (b.data.used !== undefined) {
+        space.ai.clear();
+        space.aiFrom = b.data.used;
+      }
+      return json(200, { ok: true });
+    }
 
     const userId = token && token.ep === space.epoch && token.s === name ? token.u : null;
     if (!userId) return fail(401, 'unauthorized');
@@ -114,6 +131,23 @@ export function createMockServer() {
       const bytes = space.thumbs.get(k);
       return bytes ? new Response(bytes, { headers: { 'Content-Type': 'image/jpeg' } }) : fail(404, 'not_found');
     }
+    if (path === '/api/analyze') {
+      return analyze(req, {
+        caller: async () => ({ id: userId }),
+        async bump(u, day, limit) {
+          const k = `${u}|${day}`;
+          const used = (space.ai.get(k) ?? space.aiFrom) + 1;
+          space.ai.set(k, used);
+          return { allowed: used <= limit, used, total: used };
+        },
+        provider: async () => {
+          const name = space.vision;
+          return name ? { model: 'mock', analyze: async () => fixture(name) } : mockProvider;
+        },
+        limit: envInt('AI_DAILY_USER_LIMIT', 40),
+        cap: envInt('AI_DAILY_GLOBAL_CAP', 400),
+      });
+    }
     if (path === '/api/account') {
       for (const [k, r] of space.rows) if (r.userId === userId) space.rows.delete(k);
       for (const k of space.thumbs.keys()) if (k.startsWith(`${userId}/`)) space.thumbs.delete(k);
@@ -145,12 +179,13 @@ export const toMiddleware = (handle: (r: Request) => Promise<Response>): Connect
   });
 };
 
-/** Mounts the mock at /__mock, and at /api/account when the app runs on the mock backend. */
+/** Mounts the mock at /__mock, and at /api/account and /api/analyze when the app runs on the mock backend. */
 export function mockBackend(): Plugin {
   const mw = toMiddleware(createMockServer());
   const mount = (m: Connect.Server) => {
     m.use('/__mock', mw);
     if (process.env.VITE_BACKEND === 'mock') m.use('/api/account', (req, res, next) => (req.method === 'DELETE' ? void mw(req, res, next) : next()));
+    if (process.env.VITE_BACKEND === 'mock') m.use('/api/analyze', mw);
   };
   return { name: 'ontrack-mock-backend', configureServer: (s) => mount(s.middlewares), configurePreviewServer: (s) => mount(s.middlewares) };
 }

@@ -8,9 +8,24 @@ export const TODAY = '2026-11-11';
  */
 export async function open(page: Page, path = '/', records?: Seed[]) {
   await page.clock.setFixedTime(new Date(`${TODAY}T10:00:00+07:00`));
-  if (path === '/') await seedAccount(page, { records });
+  const s = path === '/' ? await seedAccount(page, { records }) : undefined;
   await page.goto(path);
   await expect(page.getByTestId('dock')).toBeVisible();
+  return s;
+}
+
+/** The mock vision provider in a space: answer every analysis with this fixture (null: by hash), start the day's count here. */
+export const vision = (page: Page, s: string | undefined, o: { fixture?: string | null; used?: number }) =>
+  page.request.post('/__mock/vision', { headers: { 'x-mock-space': s ?? 'default' }, data: o }).then((r) => expect(r.ok()).toBe(true));
+
+/** Take a photo from the Add sheet's Photo tile: the camera is a file chooser in tests. */
+export async function takePhoto(page: Page, notice = false) {
+  await page.getByTestId('add').click();
+  const chooser = page.waitForEvent('filechooser');
+  await page.getByTestId('add-photo').click();
+  if (notice) await page.getByTestId('photo-continue').click();
+  await (await chooser).setFiles('tests/fixtures/meal.jpg');
+  await expect(page.getByTestId('review-sheet')).toBeVisible();
 }
 
 /** The dev server compiles the lazy onboarding chunk on first request, which is slow with every worker asking at once. */

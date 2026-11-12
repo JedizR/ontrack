@@ -1,10 +1,14 @@
 <!-- SCREENS.md section 7, Add sheet from the plus button: the ways to log, then Recent and Saved, each with a plus that
-     logs the meal again at once with an undo toast. Photo and Describe arrive with photo logging (M6). -->
+     logs the meal again at once with an undo toast. Photo opens the camera at once; the first time, a notice comes first. -->
 <script lang="ts">
   import type { Component } from 'svelte';
   import Plus from '@lucide/svelte/icons/plus';
   import SearchIcon from '@lucide/svelte/icons/search';
   import Hash from '@lucide/svelte/icons/hash';
+  import Camera from '@lucide/svelte/icons/camera';
+  import TextIcon from '@lucide/svelte/icons/text';
+  import Button from '$lib/components/Button.svelte';
+  import { prefs } from '$lib/prefs.svelte';
   import Sheet from '$lib/components/Sheet.svelte';
   import Row from '$lib/components/Row.svelte';
   import { sheets } from '$lib/sheets.svelte';
@@ -33,12 +37,32 @@
     const id = logAgain(m, view.date, stampOn(view.date));
     return () => { deleteMeal(id); };
   }
-  const go = (to: 'search' | 'quick') => {
+  type Way = 'photo' | 'search' | 'describe' | 'quick';
+  let input = $state<HTMLInputElement>();
+  let notice = $state(false);
+  $effect(() => { if (!sheets.add) notice = false; });
+
+  // the file input sits outside the sheet so it is still there when the camera hands the photo back
+  function camera() {
+    if (!prefs.photoOk) return void (notice = true);
+    input?.click();
+  }
+  function taken() {
+    const file = input?.files?.[0];
+    if (input) input.value = '';
+    if (!file) return;
+    sheets.add = false;
+    sheets.review = { kind: 'photo', file };
+  }
+  const go = (to: Way) => {
+    if (to === 'photo') return camera();
     sheets.add = false;
     sheets[to] = true;
   };
-  const WAYS: { key: 'search' | 'quick'; label: string; line: string; icon: Component<{ size?: number; strokeWidth?: number }> }[] = [
+  const WAYS: { key: Way; label: string; line: string; icon: Component<{ size?: number; strokeWidth?: number }> }[] = [
+    { key: 'photo', label: t.add.photo, line: t.add.photoLine, icon: Camera },
     { key: 'search', label: t.add.search, line: t.add.searchLine, icon: SearchIcon },
+    { key: 'describe', label: t.add.describe, line: t.add.describeLine, icon: TextIcon },
     { key: 'quick', label: t.add.quick, line: t.add.quickLine, icon: Hash },
   ];
 </script>
@@ -51,42 +75,52 @@
   </button>
 {/snippet}
 
-<Sheet bind:open={sheets.add} title={t.add.title} layer="base" testid="add-sheet">
-  <div class="grid grid-cols-2 gap-3">
-    {#each WAYS as w (w.key)}
-      {@const Icon = w.icon}
-      <button type="button" class="bg-surface-2 active:bg-surface-3 flex min-h-24 flex-col items-start gap-2 rounded-md p-4 text-left transition-[transform,background-color] duration-[var(--d-press)] active:scale-[0.97]" onclick={() => go(w.key)} data-testid="add-{w.key}">
-        <Icon size={24} strokeWidth={1.75} />
-        <span>
-          <span class="text-body block font-semibold">{w.label}</span>
-          <span class="text-caption text-ink-2 block">{w.line}</span>
-        </span>
-      </button>
-    {/each}
-  </div>
+<input bind:this={input} type="file" accept="image/*" capture="environment" hidden onchange={taken} data-testid="photo-input" />
 
-  <h3 class="text-heading mt-6">{t.add.recent}</h3>
-  {#if recent.length}
-    <div data-testid="recent">
-      {#each recent as { id, data: m } (id)}
-        {@const title = titleOf(m.title, m.items)}
-        <Row {title} value={kcalOf(m.items)}>
-          {#snippet trailing()}{@render again(t.add.again(title), () => logged(relog(m), title))}{/snippet}
-        </Row>
-      {/each}
+<Sheet bind:open={sheets.add} title={notice ? t.add.consentTitle : t.add.title} layer="base" testid="add-sheet">
+  {#if notice}
+    <p class="text-body" data-testid="photo-notice">{t.add.consent}</p>
+    <div class="mt-6 flex flex-col gap-2">
+      <Button variant="primary" size="lg" full onclick={() => { prefs.photoOk = true; notice = false; input?.click(); }} data-testid="photo-continue">{t.add.consentContinue}</Button>
+      <Button variant="plain" size="lg" full onclick={() => (notice = false)}>{t.add.consentNotNow}</Button>
     </div>
   {:else}
-    <p class="text-callout text-ink-2 mt-2" data-testid="recent-empty">{t.add.noRecent}</p>
-  {/if}
-
-  {#if saved.length}
-    <h3 class="text-heading mt-6">{t.add.saved}</h3>
-    <div data-testid="saved">
-      {#each saved as { id, data: s } (id)}
-        <Row title={s.title} value={kcalOf(s.items)}>
-          {#snippet trailing()}{@render again(t.add.again(s.title), () => logged(logSaved(id, view.date, stampOn(view.date)), s.title))}{/snippet}
-        </Row>
+    <div class="grid grid-cols-2 gap-3">
+      {#each WAYS as w (w.key)}
+        {@const Icon = w.icon}
+        <button type="button" class="{w.key === 'photo' ? 'bg-lime text-on-lime active:bg-lime-press' : 'bg-surface-2 active:bg-surface-3'} flex min-h-24 flex-col items-start gap-2 rounded-md p-4 text-left transition-[transform,background-color] duration-[var(--d-press)] active:scale-[0.97]" onclick={() => go(w.key)} data-testid="add-{w.key}">
+          <Icon size={24} strokeWidth={1.75} />
+          <span>
+            <span class="text-body block font-semibold">{w.label}</span>
+            <span class="text-caption {w.key === 'photo' ? '' : 'text-ink-2'} block">{w.line}</span>
+          </span>
+        </button>
       {/each}
     </div>
+
+    <h3 class="text-heading mt-6">{t.add.recent}</h3>
+    {#if recent.length}
+      <div data-testid="recent">
+        {#each recent as { id, data: m } (id)}
+          {@const title = titleOf(m.title, m.items)}
+          <Row {title} value={kcalOf(m.items)}>
+            {#snippet trailing()}{@render again(t.add.again(title), () => logged(relog(m), title))}{/snippet}
+          </Row>
+        {/each}
+      </div>
+    {:else}
+      <p class="text-callout text-ink-2 mt-2" data-testid="recent-empty">{t.add.noRecent}</p>
+    {/if}
+
+    {#if saved.length}
+      <h3 class="text-heading mt-6">{t.add.saved}</h3>
+      <div data-testid="saved">
+        {#each saved as { id, data: s } (id)}
+          <Row title={s.title} value={kcalOf(s.items)}>
+            {#snippet trailing()}{@render again(t.add.again(s.title), () => logged(logSaved(id, view.date, stampOn(view.date)), s.title))}{/snippet}
+          </Row>
+        {/each}
+      </div>
+    {/if}
   {/if}
 </Sheet>
