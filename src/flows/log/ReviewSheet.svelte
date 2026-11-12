@@ -18,6 +18,7 @@
   import { stampOn } from '$lib/model/dates';
   import { num } from '$lib/model/format';
   import { haptic } from '$lib/haptics';
+  import { toast } from 'svelte-sonner';
   import { t } from '$lib/i18n';
   import ItemList from './ItemList.svelte';
   import { lineOf, scaled, type Line } from './items';
@@ -118,15 +119,18 @@
     sheets.pick = (item) => lines.push(lineOf(item));
     sheets.search = true;
   }
+  let saving = false;
   async function add() {
-    if (!items.length) return;
+    if (!items.length || saving) return;
     const name = title.trim() || items[0].name;
     const meal: Meal = { date: view.date, at: stampOn(view.date), title: title.trim(), method: kind, items, ...(ai ? { ai } : {}) };
-    const shot = kind === 'photo' ? thumb : null;
-    const save = keep;
+    saving = true;
+    // the sheet closes only once the meal is written, so a refused meal is never lost
+    const undo = await logReviewed(meal, kind === 'photo' ? thumb : null).catch(() => null);
+    saving = false;
+    if (!undo) return void toast(t.review.notSaved);
+    if (keep) saveAsMeal(meal, name);
     close();
-    const undo = await logReviewed(meal, shot);
-    if (save) saveAsMeal(meal, name);
     haptic();
     undoToast(t.add.logged(name), undo);
   }
@@ -152,24 +156,34 @@
 
   {#if status === 'loading'}
     <p class="text-callout text-ink-2 mt-4" role="status" data-testid="review-looking">{t.review.looking}</p>
-    {#each [0, 1, 2] as i (i)}
-      <div class="flex items-center gap-4 py-4"><Skeleton class="h-5 flex-1 rounded-xs" /><Skeleton class="h-5 w-12 rounded-xs" /></div>
-    {/each}
+    <!-- the shapes of the name field and three item rows, so nothing jumps when they arrive -->
+    <Skeleton class="mt-4 h-13 w-full rounded-sm" />
+    <div class="mt-4">
+      {#each [0, 1, 2] as i (i)}
+        <div class="border-line flex flex-col gap-2 border-t py-3 first:border-t-0">
+          <div class="flex gap-4"><Skeleton class="h-5 flex-1 rounded-xs" /><Skeleton class="h-5 w-10 rounded-xs" /></div>
+          <Skeleton class="h-4 w-20 rounded-xs" />
+          <Skeleton class="mt-1 h-11 w-36 rounded-full" />
+        </div>
+      {/each}
+    </div>
   {:else if status === 'ready'}
     <div class="mt-4 flex flex-col gap-2">
       <label for="review-title" class="text-caption text-ink-2">{t.meal.name}</label>
       <input id="review-title" type="text" maxlength="120" enterkeyhint="done" bind:value={title} placeholder={items[0]?.name ?? ''} class="bg-surface-2 placeholder:text-ink-3 h-13 w-full min-w-0 rounded-sm px-4 outline-none focus-visible:outline-2 focus-visible:outline-ink" data-testid="review-title" />
     </div>
-    <ItemList bind:lines empty={t.review.empty} />
-    {#if hidden && oilFood}
-      <div class="border-line mt-4 border-t pt-4" data-testid="review-oil">
-        <p class="text-body font-semibold">{t.review.oil}</p>
-        <div class="mt-3">
-          <Segmented bind:value={oil} label={t.review.oil} options={[{ value: 'none', label: t.review.oilNone }, { value: 'tsp', label: t.review.oilTsp }, { value: 'tbsp', label: t.review.oilTbsp }]} />
+    <!-- one item is kept free for the oil -->
+    <ItemList bind:lines empty={t.review.empty} max={hidden ? 29 : 30}>
+      {#if hidden && oilFood}
+        <div class="border-line mt-4 border-t pt-4" data-testid="review-oil">
+          <p class="text-body font-semibold">{t.review.oil}</p>
+          <div class="mt-3">
+            <Segmented bind:value={oil} label={t.review.oil} options={[{ value: 'none', label: t.review.oilNone }, { value: 'tsp', label: t.review.oilTsp }, { value: 'tbsp', label: t.review.oilTbsp }]} />
+          </div>
+          {#if oilItem}<p class="text-caption text-ink-2 mt-2" data-testid="review-oil-adds">{t.review.oilAdds(num(oilItem.kcal))}</p>{/if}
         </div>
-        {#if oilItem}<p class="text-caption text-ink-2 mt-2" data-testid="review-oil-adds">{t.review.oilAdds(num(oilItem.kcal))}</p>{/if}
-      </div>
-    {/if}
+      {/if}
+    </ItemList>
   {:else}
     <div class="mt-4" role="alert" data-testid="review-error">
       <p class="text-body">{message}</p>

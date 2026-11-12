@@ -110,6 +110,7 @@ export const en = {
     retry: 'Try again',
     byHand: 'Add by hand',
     empty: 'Add each food with Add an item.',
+    notSaved: 'The meal could not be saved. Check the items and try again.',
     notFood: 'We could not find food in that photo.',
     notFoodText: 'We could not find food in that description. Name the foods, like rice with chicken curry.',
     limit: (n: string) => `You have used today's ${n} photo analyses. Search and quick add still work.`,

@@ -1,6 +1,8 @@
 <!-- The Review layout's items (SCREENS.md section 7), shared by the Review and Meal sheets: one row per item with grams
-     on a stepper, calories and source; open it for portions, macros, Replace and Remove. Then Add an item. -->
+     on a stepper, calories and source; open it for portions, macros, Replace and Remove. Then `children` (the Review
+     sheet's oil control) and Add an item. -->
 <script lang="ts">
+  import type { Snippet } from 'svelte';
   import Button from '$lib/components/Button.svelte';
   import Chip from '$lib/components/Chip.svelte';
   import Stepper from '$lib/components/Stepper.svelte';
@@ -11,8 +13,13 @@
   import { t } from '$lib/i18n';
   import { PORTIONS, lineOf, scaled, type Line } from './items';
 
-  const MAX_ITEMS = 30; // the record schema's limit
-  let { lines = $bindable(), empty }: { lines: Line[]; empty: string } = $props();
+  let { lines = $bindable(), empty, max = 30, children }: {
+    lines: Line[];
+    empty: string;
+    /** the record schema takes 30 items; less when something else adds one */
+    max?: number;
+    children?: Snippet;
+  } = $props();
   let opened = $state<number | null>(null);
   const items = $derived(lines.map(scaled));
 
@@ -61,4 +68,5 @@
     <p class="text-callout text-ink-2" data-testid="meal-empty">{empty}</p>
   {/each}
 </div>
-<Button variant="plain" class="-ml-5 mt-1" disabled={lines.length >= MAX_ITEMS} onclick={() => pick(null)} data-testid="meal-add-item">{t.meal.addItem}</Button>
+{@render children?.()}
+<Button variant="plain" class="-ml-5 mt-1" disabled={lines.length >= max} onclick={() => pick(null)} data-testid="meal-add-item">{t.meal.addItem}</Button>

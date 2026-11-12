@@ -22,7 +22,6 @@ export type Deps = {
 const STATUS: Record<AnalyzeError, number> = { bad_request: 400, unauthorized: 401, too_large: 413, not_food: 422, daily_limit: 429, busy: 429, provider_error: 502, timeout: 504 };
 const fail = (error: AnalyzeError, extra: object = {}) => json(STATUS[error], { ok: false, error, ...extra });
 const TIMEOUT_MS = 20_000;
-const HOUR = 3_600_000;
 
 export const liveDeps = (): Deps => {
   const db = admin();
@@ -34,12 +33,6 @@ export const liveDeps = (): Deps => {
     cap: envInt('AI_DAILY_GLOBAL_CAP', 400),
   };
 };
-
-/** The phone's date, if it can be today somewhere on Earth (UTC-12 to UTC+14); else the server's, so a made up date cannot reset the quota. */
-export function quotaDay(localDate: string, now = Date.now()) {
-  const ms = now - Date.parse(localDate);
-  return ms > -14 * HOUR && ms < 36 * HOUR ? localDate : new Date(now).toISOString().slice(0, 10);
-}
 
 class Timeout extends Error {}
 /** The provider's answer, or Timeout after `ms`, aborting the call. */
@@ -68,7 +61,8 @@ export async function analyze(request: Request, deps: Deps = liveDeps()): Promis
   const image = req.kind === 'photo' ? new Uint8Array(Buffer.from(req.image, 'base64')) : undefined;
   if (image && !(image[0] === 0xff && image[1] === 0xd8)) return fail('bad_request'); // not a JPEG
 
-  const usage = await deps.bump(user.id, quotaDay(req.localDate), deps.limit).catch((e: Error) => { console.error('analyze quota failed', e.message); return null; });
+  // the server's UTC day, so a phone cannot pick dates to multiply its quota (it resets at 07:00 in Thailand)
+  const usage = await deps.bump(user.id, new Date().toISOString().slice(0, 10), deps.limit).catch((e: Error) => { console.error('analyze quota failed', e.message); return null; });
   if (!usage) return fail('provider_error');
   const quota = { usedToday: Math.min(usage.used, deps.limit), limit: deps.limit };
   if (!usage.allowed) return fail('daily_limit', { usage: quota });
@@ -96,8 +90,8 @@ export async function analyze(request: Request, deps: Deps = liveDeps()): Promis
     console.error('analyze reply did not match the schema', { model: provider.model, ms: Date.now() - started });
     return fail('provider_error');
   }
-  if (!out.data.is_food || !out.data.items.length) return fail('not_food', { usage: quota });
-  const items = resolveItems(out.data.items);
+  const items = out.data.is_food ? resolveItems(out.data.items) : [];
+  if (!items.length) return fail('not_food', { usage: quota });
   console.info('analyze', { kind: req.kind, model: provider.model, items: items.length, ms: Date.now() - started });
   const kept = { ...out.data, items: out.data.items.slice(0, MAX_ITEMS) };
   return json(200, { ok: true, analysis: { title: out.data.title.trim().slice(0, 120), items, model: provider.model, raw: kept }, usage: quota });

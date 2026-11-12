@@ -1,5 +1,5 @@
 import { describe, expect, test, vi } from 'vitest';
-import { analyze, quotaDay, type Deps } from '../../server/handlers/analyze';
+import { analyze, type Deps } from '../../server/handlers/analyze';
 import { fixture, mockProvider } from '../../server/vision/mock';
 import type { VisionProvider } from '../../server/vision/provider';
 import { MAX_BODY_BYTES } from '../../shared/analysis';
@@ -84,12 +84,17 @@ describe('POST /api/analyze', () => {
     expect((await read(await post(text, deps({ provider: async () => ({ model: 'm', analyze }) })))).body.error).toBe('provider_error');
   });
 
-  test('the quota day is the phone date unless no time zone could have it today', () => {
-    const now = Date.parse('2026-11-12T03:00:00Z');
-    expect(quotaDay('2026-11-12', now)).toBe('2026-11-12');
-    expect(quotaDay('2026-11-11', now)).toBe('2026-11-11'); // UTC-10
-    expect(quotaDay('2026-11-13', now)).toBe('2026-11-12'); // not yet anywhere: 03:00 UTC is 17:00 at UTC+14
-    expect(quotaDay('2026-11-09', now)).toBe('2026-11-12');
-    expect(quotaDay('2027-01-01', now)).toBe('2026-11-12');
+  test('the quota counts on the server day, whatever date the phone sends', async () => {
+    const days: string[] = [];
+    const d = deps({ bump: async (_u, day) => { days.push(day); return { allowed: true, used: 1, total: 1 }; } });
+    await post({ ...text, localDate: '2030-01-01' }, d);
+    expect(days).toEqual([new Date().toISOString().slice(0, 10)]);
+  });
+
+  test('items with blank names are dropped; none left is not food', async () => {
+    const reply = (names: string[]) => async () => ({ is_food: true, title: 't', items: names.map((name) => ({ ...(fixture('oats-banana') as { items: object[] }).items[0], name })) });
+    const ok = await read(await post(text, deps({ provider: async () => ({ model: 'm', analyze: reply(['Oats', '  ']) }) })));
+    expect(ok.body.analysis.items.map((i: { name: string }) => i.name)).toEqual(['Oats']);
+    expect((await read(await post(text, deps({ provider: async () => ({ model: 'm', analyze: reply([' ']) }) })))).body.error).toBe('not_food');
   });
 });

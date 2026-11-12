@@ -7,9 +7,7 @@ import type { ModelOutput } from './schema.js';
 
 export const MAX_ITEMS = 12;
 const GRAMS = { min: 1, max: 2000 };
-const KCAL_MAX = 900; // pure fat is about 884 kcal per 100 g
 const MACRO_MAX = 100; // grams in 100 g
-const ATWATER_TOLERANCE = 0.25;
 
 const byId = new Map(foods.map((f) => [f.id, f.per100]));
 const clamp = (v: number, lo: number, hi: number) => (Number.isFinite(v) ? Math.min(hi, Math.max(lo, v)) : lo);
@@ -21,13 +19,14 @@ export function estimate(e: ModelOutput['items'][number]['est_per_100g']): Macro
   const carbs = clamp(e.carbs_g, 0, MACRO_MAX);
   const fat = clamp(e.fat_g, 0, MACRO_MAX);
   const atwater = V.atwater.protein * protein + V.atwater.carbs * carbs + V.atwater.fat * fat;
-  const kcal = clamp(e.kcal, 0, KCAL_MAX);
-  const off = Math.abs(kcal - atwater) > ATWATER_TOLERANCE * atwater;
-  return { kcal: off ? Math.min(KCAL_MAX, Math.round(atwater)) : kcal, protein, carbs, fat };
+  const kcal = clamp(e.kcal, 0, V.estimateKcalMax);
+  const off = Math.abs(kcal - atwater) > V.estimateKcalTolerance * atwater;
+  return { kcal: off ? Math.min(V.estimateKcalMax, Math.round(atwater)) : kcal, protein, carbs, fat };
 }
 
+/** At most 12 items; an item whose name is blank is dropped, since a meal item needs a name. */
 export function resolveItems(items: ModelOutput['items']): AnalysisItem[] {
-  return items.slice(0, MAX_ITEMS).map((it) => {
+  return items.filter((it) => it.name.trim()).slice(0, MAX_ITEMS).map((it) => {
     const grams = Math.round(clamp(it.grams, GRAMS.min, GRAMS.max));
     const table = it.food_id ? byId.get(it.food_id) : undefined;
     const per100 = table ? { kcal: table.kcal, protein: table.protein, carbs: table.carbs, fat: table.fat } : estimate(it.est_per_100g);
