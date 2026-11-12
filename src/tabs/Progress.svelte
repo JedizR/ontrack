@@ -86,7 +86,8 @@
         <p class="text-eyebrow text-ink-2">{t.progress.weight}</p>
         <!-- a trend needs two weigh-ins in view; with fewer, the card is its empty state -->
         {#if trendNow != null && points.length > 1}
-          <p class="text-display mt-2" data-testid="progress-trend"><Figure text={num(inUnit(trendNow), 1)} /></p>
+          <!-- always one decimal: a trend of 60.0 is a measurement, and the lighter tenth keeps 72.4 from reading as 724 -->
+          <p class="text-display mt-2" data-testid="progress-trend"><Figure text={inUnit(trendNow).toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} /></p>
           <p class="text-caption text-ink-2 mt-1">{metric ? t.after.kg : t.after.lb} {t.after.trend}</p>
         {/if}
         <p class="mt-3 {rate != null ? 'text-callout' : 'text-body text-ink-2'}" data-testid="progress-rate">
