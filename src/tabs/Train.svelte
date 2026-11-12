@@ -142,17 +142,18 @@
       {#each t.train.weekdays as dayName, d (dayName)}
         {@const list = sessions.filter((s) => s.weekday === d)}
         {@const lit = drag !== null && drag.over === d && drag.over !== drag.from ? 'bg-surface-2' : ''}
-        {#each list as s (s.key)}
+        {#each list as s, i (s.key)}
           {@const lifted = drag?.key === s.key}
+          <!-- a day's later sessions (lifting then cardio) sit under its tile, with no hairline: one day reads as one row -->
           <div
-            class="relative flex items-center {hairline} {lifted ? 'bg-surface shadow-float z-10 -mx-6 rounded-md px-6' : lit}"
+            class="relative flex items-center {hairline} {i ? 'before:hidden' : ''} {lifted ? 'bg-surface shadow-float z-10 -mx-6 rounded-md px-6' : lit}"
             style={lifted ? `transform: translateY(${drag?.dy}px)` : undefined}
             data-day={d}
             data-key={s.key}
             data-testid="train-day-{d}"
           >
             <button type="button" class={pressable} aria-label="{d === todayIs ? t.train.dayToday(dayName) : dayName}, {s.name}" onclick={() => edit(s)} data-testid="train-session">
-              {@render day(d)}
+              {#if i}<span class="size-12 flex-none"></span>{:else}{@render day(d)}{/if}
               <span class="min-w-0 flex-1">
                 <span class="text-body line-clamp-2 block font-semibold">{s.name}</span>
                 <span class="text-caption text-ink-2 block">{t.train.line(t.train.types[s.type], num(s.minutes))}</span>

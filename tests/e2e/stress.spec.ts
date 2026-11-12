@@ -278,7 +278,7 @@ for (const d of PHONES) {
   });
 }
 
-/** Train with a template's analysis, then the Session sheet with an exercise open, the picker, Templates and the confirm. */
+/** Train with a hybrid template's analysis, then the Session sheet with an exercise open, the picker, Templates and the confirm. */
 async function walkTraining(page: Page, dir: string) {
   const sheet = async (id: string, name: string, action?: string) => {
     await expect(page.getByTestId(id)).toHaveCSS('transform', 'none'); // the sheet has finished sliding up
@@ -289,7 +289,7 @@ async function walkTraining(page: Page, dir: string) {
   await page.getByTestId('tab-1').click();
   await page.getByTestId('train-change').click();
   await sheet('templates-sheet', 'templates');
-  await page.getByTestId('template-upper-lower-4').getByTestId('template-use').click();
+  await page.getByTestId('template-full-body-cardio-3').getByTestId('template-use').click();
   await sheet('template-confirm-sheet', 'template-confirm', 'template-confirm');
   await page.getByTestId('template-confirm').click();
   await page.getByTestId('templates-sheet').waitFor({ state: 'detached' });
