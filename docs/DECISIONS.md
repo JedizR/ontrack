@@ -21,6 +21,7 @@ Changes to a doc's decision, and choices made on the owner's behalf. Newest firs
 - The Review and Meal sheets share `ItemList.svelte`; the Review sheet's oil control sits between the items and Add an item, as SCREENS.md orders them.
 - Toast titles keep to one line with an ellipsis (DESIGN.md section 7); a long meal name made "Added ..." wrap.
 - `@google/genai` moved to `dependencies`, since a server function imports it.
+- Vercel functions run in `sin1` (Singapore), not the default `iad1` (Washington). Why: the database is in Singapore and the users are in Thailand; from `iad1` each photo spent about 4 s outside Gemini, which put the review over 8 s.
 
 ## M5
 
