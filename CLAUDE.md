@@ -1,6 +1,6 @@
 # Ontrack
 
-Calorie and training tracker. Installed iPhone web app (Safari, Add to Home Screen). Local-first Svelte 5 SPA on Vite, Supabase for auth and sync, Vercel for hosting and three small server functions.
+Calorie and training tracker for the phone browser: Safari on iPhone first, Chrome on Android too. Local-first Svelte 5 SPA on Vite, Supabase for auth and sync, Vercel for hosting and three small server functions.
 
 ## Commands
 
@@ -10,7 +10,7 @@ Calorie and training tracker. Installed iPhone web app (Safari, Add to Home Scre
 | `pnpm dev:live` | Same, against real Supabase and Gemini from `.env.local` |
 | `pnpm check` | svelte-check, strict TypeScript |
 | `pnpm test` | Vitest. Run one file with `pnpm test path/to/file` |
-| `pnpm test:e2e` | Playwright, iPhone viewport, light and dark, mock backend |
+| `pnpm test:e2e` | Playwright, iPhone Safari viewport, light and dark, mock backend |
 | `pnpm screenshots` | Every screen and sheet into `screenshots/` |
 | `pnpm verify` | check + test + build + e2e smoke. Run before calling anything done |
 | `pnpm check:pwa <url>` | Installability and offline reload against a preview or `pnpm preview` |
@@ -43,8 +43,8 @@ These are the rules that are easy to break without noticing.
 - **Days are local.** Bucket by the device's calendar date as a `YYYY-MM-DD` string captured at write time. Never derive a day from a UTC timestamp.
 - **Tokens only.** Colours, radii, spacing and type sizes come from `design/tokens.css` through Tailwind theme variables. No raw hex or pixel font sizes in components.
 - **Words live in the catalog.** UI strings come from `src/lib/i18n/en.ts`. No em or en dashes, no middle dot separators, sentence case, no exclamation marks.
-- **Lime means on track.** It marks the primary action and progress that has reached its target. Nothing else is lime.
-- **iPhone rules.** Inputs at 16 px or larger. `touch-action: manipulation` globally. Respect safe areas. Never set `maximum-scale`. Test at 390 by 844 and at the iPhone SE size.
+- **Violet means act, green means reached.** OneFin violet fills the primary action and the dock's plus. Success green marks progress that reached its target. Nothing else is violet or green; lavender tints are surfaces.
+- **iPhone rules.** Inputs at 16 px or larger. `touch-action: manipulation` globally. Respect safe areas. Never set `maximum-scale`. Test at 390 by 844 in Safari with its toolbars (viewport 390 by 664) and at the SE size (375 by 548).
 - **Class names.** Never name a component class after a Tailwind utility (`block`, `flex`, `hidden`). It has bitten us before.
 
 ## Gotchas

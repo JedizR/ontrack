@@ -2,6 +2,18 @@
 
 Changes to a doc's decision, and choices made on the owner's behalf. Newest first, one line each: what, why.
 
+## D1 Design refresh
+
+The owner's decisions, which override the earlier DESIGN.md, tokens and CLAUDE.md wording:
+- No calculator keypad. Bounded values use wheel pickers; free amounts use the native number pad or steppers. Why: the owner, "you force user to use calculator-like input too much".
+- Browser first. The app never mentions installing, the home screen or Safari's standalone mode; everyone, Android included, uses it in the browser. Look and tests target iPhone Safari in normal browser mode. Why: the owner.
+- Adopt OneFin's whole design identity (colour, type, components, effects, motion), mobile first; keep Ontrack's name, wordmark and icon, and no OneFin logo or wordmark. Why: the owner.
+- Make the UI better to Apple's current HIG and 2025 to 2026 practice, with one button height per role. Why: the owner found screens "not that interesting" and some sizes and buttons "weird".
+- The accent rule is now "Violet means act, green means reached": violet `#381AC9` for the primary action (the 3D face `#6262FE` to `#381AC9`) and the dock's plus, success green `#19DBA8` for progress that reached its target, "On track" words in a darker green that passes 4.5 to 1. It replaces "Lime means on track". Why: approved by the owner through the conductor.
+- No OneFin raster or video artwork ships (3D coins and stars, phone mockups, app screen images, videos): it comes with a single-use template licence. Decoration is drawn in CSS or SVG. Why: the owner, through the conductor; see "Needs your eyes" in `docs/BLOCKERS.md`.
+
+Choices made in the build:
+
 ## M7
 
 - A plan keeps the program's sessions (without exercises) as `sessions`, and a day's training card, skip and rest target read the plan's sessions, falling back to the program for plans made before M7. Why: the gate says a program change leaves past days as they were; with only the program, a past day would show the new week's sessions and lose a skip. The first program change writes the old sessions into plans that have none.

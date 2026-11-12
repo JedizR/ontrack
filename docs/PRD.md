@@ -37,7 +37,7 @@ IDs are stable. Tests and commits refer to them.
 
 ### F1 Sign-in
 - Sign in with Google, or with a 6 digit code sent by email. No passwords, no magic links.
-- Works inside the installed home screen app on iPhone. The session survives closing the app and restarting the phone.
+- Works in a normal browser tab: Safari on iPhone and Chrome on Android. The session survives closing the tab and restarting the phone.
 - Signing out waits for unsynced changes, then wipes local data on the device.
 - Deleting the account removes all rows, photos and the auth user, and says so.
 
@@ -45,7 +45,6 @@ IDs are stable. Tests and commits refer to them.
 - At most nine screens, one question each, large controls, a visible step count, back always available. Completable in under 90 seconds.
 - Collects: goal, sex used for the equation, birth year, height, weight, daily movement outside workouts, training (days, type, length), experience, pace. Optional: body fat, goal weight.
 - Ends on "Your plan": calories for training and rest days, protein, the expected rate of change, and a "how this was calculated" breakdown that sums exactly to the target.
-- In Safari on iPhone, the first thing shown is how to add Ontrack to the home screen. The installed app has separate storage, so setup belongs there.
 - The screening step in section 7 runs before any target is shown.
 
 ### F3 Today
@@ -64,11 +63,11 @@ IDs are stable. Tests and commits refer to them.
 ### F5 Log without a photo
 - Search the bundled food table (works offline), pick a portion, add.
 - Describe a meal in a sentence and get the same review sheet as a photo.
-- Quick add: calories, optional protein, carbs and fat, optional name, on a custom keypad.
+- Quick add: calories, optional protein, carbs and fat, optional name, typed on the phone's number pad.
 - Recent and saved meals can be logged again in two taps. Any logged meal can be saved.
 
 ### F6 Weigh-ins
-- Log weight in one sheet with the keypad. One value per day. Logging again replaces it.
+- Log weight in one sheet on a wheel that starts at the last weigh-in. One value per day. Logging again replaces it.
 - Progress shows raw weigh-ins as dots and a smoothed trend line.
 - A quiet prompt on Today when there is no weigh-in in the last 3 days.
 
@@ -104,8 +103,8 @@ IDs are stable. Tests and commits refer to them.
 - "The science" lists every equation and constant with its citation and status.
 - Privacy explains photo processing in plain words before the first photo is taken.
 
-### F13 Install, offline, updates
-- Installable from Safari with a guided, illustrated flow that matches the current iOS share menu.
+### F13 Offline and updates
+- Runs in a browser tab. Once loaded, the app works offline.
 - Cold start to an interactive Today in under 1.5 seconds on an iPhone 12 with a year of data.
 - When a new version is ready, a toast offers to update. No silent reloads.
 - A small status mark shows synced, syncing, waiting for connection, or needs attention.
@@ -134,7 +133,7 @@ Ontrack gives general wellness guidance, not medical advice, and says so at onbo
 | Cold start to interactive, iPhone 12 | 1.5 s or less |
 | Tap to visible response | 100 ms or less. Every tap has a pressed state |
 | Photo to review sheet | 8 s or less at the median |
-| Layout | No horizontal overflow, no clipped text, tap targets 44 px or more, on iPhone SE, 15 and 15 Pro Max, at all three text sizes, light and dark |
+| Layout | No horizontal overflow, no clipped text, tap targets 44 px or more, on iPhone SE, 15 and 15 Pro Max in Safari with its toolbars, at all three text sizes, light and dark |
 | Contrast | Text 4.5 to 1 or better. Large numerals 3 to 1 or better |
 | Offline | Every feature except photo and text analysis works in airplane mode and syncs within 10 s of reconnecting |
 | Tests | Every engine test vector passes. The sync conformance suite is green on both backends. One end to end test per feature |
@@ -144,7 +143,7 @@ Ontrack gives general wellness guidance, not medical advice, and says so at onbo
 | Risk | Response |
 | --- | --- |
 | Photo calories are wrong for mixed dishes and hidden oil | Label estimates honestly, make correction fast, and rely on the weekly check-in as the safety net, because it corrects the target from outcomes rather than from logged calories alone |
-| Google sign-in misbehaves in the installed app | Test on a real iPhone at the M3 gate. Email code is the fallback |
+| Google sign-in misbehaves in Safari | Test on a real iPhone at the M3 gate. Email code is the fallback |
 | Free tiers change or pause | A daily keep-alive, a provider interface for vision, portable handlers, a JSON export |
 | The app nudges someone toward harmful restriction | The guardrails in section 7, reviewed by a dietitian before public launch |
 | A science constant is wrong | Nothing ships as verified without a checked primary source. Provisional values are labelled in the app |
