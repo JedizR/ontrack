@@ -9,7 +9,7 @@ First run:  Welcome > Onboarding (9 steps) > Your plan > Sign in > Today
 Returning:  Welcome > Sign in > Today
 
 Tabs:       Today | Train | Progress           Dock: plus button opens Add
-Sheets:     Add, Review, Search, Describe, Quick add, Meal, Weigh in, How it is calculated,
+Sheets:     Add, Review, Search, Describe, Quick add, Meal, Supplement, Weigh in, How it is calculated,
             Session, Exercise picker, Templates, Check-in, Settings and its pages
 ~~~
 
@@ -73,6 +73,8 @@ Matches `/gallery/today`.
 4. Cards that appear when relevant, at most one at a time, in this priority: weekly check-in ready, easy adds (gain mode in the evening), weigh-in prompt, update notice.
 5. Training card: session name, "Strength, 60 min. Adds 240 kcal", and a "Done" button. After Done: a check mark and "Undo". A long press or the row's menu offers "Skip today". On a rest day: "Rest day" with no button. With no program: "Add your training to sharpen your target".
 6. "Meals" heading with the count, then the list, newest first. Each row opens the Meal sheet. Swipe left to delete, with an undo toast.
+   - A supplement with calories (N2, F21) is a row like a meal: the shaker tile, its name, "07:30, 2 scoops with milk", and its calories. The row opens the Supplement sheet's amount step in edit mode; swipe left deletes it with an undo toast, "Whey protein deleted".
+   - Supplements with no calories (creatine) are not rows and show no 0 kcal. At the end of the card, under a hairline, the word "Taken" in Caption and one chip per supplement taken that day, a check before its name. A chip opens the same edit step. The count beside the heading counts rows only.
 7. At the end of the list after 20:00, a plain button: "Finish day".
 
 Counterpart on the right of the hero, by goal: gain shows "620 to go" until the zone, then "On track". Lose and maintain show "620 left" until the zone, then "On track". Past the zone all goals show "240 over" in plain ink.
@@ -82,8 +84,10 @@ States: first day (hero at zero, a row saying "Log your first meal with the plus
 ## 7. Add flow
 
 **Add sheet** from the plus button.
+- "Supplements" (N2, F21), first when the user has any: one row per supplement, by name, with the shaker tile, the last amount as its caption ("2 scoops with milk", or "1 scoop" with no calories) and the calories of that amount on the right (none for a supplement with no calories). A row opens the Supplement sheet's amount step. Under the rows a plain "Add a supplement".
 - Four tiles in a two by two grid: "Photo" (the violet primary, the largest emphasis), "Search", "Describe", "Quick add".
-- "Recent": the last five distinct meals as rows with a trailing plus that logs them again at once, with an undo toast.
+- With no supplements yet: under the tiles, one row, the shaker tile, "Supplements", caption "Set up your tub once, then log it by the scoop", and a chevron. It opens the Supplement sheet's first step.
+- "Recent": the last five distinct meals as rows with a trailing plus that logs them again at once, with an undo toast. Logged supplements are not repeated here: they sit at the top.
 - "Saved": saved meals in the same form.
 
 **Photo.** The tile opens the camera directly. First use shows one screen before the camera: "Your photo is sent to Google's Gemini to identify the food, then discarded. Ontrack keeps only a small thumbnail." with "Continue" and "Not now".
@@ -106,6 +110,30 @@ After capture: the Review sheet opens immediately with the photo at the top and 
 **Quick add.** Calories typed on the number pad, in Display, focused on open. Optional protein, carbs and fat as three small fields on the decimal pad, optional name. "Add".
 
 **Meal sheet** for a logged meal: the Review layout in edit mode, with the time editable, "Save changes", "Save as a meal", "Delete".
+
+**Supplement sheet** (N2, F21). One sheet with three steps, a back chevron between them. Ontrack logs what the user takes; it never suggests a supplement or an amount.
+
+The common case, the morning shake: plus, the Whey row, Add. Three taps when the amount is the last one used; one more on the stepper when it is not. Everything sits in the lower half of the sheet, in thumb reach, and the main action is pinned at the bottom.
+
+1. **Kind**, from "Add a supplement". Title "Add a supplement". Six rows with a chevron, each one tap: "Whey protein" and "Plant protein", captioned "Starts from USDA's average"; "Casein", "Mass gainer", "Creatine" and "Something else", captioned "From your tub's label". Under them, in Caption: "Ontrack logs what you take. It does not recommend supplements or amounts."
+2. **Label.** Title: the kind's name; back returns to Kind. From top to bottom:
+   - "Name", a text field filled with the kind's name ("Something else" starts empty, with the hint "Name on the tub").
+   - "Scoop" in grams on a typed stepper. A preset from the table starts at the table's scoop (whey 30 g, plant 45 g); the others at 0, which means not known.
+   - Eyebrow "In one scoop", then calories, protein, carbs and fat as labelled rows of typed steppers in one column, as in Correct. A preset from the table starts at its values per 100 g scaled to the scoop, and follows the scoop until a value is changed. The others start at 0. Nobody is asked for a value per 100 g.
+   - One line on why: from the table, "Brands differ, so the label on your tub is more accurate than this average from USDA SR Legacy."; otherwise "Copy the numbers from the label on your tub."
+   - The zero calorie case, live, when every value is 0: "No calories, so Today shows it as taken."
+   - Error, in the attention colour, Save disabled: protein, carbs and fat weigh more than a known scoop, "Protein, carbs and fat add up to more than the scoop. Check the label." An empty name disables Save without a message; the field's hint says what goes there.
+   - Pinned: primary "Save supplement". Saving shows the amount step for it.
+   - Opened from the amount step's "Edit supplement": the title is the supplement's name, the values are its own, the primary reads "Save changes" and goes back to the amount step, and a danger "Remove supplement" closes the sheet with an undo toast, "Whey protein removed". Meals already logged keep their numbers.
+3. **Amount.** Title: the supplement's name.
+   - Calories for the chosen amount in Display with "kcal", and under it "48 g protein, 6 g carbs, 3 g fat", both changing as the amount does.
+   - "Scoops" on a typed stepper in half steps, from 0.5 to 10, starting at the last amount used (1 the first time).
+   - "Mixed with": chips, Water first, then the milks from the food table (whole, reduced fat, skim, soy, almond), starting at the last mix. A milk shows "Milk" in grams on a stepper of 50, starting at the last amount or the table's glass (250 g); its calories join the total and its row on Today reads Database. The milk values come from the food table, through the user's remembered numbers (F15) when there are any.
+   - A plain "Edit supplement".
+   - Pinned: primary "Add 240 kcal". The sheet closes, Today updates, and the toast "Added Whey protein" offers Undo, which also puts back the last amount.
+   - No calories: no Display figure and no mix. The line "No calories, so Today shows it as taken." sits over the Scoops stepper, and the primary reads "Log as taken". The toast says "Creatine taken".
+   - Edit mode, from a row or a chip on Today: the logged amount and mix, primary "Save changes" (toast "Changes saved"), and at the end a danger "Delete" with an undo toast. No "Edit supplement" here. Saving uses the supplement's current label, so a corrected label also corrects the entry.
+   - States: the milk values not loaded (offline before the food table was cached) leave Water and say "The milk values did not load. Water still works."; a supplement removed on another device closes the sheet, and its logged entries open in the Meal sheet instead. Offline, everything works and syncs later.
 
 ## 8. Train
 
