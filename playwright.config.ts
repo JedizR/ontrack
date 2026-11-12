@@ -25,7 +25,8 @@ export default defineConfig({
   projects: [
     { name: 'light', testMatch: /(app|sync|onboarding|today|photo|train)\.spec\.ts/, use: { ...phone, colorScheme: 'light' } },
     { name: 'dark', testMatch: /app\.spec\.ts/, use: { ...phone, colorScheme: 'dark' } },
-    { name: 'screens', testMatch: /screens\.spec\.ts/, use: { ...phone } },
+    // screenshots at scale 2: the same layout as the phone at scale 3, in less CI time
+    { name: 'screens', testMatch: /screens\.spec\.ts/, use: { ...phone, deviceScaleFactor: 2 } },
     // layout only, no touch input: Chromium, viewports set per describe
     { name: 'stress', testMatch: /stress\.spec\.ts/, use: { locale: 'en-US', timezoneId: 'Asia/Bangkok' } },
   ],

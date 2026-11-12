@@ -35,6 +35,7 @@ Choices made in the build:
 - The static mock `design/reference-today.html` is retired; `/gallery/today`, composed from the real components, is the reference.
 - Builds preload the two woff2 files through a small Vite plugin, because their names are hashed.
 - Test viewports are Safari's: the light, dark and screens projects use Playwright's iPhone 13 as given (390 by 664, scale 3); stress uses 393 by 659, the SE at 375 by 548 (an assumption until the owner's SE reports its own) and the Pro Max at 430 by 739. The home screen device is gone.
+- CI's verify job timeout goes from 40 to 60 minutes and the `screens` project shoots at scale 2: the first D1 run's e2e step took 32 minutes (more screenshot states at scale 3). Why: the brief allows raising the timeout; no test is skipped.
 - The young screen's Leave setup and onboarding's Choose a program use the dark secondary pill; Account's Delete account is a small plain danger button under Sign out.
 
 ## M7

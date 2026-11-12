@@ -199,6 +199,7 @@ for (const theme of ['light', 'dark'] as const) {
 
       // SCREENS.md sections 6 and 7: Today empty, typical and on a past day, then every logging sheet
       test('today', async ({ page }) => {
+        test.slow(); // every logging sheet in turn: past 30 s on CI
         const sheet = async (id: string, state: string) => {
           await expect(page.getByTestId(id)).toHaveCSS('transform', 'none');
           await shot(page, 'today', state);

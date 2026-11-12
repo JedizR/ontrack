@@ -129,7 +129,10 @@ test('signing out sends what is waiting, then deletes the data from the phone', 
 
   await expect.poll(() => pending(page)).toBe(0);
   await page.getByTestId('avatar').click();
+  // sign out reloads the page; Welcome can show for a moment before it does
+  const reloaded = page.waitForEvent('load');
   await page.getByTestId('account-signout').click();
+  await reloaded;
   await toWelcome(page);
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('ot-ui')!).lastUser)).toBeNull();
   const left = await page.evaluate(
