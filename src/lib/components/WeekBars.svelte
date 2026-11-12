@@ -20,7 +20,7 @@
     {#each weeks as k, i (i)}
       {@const mid = (i + 0.5) * slot}
       {#if k.avg != null}
-        <rect x={mid - bar / 2} width={bar} y={y(k.avg)} height={y(0) - y(k.avg)} rx={Math.min(6, bar / 3)} class={k.reached ? 'fill-success' : 'fill-accent'} data-testid="bar" />
+        <rect x={mid - bar / 2} width={bar} y={y(k.avg)} height={y(0) - y(k.avg)} rx={Math.min(6, bar / 3)} class={k.reached ? 'fill-success' : 'fill-progress'} data-testid="bar" />
       {/if}
       <!-- the target: an ink line edged in the card's colour, so it shows across an ink bar too -->
       <line x1={i * slot + 2} x2={(i + 1) * slot - 2} y1={y(k.target)} y2={y(k.target)} class="stroke-surface" stroke-width="5" stroke-linecap="round" />

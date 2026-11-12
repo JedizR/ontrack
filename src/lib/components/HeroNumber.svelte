@@ -1,4 +1,4 @@
-<!-- DESIGN.md section 7, Hero number: the one number a screen is about in the Hero style (Geist, regular weight, as
+<!-- DESIGN.md section 7, Hero number: the one number a screen is about in the Hero style (Geist 500, medium, not bold, as
      OneFin's "$ 4,025.08"), its caption beneath, the counterpart on the right in Geist 600 at Heading size. Digits count
      to a new value over 400 ms. -->
 <script lang="ts">

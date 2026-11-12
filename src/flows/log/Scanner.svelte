@@ -118,7 +118,7 @@
       <!-- the framing guide: wide for a barcode, the rest dimmed by the scrim -->
       <div class="border-toast-ink pointer-events-none absolute inset-x-[10%] top-1/2 h-[40%] -translate-y-1/2 rounded-sm border-2 shadow-[0_0_0_999px_var(--scrim)]" aria-hidden="true"></div>
       {#if torch !== null}
-        <button type="button" class="glass text-ink absolute right-3 bottom-3 grid size-11 place-items-center rounded-sm transition-transform duration-[var(--d-press)] active:scale-[0.97]" aria-label={torch ? t.scan.lightOff : t.scan.lightOn} aria-pressed={torch} onclick={light} data-testid="scanner-light">
+        <button type="button" class="bg-toast text-toast-ink absolute right-3 bottom-3 grid size-11 place-items-center rounded-sm transition-transform duration-[var(--d-press)] active:scale-[0.97]" aria-label={torch ? t.scan.lightOff : t.scan.lightOn} aria-pressed={torch} onclick={light} data-testid="scanner-light">
           {#if torch}<FlashlightOff size={22} strokeWidth={2} />{:else}<Flashlight size={22} strokeWidth={2} />{/if}
         </button>
       {/if}

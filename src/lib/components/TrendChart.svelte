@@ -48,7 +48,7 @@
     {/each}
     <path d={bandPath} class="fill-track" data-testid="chart-band" />
     {#each points as p (p.day)}<circle cx={x(p.day)} cy={y(p.value)} r="3" class="fill-ink-3" data-testid="chart-dot" />{/each}
-    <path d={trend} fill="none" class="stroke-accent" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" />
+    <path d={trend} fill="none" class="stroke-progress" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" />
     <text x={M.left} y={H - 6} class="fill-ink-2 text-caption">{from}</text>
     <text x={w - M.right} y={H - 6} text-anchor="end" class="fill-ink-2 text-caption">{to}</text>
   </svg>

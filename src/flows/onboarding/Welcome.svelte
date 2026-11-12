@@ -33,7 +33,9 @@
   </div>
 
   <div class="flex flex-1 flex-col justify-end py-8">
-    <h1 class="text-title appear text-balance" style="--i: 3">{t.welcome.promise} <span class="text-accent-ink">{t.welcome.promiseKey}</span></h1>
+    <h1 class="text-title appear text-balance" style="--i: 3">
+      {#each t.welcome.promise.split('*') as part, i (i)}{#if i % 2}<span class="text-accent-ink">{part}</span>{:else}{part}{/if}{/each}
+    </h1>
     <ul class="appear mt-6 flex flex-col gap-3" style="--i: 5">
       {#each t.welcome.lines as line, i (i)}
         {@const Icon = ICONS[i]}

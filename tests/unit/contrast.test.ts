@@ -34,6 +34,7 @@ const PAIRS: [string, string, number][] = [
   ['on-action', 'action', 4.5], ['on-action', 'action-press', 4.5], // the ink pill's label, at rest and pressed
   ['accent-ink', 'canvas', 4.5], ['accent-ink', 'surface', 4.5], ['accent-ink', 'surface-2', 4.5], // violet links
   ['ink', 'glass-solid', 4.5], // a glass chip's label without blur
+  ['progress', 'track-bg', 3], // a track's fill against its empty part (the reached green is the documented exception)
   ['danger', 'surface', 4.5], ['on-danger', 'danger', 4.5],
   ['attention', 'canvas', 4.5], ['attention', 'surface', 4.5],
   ['toast-ink', 'toast-bg', 4.5],

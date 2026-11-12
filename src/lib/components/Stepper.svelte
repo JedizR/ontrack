@@ -1,4 +1,4 @@
-<!-- DESIGN.md section 7, Stepper: minus and plus as 44 px circles around a number that can also be typed. Holding repeats.
+<!-- DESIGN.md section 7, Stepper: minus and plus as 44 px ink rounded squares (grey at a bound) around a number that can also be typed. Holding repeats.
      A typed number is kept inside min and max but not rounded to the step (125 g stays 125); the buttons go on from it. -->
 <script lang="ts">
   import Minus from '@lucide/svelte/icons/minus';

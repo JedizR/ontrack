@@ -16,6 +16,7 @@
   --accent: #381ac9;            /* Violet/01: fills */
   --accent-press: #28119c;      /* Violet/05 */
   --accent-ink: #381ac9;        /* violet words: links and highlights */
+  --progress: #381ac9;          /* the fill of a track, the onboarding bar, the trend line and week bars below their zone */
   --on-accent: #ffffff;
   --accent-soft: #bebeff;       /* Violet/04: icon tiles and the hero haze. A surface, never a state */
   --on-accent-soft: #121214;
@@ -144,6 +145,7 @@
   --accent: #5b4ff5;                           /* derived: Violet/01 lifted so a fill reads on the dark ground */
   --accent-press: #4a3fe0;
   --accent-ink: #a9a9ff;                       /* derived: violet words on dark */
+  --progress: #7b72ff;                         /* derived: 3.7 to 1 on the empty track, which #5b4ff5 is not */
   --accent-soft: rgba(170, 157, 236, 0.1);    /* the active row tint on dark */
   --on-accent-soft: #bebeff;
   --success-ink: #19dba8;

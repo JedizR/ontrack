@@ -42,7 +42,7 @@
     {/each}
   </nav>
   <button
-    class="bg-action text-on-action shadow-action active:bg-action-press grid size-[var(--dock-h)] flex-none place-items-center rounded-full transition-[transform,background-color] duration-[var(--d-press)] active:scale-[0.97]"
+    class="bg-action text-on-action shadow-pill active:bg-action-press grid size-[var(--dock-h)] flex-none place-items-center rounded-full transition-[transform,background-color] duration-[var(--d-press)] active:scale-[0.97]"
     aria-label={t.shell.add}
     data-testid="add"
     onclick={onadd}

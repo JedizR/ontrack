@@ -191,7 +191,7 @@ The common case, the morning shake: plus, the Whey row, Add. Three taps when the
 ## 9. Progress
 
 1. Header: "Progress". A segmented control: 4 weeks, 3 months, All.
-2. Weight card: current trend weight in Display with "trend" as its caption, the chart (weigh-ins as dots, the trend as a line, the target rate as a faint band), and beneath it "0.3 percent a week. Target 0.5". A neutral button "Log weight".
+2. Weight card, the screen's hero (D2): on its haze panel the current trend weight in Display with lighter decimals, "trend" as its caption, and "0.3 percent a week. Target 0.5"; below the panel the chart (weigh-ins as dots, the trend as a line, the target rate as a faint band) and a neutral button "Log weight".
 3. Maintenance card, once measured: "2,120 kcal" in Display, "Measured from your last 3 weeks", and the formula estimate beside it for comparison.
 4. Intake card: bars for weekly average calories with the target as a line, and average protein beneath.
 5. Consistency card: the last four weeks as rows of seven dots, filled in `--success-ink` for on track days, with a count per week.

@@ -1,7 +1,7 @@
 <!-- DESIGN.md section 7, Button. One height per role: lg 56 for the main action, md 48 for second actions, sm 36 on
      screen (44 to tap) for inline actions. primary is the flat ink pill of OneFin's "Withdraw" (white on dark) with a soft
      drop; neutral is the grey pill for second actions; plain is a violet text link; danger is flat red text. No gradient,
-     bevel or glow on any of them (buttons.spec.ts). The button is always at least 44 high to tap; the face inside carries
+     bevel or glow on any of them (app.spec.ts sweeps for them). The button is always at least 44 high to tap; the face inside carries
      the look. Labels are verbs. -->
 <script lang="ts">
   import type { Snippet } from 'svelte';
@@ -25,7 +25,7 @@
 
   // pressed: the fill steps and the face scales to 0.97; a disabled primary turns grey, as OneFin's disabled arrow does
   const LOOK = {
-    primary: 'bg-action text-on-action shadow-action group-active:bg-action-press group-active:scale-[0.97] group-disabled:bg-surface-3 group-disabled:text-ink-2 group-disabled:shadow-none',
+    primary: 'bg-action text-on-action shadow-pill group-active:bg-action-press group-active:scale-[0.97] group-disabled:bg-surface-3 group-disabled:text-ink-2 group-disabled:shadow-none',
     neutral: 'bg-surface-2 text-ink group-active:bg-surface-3 group-active:scale-[0.97] group-disabled:opacity-40',
     plain: 'text-accent-ink group-active:bg-surface-2 group-active:scale-[0.97] group-disabled:opacity-40',
     danger: 'text-danger group-active:bg-danger-soft group-active:scale-[0.97] group-disabled:opacity-40',

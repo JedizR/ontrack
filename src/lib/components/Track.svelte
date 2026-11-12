@@ -45,7 +45,7 @@
     <div class="bg-line-strong absolute inset-y-0" style="left: {pct(zone[0])}%; right: {100 - pct(zone[1])}%"></div>
   {/if}
   <div
-    class="absolute inset-y-0 left-0 rounded-full transition-[width,background-color] duration-[var(--d-move)] ease-[var(--ease-out)] {reached ? 'bg-success' : 'bg-accent'}"
+    class="absolute inset-y-0 left-0 rounded-full transition-[width,background-color] duration-[var(--d-move)] ease-[var(--ease-out)] {reached ? 'bg-success' : 'bg-progress'}"
     style="width: {pct(value)}%"
   ></div>
 </div>

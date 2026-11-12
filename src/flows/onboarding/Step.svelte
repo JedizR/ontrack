@@ -39,7 +39,7 @@
     {/if}
     {#if progress}
       <div class="bg-track h-1 flex-1 overflow-hidden rounded-full" role="progressbar" aria-valuemin={1} aria-valuemax={progress.total} aria-valuenow={progress.n} aria-label={t.onboarding.progress(String(progress.n), String(progress.total))}>
-        <div class="bg-accent h-full rounded-full transition-[width] duration-[var(--d-move)] ease-[var(--ease-out)]" style="width: {(progress.n / progress.total) * 100}%"></div>
+        <div class="bg-progress h-full rounded-full transition-[width] duration-[var(--d-move)] ease-[var(--ease-out)]" style="width: {(progress.n / progress.total) * 100}%"></div>
       </div>
       <span class="text-caption text-ink-2 num flex-none" aria-hidden="true" data-testid="step-count">{t.onboarding.progress(String(progress.n), String(progress.total))}</span>
     {/if}

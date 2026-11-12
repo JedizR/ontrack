@@ -309,9 +309,8 @@ export const en = {
     ftIn: (ft: string, inches: string) => `${ft} ft ${inches} in`,
   },
   welcome: {
-    // Title sets capitals, so the key phrase's own capital never shows; it reads in violet after the lead
-    promise: 'Eat for the body',
-    promiseKey: 'You are training for.',
+    // the words between asterisks read in violet (D2: OneFin's highlighted phrase)
+    promise: 'Eat for the body *you are training for.*',
     lines: ['A daily target built from how you train.', 'One photo is enough to log a meal.', 'A weekly correction from your own results.'],
     start: 'Get started',
     account: 'I already have an account',

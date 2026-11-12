@@ -29,6 +29,7 @@
   --color-on-action: var(--on-action);
   --color-accent: var(--accent);
   --color-accent-ink: var(--accent-ink);
+  --color-progress: var(--progress);
   --color-accent-press: var(--accent-press);
   --color-on-accent: var(--on-accent);
   --color-accent-soft: var(--accent-soft);
@@ -110,7 +111,7 @@
     font-variant-numeric: tabular-nums;
   }
   .text-title, .text-heading, .text-eyebrow { text-transform: uppercase; }
-  /* D2: the one big number in a card is Geist at regular weight, as OneFin's "$ 4,025.08" and "2M+" */
+  /* D2: the one big number in a card is Geist 500, not bold, as OneFin's "$ 4,025.08" and "2M+" */
   .text-hero { font-family: var(--font-ui); font-variant-numeric: tabular-nums; }
 }
 
@@ -128,7 +129,7 @@
   box-shadow: var(--shadow-float);
 }
 /* The action (OneFin's "Withdraw"): a flat ink fill, white on dark, a soft drop and nothing else. */
-@utility shadow-action {
+@utility shadow-pill {
   box-shadow: var(--shadow-action);
 }
 /* An icon tile: flat lavender with an ink glyph. Violet tiles (bg-accent) and white ones are plain classes. */
