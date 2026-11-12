@@ -32,7 +32,8 @@
   import { daysBetween, lastWeek, timeOf } from '$lib/model/dates';
   import { proteinBand, roundTarget, sessionKcal } from '$lib/model/engine';
   import { num } from '$lib/model/format';
-  import { weighIn } from '../flows/log/weigh';
+  // the weigh-in flow loads on first use: it brings the onboarding limits with it
+  const weighIn = (date: string) => import('../flows/log/weigh').then((m) => m.weighIn(date));
   import type { Meal, Session } from '../../shared/records';
 
   // a new device after sign in: nothing local yet, the first pull is on its way
