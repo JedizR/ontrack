@@ -31,8 +31,10 @@
   let rowH = 0;
   // the row under the band while the finger moves; index is written only once the scroll settles
   let live = $state(index);
-  // scroll events from a move made in code are ignored until this time
+  // scroll events from a move made in code are ignored until this time, unless a finger takes over
   let ignoreUntil = 0;
+  // a finger is on the column: nothing settles under it
+  let touching = false;
   let frame = 0;
   let settle: ReturnType<typeof setTimeout> | undefined;
   const last = $derived(labels.length - 1);
@@ -58,17 +60,34 @@
   }
   const go = (i: number) => choose(fit(i));
 
-  function onscroll() {
-    if (!el || !rowH || performance.now() < ignoreUntil) return;
-    cancelAnimationFrame(frame);
-    frame = requestAnimationFrame(() => { if (el) live = fit(Math.round(el.scrollTop / rowH)); });
+  /** Safari before 26.2 has no scrollend: settle 120 ms after the last scroll event, once the finger is up */
+  function later() {
     clearTimeout(settle);
-    // Safari before 26.2 has no scrollend: settle 120 ms after the last scroll event
     if (!('onscrollend' in window)) settle = setTimeout(commit, 120);
   }
+  function onscroll() {
+    if (!el || !rowH) return;
+    later();
+    if (performance.now() < ignoreUntil) return;
+    cancelAnimationFrame(frame);
+    frame = requestAnimationFrame(() => { if (el) live = fit(Math.round(el.scrollTop / rowH)); });
+  }
+  function grab() {
+    touching = true;
+    ignoreUntil = 0;
+    clearTimeout(settle);
+  }
+  function release() {
+    touching = false;
+    // a lift with nothing left to scroll sends no scrollend: settle anyway (commit waits for a row on the band)
+    clearTimeout(settle);
+    settle = setTimeout(commit, 120);
+  }
   function commit() {
-    if (!el || !rowH || performance.now() < ignoreUntil) return;
+    if (!el || !rowH || touching || performance.now() < ignoreUntil) return;
     const i = fit(Math.round(el.scrollTop / rowH));
+    // still gliding between rows: the snap will bring a row to the band and settle again
+    if (Math.abs(el.scrollTop - i * rowH) > 1) return later();
     if (i !== index) choose(i);
     else live = i;
   }
@@ -129,6 +148,10 @@
   data-no-swipe
   {onscroll}
   onscrollend={commit}
+  ontouchstart={grab}
+  ontouchend={release}
+  ontouchcancel={release}
+  onpointerdown={() => (ignoreUntil = 0)}
   onkeydown={key}
   onclick={tap}
 >

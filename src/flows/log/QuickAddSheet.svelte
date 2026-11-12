@@ -9,7 +9,7 @@
   import { deleteMeal, saveMeal, undoToast } from '$lib/actions';
   import { stampOn } from '$lib/model/dates';
   import { num } from '$lib/model/format';
-  import { parse } from '$lib/wheel';
+  import { parse, parseWhole } from '$lib/wheel';
   import { haptic } from '$lib/haptics';
   import { t } from '$lib/i18n';
 
@@ -27,7 +27,7 @@
     if (sheets.quick) untrack(() => { kcalText = ''; macroText = { protein: '', carbs: '', fat: '' }; name = ''; });
   });
 
-  const kcal = $derived(Math.round(parse(kcalText)) || 0);
+  const kcal = $derived(Math.round(parseWhole(kcalText)) || 0);
   const grams = (m: Macro) => (macroText[m].trim() ? parse(macroText[m]) : 0);
   const error = $derived(
     kcal > MAX_KCAL ? t.quick.tooMuch(num(MAX_KCAL))

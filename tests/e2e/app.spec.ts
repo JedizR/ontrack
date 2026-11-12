@@ -137,6 +137,13 @@ test('holding the stepper repeats, an undo toast undoes, the sync mark explains 
   await expect(field).toHaveValue('125');
   await more.click();
   await expect(field).toHaveValue('135');
+  // a whole number counter: a comma groups thousands, a fraction rounds
+  await field.fill('1,250');
+  await field.press('Enter');
+  await expect(field).toHaveValue('1250');
+  await field.fill('12.6');
+  await field.press('Enter');
+  await expect(field).toHaveValue('13');
 
   await page.getByRole('button', { name: 'Show an undo toast' }).click();
   await page.getByRole('button', { name: 'Undo', exact: true }).click();

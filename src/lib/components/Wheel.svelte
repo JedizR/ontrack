@@ -4,7 +4,7 @@
 <script lang="ts">
   import { tick } from 'svelte';
   import WheelColumn from './WheelColumn.svelte';
-  import { count, indexOf, join, parse, snap, split, valueAt } from '$lib/wheel';
+  import { count, indexOf, join, parse, parseWhole, snap, split, valueAt } from '$lib/wheel';
   import { num } from '$lib/model/format';
   import { t } from '$lib/i18n';
 
@@ -64,7 +64,7 @@
   function done(keep: boolean) {
     if (!typing) return;
     if (keep && !cancelled) {
-      const v = parse(field?.value ?? '');
+      const v = (decimals ? parse : parseWhole)(field?.value ?? '');
       if (!Number.isNaN(v)) {
         set(snap(v, min, max, decimals ? 0.1 : step));
         if (v < min || v > max) onclamp?.(v);

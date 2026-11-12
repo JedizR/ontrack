@@ -13,7 +13,7 @@
   import { picker } from '$lib/picker.svelte';
   import Breakdown from '../plan/Breakdown.svelte';
   import { t } from '$lib/i18n';
-  import { START, goalWeightOf, inputOf, minGoalWeightKg, weightWheel, type Draft } from './draft';
+  import { LIMITS, START, goalWeightOf, inputOf, minGoalWeightKg, weightWheel, type Draft } from './draft';
 
   let { d, year, set, back, onsave }: {
     d: Draft;
@@ -55,7 +55,7 @@
     const { min, max } = V.bodyFatRange;
     // whole percent on the wheel: a stored 18.5 shows as 19 and stays 18.5 unless the wheel moves
     const was = d.bodyFatPct ? Math.round(d.bodyFatPct) : undefined;
-    const v = await picker.ask({ title: t.plan.bodyFat, value: was ?? START.bodyFatPct, min, max, unit: t.after.percent, hint: t.plan.bodyFatHint, clearable: was !== undefined, range: t.plan.bodyFatRange(num(min), num(max)) });
+    const v = await picker.ask({ title: t.plan.bodyFat, value: was ?? START.bodyFatPct, min, max, unit: t.after.percent, hint: t.plan.bodyFatHint, clearable: was !== undefined, range: () => t.plan.bodyFatRange(num(min), num(max)) });
     if (v === null || v === was) return;
     set({ bodyFatPct: v === 0 ? undefined : v });
   }
@@ -68,10 +68,12 @@
     const start = Math.min(max, Math.max(min, shown(goal ?? d.weightKg ?? START.weightKg)));
     const v = await picker.ask({
       title: t.plan.goalWeight, value: start, min, max, decimals: 1, unit: metric ? t.after.kg : t.after.lb,
-      hint: t.plan.goalWeightHint, clearable: !!goal, range: t.plan.goalWeightLow(weightText(minGoalWeightKg(d), d.units)),
+      hint: t.plan.goalWeightHint, clearable: !!goal,
+      range: (typed) => (typed < min ? t.plan.goalWeightLow(weightText(minGoalWeightKg(d), d.units)) : t.body.weightRange(weightText(LIMITS.weightKg[0], d.units, 0), weightText(LIMITS.weightKg[1], d.units, 0))),
     });
     if (v === null) return;
-    set({ goalWeightKg: v === 0 ? undefined : round(metric ? v : lbToKg(v), 2) });
+    // rounding a lb value to 0.01 kg must not drop it under the floor it was picked at
+    set({ goalWeightKg: v === 0 ? undefined : Math.max(minGoalWeightKg(d), round(metric ? v : lbToKg(v), 2)) });
   }
 </script>
 

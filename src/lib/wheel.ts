@@ -25,5 +25,7 @@ export function parse(text: string) {
   const t = text.trim().replace(',', '.');
   return t === '' ? NaN : Number(t);
 }
+/** A typed whole number: commas and spaces are thousands separators ("1,500" is 1500). */
+export const parseWhole = (text: string) => parse(text.replace(/[,\s]/g, ''));
 /** A typed value made legal: inside min and max, on a row. */
 export const snap = (v: number, min: number, max: number, step: number) => valueAt(indexOf(clamp(v, min, max), min, step), min, step);

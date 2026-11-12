@@ -11,11 +11,12 @@
 
   const o = $derived(picker.opts);
   let value = $state(0);
-  let clamped = $state(false);
+  // the typed value that was brought inside the range, while its message shows
+  let clamped = $state<number | null>(null);
   // every ask() assigns a fresh opts object: start from its value
   $effect(() => {
     const op = picker.opts;
-    untrack(() => { value = op?.value ?? 0; clamped = false; });
+    untrack(() => { value = op?.value ?? 0; clamped = null; });
   });
 
   function save() {
@@ -26,9 +27,9 @@
 
 <Sheet bind:open={() => picker.open, (v) => { if (!v) picker.finish(null); }} title={o?.title ?? ''} testid="picker" layer="top">
   {#if o}
-    <p class="text-caption text-ink-2 min-h-[1lh]" role={clamped ? 'alert' : undefined} data-testid="picker-hint">{clamped && o.range ? o.range : (o.hint ?? '')}</p>
+    <p class="text-caption text-ink-2 min-h-[1lh]" role={clamped !== null ? 'alert' : undefined} data-testid="picker-hint">{clamped !== null && o.range ? o.range(clamped) : (o.hint ?? '')}</p>
     <div class="mt-2">
-      <Wheel bind:value min={o.min} max={o.max} step={o.step} decimals={o.decimals} unit={o.unit} label={o.title} testid="picker-wheel" onchange={() => (clamped = false)} onclamp={() => (clamped = true)} />
+      <Wheel bind:value min={o.min} max={o.max} step={o.step} decimals={o.decimals} unit={o.unit} label={o.title} testid="picker-wheel" onchange={() => (clamped = null)} onclamp={(v) => (clamped = v)} />
     </div>
   {/if}
   {#snippet footer()}

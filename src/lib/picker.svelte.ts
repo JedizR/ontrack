@@ -14,8 +14,8 @@ export interface PickerOptions {
   saveLabel?: (v: number) => string;
   /** offer Clear, which answers 0 */
   clearable?: boolean;
-  /** a typed value outside min and max: the words that say the range */
-  range?: string;
+  /** a typed value outside min and max: the words that say the range, which may depend on the side it fell */
+  range?: (typed: number) => string;
 }
 export type PickerResult = number | null;
 

@@ -3,7 +3,7 @@
 <script lang="ts">
   import Minus from '@lucide/svelte/icons/minus';
   import Plus from '@lucide/svelte/icons/plus';
-  import { parse } from '$lib/wheel';
+  import { parse, parseWhole } from '$lib/wheel';
   import { t } from '$lib/i18n';
 
   let {
@@ -51,8 +51,10 @@
   }
   $effect(() => stop);
 
+  // a whole number counter (days, sets, minutes) keeps whole numbers; grams keep what was typed
+  const whole = $derived(step % 1 === 0 && min % 1 === 0);
   function typed(el: HTMLInputElement) {
-    const v = parse(el.value);
+    const v = whole ? Math.round(parseWhole(el.value)) : parse(el.value);
     if (!Number.isNaN(v)) value = fit(v);
     el.value = String(value);
   }
@@ -89,7 +91,7 @@
       autocomplete="off"
       aria-label={label}
       value={String(value)}
-      class="num h-11 bg-transparent text-center font-semibold outline-none focus-visible:underline"
+      class="num h-11 min-w-11 bg-transparent text-center font-semibold outline-none focus-visible:underline"
       style="width: {(editing ? longest : Math.max(String(value).length, 1)) + 0.5}ch; font-size: max(16px, var(--t-heading))"
       data-vaul-no-drag
       onfocus={(e) => { editing = true; e.currentTarget.select(); }}

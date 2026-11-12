@@ -24,7 +24,7 @@ export async function weighIn(date: string) {
     unit: metric ? t.after.kg : t.after.lb,
     hint: t.weigh.hint,
     saveLabel: (v) => t.weigh.save(weightText(kgOf(v), units)),
-    range: t.body.weightRange(weightText(LIMITS.weightKg[0], units, 0), weightText(LIMITS.weightKg[1], units, 0)),
+    range: () => t.body.weightRange(weightText(LIMITS.weightKg[0], units, 0), weightText(LIMITS.weightKg[1], units, 0)),
   });
   if (v === null) return;
   const kg = Math.round(kgOf(v) * 100) / 100;

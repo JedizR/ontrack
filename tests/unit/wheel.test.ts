@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { count, indexOf, join, parse, snap, split, valueAt } from '../../src/lib/wheel';
+import { count, indexOf, join, parse, parseWhole, snap, split, valueAt } from '../../src/lib/wheel';
 
 describe('rows', () => {
   test('a value and its row go round trip', () => {
@@ -29,6 +29,10 @@ describe('whole and tenths', () => {
 
 describe('typing', () => {
   test('a comma reads as a point', () => expect(parse('82,4')).toBe(82.4));
+  test('in a whole number a comma groups thousands', () => {
+    expect(parseWhole('1,500')).toBe(1500);
+    expect(parseWhole(' 2 460 ')).toBe(2460);
+  });
   test('empty and words are not numbers', () => {
     expect(parse('')).toBeNaN();
     expect(parse('abc')).toBeNaN();
