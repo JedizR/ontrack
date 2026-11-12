@@ -10,6 +10,7 @@
   import { onMount, type Component } from 'svelte';
   import Check from '@lucide/svelte/icons/check';
   import Ellipsis from '@lucide/svelte/icons/ellipsis';
+  import ChevronRight from '@lucide/svelte/icons/chevron-right';
   import Search from '@lucide/svelte/icons/search';
   import Hash from '@lucide/svelte/icons/hash';
   import Bookmark from '@lucide/svelte/icons/bookmark';
@@ -96,6 +97,11 @@
   const weights = $derived(db.live('weight').map((r) => r.data.date));
   const lastWeigh = $derived(weights.filter((d) => d <= view.today).sort().at(-1));
   const weighCard = $derived(!view.past && !checkinCard && !!profile && weighInDue(weights, view.today));
+  // O1: the first two days on the phone that saved the plan, until a meal is logged and the next weigh-in is in
+  const startDay = $derived(prefs.firstDay);
+  const mealDone = $derived(allMeals.length > 0);
+  const weighDone = $derived(!!startDay && weights.some((d) => d > startDay));
+  const firstCard = $derived(!view.past && !!startDay && daysBetween(startDay, view.today) <= 1 && !(mealDone && weighDone));
 
   const ICON: Record<Meal['method'], Component<{ size?: number; strokeWidth?: number }>> = { photo: Camera, text: TextIcon, search: Search, quick: Hash, saved: Bookmark, supplement: ShakerIcon, barcode: ScanBarcode };
   const titleOf = (m: Meal) => m.title || m.items[0]?.name || t.source.manual;
@@ -125,6 +131,24 @@
   /** the appear effect for the nth card, on the first paint only */
   const rise = (i: number) => (animate ? { class: 'appear', style: `--i: ${i}` } : {});
 </script>
+
+{#snippet step(label: string, done: boolean, onclick?: () => void, testid?: string)}
+  {@const mark = done ? 'bg-ink text-canvas' : 'ring-ink-3 ring-2 ring-inset'}
+  <li>
+    {#if onclick && !done}
+      <button type="button" class="active:bg-surface-2 -mx-6 flex min-h-11 w-[calc(100%+var(--inset)*2)] items-center gap-3 px-6 py-2 text-left transition-colors duration-[var(--d-press)]" {onclick} data-testid={testid}>
+        <span class="size-6 flex-none rounded-full {mark}" aria-hidden="true"></span>
+        <span class="text-body text-accent-ink flex-1 font-semibold">{label}</span>
+        <ChevronRight class="text-ink-2 flex-none" size={20} strokeWidth={2} aria-hidden="true" />
+      </button>
+    {:else}
+      <div class="flex min-h-11 items-center gap-3 py-2" aria-label={done ? t.firstDay.done(label) : undefined} data-testid={testid}>
+        <span class="grid size-6 flex-none place-items-center rounded-full {mark}" aria-hidden="true">{#if done}<Check size={16} strokeWidth={3} />{/if}</span>
+        <span class="text-body flex-1 {done ? 'text-ink-2' : ''}">{label}</span>
+      </div>
+    {/if}
+  </li>
+{/snippet}
 
 <section aria-label={t.tabs.today} data-testid="tab-today" class="flex flex-col gap-4 pt-1">
   {#if sync.status === 'auth'}
@@ -200,6 +224,17 @@
           </div>
           <Button size="sm" onclick={() => weighIn(view.today)} data-testid="weigh-open">{t.weigh.action}</Button>
         </div>
+      </Card>
+    {:else if firstCard}
+      <!-- SCREENS.md section 4, after onboarding: a true head start (the plan is saved), then the two first habits -->
+      {@const tomorrow = view.today === startDay}
+      <Card data-testid="first-day" {...rise(2)}>
+        <h2 class="text-body font-semibold">{t.firstDay.title}</h2>
+        <ul class="mt-2 -mb-2 flex flex-col">
+          {@render step(t.firstDay.saved, true)}
+          {@render step(t.firstDay.meal, mealDone, () => (sheets.add = true), 'first-meal')}
+          {@render step(tomorrow ? t.firstDay.weighTomorrow : t.firstDay.weighToday, weighDone, tomorrow ? undefined : () => weighIn(view.today), 'first-weigh')}
+        </ul>
       </Card>
     {/if}
 

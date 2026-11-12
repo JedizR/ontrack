@@ -62,9 +62,13 @@ function report(name: string, log: Log, ms: number) {
 
 test.describe.configure({ mode: 'serial' });
 
-// The flow before O1 (main at 0460b12), measured with this file before the redesign:
-// gain: 11 screens, 13 taps and 3 drags; cut: 11 screens, 12 taps and 3 drags. Times in the pull request.
-test('old flow, a typical gain user (vector A)', async ({ page }) => {
+// The flow before O1 (main at 0460b12), walked with this file before the redesign, same users and same model:
+//   gain: 11 screens, 13 taps and 3 drags (16 gestures), 336 words, modelled 119 s, automated walk 5.0 s
+//   cut:  11 screens, 12 taps and 3 drags (15 gestures), 345 words, modelled 119 s, automated walk 4.9 s
+// The phone's region is Thailand, so the body screen starts in metric, as the owner's users' phones would.
+test.use({ locale: 'en-TH' });
+
+test('a typical gain user (vector A: 25, 175 cm, 60 kg, lifts 4 days)', async ({ page }) => {
   await openFresh(page);
   const w = walker(page);
   await w.at('welcome');
@@ -74,7 +78,6 @@ test('old flow, a typical gain user (vector A)', async ({ page }) => {
   await w.tap('choice-gain');
   await w.at('step-screening');
   await w.tap('screen-none');
-  await w.tap('continue');
   await w.at('step-sex');
   await w.tap('choice-male');
   await w.at('step-born');
@@ -86,21 +89,19 @@ test('old flow, a typical gain user (vector A)', async ({ page }) => {
   await w.tap('continue');
   await w.at('step-move');
   await w.tap('choice-seated');
-  await w.at('step-train');
-  w.log.at(-1)!.taps++;
-  await page.getByRole('button', { name: 'More Days a week' }).click();
-  await w.tap('continue');
+  await w.at('step-days');
+  await w.tap('days-4');
+  await w.at('step-kind');
+  await w.tap('choice-lifting');
   await w.at('step-experience');
   await w.tap('choice-beginner');
-  await w.at('step-pace');
-  await w.tap('choice-0.5');
   await w.at('your-plan');
   await w.tap('plan-save');
   await expect(page.getByTestId('signin-sheet')).toBeVisible();
-  report('old gain', w.log, Date.now() - t0);
+  report('new gain', w.log, Date.now() - t0);
 });
 
-test('old flow, a typical cut user', async ({ page }) => {
+test('a typical cut user (32, 165 cm, 75 kg, some walking, lifts 3 days)', async ({ page }) => {
   await openFresh(page);
   const w = walker(page);
   await w.at('welcome');
@@ -110,7 +111,6 @@ test('old flow, a typical cut user', async ({ page }) => {
   await w.tap('choice-lose');
   await w.at('step-screening');
   await w.tap('screen-none');
-  await w.tap('continue');
   await w.at('step-sex');
   await w.tap('choice-female');
   await w.at('step-born');
@@ -122,14 +122,12 @@ test('old flow, a typical cut user', async ({ page }) => {
   await w.tap('continue');
   await w.at('step-move');
   await w.tap('choice-light');
-  await w.at('step-train');
-  await w.tap('continue');
-  await w.at('step-experience');
-  await w.tap('choice-beginner');
-  await w.at('step-pace');
-  await w.tap('choice-0.5');
+  await w.at('step-days');
+  await w.tap('days-3');
+  await w.at('step-kind');
+  await w.tap('choice-lifting');
   await w.at('your-plan');
   await w.tap('plan-save');
   await expect(page.getByTestId('signin-sheet')).toBeVisible();
-  report('old cut', w.log, Date.now() - t0);
+  report('new cut', w.log, Date.now() - t0);
 });

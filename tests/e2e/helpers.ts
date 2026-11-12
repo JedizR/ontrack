@@ -186,20 +186,26 @@ export type Answers = {
   screening?: ('pregnant' | 'medical' | 'eatingDisorder')[];
   sex?: 'male' | 'female' | 'unspecified';
   year?: string;
+  /** the tests' phone says en-US, so the screen starts in imperial; metric unless said */
   units?: 'metric' | 'imperial';
   /** cm, or feet and inches as "5 6" */
   height?: string;
   /** kg or lb */
   weight?: string;
   neat?: 'seated' | 'light' | 'moving' | 'physical';
-  /** the default custom week, a days count for strength sessions, a template id, or later */
-  train?: 'default' | number | 'later' | string;
+  /** training days a week, 0 for Not yet; 4 by default */
+  days?: number;
+  /** what is trained; lifting by default */
+  kind?: 'lifting' | 'cardio' | 'both';
   experience?: 'beginner' | 'intermediate' | 'advanced';
-  /** a pace rate, or the default */
+  /** a pace rate, picked on Your plan; the default otherwise */
   pace?: number;
 };
 
-/** From Welcome to Your plan. Defaults are vector A of docs/SCIENCE.md. */
+/** The pace control's label for a rate (SCIENCE.md section 6). */
+export const PACE = { lose: { 0.25: 'Gentle', 0.5: 'Steady', 0.75: 'Faster' }, gain: { 0.25: 'Lean', 0.5: 'Standard', 0.75: 'Faster' } } as const;
+
+/** From Welcome to Your plan. Defaults are vector A of docs/SCIENCE.md. Single answers advance on tap. */
 export async function onboard(page: Page, a: Answers) {
   await expect(page.getByTestId('welcome-start')).toBeVisible({ timeout: FIRST_PAINT });
   await page.getByTestId('welcome-start').click();
@@ -208,10 +214,13 @@ export async function onboard(page: Page, a: Answers) {
   await expect(page.getByTestId('step-screening')).toBeVisible();
   for (const k of a.screening ?? []) await page.getByTestId(`screen-${k}`).click();
   if (!a.screening?.length) await page.getByTestId('screen-none').click();
-  await page.getByTestId('continue').click();
-  if (a.screening?.length) await page.getByTestId('advice-continue').click();
+  else {
+    await page.getByTestId('continue').click();
+    await page.getByTestId('advice-continue').click();
+  }
 
   await page.getByTestId(`choice-${a.sex ?? 'male'}`).click();
+  await expect(page.getByTestId('step-born')).toBeVisible();
   await wheelType(page, 'wheel-year', a.year ?? '2001');
   await page.getByTestId('continue').click();
   await expect(page.getByTestId('step-body')).toBeVisible();
@@ -222,32 +231,21 @@ export async function onboard(page: Page, a: Answers) {
     await wheelType(page, 'wheel-height-in', inches);
     await wheelType(page, 'wheel-weight', a.weight ?? '132');
   } else {
+    await page.getByRole('radio', { name: 'Metric' }).click();
     await wheelType(page, 'wheel-height', a.height ?? '175');
     await wheelType(page, 'wheel-weight', a.weight ?? '60');
   }
   await page.getByTestId('continue').click();
   await page.getByTestId(`choice-${a.neat ?? 'seated'}`).click();
 
-  await expect(page.getByTestId('step-train')).toBeVisible();
-  const train = a.train ?? 4;
-  if (train === 'later') await page.getByTestId('train-later').click();
-  else if (typeof train === 'string' && train !== 'default') {
-    await page.getByTestId('train-choose').click();
-    await page.getByTestId(`template-${train}`).click();
-  } else {
-    if (typeof train === 'number') for (let n = 3; n < train; n++) await page.getByRole('button', { name: 'More Days a week' }).click();
-    await page.getByTestId('continue').click();
-  }
+  const days = a.days ?? 4;
+  await page.getByTestId(`days-${days}`).click();
+  if (days) await page.getByTestId(`choice-${a.kind ?? 'lifting'}`).click();
 
   const exp = page.getByTestId('step-experience');
-  const pace = page.getByTestId('step-pace');
   const plan = page.getByTestId('your-plan');
-  await expect(exp.or(pace).or(plan)).toBeVisible();
+  await expect(exp.or(plan)).toBeVisible();
   if (await exp.isVisible()) await page.getByTestId(`choice-${a.experience ?? 'beginner'}`).click();
-  await expect(pace.or(plan)).toBeVisible();
-  if (await pace.isVisible()) {
-    if (a.pace === undefined) await page.getByTestId('continue').click();
-    else await page.getByTestId(`choice-${a.pace}`).click();
-  }
   await expect(plan).toBeVisible();
+  if (a.pace !== undefined && a.goal !== 'maintain') await page.getByTestId('plan-pace').getByRole('radio', { name: PACE[a.goal][a.pace as 0.5] }).click();
 }

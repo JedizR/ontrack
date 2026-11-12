@@ -406,17 +406,18 @@ export const en = {
     q: 'What do you train?',
     caption: 'Sport counts as cardio.',
     lifting: 'Lifting',
-    liftingLine: 'Weights or bodyweight, an hour a session.',
+    // the session lengths show on Your plan, so the answers only say what each covers
+    liftingLine: 'Weights or bodyweight',
     cardio: 'Cardio',
-    cardioLine: 'Running, cycling, swimming, half an hour.',
+    cardioLine: 'Running, cycling, swimming',
     both: 'Both',
-    bothLine: 'They take turns, lifting first.',
+    bothLine: 'Taking turns, lifting first',
   },
   /** O1: the Train tab's suggestion from the onboarding answers (onboarding RESEARCH section 5) */
   suggest: {
     title: 'Suggested for your week',
     line: (name: string, days: string) => `${name} fits ${days} ${days === '1' ? 'day' : 'days'} a week.`,
-    gainLine: (name: string) => `${name} adds the two strength sessions a week that help a gain go to muscle.`,
+    gainLine: (name: string) => `${name} adds the two strength sessions a week that health guidelines advise.`,
     use: 'Use this program',
     later: 'Not now',
   },
