@@ -32,15 +32,30 @@ export const savePlan = (p: Plan) => write('plan', uid(), p).id;
 export const saveProgram = (p: Program) => write('program', ids.program(), p);
 export const logWeight = (date: string, kg: number) => write('weight', ids.weight(date), { date, kg });
 export const deleteWeight = (date: string) => remove('weight', ids.weight(date));
-export const saveMeal = (m: Meal, id = uid()) => write('meal', id, m).id;
+export const saveMeal = (m: Meal, id: string = uid()) => write('meal', id, m).id;
 export const deleteMeal = (id: string) => remove('meal', id);
 export const saveMealThumb = (mealId: string, jpeg: Blob) => db.saveThumb(mealId, jpeg);
-export const saveSaved = (s: Saved, id = uid()) => write('saved', id, s).id;
+export const saveSaved = (s: Saved, id: string = uid()) => write('saved', id, s).id;
 export const deleteSaved = (id: string) => remove('saved', id);
 export function useSaved(id: string, at: string) {
   const s = db.get('saved', id);
   if (s) write('saved', id, { ...s, uses: s.uses + 1, lastUsedAt: at });
 }
+/** A logged meal again, on a day: same title and items, a fresh time, no photo. Returns the new meal's id. */
+export function logAgain(m: Meal, date: string, at: string) {
+  return saveMeal({ date, at, title: m.title, method: m.method === 'photo' ? 'saved' : m.method, items: m.items });
+}
+/** A saved meal logged on a day; it counts a use. Returns how to take both back. */
+export function logSaved(id: string, date: string, at: string) {
+  const s = db.get('saved', id);
+  if (!s) return null;
+  const was = JSON.parse(JSON.stringify(s)) as Saved; // a plain copy of the store's proxy, for undo
+  const mealId = saveMeal({ date, at, title: s.title, method: 'saved', items: s.items });
+  useSaved(id, at);
+  return () => { deleteMeal(mealId); saveSaved(was, id); };
+}
+/** Keep a meal to log again from Saved. */
+export const saveAsMeal = (m: Meal, title: string) => saveSaved({ title, items: m.items, uses: 0, lastUsedAt: m.at });
 export const logSession = (l: SessionLog) => write('slog', ids.slog(l.date, l.sessionKey), l);
 export const clearSessionLog = (date: string, key: string) => remove('slog', ids.slog(date, key));
 export const saveCheckin = (c: Checkin) => write('checkin', ids.checkin(c.date), c);

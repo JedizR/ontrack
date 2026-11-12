@@ -1,7 +1,8 @@
 <!-- DESIGN.md section 7, Week strip: seven equal cells, a weekday letter, the date, and a dot when the day was on track.
-     Today is an ink pill. Days after today cannot be picked. -->
+     Today is an ink pill. Days after today cannot be picked. Today passes the seven days ending today (F3). -->
 <script lang="ts">
   import { t } from '$lib/i18n';
+  import { weekdayOf } from '$lib/model/dates';
 
   let {
     days,
@@ -9,7 +10,7 @@
     selected = today,
     onselect,
   }: {
-    /** Monday to Sunday, YYYY-MM-DD local days */
+    /** seven consecutive YYYY-MM-DD local days */
     days: { date: string; onTrack: boolean }[];
     today: string;
     selected?: string;
@@ -25,7 +26,7 @@
 </script>
 
 <nav class="grid grid-cols-7" aria-label={t.week.label} data-testid="week">
-  {#each days as d, i (d.date)}
+  {#each days as d (d.date)}
     {@const isToday = d.date === today}
     {@const picked = d.date === selected && !isToday}
     {@const name = fmt.format(local(d.date))}
@@ -43,7 +44,7 @@
         class="text-caption mx-0.5 grid justify-items-center gap-1 rounded-md py-2 transition-colors duration-[var(--d-press)]
           {isToday ? 'bg-ink text-canvas' : picked ? 'bg-surface-2 text-ink-2' : 'text-ink-2 group-enabled:group-active:bg-surface-2'}"
       >
-        {t.week.letters[i]}
+        {t.week.letters[weekdayOf(d.date)]}
         <b class="text-body num font-semibold {isToday ? 'text-canvas' : 'text-ink'}">{local(d.date).getDate()}</b>
         <i class="size-1.25 rounded-full {d.onTrack ? (isToday ? 'bg-lime' : 'bg-lime-ink') : ''}"></i>
       </span>

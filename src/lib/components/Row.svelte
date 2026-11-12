@@ -11,6 +11,7 @@
     trailing,
     onclick,
     testid,
+    wrap = false,
   }: {
     title: string;
     caption?: string | Snippet;
@@ -22,14 +23,17 @@
     trailing?: Snippet;
     onclick?: () => void;
     testid?: string;
+    /** the trailing control moves under the title when they cannot share a line (large text on a small phone) */
+    wrap?: boolean;
   } = $props();
 </script>
 
 {#snippet body()}
   {#if leading}<div class="size-11 flex-none overflow-hidden rounded-sm">{@render leading()}</div>{/if}
   <!-- the hairline sits on this box so it starts where the text starts -->
-  <div class="border-line flex min-w-0 flex-1 items-center gap-3 self-stretch py-4 [*+*>&]:border-t">
-    <div class="min-w-0 flex-1 text-left">
+  <div class="border-line flex min-w-0 flex-1 items-center gap-3 self-stretch py-4 [*+*>&]:border-t {wrap ? 'flex-wrap justify-end gap-y-2' : ''}">
+    <!-- wrapping: the title keeps room for a word of about eight letters before the trailing control gives way -->
+    <div class="min-w-0 flex-1 text-left {wrap ? 'basis-[5.5em]' : ''}">
       <div class="text-body line-clamp-2 font-semibold">{title}</div>
       <!-- title and caption wrap rather than cut off a food name or a number ("Adds 240 kcal") -->
       {#if typeof caption === 'function'}

@@ -2,7 +2,7 @@
 import 'fake-indexeddb/auto';
 import { beforeAll, expect, test } from 'vitest';
 import { db } from '../../src/lib/db/store.svelte';
-import { deleteMeal, logWeight, saveMeal } from '../../src/lib/actions';
+import { deleteMeal, logAgain, logSaved, logWeight, saveMeal, saveSaved } from '../../src/lib/actions';
 
 beforeAll(() => db.open('actions-test'));
 
@@ -24,4 +24,19 @@ test('a delete is a tombstone with an undo that brings the record back, newer', 
   undo();
   expect(db.get('meal', id)?.title).toBe('Rice');
   expect(db.data.meal[id].updatedAt).toBeGreaterThan(before);
+});
+
+test('a meal logs again with a fresh day and time; a saved meal counts a use, and its undo takes both back', () => {
+  const items = [{ name: 'Oats', grams: 80, kcal: 303, protein: 10.5, carbs: 54, fat: 5.5, source: 'db' as const }];
+  const again = logAgain({ date: '2026-11-10', at: '2026-11-10T01:00:00.000Z', title: 'Oats', method: 'photo', items, thumb: true }, '2026-11-12', '2026-11-12T02:00:00.000Z');
+  expect(db.get('meal', again)).toEqual({ date: '2026-11-12', at: '2026-11-12T02:00:00.000Z', title: 'Oats', method: 'saved', items });
+
+  const sid = saveSaved({ title: 'Breakfast', items, uses: 2, lastUsedAt: '2026-11-01T01:00:00.000Z' });
+  const undo = logSaved(sid, '2026-11-12', '2026-11-12T03:00:00.000Z')!;
+  const meal = Object.values(db.data.meal).find((r) => r.data.at === '2026-11-12T03:00:00.000Z')!;
+  expect(meal.data.method).toBe('saved');
+  expect(db.get('saved', sid)?.uses).toBe(3);
+  undo();
+  expect(db.get('meal', meal.id)).toBeUndefined();
+  expect(db.get('saved', sid)).toEqual({ title: 'Breakfast', items, uses: 2, lastUsedAt: '2026-11-01T01:00:00.000Z' });
 });

@@ -1,8 +1,9 @@
-<!-- DESIGN.md section 7, Source label: where a meal's numbers came from. An estimate carries a small outlined circle. No colour. -->
+<!-- DESIGN.md section 7, Source label: where a meal's numbers came from. An estimate carries a small outlined circle. No colour.
+     Numbers typed in by hand read Quick add. -->
 <script lang="ts">
   import { t } from '$lib/i18n';
 
-  let { source }: { source: 'database' | 'estimate' } = $props();
+  let { source }: { source: 'database' | 'estimate' | 'manual' } = $props();
 </script>
 
 <span class="inline-flex items-center gap-1">

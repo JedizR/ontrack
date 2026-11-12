@@ -13,7 +13,7 @@ Status is one of: not started, in progress, shipped, shipped with cuts, blocked.
 | M2 | Engine | shipped | PR #6, merged, `v0.2.0` | 19 sources checked; 3 values kept against their source, on the owner's review list |
 | M3 | Data, sync, sign-in | shipped with cuts | PR #7, merged, `v0.3.0` | Conformance green on mock and live. Live sign in blocked: no Google client, no SMTP for codes. No Privacy and Terms line |
 | M4 | Onboarding and plan | shipped with cuts | PR #8, merged, `v0.4.0` | Gate green on the mock. Saving on production waits for live sign in (M3 blockers). Templates without muscle balance until M7 |
-| M5 | Today and logging | not started | | |
+| M5 | Today and logging | shipped with cuts | PR #9, open | Gate green on the mock. Three meals do not fit 390 by 844 without scrolling (as in the M1 reference). No install notice card, no deleting a saved meal |
 | M6 | Photo logging | not started | | |
 | M7 | Training | not started | | |
 | M8 | Progress and check-ins | not started | | |
@@ -62,3 +62,14 @@ M4 (onboarding and plan):
 - `KeypadSheet` is now mounted once in `App.svelte` (lazy). New components `Switch` and `Wordmark`.
 - Tests: `open(page)` signs in to a seeded onboarded account (vector A, 60 kg weigh-in on `TODAY`); `openFresh`, `toWelcome`, `seedAccount`, `onboard(page, answers)`, `keypadEnter` in `tests/e2e/helpers.ts`. `onboarding.spec.ts` runs in the light project; stress walks onboarding on every phone and text size.
 - Gate evidence: 13 onboarding tests (each goal, each guardrail, returning user, draft discarded, signed in without a plan, reload). An automated run takes about 10 s; the hardgainer path is 25 taps and 9 keypad digits before sign in.
+
+M5 (Today and logging):
+- Food table: `data/food-list.csv` (512 foods, `id,name,aliases,fdc_id,portions,tags`, lists split by `|`) -> `pnpm foods:build` (`scripts/build-foods.ts`, downloads SR Legacy into `data/usda/` when missing) -> `src/lib/data/foods.json`. `src/lib/data/foods.ts`: `loadFoods()` (lazy chunk, precached), `searchFoods`, `itemFor(food, grams)`. `oil-vegetable` and `butter` exist for M6's oil control; 127 foods carry `dense` for M9's easy adds.
+- Day math in `src/lib/model/day.ts`: `planFor`, `dayView` (target, band, macros, eaten, status, training, sessions), `totals`, `mealSource`, `recentMeals`, `recentFoods`, `weighInDue`. Engine gained `calorieBand` and `proteinBand`. `dates.ts` gained `addDays`, `daysBetween`, `lastWeek`, `timeOf`, `atTime`, `dayTitle`, `stampOn`.
+- `view` (`src/lib/view.svelte.ts`): the day on screen and the day the plus logs to; resets to today when leaving the Today tab; follows the clock.
+- Logging sheets live in `src/flows/log/`, mounted together by `LogSheets.svelte` (lazy, in `App.svelte`). Open them through `sheets` (`add`, `search`, `quick`, `how`, `meal` id, `session`). Search in pick mode: set `sheets.pick = (item) => ...` before `sheets.search = true`; Add hands back the item (Replace and Add an item in the Meal sheet). M6 adds the Photo and Describe tiles to `WAYS` in `AddSheet.svelte` and builds Review from the Meal sheet's item rows and `items.ts` (`Line`, `scaled`, `PORTIONS`).
+- Actions added: `logAgain`, `logSaved` (returns its undo), `saveAsMeal`. `SwipeRow` deletes on a left swipe; `swipe.ts` takes `commit` and lets an element that owns its gesture keep it.
+- The How it is calculated breakdown is `src/flows/plan/Breakdown.svelte`, shared by Your plan and Today.
+- Tests: the seed now carries a program (strength Monday, Wednesday, Friday, Saturday). `open(page, '/', MEALS)` adds a typical day (1,840 kcal on TODAY, 2,300 the day before, one saved meal). `today.spec.ts` (light project) covers F3, F5, F6 and offline logging. On the dev server lazy chunks load on demand, so an offline test opens Search once before going offline. Stress has `logging layout holds` per device and at the largest text.
+- Not built, on purpose: easy adds and Finish day (M9 per the build plan), the check-in card (M8), thumbnails in the meal list (M6).
+

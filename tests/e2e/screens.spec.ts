@@ -1,7 +1,7 @@
 // Visual review: every screen in its main states -> screenshots/<screen>/<state>-<theme>-<device>.png
 //   pnpm screenshots -- --grep "shell"
-import { test, type Page } from '@playwright/test';
-import { EMAIL, keypadEnter, onboard, open, openFresh, seedAccount, signIn, toWelcome, withPrefs } from './helpers';
+import { expect, test, type Page } from '@playwright/test';
+import { EMAIL, MEALS, TODAY, keypadEnter, onboard, open, openFresh, seedAccount, signIn, toWelcome, withPrefs } from './helpers';
 
 const SECTIONS = ['prefs', 'buttons', 'track', 'hero', 'rows', 'chips', 'sheets', 'week', 'feedback', 'states'];
 
@@ -199,6 +199,59 @@ for (const theme of ['light', 'dark'] as const) {
         await keypadEnter(page, '50');
         await page.getByTestId('tune-error').scrollIntoViewIfNeeded();
         await shot(page, 'onboarding', 'plan-goal-weight-refused');
+      });
+
+      // SCREENS.md sections 6 and 7: Today empty, typical and on a past day, then every logging sheet
+      test('today', async ({ page }) => {
+        const sheet = async (id: string, state: string) => {
+          await expect(page.getByTestId(id)).toHaveCSS('transform', 'none');
+          await shot(page, 'today', state);
+        };
+        await open(page, '/', [...MEALS, { collection: 'weight', id: `weight:${TODAY}`, updatedAt: 2, deleted: true, data: { date: TODAY, kg: 60 } }]);
+        await shot(page, 'today', 'typical');
+        await page.evaluate(() => scrollTo(0, document.body.scrollHeight));
+        await shot(page, 'today', 'typical-end');
+        await page.evaluate(() => scrollTo(0, 0));
+        await page.getByTestId('session-done').click();
+        await page.getByTestId('week').getByRole('button', { name: /November 10/ }).click();
+        await shot(page, 'today', 'past-day');
+        await page.getByTestId('week').getByRole('button', { name: /November 8/ }).click();
+        await shot(page, 'today', 'empty-day');
+        await page.getByRole('button', { name: 'Back to today' }).click();
+
+        await page.getByTestId('hero-open').click();
+        await sheet('how-sheet', 'how');
+        await page.keyboard.press('Escape');
+        await page.getByTestId('add').click();
+        await sheet('add-sheet', 'add');
+        await page.getByTestId('add-search').click();
+        await sheet('search-sheet', 'search-recent');
+        await page.getByTestId('search-field').fill('chicken');
+        await shot(page, 'today', 'search-results');
+        await page.getByTestId('result').first().click();
+        await shot(page, 'today', 'search-portion');
+        await page.keyboard.press('Escape');
+        await page.getByTestId('search-sheet').waitFor({ state: 'detached' });
+
+        await page.getByTestId('add').click();
+        await page.getByTestId('add-quick').click();
+        await keypadEnter(page, '350');
+        await page.getByTestId('quick-fat').click();
+        await keypadEnter(page, '12');
+        await sheet('quick-sheet', 'quick');
+        await page.keyboard.press('Escape');
+        await page.getByTestId('quick-sheet').waitFor({ state: 'detached' });
+
+        await page.getByTestId('meal').filter({ hasText: 'Chicken rice bowl' }).getByRole('button').click();
+        await sheet('meal-sheet', 'meal');
+        await page.getByTestId('meal-item').first().getByRole('button').first().click();
+        await shot(page, 'today', 'meal-item-open');
+        await page.keyboard.press('Escape');
+        await page.getByTestId('meal-sheet').waitFor({ state: 'detached' });
+
+        await page.getByTestId('session-undo').click();
+        await page.getByTestId('session-more').click();
+        await sheet('session-sheet', 'session-menu');
       });
 
       // Today composed from the real components, next to the static reference mock

@@ -23,7 +23,7 @@ export default defineConfig({
     env: { VITE_BACKEND: 'mock', VISION_PROVIDER: 'mock' },
   },
   projects: [
-    { name: 'light', testMatch: /(app|sync|onboarding)\.spec\.ts/, use: { ...phone, colorScheme: 'light' } },
+    { name: 'light', testMatch: /(app|sync|onboarding|today)\.spec\.ts/, use: { ...phone, colorScheme: 'light' } },
     { name: 'dark', testMatch: /app\.spec\.ts/, use: { ...phone, colorScheme: 'dark' } },
     { name: 'screens', testMatch: /screens\.spec\.ts/, use: { ...phone } },
     // layout only, no touch input: Chromium, viewports set per describe

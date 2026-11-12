@@ -1,0 +1,513 @@
+id,name,aliases,fdc_id,portions,tags
+rice-white,White rice,rice|steamed rice|cooked rice|khao|khao suay|khao plao|jasmine rice|basmati rice|long grain rice,168878,1 cup:158|1 plate:250|1 tbsp:10|100 g:100,staple|dense
+rice-white-medium,Medium grain white rice,calrose rice|sushi rice|japanese rice|short grain rice,168880,1 cup:186|1 bowl:150|100 g:100,staple|dense
+rice-brown,Brown rice,khao klong|khao kong|wholegrain rice|brown rice cooked,169704,1 cup:202|1 plate:250|100 g:100,staple
+rice-sticky,Sticky rice,glutinous rice|khao niao|khao niew|khao niaw|sweet rice|mochi rice,169711,1 cup:174|1 small bag:100|100 g:100,staple|dense
+rice-parboiled,Parboiled rice,converted rice|easy cook rice,169708,1 cup:158|100 g:100,staple
+rice-white-dry,Uncooked white rice,raw rice|dry rice|uncooked rice,168877,1/4 cup:46|1 cup:185|100 g:100,staple|dense
+rice-brown-dry,Uncooked brown rice,raw brown rice|dry brown rice,169703,1/4 cup:46|1 cup:185|100 g:100,staple|dense
+rice-wild,Wild rice,wild rice cooked,168897,1 cup:164|100 g:100,staple
+pasta,Pasta,spaghetti|penne|macaroni|fusilli|noodles|pasta cooked,169737,1 cup:124|1 plate:250|100 g:100,staple|dense
+pasta-wholewheat,Wholewheat pasta,whole wheat pasta|wholemeal pasta|brown pasta,168910,1 cup:117|1 plate:250|100 g:100,staple
+pasta-dry,Dry pasta,uncooked pasta|raw pasta|dry spaghetti,169736,1 serving:56|100 g:100,staple|dense
+noodles-egg,Egg noodles,bami|ba mee|mee|yellow noodles|lo mein noodles,169732,1 cup:160|1 bowl:200|100 g:100,staple
+noodles-rice,Rice noodles,sen lek|sen yai|sen mee|rice vermicelli|pho noodles|kuay teow|kway teow|guay tiew,168914,1 cup:176|1 bowl:200|100 g:100,staple
+noodles-rice-dry,Dry rice noodles,uncooked rice noodles|rice sticks,169742,1 serving:57|100 g:100,staple|dense
+noodles-soba,Soba noodles,buckwheat noodles|soba,168907,1 cup:114|1 bowl:200|100 g:100,staple
+noodles-somen,Somen noodles,somen|thin wheat noodles,168909,1 cup:176|1 bowl:200|100 g:100,staple
+noodles-glass,Glass noodles,woon sen|wun sen|cellophane noodles|mung bean noodles|bean thread,174258,1 serving:40|1 cup:140|100 g:100,staple
+noodles-instant,Instant noodles,ramen|mama noodles|maggi|cup noodles|instant ramen|mama,171177,1 pack:85|1 cup pot:65|100 g:100,staple|dense
+quinoa,Quinoa,quinoa cooked|kinwa,168917,1 cup:185|1/2 cup:93|100 g:100,staple
+couscous,Couscous,cous cous|couscous cooked,169700,1 cup:157|100 g:100,staple
+bulgur,Bulgur wheat,bulgur|bulghur|burghul|cracked wheat,170287,1 cup:182|100 g:100,staple
+barley,Pearl barley,barley|barley cooked,170285,1 cup:157|100 g:100,staple
+millet,Millet,millet cooked,168871,1 cup:174|100 g:100,staple
+buckwheat,Buckwheat,kasha|buckwheat groats,170686,1 cup:168|100 g:100,staple
+oats,Rolled oats,oats|porridge oats|oatmeal dry|quick oats|old fashioned oats,173904,1/2 cup:40|1 cup:81|1 tbsp:5|100 g:100,staple|dense
+oatmeal,Oatmeal,porridge|cooked oats|oat porridge|hot cereal,173905,1 cup:234|3/4 cup:175|100 g:100,staple
+oatmeal-instant,Instant oatmeal packet,instant oats|quaker oats packet|instant porridge,171661,1 packet:28|100 g:100,staple|dense
+grits,Grits,corn grits|polenta|cornmeal porridge,171655,1 cup:257|100 g:100,staple
+flour,Wheat flour,flour|plain flour|all purpose flour|white flour,168894,1 tbsp:8|1 cup:125|100 g:100,staple|dense
+potato-baked,Baked potato,jacket potato|potato|potatoes|roast potato,170093,1 medium:173|1 large:299|1 small:138|100 g:100,staple
+potato-boiled,Boiled potato,boiled potatoes|new potatoes|potato boiled|steamed potato,170440,1 medium:167|1/2 cup:78|100 g:100,staple
+potato-mashed,Mashed potatoes,mash|mashed potato|potato mash,168555,1 cup:210|1/2 cup:105|100 g:100,staple
+hash-browns,Hash browns,hash brown|hashbrown|potato rosti,170036,1 cup:156|1 patty:60|100 g:100,staple
+sweet-potato,Baked sweet potato,sweet potato|kumara|yam|man thet|mun thet,168483,1 medium:114|1 cup:200|100 g:100,staple
+sweet-potato-boiled,Boiled sweet potato,boiled kumara|steamed sweet potato,168484,1 medium:151|1 cup mashed:328|100 g:100,staple
+corn-cob,Corn on the cob,sweetcorn|sweet corn|corn|maize|khao pod,169999,1 ear:103|1 cup:149|100 g:100,staple
+corn-canned,Canned sweetcorn,corn kernels|canned corn|tinned sweetcorn,169214,1/2 cup:82|1 cup:164|100 g:100,staple
+tortilla-flour,Flour tortilla,wrap|tortilla|burrito wrap|soft taco,175037,1 tortilla:48|1 large:72|100 g:100,staple
+tortilla-corn,Corn tortilla,corn tortillas|taco tortilla,175036,1 tortilla:24|100 g:100,staple
+tortilla-wholewheat,Wholewheat tortilla,whole wheat wrap|wholemeal wrap,174081,1 tortilla:41|100 g:100,staple
+taco-shell,Taco shell,hard taco|taco shells,172800,1 shell:13|100 g:100,staple
+chicken-breast-grilled,Grilled chicken breast,chicken breast|chicken|grilled chicken|gai yang|chicken fillet|skinless chicken breast,171534,1 breast:196|1 serving:85|100 g:100,protein
+chicken-breast-roasted,Roast chicken breast,roasted chicken breast|baked chicken breast|oven chicken,171477,1 small breast:86|1 cup diced:140|100 g:100,protein
+chicken-breast-skin,Chicken breast with skin,roast chicken breast with skin|skin on chicken breast,171075,1 small breast:98|1 cup diced:140|100 g:100,protein
+chicken-breast-poached,Poached chicken breast,boiled chicken breast|stewed chicken|chicken soup meat|khao man gai chicken,171478,1 small breast:95|1 cup:140|100 g:100,protein
+chicken-breast-fried,Batter fried chicken breast,breaded chicken breast|crispy chicken|gai tod|fried chicken,171475,1 breast:140|100 g:100,protein
+chicken-thigh,Chicken thigh,skinless chicken thigh|chicken thigh fillet|boneless thigh,172388,1 thigh:116|100 g:100,protein
+chicken-thigh-skin,Chicken thigh with skin,roast chicken thigh|skin on thigh,173625,1 thigh:137|100 g:100,protein
+chicken-drumstick,Chicken drumstick,drumstick|chicken leg|skinless drumstick,172377,1 drumstick:46|100 g:100,protein
+chicken-drumstick-skin,Chicken drumstick with skin,roast drumstick|drumstick with skin,173612,1 drumstick:105|100 g:100,protein
+chicken-wing,Chicken wing,wings|chicken wings|buffalo wings|peek gai,173630,1 wing:34|100 g:100,protein
+chicken-wing-fried,Fried chicken wing,fried wings|peek gai tod|crispy wings,173629,1 wing:32|100 g:100,protein
+chicken-leg-roasted,Roast chicken leg,chicken leg quarter|whole leg,173617,1 leg quarter:258|100 g:100,protein
+chicken-rotisserie,Rotisserie chicken,roast chicken|bbq chicken|whole chicken,171123,1 serving:140|100 g:100,protein
+chicken-ground,Ground chicken,chicken mince|minced chicken|gai sap,171117,1 serving:85|100 g:100,protein
+beef-ground-95,Lean ground beef 95%,extra lean mince|5% fat mince|lean beef mince,174028,1 serving:85|100 g:100,protein
+beef-ground-90,Ground beef 90%,10% fat mince|lean mince,171794,1 serving:85|100 g:100,protein
+beef-ground-85,Ground beef 85%,15% fat mince|beef mince|minced beef|nua sap,174034,1 serving:85|100 g:100,protein
+beef-ground-80,Ground beef 80%,20% fat mince|regular mince|hamburger meat,171799,1 serving:85|100 g:100,protein|dense
+beef-ground-70,Ground beef 70%,30% fat mince|fatty mince,169473,1 serving:85|100 g:100,protein|dense
+beef-patty,Beef burger patty,hamburger patty|burger patty|beef patty,171797,1 patty:85|100 g:100,protein|dense
+steak-sirloin,Sirloin steak,steak|sirloin|beef steak|steak nua,169457,1 steak:225|1 serving:85|100 g:100,protein
+steak-ribeye,Ribeye steak,rib eye|ribeye|scotch fillet,172164,1 steak:250|1 serving:85|100 g:100,protein|dense
+steak-tenderloin,Beef tenderloin,fillet steak|filet mignon|eye fillet,169543,1 steak:170|1 serving:85|100 g:100,protein
+steak-flank,Flank steak,bavette|beef stir fry strips,168733,1 serving:85|100 g:100,protein
+steak-tbone,T-bone steak,tbone|porterhouse,169464,1 steak:300|1 serving:85|100 g:100,protein
+steak-skirt,Skirt steak,fajita steak|skirt,168745,1 serving:85|100 g:100,protein
+beef-brisket,Beef brisket,brisket|pot roast,169488,1 serving:85|100 g:100,protein|dense
+beef-stew,Braised beef chuck,stewing beef|beef stew meat|chuck roast|beef curry meat,168667,1 serving:85|1 cup:140|100 g:100,protein|dense
+beef-jerky,Beef jerky,jerky|dried beef|nua kem|biltong,167536,1 piece:20|1 oz:28|100 g:100,protein|dense
+pork-chop,Pork chop,pork loin chop|pork steak,167827,1 chop:157|100 g:100,protein
+pork-tenderloin,Pork tenderloin,pork fillet|lean pork|moo daeng,168250,1 serving:85|100 g:100,protein
+pork-shoulder,Roast pork shoulder,pulled pork|pork butt|boston butt|pork neck|kor moo yang,167844,1 serving:85|1 cup:140|100 g:100,protein|dense
+pork-belly,Pork belly,samgyeopsal|moo sam chan|crispy pork|moo krob|streaky pork,167812,1 serving:85|1 slice:30|100 g:100,protein|dense
+pork-ground,Ground pork,pork mince|minced pork|moo sap,167903,1 serving:85|100 g:100,protein|dense
+pork-ribs,Pork spare ribs,ribs|spareribs|bbq ribs|baby back ribs|si krong moo,167854,1 serving:85|100 g:100,protein|dense
+bacon,Bacon,streaky bacon|bacon rashers|crispy bacon,167914,1 slice:8.1|3 slices:24|100 g:100,protein|dense
+bacon-canadian,Back bacon,canadian bacon|peameal bacon|bacon rashers lean,168383,1 slice:14|100 g:100,protein
+bacon-turkey,Turkey bacon,turkey rashers,171639,1 slice:8.1|100 g:100,protein
+ham,Ham,sliced ham|deli ham|leg ham|gammon,168296,1 slice:28|1 serving:85|100 g:100,protein
+sausage-pork,Pork sausage,sausage|breakfast sausage|banger|sausages|sai krok,174578,1 link:23|1 patty:27|100 g:100,protein|dense
+sausage-italian,Italian sausage,italian sausage,174586,1 link:87|100 g:100,protein|dense
+bratwurst,Bratwurst,brat|german sausage,171620,1 link:85|100 g:100,protein|dense
+hot-dog-sausage,Hot dog sausage,frankfurter|frank|wiener|hotdog sausage,173862,1 hot dog:49|100 g:100,protein|dense
+pepperoni,Pepperoni,pepperoni slices,174575,10 slices:20|1 oz:28|100 g:100,protein|dense
+salami,Salami,hard salami|salame,172938,1 slice:10|1 oz:28|100 g:100,protein|dense
+lamb-leg,Roast leg of lamb,lamb|lamb leg|roast lamb,172485,1 serving:85|100 g:100,protein
+lamb-chop,Lamb chop,lamb loin chop|lamb cutlet,172489,1 chop:64|100 g:100,protein|dense
+lamb-ground,Ground lamb,lamb mince|minced lamb|kofta,172544,1 serving:85|100 g:100,protein|dense
+turkey-breast,Roast turkey breast,turkey|turkey breast|roast turkey,174516,1 serving:85|1 cup:140|100 g:100,protein
+turkey-ground,Ground turkey,turkey mince|minced turkey,171506,1 serving:85|1 patty:82|100 g:100,protein
+turkey-deli,Sliced turkey,deli turkey|turkey slices|turkey ham|lunch meat,172941,1 slice:16|100 g:100,protein
+duck,Roast duck,duck|peking duck|ped yang|duck with skin,172409,1 serving:85|1 cup:140|100 g:100,protein|dense
+duck-meat,Duck breast,skinless duck|duck meat,172411,1 serving:85|100 g:100,protein
+salmon,Salmon,salmon fillet|baked salmon|grilled salmon|pla salmon,175168,1 fillet:178|1 serving:85|100 g:100,protein
+salmon-wild,Wild salmon,sockeye salmon|wild caught salmon,173692,1 fillet:155|1 serving:85|100 g:100,protein
+salmon-smoked,Smoked salmon,lox|nova,171985,1 oz:28|1 slice:15|100 g:100,protein
+salmon-canned,Canned salmon,tinned salmon|pink salmon,175175,1 can:315|1 serving:85|100 g:100,protein
+tuna-canned-water,Canned tuna in water,tuna|tinned tuna|tuna in brine|canned tuna,173709,1 can:165|1 cup:154|100 g:100,protein
+tuna-canned-oil,Canned tuna in oil,tuna in oil|tinned tuna oil,173708,1 can:171|1 cup:146|100 g:100,protein|dense
+tuna-fresh,Tuna steak,fresh tuna|ahi|yellowfin tuna,172006,1 serving:85|1 steak:150|100 g:100,protein
+tilapia,Tilapia,pla nil|pla tub tim|tilapia fillet,175177,1 fillet:87|100 g:100,protein
+cod,Cod,cod fillet|white fish|codfish,171956,1 fillet:180|1 serving:85|100 g:100,protein
+pollock,Pollock,alaska pollock|white fish fillet,173681,1 fillet:60|100 g:100,protein
+sea-bass,Sea bass,barramundi|pla kapong|seabass,173694,1 fillet:101|100 g:100,protein
+catfish,Catfish,pla duk|catfish fillet,175166,1 fillet:143|100 g:100,protein
+trout,Trout,rainbow trout,173718,1 fillet:71|100 g:100,protein
+mackerel,Mackerel,pla tu|saba|atlantic mackerel,175120,1 fillet:88|100 g:100,protein|dense
+sardines,Canned sardines,sardines|sardines in oil|pla krapong,175139,1 can:92|2 sardines:24|100 g:100,protein
+fish-sticks,Fish fingers,fish sticks|breaded fish,174195,1 stick:28|100 g:100,protein
+shrimp,Shrimp,prawns|goong|kung|boiled shrimp|cooked prawns,171971,1 serving:85|10 large:22|100 g:100,protein
+shrimp-fried,Fried shrimp,breaded shrimp|tempura prawns|scampi,171970,1 serving:85|100 g:100,protein
+squid,Squid,calamari|pla muek|cuttlefish|squid rings,174223,1 serving:85|1 cup:150|100 g:100,protein
+squid-fried,Fried calamari,fried squid|calamari rings,171982,1 serving:85|100 g:100,protein
+crab,Crab,crab meat|poo|crab legs,174205,1 serving:85|1 cup:118|100 g:100,protein
+crab-stick,Crab sticks,imitation crab|surimi|kani,174203,1 stick:17|1 serving:85|100 g:100,protein
+mussels,Mussels,hoy malaeng phu|green mussels,174217,1 serving:85|1 cup:150|100 g:100,protein
+scallops,Scallops,scallop|hoy shell,167742,1 serving:85|100 g:100,protein
+egg-boiled,Boiled egg,egg|eggs|hard boiled egg|soft boiled egg|khai tom|kai tom,173424,1 large:50|1 medium:44|1 cup chopped:136|100 g:100,protein
+egg-fried,Fried egg,khai dao|kai dao|sunny side up|fried eggs,173423,1 large:46|100 g:100,protein
+egg-scrambled,Scrambled eggs,scrambled egg|scramble,172187,1 large egg:61|1 cup:220|100 g:100,protein
+egg-omelette,Omelette,omelet|khai jiao|kai jeow|thai omelette,172185,1 large egg:61|100 g:100,protein
+egg-poached,Poached egg,poached eggs,172186,1 large:50|100 g:100,protein
+egg-raw,Raw egg,whole egg|fresh egg|egg raw,171287,1 large:50|1 medium:44|1 extra large:56|100 g:100,protein
+egg-white,Egg white,egg whites|liquid egg white|albumen,172183,1 large:33|1 cup:243|100 g:100,protein
+egg-duck,Duck egg,khai pet|salted egg,172189,1 egg:70|100 g:100,protein
+milk-whole,Whole milk,milk|full cream milk|full fat milk|nom|nom sod|fresh milk,171265,1 glass:250|1 cup:244|1 tbsp:15|100 g:100,drink|dense
+milk-2,Reduced fat milk 2%,2% milk|semi skimmed milk|semi skim|low fat milk,171267,1 glass:250|1 cup:244|100 g:100,drink
+milk-1,Low fat milk 1%,1% milk|light milk,170872,1 glass:250|1 cup:244|100 g:100,drink
+milk-skim,Skim milk,skimmed milk|nonfat milk|fat free milk|non fat milk,171269,1 glass:250|1 cup:245|100 g:100,drink
+milk-chocolate,Chocolate milk,choc milk|cocoa milk|milo milk|nom chocolate,170880,1 glass:250|1 cup:250|1 carton:200|100 g:100,drink
+milk-powder,Whole milk powder,powdered milk|dry milk|milk powder,170876,1 tbsp:8|1/4 cup:32|100 g:100,dense
+milk-condensed,Sweetened condensed milk,condensed milk|nom khon wan|nom kon wan,171275,1 tbsp:19|1 fl oz:38|1 cup:306|100 g:100,dense
+milk-evaporated,Evaporated milk,nom khon jued|carnation milk,171276,1 tbsp:16|1/2 cup:126|1 can:369|100 g:100,
+soy-milk,Soy milk,soymilk|nam tao hu|soya milk|soy drink,172456,1 glass:250|1 cup:243|100 g:100,drink|protein
+almond-milk,Almond milk,unsweetened almond milk|almond drink,174832,1 glass:250|1 cup:262|100 g:100,drink
+rice-milk,Rice milk,rice drink,171942,1 glass:250|1 cup:240|100 g:100,drink
+yogurt-plain,Plain yogurt,yoghurt|natural yogurt|yogurt|whole milk yogurt,171284,1 cup:245|1 pot:150|100 g:100,
+yogurt-lowfat,Low fat yogurt,low fat yoghurt|light yogurt,170886,1 cup:245|1 pot:150|100 g:100,
+yogurt-fruit,Fruit yogurt,flavoured yogurt|strawberry yogurt|sweetened yogurt,171285,1 pot:170|1 cup:245|100 g:100,
+greek-yogurt,Greek yogurt,greek yoghurt|full fat greek yogurt|strained yogurt,171304,1 pot:170|1 cup:227|100 g:100,protein
+greek-yogurt-nonfat,Nonfat Greek yogurt,0% greek yogurt|fat free greek yoghurt|fage 0|skyr,170894,1 pot:170|1 cup:227|100 g:100,protein
+greek-yogurt-lowfat,Low fat Greek yogurt,2% greek yogurt|light greek yoghurt,170903,1 pot:200|1 cup:227|100 g:100,protein
+kefir,Kefir,milk kefir|cultured milk,170904,1 glass:250|1 cup:243|100 g:100,drink
+cheddar,Cheddar cheese,cheddar|cheese|tasty cheese|mature cheddar,173414,1 slice:28|1 oz:28|1 cup grated:113|100 g:100,protein|dense
+mozzarella,Mozzarella,mozzarella cheese|mozz|pizza cheese,170845,1 oz:28|1 cup shredded:112|100 g:100,protein|dense
+mozzarella-light,Part skim mozzarella,light mozzarella|string cheese|cheese stick,170847,1 stick:28|1 oz:28|100 g:100,protein|dense
+parmesan,Parmesan,parmigiano|parmesan cheese|parmigiano reggiano|grana padano,171247,1 tbsp:5|1 oz:28|100 g:100,protein|dense
+cream-cheese,Cream cheese,philadelphia|philly|soft cheese,173418,1 tbsp:14|1 oz:28|100 g:100,dense
+cottage-cheese,Cottage cheese,cottage|curd cheese,172179,1/2 cup:113|1 cup:210|100 g:100,protein
+cottage-cheese-lowfat,Low fat cottage cheese,1% cottage cheese|light cottage cheese,173417,1/2 cup:113|1 cup:226|100 g:100,protein
+feta,Feta,feta cheese,173420,1 oz:28|1/4 cup crumbled:38|100 g:100,protein|dense
+swiss-cheese,Swiss cheese,emmental|gruyere|jarlsberg,171251,1 slice:28|1 oz:28|100 g:100,protein|dense
+american-cheese,American cheese slice,cheese slice|processed cheese|kraft single|burger cheese,170853,1 slice:21|1 oz:28|100 g:100,protein|dense
+brie,Brie,brie cheese|camembert,172177,1 oz:28|100 g:100,dense
+goat-cheese,Goat cheese,chevre|goats cheese,173435,1 oz:28|100 g:100,protein|dense
+ricotta,Ricotta,ricotta cheese,170851,1/2 cup:124|1 tbsp:15|100 g:100,protein
+cream-heavy,Heavy cream,double cream|whipping cream|thickened cream,170859,1 tbsp:15|1 cup:238|100 g:100,dense
+half-and-half,Half and half,light cream|single cream|coffee cream,171255,1 tbsp:15|1 cup:242|100 g:100,
+sour-cream,Sour cream,soured cream|creme fraiche,171257,1 tbsp:12|1 cup:230|100 g:100,dense
+whipped-cream,Whipped cream,squirty cream|cream topping|reddi wip,170860,1 tbsp:3|1 cup:60|100 g:100,
+ice-cream-vanilla,Vanilla ice cream,ice cream|ice-cream|i tim,167575,1 scoop:66|1 cup:132|100 g:100,dense
+ice-cream-chocolate,Chocolate ice cream,choc ice cream,168809,1 scoop:66|1 cup:132|100 g:100,dense
+frozen-yogurt,Frozen yogurt,froyo|frozen yoghurt,170908,1/2 cup:72|1 cup:144|100 g:100,
+banana,Banana,bananas|kluay|gluay|kluai|nana,173944,1 medium:118|1 large:136|1 small:81|100 g:100,dense
+apple,Apple,apples|red apple|green apple|apple with skin,171688,1 medium:182|1 large:223|1 cup sliced:109|100 g:100,
+orange,Orange,oranges|som|navel orange,169097,1 medium:131|1 cup sections:180|100 g:100,
+mandarin,Mandarin,tangerine|clementine|satsuma|som khiao wan,169105,1 medium:88|1 cup sections:195|100 g:100,
+mango,Mango,mangoes|mamuang|ripe mango,169910,1 mango:336|1 cup sliced:165|100 g:100,
+pineapple,Pineapple,sapparot|ananas,169124,1 cup chunks:165|1 slice:84|100 g:100,
+grapes,Grapes,green grapes|red grapes|a ngun|seedless grapes,174683,1 cup:151|10 grapes:49|100 g:100,
+strawberries,Strawberries,strawberry|sa toh bery,167762,1 cup:144|1 medium:12|100 g:100,
+blueberries,Blueberries,blueberry,171711,1 cup:148|1/2 cup:74|100 g:100,
+raspberries,Raspberries,raspberry,167755,1 cup:123|10 berries:19|100 g:100,
+blackberries,Blackberries,blackberry,173946,1 cup:144|100 g:100,
+watermelon,Watermelon,taeng mo|water melon,167765,1 cup diced:152|1 wedge:286|100 g:100,
+cantaloupe,Cantaloupe,rockmelon|melon|muskmelon|taeng thai,169092,1 cup diced:156|1 wedge:102|100 g:100,
+honeydew,Honeydew melon,honeydew|green melon,169911,1 cup diced:170|1 wedge:125|100 g:100,
+papaya,Papaya,malakor|pawpaw|ripe papaya,169926,1 cup:145|1 small:157|100 g:100,
+pear,Pear,pears|asian pear|nashi,169118,1 medium:178|1 cup sliced:140|100 g:100,
+peach,Peach,peaches,169928,1 medium:150|1 cup sliced:154|100 g:100,
+nectarine,Nectarine,nectarines,169914,1 medium:142|1 cup sliced:143|100 g:100,
+plum,Plum,plums,169949,1 plum:66|1 cup sliced:165|100 g:100,
+apricot,Apricot,apricots,171697,1 apricot:35|1 cup sliced:165|100 g:100,
+cherries,Cherries,cherry|sweet cherries,171719,1 cup:154|1 cherry:8.2|100 g:100,
+kiwi,Kiwi,kiwifruit|kiwi fruit,168153,1 kiwi:69|1 cup sliced:180|100 g:100,
+grapefruit,Grapefruit,pink grapefruit,174673,1/2 fruit:123|1 cup sections:230|100 g:100,
+pomelo,Pomelo,som o|pummelo|shaddock,167754,1 cup sections:190|1 fruit:609|100 g:100,
+lemon,Lemon,lemons|lemon juice,167746,1 lemon:58|1 wedge:7|100 g:100,
+lime,Lime,limes|manao|lime juice,168155,1 lime:67|100 g:100,
+avocado,Avocado,avocados|avo|alligator pear,171705,1/2 avocado:100|1 avocado:201|1 cup sliced:146|100 g:100,dense
+pomegranate,Pomegranate,pomegranate seeds|tub tim|pomegranate arils,169134,1/2 cup seeds:87|1 fruit:282|100 g:100,
+lychee,Lychee,litchi|linchee|lynchee|lin chee,169086,10 lychees:96|1 cup:190|100 g:100,
+longan,Longan,lamyai|lam yai|dragon eye,169089,10 longans:32|100 g:100,
+rambutan,Rambutan,ngo|rambutans,168167,1 cup:150|5 pieces:75|100 g:100,
+durian,Durian,thurian|turian,168192,1 cup:243|1 piece:50|100 g:100,dense
+jackfruit,Jackfruit,khanun|kanoon|jack fruit,174687,1 cup:165|100 g:100,
+guava,Guava,farang|guavas,173044,1 fruit:55|1 cup:165|100 g:100,
+passion-fruit,Passion fruit,passionfruit|granadilla|saowarot,169108,1 fruit:18|1 cup:236|100 g:100,
+starfruit,Starfruit,carambola|ma fueang|star fruit,171715,1 fruit:91|1 cup sliced:108|100 g:100,
+persimmon,Persimmon,sharon fruit|kaki|persimmons,169941,1 fruit:168|100 g:100,
+rose-apple,Rose apple,chomphu|chom poo|wax apple|java apple,168171,1 fruit:40|100 g:100,
+tamarind,Tamarind,makham|sweet tamarind|tamarind pulp,167763,1/4 cup pulp:30|1 cup pulp:120|100 g:100,dense
+figs,Fig,figs|fresh fig,173021,1 medium:50|100 g:100,
+dates,Medjool dates,dates|date|khajur|inthaphalam,168191,1 date:24|5 dates:120|100 g:100,dense
+raisins,Raisins,sultanas|currants|lukket,168165,1 small box:43|1/4 cup:36|1 tbsp:9|100 g:100,dense
+prunes,Prunes,dried plums|prune,168162,1 prune:9.5|1/4 cup:44|100 g:100,dense
+dried-apricots,Dried apricots,apricots dried,173941,5 halves:18|1/4 cup:33|100 g:100,dense
+dried-cranberries,Dried cranberries,craisins|cranberries dried,171723,1/4 cup:40|1 tbsp:10|100 g:100,dense
+dried-figs,Dried figs,figs dried,174665,1 fig:8.4|1/4 cup:37|100 g:100,dense
+applesauce,Applesauce,apple sauce|apple puree|apple compote,171695,1/2 cup:122|1 cup:244|100 g:100,
+fruit-cocktail,Fruit cocktail,canned fruit|fruit salad tinned|mixed fruit cup,174668,1/2 cup:118|1 cup:237|100 g:100,
+plantain,Plantain,cooking banana|kluay nam wa|kluay tod|fried plantain,168200,1 cup:169|100 g:100,staple|dense
+broccoli,Broccoli,cooked broccoli|steamed broccoli|brocoli|brokoli,169967,1 cup:156|1/2 cup:78|1 spear:37|100 g:100,
+broccoli-raw,Raw broccoli,broccoli florets,170379,1 cup chopped:91|1 spear:31|100 g:100,
+carrot,Carrot,carrots|raw carrot|carrot sticks|baby carrots,170393,1 medium:61|1 cup chopped:128|100 g:100,
+carrot-cooked,Cooked carrots,boiled carrots|steamed carrots,170394,1/2 cup:78|1 cup:156|100 g:100,
+spinach,Spinach,baby spinach|raw spinach|spinach leaves,168462,1 cup:30|1 bunch:340|100 g:100,
+spinach-cooked,Cooked spinach,boiled spinach|wilted spinach|sauteed spinach,168463,1 cup:180|100 g:100,
+lettuce-romaine,Romaine lettuce,cos lettuce|lettuce|salad leaves|salad greens|pak kad,169247,1 cup shredded:47|1 leaf:6|100 g:100,
+lettuce-iceberg,Iceberg lettuce,crisphead lettuce,169248,1 cup shredded:72|1 leaf:15|100 g:100,
+arugula,Rocket,arugula|rucola|roquette,169387,1 cup:10|100 g:100,
+kale,Kale,curly kale|cavolo nero,168421,1 cup chopped:21|100 g:100,
+tomato,Tomato,tomatoes|cherry tomatoes|makhuea thet|tomatoe,170457,1 medium:123|1 cherry tomato:17|1 cup chopped:180|100 g:100,
+cucumber,Cucumber,cucumbers|taeng kwa|cuke,168409,1 cup sliced:52|1/2 cucumber:150|100 g:100,
+onion,Onion,onions|brown onion|red onion|white onion|hom yai,170000,1 medium:110|1 cup chopped:160|1 tbsp chopped:10|100 g:100,
+spring-onion,Spring onion,scallions|green onion|ton hom|salad onion,170005,1 tbsp chopped:6|1 stalk:15|1 cup chopped:100|100 g:100,
+shallot,Shallot,shallots|hom daeng|red shallot,170499,1 tbsp chopped:10|1 shallot:25|100 g:100,
+garlic,Garlic,garlic clove|krathiam|kratiem,169230,1 clove:3|1 tsp:2.8|100 g:100,
+ginger,Ginger,fresh ginger|khing|ginger root,169231,1 tsp:2|1 tbsp:6|100 g:100,
+chili,Chili pepper,chilli|chillies|prik|bird eye chili|hot pepper|jalapeno,170106,1 pepper:45|1 tbsp chopped:9|100 g:100,
+pepper-red,Red bell pepper,red capsicum|bell pepper|capsicum|sweet pepper|paprika fresh,170108,1 medium:119|1 cup chopped:149|100 g:100,
+pepper-green,Green bell pepper,green capsicum|green pepper,170427,1 medium:119|1 cup chopped:149|100 g:100,
+mushroom,Mushrooms,button mushrooms|white mushrooms|champignon|mushroom,169251,1 cup sliced:70|1 medium:18|100 g:100,
+mushroom-cooked,Cooked mushrooms,fried mushrooms|sauteed mushrooms,169253,1 cup sliced:108|100 g:100,
+shiitake,Shiitake mushrooms,shiitake|het hom|black mushroom,168437,1 cup:145|1 mushroom:15|100 g:100,
+oyster-mushroom,Oyster mushrooms,het nang fa|oyster mushroom,168580,1 cup sliced:86|100 g:100,
+enoki,Enoki mushrooms,enoki|het khem thong|golden needle mushroom,169382,1 cup:64|1 pack:100|100 g:100,
+zucchini,Zucchini,courgette|zucchini cooked|squash,169292,1 cup sliced:180|100 g:100,
+eggplant,Eggplant,aubergine|makhuea|brinjal|thai eggplant,169229,1 cup cubes:99|100 g:100,
+cabbage,Cabbage,white cabbage|green cabbage|kalam plee|kalampli,169975,1 cup shredded:70|1 leaf:33|100 g:100,
+cabbage-cooked,Cooked cabbage,boiled cabbage|stir fried cabbage,169976,1/2 cup shredded:75|100 g:100,
+bok-choy,Bok choy,pak choi|pak choy|pak kwang tung|chinese cabbage,170391,1 cup shredded:170|100 g:100,
+napa-cabbage,Napa cabbage,chinese leaf|wombok|pak kad khao|wong bok,169979,1 cup shredded:76|100 g:100,
+kimchi,Kimchi,kimchee|korean pickled cabbage,170392,1/2 cup:75|1 cup:150|100 g:100,
+chinese-broccoli,Chinese broccoli,gai lan|kai lan|kana|pak kana,169392,1 cup:88|100 g:100,
+cauliflower,Cauliflower,cooked cauliflower|cauli,170397,1 cup:124|1/2 cup:62|3 florets:54|100 g:100,
+cauliflower-raw,Raw cauliflower,cauliflower florets|cauliflower rice,169986,1 cup chopped:107|100 g:100,
+green-beans,Green beans,string beans|french beans|snap beans|runner beans,169141,1 cup:125|100 g:100,
+long-beans,Long beans,yard long beans|thua fak yao|snake beans,169223,1 cup sliced:104|100 g:100,
+peas,Green peas,peas|garden peas|frozen peas|thua lantao,170017,1/2 cup:80|1 cup:160|100 g:100,
+snow-peas,Snow peas,mangetout|sugar snap peas|snap peas|thua lantao,170011,1 cup:160|100 g:100,
+asparagus,Asparagus,asparagus spears|nor mai farang,168390,4 spears:60|1/2 cup:90|100 g:100,
+brussels-sprouts,Brussels sprouts,sprouts|brussel sprouts,169971,1/2 cup:78|1 sprout:21|100 g:100,
+celery,Celery,celery sticks|kuen chai|celery stalk,169988,1 stalk:40|1 cup chopped:101|100 g:100,
+beetroot,Beetroot,beets|beet|cooked beets,169146,1 beet:100|1 cup sliced:85|100 g:100,
+pumpkin,Pumpkin,fak thong|kabocha|cooked pumpkin,168449,1 cup mashed:245|1/2 cup:123|100 g:100,
+butternut,Butternut squash,butternut pumpkin|winter squash|roasted squash,169296,1 cup cubes:205|100 g:100,
+cassava,Cassava,yuca|tapioca root|manioc|mun sampalang,169985,1 cup:206|100 g:100,staple|dense
+taro,Taro,phueak|eddo|dasheen,168486,1 cup sliced:132|100 g:100,staple
+okra,Okra,ladies fingers|bhindi|kra jiab,169261,1 cup sliced:80|100 g:100,
+bean-sprouts,Bean sprouts,mung bean sprouts|tua ngok|beansprouts,169957,1 cup:104|1 handful:30|100 g:100,
+bitter-melon,Bitter melon,bitter gourd|mara|ma ra|karela,168394,1 cup pieces:124|100 g:100,
+bamboo-shoots,Bamboo shoots,nor mai|no mai|bamboo,169212,1 cup slices:131|100 g:100,
+water-chestnuts,Water chestnuts,haeo|chinese water chestnut,170067,1/2 cup slices:70|100 g:100,
+radish,Radish,radishes|red radish,169276,1 medium:4.5|1 cup sliced:116|100 g:100,
+daikon,Daikon,white radish|mooli|hua chai thao|oriental radish,168452,1 cup slices:147|100 g:100,
+leek,Leek,leeks,169246,1 leek:89|100 g:100,
+coriander,Coriander leaves,cilantro|phak chi|pak chee|chinese parsley,169997,1 tbsp:1|1/4 cup:4|9 sprigs:20|100 g:100,
+basil,Basil,thai basil|holy basil|bai horapa|bai krapao|kaprao,172232,1 tbsp chopped:5.3|1 cup:15|100 g:100,
+lemongrass,Lemongrass,ta khrai|takrai|citronella,168573,1 tbsp:4.8|1 stalk:20|100 g:100,
+mixed-veg,Mixed vegetables,frozen vegetables|mixed veg,170472,1 cup:182|1/2 cup:91|100 g:100,
+artichoke,Artichoke,globe artichoke|artichoke hearts,168386,1 medium:120|1/2 cup hearts:84|100 g:100,
+chayote,Chayote,choko|mirliton|fak maeo,170403,1 cup pieces:160|100 g:100,
+olives,Olives,black olives|green olives|kalamata,169094,5 olives:22|1 tbsp:8.4|100 g:100,
+pickles,Pickles,gherkin|dill pickle|pickled cucumber,168558,1 spear:35|1 large:135|1 slice:7|100 g:100,
+sauerkraut,Sauerkraut,fermented cabbage,169279,1/2 cup:71|1 cup:142|100 g:100,
+seaweed,Nori seaweed,nori|seaweed|laver|seaweed snack|kim,168458,1 sheet:3|10 sheets:26|100 g:100,
+tofu-firm,Firm tofu,tofu|tao hu|tauhu|bean curd|tahu,172475,1/2 cup:126|1/4 block:81|100 g:100,protein
+tofu-regular,Tofu,regular tofu|medium tofu|tao hu khao,172476,1/2 cup:124|1/4 block:116|100 g:100,protein
+tofu-silken,Silken tofu,soft tofu|tao huay,172449,1 piece:120|1 cup:248|100 g:100,protein
+tofu-fried,Fried tofu,tofu puffs|tao hu tod|deep fried tofu,172451,1 piece:13|1 oz:28|100 g:100,protein|dense
+tempeh,Tempeh,tempe,172467,1/2 cup:83|1 serving:85|100 g:100,protein
+edamame,Edamame,soybeans in pods|green soybeans|thua lueang|edamame beans,168411,1 cup shelled:155|1/2 cup:78|100 g:100,protein
+lentils,Lentils,cooked lentils|dal|dhal|daal|red lentils|green lentils,172421,1 cup:198|1/2 cup:99|100 g:100,protein
+chickpeas,Chickpeas,garbanzo beans|chana|chick peas|garbanzos,173757,1 cup:164|1/2 cup:82|100 g:100,protein
+black-beans,Black beans,black turtle beans|frijoles negros,173735,1 cup:172|1/2 cup:86|100 g:100,protein
+kidney-beans,Kidney beans,red kidney beans|rajma,173740,1 cup:177|1/2 cup:89|100 g:100,protein
+pinto-beans,Pinto beans,pinto,175200,1 cup:171|1/2 cup:86|100 g:100,protein
+white-beans,White beans,cannellini|navy beans|haricot beans|butter beans,175203,1 cup:179|1/2 cup:90|100 g:100,protein
+adzuki-beans,Red beans,adzuki|azuki|thua daeng|red bean,173728,1 cup:230|1/2 cup:115|100 g:100,protein
+mung-beans,Mung beans,green gram|thua khiao|moong dal,174257,1 cup:202|1/2 cup:101|100 g:100,protein
+split-peas,Split peas,yellow split peas|green split peas|pea soup,172429,1 cup:196|1/2 cup:98|100 g:100,protein
+soybeans,Soybeans,soy beans|cooked soybeans,174271,1 cup:172|1/2 cup:86|100 g:100,protein
+baked-beans,Baked beans,beans in tomato sauce|heinz beans|beans on toast,175182,1/2 cup:127|1 cup:254|1 can:415|100 g:100,protein
+refried-beans,Refried beans,frijoles refritos,172438,1/2 cup:119|1 cup:238|100 g:100,protein
+hummus,Hummus,houmous|humus|hommus|chickpea dip,174289,1 tbsp:15|1/4 cup:62|100 g:100,dense
+falafel,Falafel,felafel,172455,1 patty:17|3 pieces:51|100 g:100,protein|dense
+peanuts,Peanuts,roasted peanuts|thua lisong|groundnuts|peanut,173806,1 handful:30|1/4 cup:37|1 oz:28|100 g:100,dense|protein
+peanuts-raw,Raw peanuts,shelled peanuts,172430,1/4 cup:37|1 oz:28|100 g:100,dense|protein
+peanut-butter,Peanut butter,pb|peanut spread|smooth peanut butter|creamy peanut butter,174266,1 tbsp:16|2 tbsp:32|100 g:100,dense|protein
+peanut-butter-crunchy,Crunchy peanut butter,chunky peanut butter,174265,1 tbsp:16|2 tbsp:32|100 g:100,dense|protein
+almonds,Almonds,almond|raw almonds|amandes,170567,1 handful:28|1/4 cup:36|10 almonds:12|100 g:100,dense
+almonds-roasted,Roasted almonds,salted almonds,168596,1 handful:28|1/4 cup:35|100 g:100,dense
+almond-butter,Almond butter,almond spread,168588,1 tbsp:16|2 tbsp:32|100 g:100,dense
+cashews,Cashews,cashew nuts|met mamuang|mamuang himmaphan,170162,1 handful:28|1/4 cup:32|100 g:100,dense
+cashews-roasted,Roasted cashews,salted cashews,169421,1 handful:28|1/4 cup:34|100 g:100,dense
+walnuts,Walnuts,walnut|english walnuts,170187,1 handful:28|1/4 cup:29|7 halves:14|100 g:100,dense
+pistachios,Pistachios,pistachio|pistachio nuts,169426,1 handful:28|1/4 cup:31|100 g:100,dense
+pecans,Pecans,pecan|pecan nuts,170182,1 handful:28|1/4 cup:27|100 g:100,dense
+macadamia,Macadamia nuts,macadamias|macadamia,168598,1 handful:28|1/4 cup:34|100 g:100,dense
+hazelnuts,Hazelnuts,filberts|hazelnut,170581,1 handful:28|1/4 cup:29|100 g:100,dense
+brazil-nuts,Brazil nuts,brazil nut,170569,1 nut:5|1 handful:28|100 g:100,dense
+mixed-nuts,Mixed nuts,nuts|salted nuts|nut mix,168599,1 handful:28|1/4 cup:34|100 g:100,dense
+coconut-meat,Fresh coconut,coconut flesh|coconut meat|nuea maprao|young coconut,170169,1 piece:45|1 cup shredded:80|100 g:100,dense
+coconut-dried,Desiccated coconut,shredded coconut|dried coconut|coconut flakes,170170,1 tbsp:5|1 oz:28|100 g:100,dense
+chestnuts,Roasted chestnuts,chestnut|kao lad|kaolat,170190,5 chestnuts:42|1 cup:143|100 g:100,
+chia,Chia seeds,chia|chia seed,170554,1 tbsp:12|1 oz:28|100 g:100,dense
+flaxseed,Flaxseed,linseed|flax seeds|ground flax,169414,1 tbsp:10|1 tbsp ground:7|100 g:100,dense
+sesame,Sesame seeds,sesame|nga|nga khao|nga dam|black sesame,170150,1 tbsp:9|1 tsp:3|100 g:100,dense
+sunflower-seeds,Sunflower seeds,sunflower kernels|mlet thantawan,169418,1 handful:28|1/4 cup:32|1 tbsp:8|100 g:100,dense
+pumpkin-seeds,Pumpkin seeds,pepitas|squash seeds|mlet fak thong,170556,1 handful:28|1/4 cup:32|100 g:100,dense|protein
+hemp-seeds,Hemp seeds,hemp hearts|hulled hemp,170148,1 tbsp:10|3 tbsp:30|100 g:100,dense|protein
+tahini,Tahini,tahina|sesame paste|sesame butter,170189,1 tbsp:15|100 g:100,dense
+oil-vegetable,Vegetable oil,oil|cooking oil|canola oil|rapeseed oil|sunflower oil|soybean oil|nam man|nam man pued,172336,1 tbsp:14|1 tsp:4.5|1 cup:218|100 g:100,oil|dense
+oil-olive,Olive oil,extra virgin olive oil|evoo,171413,1 tbsp:14|1 tsp:4.5|1 cup:216|100 g:100,oil|dense
+oil-coconut,Coconut oil,nam man maprao,171412,1 tbsp:14|1 tsp:4.5|100 g:100,oil|dense
+oil-sesame,Sesame oil,toasted sesame oil|nam man nga,171016,1 tbsp:14|1 tsp:4.5|100 g:100,oil|dense
+oil-peanut,Peanut oil,groundnut oil,171410,1 tbsp:14|1 tsp:4.5|100 g:100,oil|dense
+oil-palm,Palm oil,nam man pam|frying oil,171015,1 tbsp:14|1 tsp:4.5|100 g:100,oil|dense
+butter,Butter,salted butter|noei|butter salted,173410,1 tbsp:14|1 tsp:4.7|1 pat:5|100 g:100,oil|dense
+butter-unsalted,Unsalted butter,sweet butter|butter unsalted,173430,1 tbsp:14|1 tsp:4.7|100 g:100,oil|dense
+ghee,Ghee,clarified butter|ghi,171314,1 tbsp:13|1 tsp:4.3|100 g:100,oil|dense
+lard,Lard,pork fat|dripping|nam man moo,171401,1 tbsp:13|1 tsp:4.3|100 g:100,oil|dense
+margarine,Margarine,marg|spread|baking spread,172346,1 tbsp:14|1 tsp:4.7|100 g:100,oil|dense
+mayonnaise,Mayonnaise,mayo|kewpie,171009,1 tbsp:14|1 tsp:5|100 g:100,dense
+mayonnaise-light,Light mayonnaise,light mayo|low fat mayo,173594,1 tbsp:15|100 g:100,
+ketchup,Ketchup,catsup|tomato sauce|tomato ketchup,168556,1 tbsp:17|1 packet:9|100 g:100,
+mustard,Mustard,yellow mustard|american mustard|dijon,172234,1 tsp:5|1 tbsp:15|100 g:100,
+soy-sauce,Soy sauce,shoyu|see ew|si io|light soy sauce|tamari,174277,1 tbsp:16|1 tsp:5.3|100 g:100,
+fish-sauce,Fish sauce,nam pla|nampla|nuoc mam,174531,1 tbsp:18|1 tsp:6|100 g:100,
+oyster-sauce,Oyster sauce,nam man hoi,174529,1 tbsp:18|1 tsp:6|100 g:100,
+hoisin,Hoisin sauce,hoisin|plum sauce|char siu sauce,172886,1 tbsp:16|100 g:100,
+sriracha,Sriracha,chili sauce|sriraja|sriracha sauce|sauce prik,171186,1 tsp:6.5|1 tbsp:19|100 g:100,
+hot-sauce,Hot sauce,tabasco|pepper sauce|chilli sauce|peri peri,174527,1 tsp:4.7|1 tbsp:14|100 g:100,
+sweet-chili-sauce,Sweet and sour sauce,sweet chili sauce|nam jim kai|sweet chilli sauce|duck sauce,174066,1 tbsp:18|2 tbsp:35|100 g:100,
+teriyaki,Teriyaki sauce,teriyaki,171167,1 tbsp:18|100 g:100,
+bbq-sauce,BBQ sauce,barbecue sauce|barbeque sauce,174523,1 tbsp:17|2 tbsp:34|100 g:100,
+worcestershire,Worcestershire sauce,worcester sauce|lea and perrins,171610,1 tsp:6|1 tbsp:17|100 g:100,
+pasta-sauce,Tomato pasta sauce,marinara|pasta sauce|spaghetti sauce|bolognese sauce|napoli,171192,1/2 cup:132|1 cup:264|100 g:100,
+salsa,Salsa,tomato salsa|pico de gallo|salsa dip,174524,2 tbsp:36|1/2 cup:130|100 g:100,
+pesto,Pesto,basil pesto|pesto sauce,171579,1 tbsp:16|1/4 cup:63|100 g:100,dense
+peanut-sauce,Peanut sauce,satay sauce|nam jim satay,171575,1 tbsp:17|2 tbsp:34|100 g:100,dense
+tomato-paste,Tomato paste,tomato puree|concentrate,170459,1 tbsp:16|1 can:170|100 g:100,
+gravy,Gravy,beef gravy|brown gravy|roast gravy,171564,1/4 cup:58|1 cup:233|100 g:100,
+vinegar,Vinegar,white vinegar|rice vinegar|nam som,172237,1 tbsp:15|100 g:100,
+balsamic,Balsamic vinegar,balsamic|balsamic glaze,172241,1 tbsp:16|100 g:100,
+ranch,Ranch dressing,ranch|ranch dip,173592,1 tbsp:15|2 tbsp:30|100 g:100,dense
+italian-dressing,Italian dressing,salad dressing|vinaigrette bottled,171019,1 tbsp:15|2 tbsp:29|100 g:100,
+caesar-dressing,Caesar dressing,caesar,169055,1 tbsp:15|2 tbsp:29|100 g:100,dense
+thousand-island,Thousand island dressing,thousand island|burger sauce|special sauce,171402,1 tbsp:16|2 tbsp:32|100 g:100,dense
+vinaigrette,Oil and vinegar dressing,vinaigrette|french dressing|oil and vinegar,171417,1 tbsp:16|2 tbsp:32|100 g:100,dense
+coconut-milk,Coconut milk,kati|ga ti|gati|canned coconut milk,170173,1/4 cup:57|1 tbsp:15|1 can:400|100 g:100,dense
+coconut-cream,Coconut cream,hua kati|hua gati|thick coconut milk,170580,1 tbsp:15|1 cup:240|100 g:100,dense
+creamer,Coffee creamer,non dairy creamer|coffee mate|creamer powder,171263,1 tsp:2|1 tbsp:6|100 g:100,
+honey,Honey,nam phueng|raw honey,169640,1 tbsp:21|1 tsp:7|100 g:100,
+sugar,Sugar,white sugar|granulated sugar|caster sugar|nam tan|table sugar,169655,1 tsp:4.2|1 tbsp:12.5|1 sachet:2.8|100 g:100,
+sugar-brown,Brown sugar,palm sugar|nam tan pip|coconut sugar|demerara,168833,1 tsp:4.6|1 tbsp:14|100 g:100,
+jam,Jam,jelly|preserves|strawberry jam|marmalade,169641,1 tbsp:20|1 tsp:7|100 g:100,
+maple-syrup,Maple syrup,syrup|pancake syrup,169661,1 tbsp:20|1/4 cup:83|100 g:100,
+nutella,Chocolate hazelnut spread,nutella|choc spread|chocolate spread,168000,1 tbsp:19|2 tbsp:37|100 g:100,dense
+vegemite,Yeast extract,vegemite|marmite|yeast spread,167717,1 tsp:6|1 tbsp:18|100 g:100,
+bread-white,White bread,bread|sandwich bread|toast bread|khanom pang|sliced bread|white toast,174924,1 slice:29|2 slices:58|100 g:100,staple
+bread-white-toasted,White toast,toast|toasted bread,174925,1 slice:27|100 g:100,staple
+bread-wholemeal,Wholemeal bread,whole wheat bread|brown bread|wholegrain bread|wholewheat bread,172688,1 slice:32|100 g:100,staple
+bread-multigrain,Multigrain bread,multi grain bread|seeded bread|granary bread|grain bread,168013,1 slice:26|100 g:100,staple
+bread-rye,Rye bread,pumpernickel|dark rye,172684,1 slice:32|100 g:100,staple
+bread-sourdough,Sourdough bread,sourdough|french bread|baguette|vienna bread|crusty bread,172675,1 slice:50|1 oz:28|100 g:100,staple
+bread-raisin,Raisin bread,fruit loaf|cinnamon raisin bread,172680,1 slice:32|100 g:100,staple
+pita,Pita bread,pitta|pita|flatbread|pocket bread,174915,1 large pita:60|1 small pita:28|100 g:100,staple
+naan,Naan,nan bread|naan bread,171845,1 piece:90|100 g:100,staple|dense
+roti,Roti,chapati|chapatti|roti canai|phulka,171844,1 piece:68|100 g:100,staple
+paratha,Paratha,parotta|prata|roti prata,174076,1 piece:79|100 g:100,staple|dense
+bagel,Bagel,plain bagel|sesame bagel,174899,1 bagel:105|1 large:131|100 g:100,staple
+croissant,Croissant,croissants|butter croissant|krua song,174987,1 medium:57|1 large:67|100 g:100,staple
+english-muffin,English muffin,muffin bread|breakfast muffin,174994,1 muffin:57|100 g:100,staple
+burger-bun,Burger bun,hamburger bun|hot dog bun|bread roll|bun,172796,1 bun:44|100 g:100,staple
+dinner-roll,Dinner roll,bread roll|soft roll|bap|khanom pang kon,172793,1 roll:28|100 g:100,staple
+pancakes,Pancakes,pancake|hotcakes|flapjacks,175009,1 pancake:77|1 small:38|100 g:100,staple
+waffles,Waffles,waffle|eggo,175038,1 waffle:35|100 g:100,staple
+french-toast,French toast,eggy bread|pain perdu,174998,1 slice:65|100 g:100,staple
+biscuit,Biscuit,scone|buttermilk biscuit|american biscuit,172669,1 biscuit:51|100 g:100,staple|dense
+muffin,Blueberry muffin,muffin|cupcake muffin|bakery muffin,172765,1 medium:113|1 large:139|1 mini:17|100 g:100,
+danish,Cinnamon pastry,danish|danish pastry|cinnamon roll|cinnamon bun|pastry,172753,1 pastry:65|100 g:100,
+corn-flakes,Corn flakes,cornflakes|kelloggs corn flakes,174648,1 cup:28|1 bowl:40|100 g:100,
+cheerios,Cheerios,oat rings|honey o,173884,1 cup:28|1 bowl:40|100 g:100,
+frosted-flakes,Frosted flakes,frosties|sugar flakes,172990,1 cup:31|1 bowl:40|100 g:100,
+crisp-rice,Crispy rice cereal,rice krispies|rice bubbles|coco pops plain,173887,1 cup:33|1 bowl:30|100 g:100,
+raisin-bran,Raisin bran,bran flakes|all bran|sultana bran,171650,1 cup:59|1 bowl:50|100 g:100,
+shredded-wheat,Shredded wheat,weetabix|weet bix|wheat biscuits,172987,3 biscuits:63|1 biscuit:21|100 g:100,
+honey-oats-cereal,Honey oat cereal,honey bunches of oats|crunchy oat cereal,168138,1 cup:30|1 bowl:40|100 g:100,
+granola,Granola,homemade granola|toasted oats|crunchy granola,171646,1/2 cup:61|1/4 cup:30|100 g:100,dense
+granola-natural,Natural granola,muesli|toasted muesli|granola with raisins,172975,1/2 cup:51|1/4 cup:24|100 g:100,dense
+potato-chips,Potato chips,crisps|chips|lays|potato crisps,169677,1 small bag:28|1 handful:15|100 g:100,
+tortilla-chips,Tortilla chips,corn chips|nachos chips|doritos,167558,1 small bag:28|10 chips:20|100 g:100,
+popcorn,Air popped popcorn,popcorn|plain popcorn,167959,1 cup:8|1 oz:28|100 g:100,
+popcorn-microwave,Microwave popcorn,buttered popcorn|cinema popcorn|movie popcorn,167549,1 cup:11|1 small bag:28|100 g:100,
+pretzels,Pretzels,pretzel|pretzel twists,167555,10 twists:60|1 oz:28|100 g:100,
+crackers-saltine,Saltine crackers,saltines|soda crackers|cream crackers|jacobs,172746,5 crackers:15|1 cracker:3|100 g:100,
+crackers-butter,Butter crackers,ritz|snack crackers|club crackers,174982,5 crackers:16|1 cracker:3.2|100 g:100,
+graham-crackers,Graham crackers,digestive biscuits|digestives|graham,174957,1 sheet:14|1 square:7|100 g:100,
+rice-cakes,Rice cakes,rice crackers|puffed rice cake|senbei,170250,1 cake:9|2 cakes:18|100 g:100,
+chocolate-milk-bar,Milk chocolate,chocolate|chocolate bar|dairy milk|hershey bar,167587,1 bar:44|1 mini bar:7|1 oz:28|100 g:100,dense
+chocolate-dark,Dark chocolate,70% chocolate|dark chocolate 70|bittersweet chocolate,170273,1 square:10|1 oz:28|1 bar:101|100 g:100,dense
+chocolate-semisweet,Dark chocolate 50%,semisweet chocolate|plain chocolate|chocolate chips,170271,1 square:10|1 oz:28|100 g:100,dense
+snickers,Snickers,snickers bar|candy bar,169589,1 bar:57|1 fun size:15|100 g:100,
+mms,M&Ms,m and ms|chocolate candies|smarties,169583,1 pack:48|10 pieces:7|100 g:100,
+kitkat,KitKat,kit kat|wafer bar,167992,1 bar:42|100 g:100,
+gummies,Gummy candy,gummy bears|jelly sweets|gumdrops|wine gums|haribo,167989,10 pieces:36|1 cup:182|100 g:100,
+hard-candy,Hard candy,boiled sweets|lollies|lolly|mints,167990,1 piece:6|100 g:100,
+cookie-choc-chip,Chocolate chip cookie,cookie|cookies|choc chip biscuit|chips ahoy,172716,1 cookie:12|1 big cookie:40|100 g:100,
+cookie-oreo,Chocolate sandwich cookie,oreo|oreos|bourbon biscuit,172718,1 cookie:12|3 cookies:36|100 g:100,
+cookie-oatmeal,Oatmeal cookie,oat cookie|anzac biscuit|oatmeal raisin cookie,172725,1 cookie:25|100 g:100,
+cookie-butter,Butter cookie,shortbread|butter biscuit|danish cookies,174950,1 cookie:5|100 g:100,
+cake-chocolate,Chocolate cake,chocolate gateau|choc cake|birthday cake,174934,1 slice:138|100 g:100,
+cake-yellow,Vanilla cake,yellow cake|sponge cake with frosting|birthday cake vanilla,174945,1 slice:67|100 g:100,
+cake-pound,Pound cake,butter cake|madeira cake|banana bread,172704,1 slice:61|100 g:100,
+cake-sponge,Sponge cake,chiffon cake|angel cake|khanom khai,172706,1 slice:38|100 g:100,
+cheesecake,Cheesecake,cheese cake|new york cheesecake,172711,1 slice:80|100 g:100,
+brownie,Brownie,brownies|chocolate brownie,172713,1 brownie:56|100 g:100,
+donut-glazed,Glazed doughnut,donut|doughnut|krispy kreme|glazed donut,172758,1 doughnut:64|100 g:100,
+donut-cake,Cake doughnut,plain donut|old fashioned donut,174990,1 doughnut:54|100 g:100,
+apple-pie,Apple pie,apple pie slice|apple turnover,175011,1 slice:125|100 g:100,
+pudding,Chocolate pudding,pudding cup|chocolate mousse|custard,168778,1 pudding cup:108|100 g:100,
+jelly-dessert,Jelly,jello|gelatin dessert|vun,169596,1/2 cup:135|100 g:100,
+granola-bar,Granola bar,muesli bar|cereal bar|oat bar|nature valley,167542,1 bar:21|100 g:100,dense
+granola-bar-soft,Chewy granola bar,chewy bar|soft granola bar,167954,1 bar:28|100 g:100,dense
+protein-bar,Protein bar,high protein bar|balance bar|energy bar,173159,1 bar:50|100 g:100,protein|dense
+whey-protein,Whey protein powder,whey|protein powder|protein shake powder|whey isolate,173180,1 scoop:30|1/3 cup:32|100 g:100,protein
+trail-mix,Trail mix,scroggin|student mix|gorp|nut and raisin mix,167561,1/4 cup:38|1 handful:30|100 g:100,dense
+trail-mix-choc,Trail mix with chocolate,chocolate trail mix|fruit and nut mix,167969,1/4 cup:37|1 handful:30|100 g:100,dense
+banana-chips,Banana chips,kluay chip|dried banana chips,168849,1 oz:28|1 small bag:42|100 g:100,dense
+pork-rinds,Pork rinds,pork scratchings|chicharron|kap moo|khaep mu,167961,1 oz:28|1 small bag:14|100 g:100,protein
+water,Water,tap water|bottled water|nam|nam plao|mineral water,173647,1 glass:250|1 bottle:500|1 litre:1000,drink
+coffee,Black coffee,coffee|americano|long black|filter coffee|kafae dam|drip coffee,171890,1 cup:237|1 mug:350|100 g:100,drink
+espresso,Espresso,shot of espresso|ristretto,171891,1 shot:30|1 double:60|100 g:100,drink
+iced-coffee,Sweetened milk coffee,latte|cafe latte|iced coffee|kafae yen|coffee with milk|bottled coffee|frappe,171880,1 glass:250|1 cup:262|1 bottle:280|100 g:100,drink
+tea,Black tea,tea|cup of tea|english breakfast|cha|hot tea,173227,1 cup:237|1 mug:350|100 g:100,drink
+green-tea,Green tea,matcha tea|cha khiao|jasmine tea|herbal tea,171917,1 cup:245|1 mug:350|100 g:100,drink
+iced-tea,Sweet iced tea,iced tea|lemon tea|bottled tea|cha manao,171888,1 bottle:500|1 glass:250|1 cup:271|100 g:100,drink
+hot-chocolate,Hot chocolate,hot cocoa|cocoa|chocolate drink|ovaltine|milo,171277,1 cup:250|1 mug:300|100 g:100,drink
+malted-milk,Malted milk drink,malt drink|horlicks|milo with milk|chocolate malt,171874,1 glass:250|100 g:100,drink
+orange-juice,Orange juice,oj|nam som|nam som khan|fresh orange juice,169100,1 glass:250|1 cup:249|100 g:100,drink
+apple-juice,Apple juice,apple drink|nam aeppoen,173933,1 glass:250|1 cup:248|1 box:200|100 g:100,drink
+pineapple-juice,Pineapple juice,nam sapparot,168187,1 glass:250|1 cup:250|100 g:100,drink
+grape-juice,Grape juice,red grape juice,168207,1 glass:250|1 cup:253|100 g:100,drink
+smoothie,Fruit smoothie,smoothie|strawberry banana smoothie|fruit shake,167799,1 bottle:450|1 glass:250|100 g:100,drink
+lemonade,Lemonade,nam manao|lemon squash|lemon juice drink,173217,1 glass:250|1 cup:247|100 g:100,drink
+cola,Cola,coke|pepsi|coca cola|soda|soft drink|pop,174852,1 can:330|1 bottle:500|1 glass:250|100 g:100,drink
+cola-diet,Diet cola,diet coke|coke zero|pepsi max|zero sugar soda|diet soda,175099,1 can:330|1 bottle:500|100 g:100,drink
+lemon-lime-soda,Lemon lime soda,sprite|7up|lemonade soda,173205,1 can:330|1 bottle:500|100 g:100,drink
+ginger-ale,Ginger ale,ginger beer|dry ginger,174846,1 can:330|1 glass:250|100 g:100,drink
+sports-drink,Sports drink,gatorade|powerade|isotonic drink|electrolyte drink|sponsor,173660,1 bottle:500|1 large bottle:609|1 glass:250|100 g:100,drink
+energy-drink,Energy drink,red bull|krating daeng|monster|m150|carabao,173210,1 can:250|1 large can:473|100 g:100,drink
+coconut-water,Coconut water,nam maprao|young coconut juice|coconut juice,174831,1 glass:250|1 coconut:300|1 cup:245|100 g:100,drink
+beer,Beer,lager|pint|bia|chang|singha|leo|ale,168746,1 can:330|1 large bottle:620|1 pint:473|100 g:100,drink
+beer-light,Light beer,lite beer|low carb beer|bud light,168749,1 can:330|1 bottle:355|100 g:100,drink
+wine-red,Red wine,wine|merlot|cabernet|shiraz|pinot noir,173190,1 glass:150|1 bottle:750|100 g:100,drink
+wine-white,White wine,sauvignon blanc|chardonnay|pinot grigio|rose|prosecco|champagne,174837,1 glass:150|1 bottle:750|100 g:100,drink
+spirits,Spirits,vodka|whisky|whiskey|rum|gin|tequila|lao khao|sang som|liquor|shot,174815,1 shot:42|1 double:84|100 g:100,drink
+sake,Sake,rice wine|soju|makgeolli,167723,1 glass:180|1 fl oz:29|100 g:100,drink
+pizza-cheese,Cheese pizza,pizza|margherita|pizza slice|cheese pizza slice,173292,1 slice:107|100 g:100,
+pizza-pepperoni,Pepperoni pizza,pepperoni pizza slice|meat pizza,173295,1 slice:111|100 g:100,
+hamburger,Hamburger,burger|plain burger|beef burger,170694,1 burger:97|100 g:100,protein
+cheeseburger,Cheeseburger,cheese burger|quarter pounder,170691,1 burger:127|100 g:100,protein
+big-mac,Big Mac,double burger|mcdonalds burger,170720,1 burger:219|100 g:100,protein
+whopper,Whopper,burger king burger|large burger,170728,1 burger:316|100 g:100,protein
+chicken-sandwich,Chicken burger,chicken sandwich|chicken fillet burger|mcchicken,170295,1 sandwich:187|100 g:100,protein
+fish-sandwich,Fish burger,fish sandwich|filet o fish,170296,1 sandwich:220|100 g:100,
+french-fries,French fries,fries|chips|hot chips|mcdonalds fries|fren fry,170698,1 medium:117|1 small:71|1 large:154|100 g:100,staple
+fried-chicken,Fast food fried chicken,kfc|fried chicken|gai tod|crispy fried chicken,170756,1 piece:203|100 g:100,protein
+fried-chicken-drumstick,Fried chicken drumstick,kfc drumstick|fried drumstick,170757,1 piece:75|100 g:100,protein
+chicken-nuggets,Chicken nuggets,nuggets|mcnuggets|chicken bites,173297,6 pieces:95|4 pieces:64|100 g:100,protein
+chicken-tenders,Chicken tenders,chicken strips|chicken fingers|chicken goujons,173321,3 pieces:90|1 piece:30|100 g:100,protein
+onion-rings,Onion rings,battered onion,170697,1 serving:117|100 g:100,
+taco,Beef taco,taco|hard taco|crunchy taco,170689,1 taco:69|100 g:100,
+burrito,Bean and cheese burrito,burrito|bean burrito,172039,1 burrito:185|100 g:100,
+burrito-beef,Beef burrito,beef bean burrito|burrito with meat,173278,1 burrito:241|100 g:100,protein
+nachos,Nachos,nachos with cheese|loaded nachos,170291,1 serving:80|100 g:100,
+sub-turkey,Turkey sub,subway|turkey sandwich|sub sandwich|submarine,170706,1 six inch sub:184|100 g:100,protein
+egg-muffin,Egg McMuffin,breakfast muffin|egg muffin|breakfast sandwich,173307,1 sandwich:126|100 g:100,protein
+breakfast-burrito,Breakfast burrito,egg burrito|sausage egg burrito,170787,1 burrito:109|100 g:100,protein
+fried-rice,Fried rice,khao pad|khao phat|nasi goreng|egg fried rice|chinese fried rice,167668,1 plate:300|1 cup:137|100 g:100,staple
+restaurant-rice,Restaurant steamed rice,chinese rice|takeaway rice|khao suay ran,169712,1 cup:132|1 plate:250|100 g:100,staple
+lo-mein,Lo mein,chow mein|stir fried noodles|fried noodles,167677,1 plate:300|1 cup:136|100 g:100,staple
+general-tso,General Tso chicken,general tsos|crispy chicken in sauce,167675,1 plate:250|1 order:535|3 pieces:53|100 g:100,protein
+orange-chicken,Orange chicken,lemon chicken|honey chicken,167679,1 plate:250|1 order:648|3 pieces:63|100 g:100,protein
+sweet-sour-pork,Sweet and sour pork,moo priao wan|sweet sour pork|sweet and sour chicken,168082,1 plate:250|1 order:609|100 g:100,protein
+stir-fry-chicken,Chicken and vegetable stir fry,chicken stir fry|pad pak gai|chicken with vegetables,167678,1 cup:153|1 plate:300|100 g:100,protein
+stir-fry-beef,Beef and vegetable stir fry,beef stir fry|beef with broccoli|pad nua,168072,1 plate:300|1 order:574|100 g:100,protein
+egg-roll,Spring roll,egg roll|popiah tod|fried spring roll,167667,1 roll:89|100 g:100,
+dumplings,Dumplings,potstickers|wontons|gyoza|kiao|dim sum|shumai,169773,5 pieces:145|1 piece:29|100 g:100,protein
+spaghetti-bolognese,Spaghetti bolognese,spag bol|spaghetti with meat sauce|bolognese,167680,1 plate:350|1 large serving:554|100 g:100,staple
+lasagna,Lasagna,lasagne|beef lasagna,172114,1 piece:255|1 small piece:123|100 g:100,protein
+mac-and-cheese,Mac and cheese,macaroni cheese|kraft dinner|macaroni and cheese,169770,1 cup:189|100 g:100,staple
+chicken-rice,Chicken and rice,arroz con pollo|chicken rice|khao man gai|hainanese chicken rice,167659,1 plate:300|1 cup:141|100 g:100,staple|protein
+chicken-noodle-soup,Chicken noodle soup,chicken soup|canned soup|campbells,172909,1 cup:248|1 bowl:350|100 g:100,
+coleslaw,Coleslaw,slaw|cole slaw,170300,1 side:191|100 g:100,
+water-spinach,Morning glory,water spinach|pak boong|phak bung|kangkung|ong choy|water convolvulus,169302,1 cup:98|1 plate:150|100 g:100,
+tomato-soup,Tomato soup,cream of tomato|canned tomato soup,171176,1 cup:248|1 bowl:350|100 g:100,
+wonton-soup,Wonton soup,kiao nam|wanton soup|dumpling soup,171821,1 cup:223|1 bowl:350|100 g:100,
+hot-sour-soup,Hot and sour soup,suan la tang|spicy soup,174808,1 cup:233|1 bowl:350|100 g:100,

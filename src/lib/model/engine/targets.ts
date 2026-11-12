@@ -37,13 +37,20 @@ export function effectiveRate(p: PlanNumbers, sex: Sex): number {
   return (kgPerWeek / p.weightKg) * U.percent;
 }
 
-/** Calories against the day's band (section 9). Below the band is "to go" on a gain goal and neutral otherwise. */
-export function calorieStatus(goal: Goal, intake: number, target: number, sex: Sex): DayStatus {
+/** The day's on track band in kcal, [from, to] (section 9). On a lose goal it never starts below the floor. */
+export function calorieBand(goal: Goal, target: number, sex: Sex): [number, number] {
   const b = V.onTrackBand;
   const [lo, hi] =
     goal === 'gain' ? [b.gainMin, b.gainMax] : goal === 'lose' ? [b.loseMin, b.loseMax] : [b.maintainMin, b.maintainMax];
-  const min = goal === 'lose' ? Math.max(lo * target, floorFor(sex)) : lo * target;
-  return intake < min ? 'below' : intake > hi * target ? 'above' : 'on';
+  return [goal === 'lose' ? Math.max(lo * target, floorFor(sex)) : lo * target, hi * target];
+}
+
+/** Calories against the day's band. Below the band is "to go" on a gain goal and neutral otherwise. */
+export function calorieStatus(goal: Goal, intake: number, target: number, sex: Sex): DayStatus {
+  const [min, max] = calorieBand(goal, target, sex);
+  return intake < min ? 'below' : intake > max ? 'above' : 'on';
 }
 
 export const proteinOnTrack = (grams: number, target: number) => grams >= V.proteinOnTrack * target;
+/** Protein's band: from the on track share of the target, with no upper end. */
+export const proteinBand = (target: number): [number, number] => [V.proteinOnTrack * target, Infinity];

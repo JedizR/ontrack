@@ -37,6 +37,13 @@ Each entry: what is blocked, what Claude tried, the exact steps for you, and wha
 
 Each entry: what to look at (URL or screenshot paths), what to look for, and which milestone it belongs to.
 
+### M5: a full day of logging on your iPhone
+
+- **Where:** the pull request's Vercel preview on the iPhone once sign in works on the live backend (the two M3 entries above); until then `pnpm dev` on the Mac against the mock (code 123456). Screenshots: `screenshots/today/` after `pnpm screenshots -- --grep today` (typical, past day, empty day, every logging sheet, light and dark, 390, SE and Pro Max), and `screenshots/stress/*/logging/` and `screenshots/fonts/*-xl/logging/` for every device and the largest text.
+- **Look for:** use it for a full day with Search and Quick add only, and note every moment of friction. Logging a recent meal is the plus, then the plus on its row. Swipe a meal left to delete it and try Undo. Tap the hero for How it is calculated. Mark the training session Done, then Undo, then Skip today from the row's menu: the target drops to the rest day number. Pick yesterday in the week strip and log something there. On the phone only: the swipe feel, the keyboard over the search field, the time field in the Meal sheet.
+- **Decide:** with three meals the third sits under the dock at 390 by 844, as in the M1 reference (`/gallery/today`), so F3's "fits without scrolling" is not met. Options: accept, or tighten the hero and week strip.
+- **Decided for you:** the M5 list in `docs/DECISIONS.md`, notably the week strip showing the last seven days instead of Monday to Sunday, the Add sheet with two tiles until photo logging, Skip today behind a menu button instead of a long press, and the food list (512 USDA foods, names and portions drafted by Claude).
+
 ### M4: onboarding on your iPhone, twice
 
 - **Where:** the pull request's Vercel preview in Safari on the iPhone for the install guide, then the installed app. Saving the plan needs sign in, so the last step waits for the two M3 entries above; until then `pnpm dev` on the Mac runs the whole flow against the mock (code 123456). Screenshots: `screenshots/onboarding/` after `pnpm screenshots -- --grep onboarding` (every step, light and dark, 390, SE and Pro Max), and `screenshots/stress/*/onboarding/` for every device and text size.
