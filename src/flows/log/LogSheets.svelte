@@ -8,6 +8,7 @@
   import SessionSheet from './SessionSheet.svelte';
   import DescribeSheet from './DescribeSheet.svelte';
   import ReviewSheet from './ReviewSheet.svelte';
+  import SupplementSheet from './SupplementSheet.svelte';
 </script>
 
 <AddSheet />
@@ -18,3 +19,4 @@
 <QuickAddSheet />
 <HowSheet />
 <SessionSheet />
+<SupplementSheet />

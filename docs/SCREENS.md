@@ -120,14 +120,15 @@ The common case, the morning shake: plus, the Whey row, Add. Three taps when the
    - "Name", a text field filled with the kind's name ("Something else" starts empty, with the hint "Name on the tub").
    - "Scoop" in grams on a typed stepper. A preset from the table starts at the table's scoop (whey 30 g, plant 45 g); the others at 0, which means not known.
    - Eyebrow "In one scoop", then calories, protein, carbs and fat as labelled rows of typed steppers in one column, as in Correct. A preset from the table starts at its values per 100 g scaled to the scoop, and follows the scoop until a value is changed. The others start at 0. Nobody is asked for a value per 100 g.
-   - One line on why: from the table, "Brands differ, so the label on your tub is more accurate than this average from USDA SR Legacy."; otherwise "Copy the numbers from the label on your tub."
-   - The zero calorie case, live, when every value is 0: "No calories, so Today shows it as taken."
+   - One line on why: from the table, "Brands differ, so the label on your tub is more accurate than this average from USDA FoodData Central, SR Legacy."; otherwise "Copy the numbers from the label on your tub."
+   - The zero calorie case, live, when the calories are 0: "No calories, so Today shows it as taken."
    - Error, in the attention colour, Save disabled: protein, carbs and fat weigh more than a known scoop, "Protein, carbs and fat add up to more than the scoop. Check the label." An empty name disables Save without a message; the field's hint says what goes there.
+   - "Scoops you take" on a typed stepper in half steps, starting at 1: the user's own amount, the first one logged, so the common case needs no change on the amount step.
    - Pinned: primary "Save supplement". Saving shows the amount step for it.
-   - Opened from the amount step's "Edit supplement": the title is the supplement's name, the values are its own, the primary reads "Save changes" and goes back to the amount step, and a danger "Remove supplement" closes the sheet with an undo toast, "Whey protein removed". Meals already logged keep their numbers.
+   - Opened from the amount step's "Edit supplement": the title is the supplement's name, the values and scoops are its own, the primary reads "Save changes" and goes back to the amount step, and a danger "Remove supplement" closes the sheet with an undo toast, "Whey protein removed". Meals already logged keep their numbers.
 3. **Amount.** Title: the supplement's name.
    - Calories for the chosen amount in Display with "kcal", and under it "48 g protein, 6 g carbs, 3 g fat", both changing as the amount does.
-   - "Scoops" on a typed stepper in half steps, from 0.5 to 10, starting at the last amount used (1 the first time).
+   - "Scoops" on a typed stepper in half steps, from 0.5 to 10, starting at the last amount used (the scoops the user takes, the first time).
    - "Mixed with": chips, Water first, then the milks from the food table (whole, reduced fat, skim, soy, almond), starting at the last mix. A milk shows "Milk" in grams on a stepper of 50, starting at the last amount or the table's glass (250 g); its calories join the total and its row on Today reads Database. The milk values come from the food table, through the user's remembered numbers (F15) when there are any.
    - A plain "Edit supplement".
    - Pinned: primary "Add 240 kcal". The sheet closes, Today updates, and the toast "Added Whey protein" offers Undo, which also puts back the last amount.

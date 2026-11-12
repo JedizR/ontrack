@@ -146,8 +146,8 @@ export const foodSchema = z.object({
 export const supplementSchema = z.object({
   name: str(1, 60),
   kind: z.enum(['whey', 'casein', 'plant', 'gainer', 'creatine', 'other']),
-  scoopG: num(0, 300),
-  perScoop: z.object({ kcal: num(0, 2000), protein: num(0, 300), carbs: num(0, 300), fat: num(0, 300) }),
+  scoopG: num(0, 1000),
+  perScoop: z.object({ kcal: num(0, 2000), protein: num(0, 1000), carbs: num(0, 1000), fat: num(0, 1000) }),
   lastScoops: num(0.5, 10),
   lastMix: z.optional(z.object({ foodId: str(1, 80), grams: num(1, 1000) })),
 });
