@@ -16,7 +16,7 @@ Status is one of: not started, in progress, shipped, shipped with cuts, blocked.
 | M5 | Today and logging | shipped with cuts | PR #9, merged, `v0.5.0` | Gate green on the mock. Three meals do not fit 390 by 844 without scrolling (as in the M1 reference). No install notice card, no deleting a saved meal |
 | M6 | Photo logging | shipped with cuts | PR #10, merged, `v0.6.0` | Gate green on the mock. Eval on ten Commons photos with `gemini-3.6-flash`; deployed time to a review 4.8 s on the one full sample (free tier limits) |
 | M7 | Training | shipped | PR #11, merged, `v0.7.0` | Gate green on the mock. Drag on a real phone, and whether the recommendations fit the owner's program, are on his review list |
-| D1 | Design refresh (owner, after M7) | shipped | branch `d1-design-refresh`, PR #12 | OneFin identity in light and dark, wheels and typed steppers instead of the keypad, browser first (no install guide). The look by eye and the wheels by thumb, and the template licence, are on the owner's list |
+| D1 | Design refresh (owner, after M7) | shipped | PR #12, merged, `v0.7.1` | OneFin identity in light and dark, wheels and typed steppers instead of the keypad, browser first (no install guide). The look by eye and the wheels by thumb, and the template licence, are on the owner's list |
 | M8 | Progress and check-ins | not started | | |
 | L1 | Landing page (owner, after M8) | not started | | For signed-out visitors, OneFin style with scroll animations; replaces Welcome |
 | M9 | Hardening and release | not started | | |
