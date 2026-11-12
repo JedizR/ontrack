@@ -21,9 +21,14 @@ async function scan(page: Page, code: string, plus = true) {
   await page.getByTestId('barcode-field').fill(code);
   await page.getByTestId('barcode-find').click();
 }
-async function photo(page: Page, button: string) {
+/** A label photo; the first one shows the photo notice. */
+async function photo(page: Page, button: string, notice = false) {
   const chooser = page.waitForEvent('filechooser');
   await page.getByTestId(button).click();
+  if (notice) {
+    await expect(page.getByTestId('photo-notice')).toHaveText("Your photo of the label is sent to Google's Gemini to read its numbers, then discarded. Ontrack keeps only the numbers.");
+    await page.getByTestId('photo-continue').click();
+  }
   await (await chooser).setFiles('tests/fixtures/meal.jpg');
 }
 async function type(page: Page, testid: string, value: string) {
@@ -70,7 +75,7 @@ test('F22: an unknown barcode is read from a label photo, saved, then scanned ag
   await scan(page, '8850999220017');
   await expect(page.getByTestId('product-new')).toContainText('This barcode is not in Open Food Facts yet. Photograph the nutrition label and Ontrack keeps it for your next scan.');
   await expect(page.getByTestId('product-new')).toContainText('Barcode 8850999220017');
-  await photo(page, 'label-photo');
+  await photo(page, 'label-photo', true);
 
   // the label as read: confirm it
   await expect(page.getByTestId('label')).toBeVisible();
@@ -125,7 +130,7 @@ test('F22: no nutrition and a photo that is not a label lead to typing the numbe
   await vision(page, space, { fixture: 'not-label' });
   await scan(page, '8851234567898');
   await expect(page.getByTestId('product-new')).toContainText('Open Food Facts has this product without its nutrition.');
-  await photo(page, 'label-photo');
+  await photo(page, 'label-photo', true);
   await expect(page.getByTestId('label-failed')).toContainText('We could not read a nutrition label in that photo. Take it straight on and close enough to read.');
   await page.getByTestId('label-type').click();
 
@@ -180,7 +185,7 @@ test('F21 (B1): a mass gainer set up from a photo of its label', async ({ page }
   await page.getByTestId('supplement-entry').click();
   await page.getByTestId('kind-gainer').click();
   await expect(page.getByTestId('tub-typical')).toHaveCount(0);
-  await photo(page, 'tub-photo');
+  await photo(page, 'tub-photo', true);
   await expect(page.getByTestId('supplement-label')).toBeVisible();
   await expect(page.getByTestId('supplement-scoop').getByRole('textbox')).toHaveValue('31');
   await expect(page.getByTestId('supplement-kcal').getByRole('textbox')).toHaveValue('120');

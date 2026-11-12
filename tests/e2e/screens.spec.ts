@@ -500,8 +500,12 @@ for (const theme of ['light', 'dark'] as const) {
         let readIt = () => {};
         const reading = new Promise<void>((r) => (readIt = r));
         await page.route('**/api/analyze', async (route) => { await reading; await route.continue(); });
-        const chooser = page.waitForEvent('filechooser');
         await page.getByTestId('label-photo').click();
+        await expect(page.getByTestId('photo-notice')).toBeVisible();
+        await settled();
+        await shot(page, 'scan', 'notice');
+        const chooser = page.waitForEvent('filechooser');
+        await page.getByTestId('photo-continue').click();
         await (await chooser).setFiles('tests/fixtures/meal.jpg');
         await expect(page.getByText('Reading the label')).toBeVisible();
         await shot(page, 'scan', 'reading');

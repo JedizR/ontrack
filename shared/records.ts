@@ -160,7 +160,8 @@ export const supplementSchema = z.object({
 /** A packaged food by its barcode (B1, F22), kept once the user logs it or confirms its label, so the next scan is
  * instant and works offline. id: the barcode as 13 digits (UPC-A with a leading 0) or 8 (EAN-8). Values per 100 g, or
  * per 100 ml for a product measured in ml. off: from Open Food Facts; label: read from the pack's label and confirmed;
- * yours: typed or changed by the user. `lastG` is where the amount starts next time. */
+ * yours: typed or changed by the user. `lastG` is where the amount starts next time. Amounts stop at a meal item's
+ * 10,000 g. */
 export const productSchema = z.object({
   name: str(1, 120),
   brand: z.optional(str(1, 80)),
@@ -168,8 +169,10 @@ export const productSchema = z.object({
   unit: z.enum(['g', 'ml']),
   per100: z.object({ kcal: num(0, 1000), protein: num(0, 100), carbs: num(0, 100), fat: num(0, 100) }),
   servingG: z.optional(num(0.1, 5000)),
-  packG: z.optional(num(0.1, 20000)),
-  lastG: z.optional(num(1, 20000)),
+  packG: z.optional(num(0.1, 10000)),
+  /** the serving as Open Food Facts prints it ("2 scoops (60 g)"), for a tub set up as a supplement later */
+  serving: z.optional(str(1, 80)),
+  lastG: z.optional(num(0.1, 10000)),
 });
 
 export const SCHEMAS = {

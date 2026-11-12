@@ -119,8 +119,8 @@ export const saveProduct = (p: Product, code: string) => write('product', code, 
 export function logProduct(code: string, p: Product, grams: number, date: string, at: string) {
   const before = db.get('product', code);
   const was = before && copy(before);
+  const id = saveMeal({ date, at, title: p.name, method: 'barcode', items: [productItem(code, p, grams)] }); // checked first
   saveProduct({ ...copy(p), lastG: grams }, code);
-  const id = saveMeal({ date, at, title: p.name, method: 'barcode', items: [productItem(code, p, grams)] });
   return () => {
     deleteMeal(id);
     if (was) saveProduct(was, code);
@@ -128,7 +128,7 @@ export function logProduct(code: string, p: Product, grams: number, date: string
 }
 /** What a barcode finds: the user's product, Open Food Facts' (`empty` when it has no nutrition), or nothing. */
 export type Found =
-  | { kind: 'found'; code: string; product: Product; serving?: string }
+  | { kind: 'found'; code: string; product: Product }
   | { kind: 'empty'; code: string; name: string; brand?: string }
   | { kind: 'missing' | 'offline' | 'failed'; code: string };
 /** The user's saved product first, at once and offline too, then Open Food Facts. Never throws. */
@@ -139,10 +139,10 @@ export async function findProduct(code: string): Promise<Found> {
   try {
     const p = await fetchOff(code);
     if (!p) return { kind: 'missing', code };
-    const { per100, serving, ...rest } = p;
+    const { per100, ...rest } = p;
     const name = p.name || p.brand || t.scan.unnamed;
     if (!per100) return { kind: 'empty', code, name, ...(p.brand ? { brand: p.brand } : {}) };
-    return { kind: 'found', code, product: { ...rest, name, per100, source: 'off' }, ...(serving ? { serving } : {}) };
+    return { kind: 'found', code, product: { ...rest, name, per100, source: 'off' } };
   } catch {
     return { kind: navigator.onLine ? 'failed' : 'offline', code };
   }

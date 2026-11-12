@@ -22,15 +22,16 @@ export const per100From = (v: Macros, grams: number): Macros => {
 export const productItem = (code: string, p: Product, grams: number): MealItem => ({ name: p.name, grams, ...scaleTo(p.per100, grams), source: p.source, barcode: code });
 
 /** The chips: one serving, the whole pack when it differs, and 100. */
+export const MAX_AMOUNT = 10000; // a meal item's grams
 export function portionsOf(p: Pick<Product, 'servingG' | 'packG'>) {
   const out: { key: 'serving' | 'pack' | 'hundred'; grams: number }[] = [];
   if (p.servingG) out.push({ key: 'serving', grams: p.servingG });
-  if (p.packG && p.packG !== p.servingG) out.push({ key: 'pack', grams: p.packG });
+  if (p.packG && p.packG !== p.servingG && p.packG <= MAX_AMOUNT) out.push({ key: 'pack', grams: p.packG });
   if (!out.some((o) => o.grams === 100)) out.push({ key: 'hundred', grams: 100 });
   return out;
 }
 /** Where the amount starts: the last amount logged, else a serving, else the pack, else 100. */
-export const startOf = (p: Pick<Product, 'lastG' | 'servingG' | 'packG'>) => p.lastG ?? p.servingG ?? p.packG ?? 100;
+export const startOf = (p: Pick<Product, 'lastG' | 'servingG' | 'packG'>) => Math.min(MAX_AMOUNT, p.lastG ?? p.servingG ?? p.packG ?? 100);
 
 /** What stops a label from being saved: no serving to weigh the values by, macros heavier than the serving, or more
  * calories than any food has in that weight (pure fat is about 900 kcal in 100 g; past 1,000 is a typo). */

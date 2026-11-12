@@ -34,6 +34,9 @@ describe('Open Food Facts', () => {
     expect(p.servingG).toBeUndefined();
     expect(p.packG).toBeUndefined();
     expect(parseOff({ status: 1, product: { nutriments: { 'energy-kcal_100g': 4000 } } })!.per100).toBeNull();
+    // a serving under 0.1 g (a mint) or a pack past a meal item's 10 kg is left out rather than refused on Add
+    expect(parseOff({ status: 1, product: { nutriments: {}, serving_quantity: 0.04, product_quantity: 25000 } })).not.toHaveProperty('servingG');
+    expect(parseOff({ status: 1, product: { nutriments: {}, serving_quantity: 0.5 } })!.servingG).toBe(0.5);
   });
 });
 
@@ -88,6 +91,9 @@ describe('the product sheet', () => {
     expect(startOf(mama)).toBe(55);
     expect(startOf({ ...mama, lastG: 110 })).toBe(110);
     expect(startOf({})).toBe(100);
+    expect(portionsOf({ servingG: 500, packG: 12000 })).toEqual([{ key: 'serving', grams: 500 }, { key: 'hundred', grams: 100 }]);
+    expect(startOf({ packG: 12000 })).toBe(10000);
+    expect(productSchema.safeParse({ ...mama, lastG: 0.5 }).success).toBe(true);
   });
   test('a label is saved only with a serving, macros it can hold, and possible calories', () => {
     const v = { kcal: 120, protein: 2, carbs: 18, fat: 4.5 };

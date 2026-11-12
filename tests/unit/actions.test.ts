@@ -157,7 +157,7 @@ test('products (B1): the saved one first, then Open Food Facts; logging keeps it
   vi.stubGlobal('navigator', { onLine: true });
   try {
     const found = await findProduct('8850987101021');
-    expect(found).toMatchObject({ kind: 'found', product: { source: 'off', servingG: 55, unit: 'g' }, serving: '55 g' });
+    expect(found).toMatchObject({ kind: 'found', product: { source: 'off', servingG: 55, unit: 'g', serving: '55 g' } });
     expect(fetch.mock.calls[0][0]).toContain('/api/v2/product/8850987101021?fields=');
     expect(await findProduct('8850999220017')).toEqual({ kind: 'missing', code: '8850999220017' });
     expect(await findProduct('8851234567898')).toEqual({ kind: 'empty', code: '8851234567898', name: 'Green tea, honey lemon' });

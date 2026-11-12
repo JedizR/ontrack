@@ -21,6 +21,7 @@
   import Button from '$lib/components/Button.svelte';
   import Stepper from '$lib/components/Stepper.svelte';
   import { sheets } from '$lib/sheets.svelte';
+  import { prefs } from '$lib/prefs.svelte';
   import { view } from '$lib/view.svelte';
   import { db } from '$lib/db/store.svelte';
   import { deleteMeal, findProduct, logSupplement, readLabel, removeSupplement, saveSupplement, undoToast, type Found, type LabelResult } from '$lib/actions';
@@ -33,7 +34,7 @@
   import { num } from '$lib/model/format';
   import { haptic } from '$lib/haptics';
   import { t } from '$lib/i18n';
-  import type { Meal, Supplement } from '../../../shared/records';
+  import { supplementSchema, type Meal, type Supplement } from '../../../shared/records';
 
   type Values = Supplement['perScoop'];
   /** each value, its step (half grams, for labels like 1.5 g), its unit and its label; one largest value (four digits)
@@ -55,6 +56,11 @@
   let failure = $state<Exclude<LabelResult, { ok: true }>['error'] | null>(null);
   let limit = $state(0);
   let input = $state<HTMLInputElement>();
+  let code = $state('');
+  /** the photo notice, before the first photo sent to Gemini (shared with the Photo tile) */
+  let notice = $state(false);
+  /** each lookup or label read gets a number; one that is no longer the latest is dropped (back, closed, retaken) */
+  let ask = 0;
   let id = $state<string | null>(null);
   let mealId = $state<string | undefined>();
   // the label step
@@ -97,6 +103,8 @@
   const typical = $derived(origin === 'typical' && own === null && !!(preset || base));
   const heavy = $derived(scoopG > 0 && values.protein + values.carbs + values.fat > scoopG);
   const named = $derived(name.trim().length > 0);
+  /** a scanned or read serving can give a scoop or values the record cannot hold; Save waits for them to be fixed */
+  const savable = $derived(named && !heavy && supplementSchema.safeParse({ name: name.trim(), kind, scoopG, perScoop: values, lastScoops: usual }).success);
 
   const zero = $derived(!!s && noCalories(s));
   const milk = $derived(mix && !zero ? byId.get(mix) : undefined);
@@ -117,6 +125,8 @@
   $effect(() => {
     const o = sheets.supplement;
     untrack(() => {
+      ask++;
+      notice = false;
       if (!o) return;
       if (!foods) void load();
       id = o.id;
@@ -165,27 +175,31 @@
     typing = false;
     step = 'scan';
   }
-  async function look(code: string) {
+  async function look(c: string) {
+    const me = ++ask;
+    code = c;
     step = 'finding';
-    const r = await findProduct(code);
-    if (step !== 'finding' || !sheets.supplement) return;
+    const r = await findProduct(c);
+    if (me !== ask) return; // closed, gone back or scanned again meanwhile
     found = r;
     if (r.kind !== 'found') return void (step = 'new');
     const p = r.product;
     if (!id) name = p.name.slice(0, 60);
-    toLabel(fromServing({ per100: p.per100, servingG: p.servingG, scoops: scoopsIn(r.serving) }), p.source === 'off' ? 'off' : p.source === 'label' ? 'label' : 'typed');
+    toLabel(fromServing({ per100: p.per100, servingG: p.servingG, scoops: scoopsIn(p.serving) }), p.source === 'off' ? 'off' : p.source === 'label' ? 'label' : 'typed');
   }
   function photoTub() {
+    if (!prefs.photoOk) return void (notice = true);
     input?.click();
   }
   async function taken() {
     const file = input?.files?.[0];
     if (input) input.value = '';
     if (!file || !sheets.supplement) return;
+    const me = ++ask;
     failure = null;
     step = 'reading';
     const r = await readLabel(file, today());
-    if (step !== 'reading' || !sheets.supplement) return;
+    if (me !== ask) return;
     if (!r.ok) {
       limit = ('usage' in r && r.usage?.limit) || 0;
       return void (failure = r.error);
@@ -215,7 +229,7 @@
   const setValue = (key: keyof Values, v: number) => { if (values[key] !== v) own = { ...values, [key]: v }; };
 
   function save() {
-    if (!named || heavy) return;
+    if (!savable) return;
     const lastMix = s?.lastMix;
     const data: Supplement = { name: name.trim(), kind, scoopG, perScoop: { ...values }, lastScoops: usual, ...(lastMix ? { lastMix: { foodId: lastMix.foodId, grams: lastMix.grams } } : {}), ...(typical ? { typical: true as const } : {}) };
     const isNew = !id;
@@ -262,11 +276,11 @@
     undoToast(t.supplement.deleted(n), undo);
   }
 
-  const title = $derived(step === 'kind' ? t.supplement.setup : step !== 'amount' && !id ? t.supplement.kinds[kind] : (s?.name ?? ''));
+  const title = $derived(notice ? t.add.consentTitle : step === 'kind' ? t.supplement.setup : step !== 'amount' && !id ? t.supplement.kinds[kind] : (s?.name ?? ''));
   const back = $derived<(() => void) | undefined>(
     step === 'source' ? () => (step = id ? 'amount' : 'kind')
     : step === 'scan' && typing ? () => (typing = false)
-    : step === 'scan' || step === 'new' || step === 'reading' ? () => (step = 'source')
+    : step === 'scan' || step === 'new' || step === 'reading' ? () => { ask++; step = 'source'; }
     : step === 'label' ? () => (step = labelBack)
     : undefined,
   );
@@ -278,7 +292,7 @@
   {#if step === 'new'}
     <Button variant="primary" size="lg" full onclick={photoTub} data-testid="tub-photo-new">{t.supplement.photoTub}</Button>
   {:else if step === 'label'}
-    <Button variant="primary" size="lg" full disabled={!named || heavy} onclick={save} data-testid="supplement-save">{id ? t.meal.save : t.supplement.save}</Button>
+    <Button variant="primary" size="lg" full disabled={!savable} onclick={save} data-testid="supplement-save">{id ? t.meal.save : t.supplement.save}</Button>
   {:else}
     <Button variant="primary" size="lg" full disabled={!ready} onclick={add} data-testid="supplement-add">{mealId ? t.meal.save : zero ? t.supplement.take : t.search.add(num(sum.kcal))}</Button>
   {/if}
@@ -292,8 +306,8 @@
   {title}
   layer="base"
   testid="supplement-sheet"
-  footer={step === 'label' || step === 'amount' || step === 'new' ? footer : undefined}
-  onback={back}
+  footer={!notice && (step === 'label' || step === 'amount' || step === 'new') ? footer : undefined}
+  onback={notice ? undefined : back}
   backLabel={t.supplement.back}
 >
   {#if step === 'kind'}
@@ -305,6 +319,12 @@
       {/each}
     </div>
     <p class="text-caption text-ink-2 mt-3">{t.supplement.noAdvice}</p>
+  {:else if notice}
+    <p class="text-body" data-testid="photo-notice">{t.scan.consent}</p>
+    <div class="mt-6 flex flex-col gap-2">
+      <Button variant="primary" size="lg" full onclick={() => { prefs.photoOk = true; notice = false; input?.click(); }} data-testid="photo-continue">{t.add.consentContinue}</Button>
+      <Button variant="plain" size="lg" full onclick={() => (notice = false)}>{t.add.consentNotNow}</Button>
+    </div>
   {:else if step === 'source'}
     <div class="flex flex-col gap-4" data-testid="supplement-source">
       <p class="text-body">{t.supplement.tubLine}</p>
@@ -338,8 +358,10 @@
     <div class="flex flex-col gap-3" data-testid="supplement-tub-failed">
       <p class="text-body" role="alert">{step === 'reading' ? readWords : found?.kind === 'offline' ? t.supplement.tubOffline : found?.kind === 'failed' ? t.scan.failed : t.supplement.tubMissing}</p>
       <div class="flex flex-wrap gap-2">
-        {#if step === 'reading'}<Button onclick={photoTub} data-testid="tub-retry">{t.scan.retry}</Button>{/if}
+        {#if step === 'reading'}<Button onclick={photoTub} data-testid="tub-retry">{t.scan.retry}</Button>
+        {:else if found?.kind === 'offline' || found?.kind === 'failed'}<Button onclick={() => look(code)} data-testid="tub-retry">{t.scan.retry}</Button>{/if}
         <Button variant="plain" onclick={typeIt} data-testid="tub-type">{t.supplement.typeNumbers}</Button>
+        {#if !id && PRESET_FOOD[kind]}<Button variant="plain" onclick={useTypical} data-testid="tub-typical">{t.supplement.typical}</Button>{/if}
       </div>
     </div>
   {:else if step === 'label'}

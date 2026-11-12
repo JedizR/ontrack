@@ -250,6 +250,7 @@ export const en = {
     amount: 'Amount',
     portions: { serving: '1 serving', pack: 'Whole pack', hundred: (unit: string) => `100 ${unit}` },
     unnamed: 'Packaged food',
+    consent: "Your photo of the label is sent to Google's Gemini to read its numbers, then discarded. Ontrack keeps only the numbers.",
   },
   sync: {
     syncing: 'Backing up your changes',

@@ -8,13 +8,16 @@ export const FORMATS = ['ean_13', 'ean_8', 'upc_a', 'upc_e'] as const;
 export type Detector = { detect(source: HTMLVideoElement): Promise<{ rawValue: string; format: string }[]> };
 type Native = { new (o: { formats: string[] }): Detector; getSupportedFormats(): Promise<string[]> };
 
+// one overrides object, so the WebAssembly is compiled once and reused by every later scan
+const OVERRIDES = { locateFile: (path: string, prefix: string) => (path.endsWith('.wasm') ? wasmUrl : prefix + path) };
+
 /** A reader for the four retail formats. Throws when the WebAssembly cannot load (offline before the first scan). */
 export async function barcodeDetector(): Promise<Detector> {
   const native = (globalThis as { BarcodeDetector?: Native }).BarcodeDetector;
   const supported = native ? await native.getSupportedFormats().catch(() => [] as string[]) : [];
   if (native && FORMATS.every((f) => supported.includes(f))) return new native({ formats: [...FORMATS] });
   const { BarcodeDetector, prepareZXingModule } = await import('barcode-detector/ponyfill');
-  await prepareZXingModule({ overrides: { locateFile: (path: string, prefix: string) => (path.endsWith('.wasm') ? wasmUrl : prefix + path) }, fireImmediately: true });
+  await prepareZXingModule({ overrides: OVERRIDES, fireImmediately: true });
   return new BarcodeDetector({ formats: [...FORMATS] });
 }
 

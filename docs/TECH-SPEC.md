@@ -182,7 +182,8 @@ export type Product = {
   unit: 'g' | 'ml';
   per100: { kcal: number; protein: number; carbs: number; fat: number };   // kcal at most 1,000
   servingG?: number;                  // one serving, from the label or Open Food Facts
-  packG?: number;                     // the whole pack
+  packG?: number;                     // the whole pack, at most 10,000 like a meal item
+  serving?: string;                   // the serving as Open Food Facts prints it ("2 scoops (60 g)")
   lastG?: number;                     // where the amount starts next time
 };
 ~~~
