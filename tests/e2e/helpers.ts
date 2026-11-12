@@ -1,4 +1,5 @@
 import { expect, type Page } from '@playwright/test';
+import { seedRecords, type Outcome } from '../../dev/seed';
 
 export const TODAY = '2026-11-11';
 
@@ -117,15 +118,17 @@ export const MEALS: Seed[] = [
 ];
 
 /**
- * An account on the mock server in its own space. `onboarded` (default) gives it a plan; `signedIn` (default) signs
- * this page in to it before the app loads, once per tab, so a sign out or a reload is not undone.
+ * An account on the mock server in its own space. `onboarded` (default) gives it a plan, or `account` instead of SEED;
+ * `signedIn` (default) signs this page in to it before the app loads, once per tab, so a sign out or a reload is not undone.
  */
-export async function seedAccount(page: Page, o: { space?: string; email?: string; onboarded?: boolean; signedIn?: boolean; records?: Seed[] } = {}) {
+export async function seedAccount(page: Page, o: { space?: string; email?: string; onboarded?: boolean; signedIn?: boolean; records?: Seed[]; account?: Seed[] } = {}) {
   const s = o.space ?? space('seed');
   const email = o.email ?? EMAIL;
   const headers = { 'x-mock-space': s };
   const session = (await (await page.request.post('/__mock/auth/verify', { headers, data: { email, code: '123456' } })).json()) as { token: string; userId: string };
-  if (o.onboarded !== false) await page.request.post('/__mock/push', { headers: { ...headers, authorization: `Bearer ${session.token}` }, data: { records: [...SEED, ...(o.records ?? [])] } });
+  // the mock takes at most 100 records a push, as the sync engine sends them
+  const records = [...(o.account ?? SEED), ...(o.records ?? [])];
+  if (o.onboarded !== false) for (let i = 0; i < records.length; i += 100) await page.request.post('/__mock/push', { headers: { ...headers, authorization: `Bearer ${session.token}` }, data: { records: records.slice(i, i + 100) } });
   const signedIn = o.signedIn === false ? '' : JSON.stringify({ token: session.token, userId: session.userId, email });
   await page.addInitScript(([sp, sess]) => {
     localStorage.setItem('ontrack:mock-space', sp);
@@ -134,6 +137,15 @@ export async function seedAccount(page: Page, o: { space?: string; email?: strin
       localStorage.setItem('ontrack:mock-session', sess);
     }
   }, [s, signedIn] as const);
+  return s;
+}
+
+/** Signed in to the dev seeder's account for this check-in outcome (dev/seed.ts): four weeks of logs, the check-in due on TODAY. */
+export async function openSeeded(page: Page, outcome: Outcome, path = '/') {
+  await page.clock.setFixedTime(new Date(`${TODAY}T10:00:00+07:00`));
+  const s = await seedAccount(page, { account: seedRecords(outcome, TODAY) });
+  await page.goto(path);
+  await expect(page.getByTestId('dock')).toBeVisible();
   return s;
 }
 
