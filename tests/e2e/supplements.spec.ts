@@ -24,6 +24,9 @@ test('F21: whey set up from its label, then 2 scoops in three taps from the plus
   await page.getByTestId('supplement-entry').click();
   await expect(sheet(page)).toContainText('Ontrack logs what you take. It does not recommend supplements or amounts.');
   await page.getByTestId('kind-whey').click();
+  // B1: the tub first, typical values second
+  await expect(page.getByTestId('supplement-source')).toContainText("Brands differ a lot. Copy your tub's numbers in seconds.");
+  await page.getByTestId('tub-typical').click();
   await expect(page.getByTestId('supplement-name')).toHaveValue('Whey protein');
   // USDA's average to start, following the scoop
   await expect(page.getByTestId('supplement-scoop').getByRole('textbox')).toHaveValue('30');
@@ -78,6 +81,8 @@ test('F21: creatine is logged as taken, a chip on Today with no 0 kcal row, and 
   await page.getByTestId('add').click();
   await page.getByTestId('supplement-entry').click();
   await page.getByTestId('kind-creatine').click();
+  await expect(page.getByTestId('tub-typical')).toHaveCount(0); // no typical values for creatine
+  await page.getByTestId('tub-type').click();
   await expect(page.getByTestId('supplement-name')).toHaveValue('Creatine');
   await expect(page.getByTestId('supplement-why')).toHaveText('Copy the numbers from the label on your tub.');
   await expect(page.getByTestId('supplement-scoop').getByRole('textbox')).toHaveValue('0');

@@ -15,6 +15,7 @@
   import Bookmark from '@lucide/svelte/icons/bookmark';
   import Camera from '@lucide/svelte/icons/camera';
   import TextIcon from '@lucide/svelte/icons/text';
+  import ScanBarcode from '@lucide/svelte/icons/scan-barcode';
   import { t } from '$lib/i18n';
   import Card from '$lib/components/Card.svelte';
   import Button from '$lib/components/Button.svelte';
@@ -96,7 +97,7 @@
   const lastWeigh = $derived(weights.filter((d) => d <= view.today).sort().at(-1));
   const weighCard = $derived(!view.past && !checkinCard && !!profile && weighInDue(weights, view.today));
 
-  const ICON: Record<Meal['method'], Component<{ size?: number; strokeWidth?: number }>> = { photo: Camera, text: TextIcon, search: Search, quick: Hash, saved: Bookmark, supplement: ShakerIcon };
+  const ICON: Record<Meal['method'], Component<{ size?: number; strokeWidth?: number }>> = { photo: Camera, text: TextIcon, search: Search, quick: Hash, saved: Bookmark, supplement: ShakerIcon, barcode: ScanBarcode };
   const titleOf = (m: Meal) => m.title || m.items[0]?.name || t.source.manual;
 
   function remove(id: string, m: Meal) {
@@ -241,7 +242,7 @@
             {#snippet leading()}
               {#if m.thumb}<Thumb {id} class="size-full">{#snippet fallback()}{@render tile(Icon)}{/snippet}</Thumb>{:else}{@render tile(Icon)}{/if}
             {/snippet}
-            {#snippet caption()}{timeOf(m.at)}, {#if bySupplement(m)}{amountOf(m)}{:else}<SourceLabel source={mealSource(m.items)} />{/if}{/snippet}
+            {#snippet caption()}{timeOf(m.at)}, {#if bySupplement(m)}{amountOf(m)}{#if m.items[0].source === 'typical'}, <SourceLabel source="typical" />{/if}{:else}<SourceLabel source={mealSource(m.items)} />{/if}{/snippet}
           </Row>
         </SwipeRow>
       {:else}

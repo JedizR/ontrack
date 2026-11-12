@@ -2,11 +2,19 @@
      Label: the name, the scoop and the values in one scoop on typed steppers, starting from the food table where USDA has
      the preset and following the scoop until a value is changed. Amount: live calories and macros, scoops in half steps
      from the last amount, water or a milk from the table, Add; with no calories it logs as taken. Opened from Today it
-     edits the entry: Save changes and Delete. Ontrack never suggests a supplement or an amount. -->
+     edits the entry: Save changes and Delete. Ontrack never suggests a supplement or an amount.
+     B1 (owner): setting up leads with the user's own tub, From your tub: scan its barcode or photograph its label, which
+     fill the Label step from the serving and the scoops in it; typical values come second, and a supplement still on them
+     says Typical, with one quiet way to set it from the tub. -->
 <script lang="ts">
   import { untrack } from 'svelte';
   import { toast } from 'svelte-sonner';
   import ChevronRight from '@lucide/svelte/icons/chevron-right';
+  import ScanBarcode from '@lucide/svelte/icons/scan-barcode';
+  import Camera from '@lucide/svelte/icons/camera';
+  import Skeleton from '$lib/components/Skeleton.svelte';
+  import SourceLabel from '$lib/components/SourceLabel.svelte';
+  import Scanner from './Scanner.svelte';
   import Sheet from '$lib/components/Sheet.svelte';
   import Row from '$lib/components/Row.svelte';
   import Chip from '$lib/components/Chip.svelte';
@@ -15,12 +23,13 @@
   import { sheets } from '$lib/sheets.svelte';
   import { view } from '$lib/view.svelte';
   import { db } from '$lib/db/store.svelte';
-  import { deleteMeal, logSupplement, removeSupplement, saveSupplement, undoToast } from '$lib/actions';
+  import { deleteMeal, findProduct, logSupplement, readLabel, removeSupplement, saveSupplement, undoToast, type Found, type LabelResult } from '$lib/actions';
   import { loadFoods, type Food } from '$lib/data/foods';
   import { FOOD_SOURCES } from '$lib/data/sources';
-  import { KINDS, MAX_SCOOPS, MILKS, PRESET_FOOD, noCalories, perScoopOf, scoopOf, supplementItems, type Kind } from '$lib/model/supplements';
+  import { KINDS, MAX_SCOOPS, MILKS, PRESET_FOOD, fromServing, noCalories, perScoopOf, scoopOf, scoopsIn, supplementItems, type Kind } from '$lib/model/supplements';
+  import { per100From } from '$lib/model/products';
   import { totals } from '$lib/model/day';
-  import { stampOn } from '$lib/model/dates';
+  import { stampOn, today } from '$lib/model/dates';
   import { num } from '$lib/model/format';
   import { haptic } from '$lib/haptics';
   import { t } from '$lib/i18n';
@@ -36,7 +45,15 @@
     ['fat', 0.5, t.after.g, t.quick.fat],
   ];
 
-  let step = $state<'kind' | 'label' | 'amount'>('kind');
+  type Step = 'kind' | 'source' | 'scan' | 'finding' | 'new' | 'reading' | 'label' | 'amount';
+  let step = $state<Step>('kind');
+  /** where the Label step's back chevron goes */
+  let labelBack = $state<Step>('source');
+  let scans = $state(0);
+  let found = $state<Found | null>(null);
+  let failure = $state<Exclude<LabelResult, { ok: true }>['error'] | null>(null);
+  let limit = $state(0);
+  let input = $state<HTMLInputElement>();
   let id = $state<string | null>(null);
   let mealId = $state<string | undefined>();
   // the label step
@@ -44,6 +61,10 @@
   let name = $state('');
   let scoopG = $state(0);
   let preset = $state<Food | undefined>();
+  /** values per 100 g from the tub (scanned or read) that the values per scoop follow, like a preset's */
+  let base = $state<Values | undefined>();
+  /** where the Label step's numbers came from, for its line on why */
+  let origin = $state<'typical' | 'off' | 'label' | 'typed'>('typed');
   /** the user's values; null while a preset's follow the scoop */
   let own = $state<Values | null>(null);
   /** the scoops the user takes, the first amount logged */
@@ -70,7 +91,9 @@
   const milks = $derived(MILKS.flatMap((m) => byId.get(m) ?? []));
 
   const s = $derived(id ? db.get('supplement', id) : undefined);
-  const values = $derived(own ?? perScoopOf(preset, scoopG));
+  const values = $derived(own ?? perScoopOf(preset ?? (base && { per100: base }), scoopG));
+  /** still the table's typical values, untouched (B1) */
+  const typical = $derived(origin === 'typical' && own === null && !!(preset || base));
   const heavy = $derived(scoopG > 0 && values.protein + values.carbs + values.fat > scoopG);
   const named = $derived(name.trim().length > 0);
 
@@ -98,6 +121,7 @@
       id = o.id;
       mealId = o.meal;
       if (!o.id) return void (step = 'kind');
+      labelBack = 'amount';
       const sup = db.get('supplement', o.id);
       const logged = o.meal ? db.get('meal', o.meal) : undefined;
       if (!sup || (o.meal && !logged)) return close();
@@ -107,27 +131,83 @@
   // removed on another device while open
   $effect(() => { if (sheets.supplement && id && !s) untrack(close); });
 
-  async function pick(k: Kind) {
-    const opened = sheets.supplement;
-    const list = PRESET_FOOD[k] ? (foods ?? (await load())) : [];
-    if (sheets.supplement !== opened) return; // closed or opened elsewhere while the table loaded
+  /** A kind picked: From your tub. */
+  function pick(k: Kind) {
     kind = k;
     name = k === 'other' ? '' : t.supplement.kinds[k];
-    own = null;
     usual = 1;
-    preset = list.find((f) => f.id === PRESET_FOOD[k]);
-    scoopG = scoopOf(preset);
+    if (PRESET_FOOD[k] && !foods) void load();
+    step = 'source';
+  }
+  /** The Label step with these numbers; `from` says where they came from. */
+  function toLabel(o: { scoopG: number; base?: Values; own: Values | null; preset?: Food }, from: typeof origin) {
+    scoopG = o.scoopG;
+    base = o.base;
+    own = o.own;
+    preset = o.preset;
+    origin = from;
+    labelBack = 'source';
     step = 'label';
+  }
+  async function useTypical() {
+    const opened = sheets.supplement;
+    const list = foods ?? (await load());
+    if (sheets.supplement !== opened) return; // closed or opened elsewhere while the table loaded
+    const food = list.find((f) => f.id === PRESET_FOOD[kind]);
+    toLabel({ scoopG: scoopOf(food), own: null, preset: food }, 'typical');
+  }
+  /** Typed from the label: empty when setting up, the current numbers when setting an existing one from its tub. */
+  const typeIt = () => toLabel(s ? { scoopG: s.scoopG, own: { ...s.perScoop } } : { scoopG: 0, own: null }, 'typed');
+
+  function scanTub() {
+    scans++;
+    step = 'scan';
+  }
+  async function look(code: string) {
+    step = 'finding';
+    const r = await findProduct(code);
+    if (step !== 'finding' || !sheets.supplement) return;
+    found = r;
+    if (r.kind !== 'found') return void (step = 'new');
+    const p = r.product;
+    if (!id) name = p.name.slice(0, 60);
+    toLabel(fromServing({ per100: p.per100, servingG: p.servingG, scoops: scoopsIn(r.serving) }), p.source === 'off' ? 'off' : p.source === 'label' ? 'label' : 'typed');
+  }
+  function photoTub() {
+    input?.click();
+  }
+  async function taken() {
+    const file = input?.files?.[0];
+    if (input) input.value = '';
+    if (!file || !sheets.supplement) return;
+    failure = null;
+    step = 'reading';
+    const r = await readLabel(file, today());
+    if (step !== 'reading' || !sheets.supplement) return;
+    if (!r.ok) {
+      limit = ('usage' in r && r.usage?.limit) || 0;
+      return void (failure = r.error);
+    }
+    const l = r.label;
+    toLabel(fromServing({ per100: l.per100, perServing: l.perServing, servingG: l.servingG, scoops: l.scoops }), 'label');
   }
   function editLabel() {
     if (!s) return;
     kind = s.kind;
     name = s.name;
-    scoopG = s.scoopG;
-    own = { ...s.perScoop };
     usual = s.lastScoops;
-    preset = undefined;
-    step = 'label';
+    // typical values keep following the scoop, so they stay typical until one is changed
+    const follow = s.typical && s.scoopG > 0;
+    toLabel(follow ? { scoopG: s.scoopG, own: null, base: per100From(s.perScoop, s.scoopG) } : { scoopG: s.scoopG, own: { ...s.perScoop } }, s.typical ? 'typical' : 'typed');
+    labelBack = 'amount';
+  }
+  /** Set an existing supplement from its tub: the From your tub step, then back to its amount. */
+  function define() {
+    if (!s) return;
+    kind = s.kind;
+    name = s.name;
+    usual = s.lastScoops;
+    step = 'source';
   }
   // a field the user only touched (the stepper sets on blur) leaves a preset following the scoop
   const setValue = (key: keyof Values, v: number) => { if (values[key] !== v) own = { ...values, [key]: v }; };
@@ -135,7 +215,7 @@
   function save() {
     if (!named || heavy) return;
     const lastMix = s?.lastMix;
-    const data: Supplement = { name: name.trim(), kind, scoopG, perScoop: { ...values }, lastScoops: usual, ...(lastMix ? { lastMix: { foodId: lastMix.foodId, grams: lastMix.grams } } : {}) };
+    const data: Supplement = { name: name.trim(), kind, scoopG, perScoop: { ...values }, lastScoops: usual, ...(lastMix ? { lastMix: { foodId: lastMix.foodId, grams: lastMix.grams } } : {}), ...(typical ? { typical: true as const } : {}) };
     const isNew = !id;
     id = saveSupplement(data, id ?? undefined);
     if (isNew) toAmount(data);
@@ -180,35 +260,85 @@
     undoToast(t.supplement.deleted(n), undo);
   }
 
-  const title = $derived(step === 'kind' ? t.supplement.setup : step === 'label' && !id ? t.supplement.kinds[kind] : (s?.name ?? ''));
+  const title = $derived(step === 'kind' ? t.supplement.setup : step !== 'amount' && !id ? t.supplement.kinds[kind] : (s?.name ?? ''));
+  const back = $derived<(() => void) | undefined>(
+    step === 'source' ? () => (step = id ? 'amount' : 'kind')
+    : step === 'scan' || step === 'new' || step === 'reading' ? () => (step = 'source')
+    : step === 'label' ? () => (step = labelBack)
+    : undefined,
+  );
+  const readWords = $derived(failure === 'offline' ? t.scan.readOffline : failure === 'not_food' ? t.scan.notLabel : failure === 'daily_limit' ? t.scan.limit(num(limit)) : t.scan.readFailed);
+  const tiles = 'flex min-h-26 flex-col items-start justify-between gap-2 rounded-md p-4 text-left transition-[transform,background-color,box-shadow] duration-[var(--d-press)]';
 </script>
 
 {#snippet footer()}
-  {#if step === 'label'}
+  {#if step === 'new'}
+    <Button variant="primary" size="lg" full onclick={photoTub} data-testid="tub-photo-new">{t.supplement.photoTub}</Button>
+  {:else if step === 'label'}
     <Button variant="primary" size="lg" full disabled={!named || heavy} onclick={save} data-testid="supplement-save">{id ? t.meal.save : t.supplement.save}</Button>
   {:else}
     <Button variant="primary" size="lg" full disabled={!ready} onclick={add} data-testid="supplement-add">{mealId ? t.meal.save : zero ? t.supplement.take : t.search.add(num(sum.kcal))}</Button>
   {/if}
 {/snippet}
 
+<!-- outside the sheet, so it is still there when the camera hands the photo back -->
+<input bind:this={input} type="file" accept="image/*" capture="environment" hidden onchange={taken} data-testid="tub-input" />
+
 <Sheet
   bind:open={() => sheets.supplement !== null, (v) => { if (!v) close(); }}
   {title}
   layer="base"
   testid="supplement-sheet"
-  footer={step === 'kind' ? undefined : footer}
-  onback={step === 'label' ? () => (step = id ? 'amount' : 'kind') : undefined}
+  footer={step === 'label' || step === 'amount' || step === 'new' ? footer : undefined}
+  onback={back}
   backLabel={t.supplement.back}
 >
   {#if step === 'kind'}
     <div data-testid="supplement-kinds">
       {#each KINDS as k (k)}
-        <Row title={t.supplement.kinds[k]} caption={PRESET_FOOD[k] ? t.supplement.fromTable : t.supplement.fromLabel} onclick={() => pick(k)} testid="kind-{k}">
+        <Row title={t.supplement.kinds[k]} caption={t.supplement.fromTub} onclick={() => pick(k)} testid="kind-{k}">
           {#snippet trailing()}<ChevronRight class="text-ink-2 flex-none" size={24} strokeWidth={2} aria-hidden="true" />{/snippet}
         </Row>
       {/each}
     </div>
     <p class="text-caption text-ink-2 mt-3">{t.supplement.noAdvice}</p>
+  {:else if step === 'source'}
+    <div class="flex flex-col gap-4" data-testid="supplement-source">
+      <p class="text-body">{t.supplement.tubLine}</p>
+      <!-- the tub first: Scan is the step's main action, the violet face -->
+      <div class="grid grid-cols-2 gap-3">
+        <button type="button" class="pill-accent active:pill-accent-down {tiles}" onclick={scanTub} data-testid="tub-scan">
+          <span class="bg-on-accent/20 grid size-10 place-items-center rounded-sm"><ScanBarcode size={22} strokeWidth={2} /></span>
+          <span><span class="text-body block font-semibold">{t.supplement.scanTub}</span><span class="text-caption block">{t.supplement.scanTubLine}</span></span>
+        </button>
+        <button type="button" class="bg-surface-2 active:bg-surface-3 active:scale-[0.97] {tiles}" onclick={photoTub} data-testid="tub-photo">
+          <span class="tile grid size-10 place-items-center rounded-sm"><Camera size={22} strokeWidth={2} /></span>
+          <span><span class="text-body block font-semibold">{t.supplement.photoTub}</span><span class="text-caption text-ink-2 block">{t.supplement.photoTubLine}</span></span>
+        </button>
+      </div>
+      {#if !id && PRESET_FOOD[kind]}
+        <Button variant="plain" size="sm" class="-ml-4 self-start" onclick={useTypical} data-testid="tub-typical">{t.supplement.typical}</Button>
+      {:else}
+        <Button variant="plain" size="sm" class="-ml-4 self-start" onclick={typeIt} data-testid="tub-type">{t.supplement.typeNumbers}</Button>
+      {/if}
+    </div>
+  {:else if step === 'scan'}
+    {#key scans}<Scanner oncode={look} />{/key}
+  {:else if step === 'finding' || (step === 'reading' && !failure)}
+    <div class="flex flex-col gap-4" aria-busy="true">
+      <p class="text-callout text-ink-2" aria-live="polite">{step === 'finding' ? t.scan.finding : t.scan.reading}</p>
+      <Skeleton class="h-14 rounded-sm" />
+      <Skeleton class="h-11 rounded-sm" />
+      <Skeleton class="h-11 rounded-sm" />
+    </div>
+  {:else if step === 'new' || step === 'reading'}
+    <div class="flex flex-col gap-3" data-testid="supplement-tub-failed">
+      <p class="text-body" role="alert">{step === 'reading' ? readWords : found?.kind === 'offline' ? t.supplement.tubOffline : found?.kind === 'failed' ? t.scan.failed : t.supplement.tubMissing}</p>
+      <div class="flex flex-wrap gap-2">
+        {#if step === 'reading'}<Button onclick={photoTub} data-testid="tub-retry">{t.scan.retry}</Button>{/if}
+        <Button variant="plain" onclick={typeIt} data-testid="tub-type">{t.supplement.typeNumbers}</Button>
+      </div>
+    </div>
   {:else if step === 'label'}
     <div class="flex flex-col gap-5" data-testid="supplement-label">
       <div class="flex flex-col gap-2">
@@ -234,7 +364,7 @@
       {:else if noCalories({ perScoop: values })}
         <p class="text-callout text-ink-2" data-testid="supplement-zero">{t.supplement.zero}</p>
       {/if}
-      <p class="text-caption text-ink-2" data-testid="supplement-why">{preset ? t.supplement.why(FOOD_SOURCES[preset.source.set].name) : t.supplement.copy}</p>
+      <p class="text-caption text-ink-2" data-testid="supplement-why">{origin === 'typical' ? t.supplement.why(FOOD_SOURCES['usda-sr-legacy'].name) : origin === 'off' ? t.supplement.fromOff : origin === 'label' ? t.supplement.fromPhoto : t.supplement.copy}</p>
       <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
         <span class="text-body font-semibold">{t.supplement.usual}</span>
         <div class="ml-auto"><Stepper bind:value={usual} step={0.5} min={0.5} max={MAX_SCOOPS} label={t.supplement.scoops} testid="supplement-usual" column /></div>
@@ -255,6 +385,13 @@
           </div>
           <p class="text-caption text-ink-2 mt-2" data-testid="supplement-macros">{t.search.macros(num(sum.protein, 1), num(sum.carbs, 1), num(sum.fat, 1))}</p>
         </div>
+        {#if s.typical && !mealId}
+          <!-- the one quiet nudge (B1): gone once it is set from the tub -->
+          <div class="-my-3 flex flex-wrap items-center gap-x-2" data-testid="supplement-typical">
+            <span class="text-caption text-ink-2"><SourceLabel source="typical" /></span>
+            <Button variant="plain" size="sm" onclick={define} data-testid="supplement-define">{t.supplement.define}</Button>
+          </div>
+        {/if}
       {/if}
       <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
         <span class="text-body font-semibold">{t.supplement.scoops}</span>

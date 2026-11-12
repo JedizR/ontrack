@@ -1,0 +1,22 @@
+{
+  "is_label": true,
+  "name": "",
+  "unit": "g",
+  "serving_size": 31,
+  "scoops_per_serving": 1,
+  "servings_per_pack": 74,
+  "per_serving": {
+    "kcal": 120,
+    "kj": 502,
+    "protein_g": 24,
+    "carbs_g": 3,
+    "fat_g": 1.5
+  },
+  "per_100": {
+    "kcal": 387,
+    "kj": 1620,
+    "protein_g": 77.4,
+    "carbs_g": 9.7,
+    "fat_g": 4.8
+  }
+}

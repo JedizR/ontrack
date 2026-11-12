@@ -55,6 +55,8 @@ export const C = {
 
   // Macros, section 8
   atwater: k({ protein: 4, carbs: 4, fat: 9 }, 'kcal/g', 'S19', 'verified'),
+  // Labels and Open Food Facts that give energy only in kilojoules (B1)
+  kjPerKcal: k(4.184, 'kJ per kcal', 'S19', 'verified', 'Section 3.1: 1 kcal = 4.184 kJ'),
   // Photo analysis: checks on the model's own estimate when a food is not in the table (TECH-SPEC section 8)
   estimateKcalMax: k(900, 'kcal per 100 g', 'OT', 'assumption', 'Pure fat is about 884'),
   estimateKcalTolerance: k(0.25, 'share of the energy from the macros', 'OT', 'assumption',

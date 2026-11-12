@@ -1,9 +1,10 @@
 <!-- DESIGN.md section 7, Source label: where a meal's numbers came from. An estimate carries a small outlined circle. No colour.
-     Numbers typed in by hand read Quick add; a food's numbers the user corrected and Ontrack remembers read Yours. -->
+     Numbers typed in by hand read Quick add; a food's numbers the user corrected and Ontrack remembers read Yours. A scanned
+     product reads Open Food Facts or Label (B1); a supplement still on the table's typical values reads Typical. -->
 <script lang="ts">
   import { t } from '$lib/i18n';
 
-  let { source }: { source: 'database' | 'estimate' | 'manual' | 'yours' } = $props();
+  let { source }: { source: 'database' | 'estimate' | 'manual' | 'yours' | 'off' | 'label' | 'typical' } = $props();
 </script>
 
 <span class="inline-flex items-center gap-1">

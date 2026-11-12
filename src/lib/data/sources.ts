@@ -23,3 +23,6 @@ export const FOOD_SOURCES: Record<'usda-sr-legacy' | 'usda-fndds' | 'sg-foodid',
   'usda-fndds': { name: 'USDA FoodData Central, FNDDS 2021 to 2023' },
   'sg-foodid': { name: 'SG FoodID, Health Promotion Board, Singapore, read on 12 November 2026', terms: 'https://go.gov.sg/termsofuse-hpbsgfoodid' },
 };
+
+/** Open Food Facts (B1, F22): its data is open under the Open Database License, credited wherever it shows. */
+export const OFF_SOURCE = { name: 'Open Food Facts, open data under the ODbL', terms: 'https://world.openfoodfacts.org/terms-of-use' };

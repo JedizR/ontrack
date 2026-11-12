@@ -23,10 +23,23 @@ export default defineConfig({
     env: { VITE_BACKEND: 'mock', VISION_PROVIDER: 'mock' },
   },
   projects: [
-    { name: 'light', testMatch: /(app|sync|onboarding|today|photo|train|progress|thai|supplements)\.spec\.ts/, use: { ...phone, colorScheme: 'light' } },
+    { name: 'light', testMatch: /(app|sync|onboarding|today|photo|train|progress|thai|supplements|scan)\.spec\.ts/, use: { ...phone, colorScheme: 'light' } },
     { name: 'dark', testMatch: /app\.spec\.ts/, use: { ...phone, colorScheme: 'dark' } },
     // screenshots at scale 2: the same layout as the phone at scale 3, in less CI time
     { name: 'screens', testMatch: /screens\.spec\.ts/, use: { ...phone, deviceScaleFactor: 2 } },
+    // a real scan (B1): Chromium's fake camera plays a clip of a barcode, which WebKit cannot. Chromium on Linux has no
+    // BarcodeDetector, so CI reads it with the WebAssembly reader Safari uses; macOS uses Chrome's own
+    {
+      name: 'camera',
+      testMatch: /camera\.spec\.ts/,
+      use: {
+        ...devices['Pixel 7'],
+        locale: 'en-US',
+        timezoneId: 'Asia/Bangkok',
+        permissions: ['camera'],
+        launchOptions: { args: ['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream', '--use-file-for-fake-video-capture=tests/fixtures/barcodes/scan.y4m'] },
+      },
+    },
     // layout only, no touch input: Chromium, viewports set per describe
     { name: 'stress', testMatch: /stress\.spec\.ts/, use: { locale: 'en-US', timezoneId: 'Asia/Bangkok' } },
   ],

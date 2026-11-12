@@ -4,6 +4,7 @@ import { GoogleGenAI, ThinkingLevel } from '@google/genai';
 import type { VisionProvider } from './provider.js';
 import { MODEL_JSON_SCHEMA } from './schema.js';
 import { SYSTEM_PROMPT, userText } from './prompt.js';
+import { LABEL_JSON_SCHEMA, LABEL_PROMPT, LABEL_TEXT } from './label.js';
 
 export function geminiProvider(apiKey: string, model: string): VisionProvider {
   const ai = new GoogleGenAI({ apiKey });
@@ -13,15 +14,15 @@ export function geminiProvider(apiKey: string, model: string): VisionProvider {
       if (!apiKey || !model) throw Object.assign(new Error('Gemini is not configured'), { status: 500 });
       const parts = [
         ...(i.image ? [{ inlineData: { mimeType: 'image/jpeg', data: Buffer.from(i.image).toString('base64') } }] : []),
-        { text: userText(i) },
+        { text: i.label ? LABEL_TEXT : userText(i) },
       ];
       const res = await ai.models.generateContent({
         model,
         contents: [{ role: 'user', parts }],
         config: {
-          systemInstruction: SYSTEM_PROMPT,
+          systemInstruction: i.label ? LABEL_PROMPT : SYSTEM_PROMPT,
           responseMimeType: 'application/json',
-          responseJsonSchema: MODEL_JSON_SCHEMA,
+          responseJsonSchema: i.label ? LABEL_JSON_SCHEMA : MODEL_JSON_SCHEMA,
           thinkingConfig: { thinkingLevel: ThinkingLevel.MINIMAL },
           abortSignal: i.signal,
         },

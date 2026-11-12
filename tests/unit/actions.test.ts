@@ -2,12 +2,13 @@
 import 'fake-indexeddb/auto';
 import { beforeAll, expect, test, vi } from 'vitest';
 import { db } from '../../src/lib/db/store.svelte';
-import { changeProgram, deleteMeal, forgetFood, logAgain, logSaved, logSupplement, logWeight, rememberFoods, removeSupplement, saveMeal, savePlan, saveProfile, saveProgram, saveSaved, saveSupplement } from '../../src/lib/actions';
+import { changeProgram, deleteMeal, findProduct, forgetFood, logAgain, logProduct, logSaved, logSupplement, logWeight, rememberFoods, removeSupplement, saveMeal, savePlan, saveProduct, saveProfile, saveProgram, saveSaved, saveSupplement } from '../../src/lib/actions';
+import { readFileSync } from 'node:fs';
 import { foodKey, withMine, type Food } from '../../src/lib/data/foods';
 import foods from '../../src/lib/data/foods.json';
 import { KINDS, MILKS, PRESET_FOOD, perScoopOf, scoopOf, supplementItems } from '../../src/lib/model/supplements';
 import { dayView, mealSource, planFor } from '../../src/lib/model/day';
-import type { MealItem, Plan, Session, Supplement } from '../../shared/records';
+import type { MealItem, Plan, Product, Session, Supplement } from '../../shared/records';
 
 beforeAll(() => db.open('actions-test'));
 
@@ -147,4 +148,51 @@ test('supplements: two scoops with milk become the day\'s items; the last amount
   expect(db.get('supplement', id)?.name).toBe('Whey');
   expect(logSupplement('gone', 1, null, '2026-11-12', '2026-11-12T00:30:00.000Z')).toBeNull();
   expect(() => saveSupplement({ ...whey, lastScoops: 0 })).toThrow();
+});
+
+test('products (B1): the saved one first, then Open Food Facts; logging keeps it with the amount, and undo puts it back', async () => {
+  const off = readFileSync('tests/fixtures/off/8850987101021.json', 'utf8');
+  const fetch = vi.fn(async (url: string) => (url.includes('8850987101021') ? new Response(off) : url.includes('8851234567898') ? new Response(readFileSync('tests/fixtures/off/8851234567898.json', 'utf8')) : url.includes('0000000000000') ? new Response('', { status: 503 }) : new Response('{"status":0}', { status: 404 })));
+  vi.stubGlobal('fetch', fetch);
+  vi.stubGlobal('navigator', { onLine: true });
+  try {
+    const found = await findProduct('8850987101021');
+    expect(found).toMatchObject({ kind: 'found', product: { source: 'off', servingG: 55, unit: 'g' }, serving: '55 g' });
+    expect(fetch.mock.calls[0][0]).toContain('/api/v2/product/8850987101021?fields=');
+    expect(await findProduct('8850999220017')).toEqual({ kind: 'missing', code: '8850999220017' });
+    expect(await findProduct('8851234567898')).toEqual({ kind: 'empty', code: '8851234567898', name: 'Green tea, honey lemon' });
+    expect((await findProduct('0000000000000')).kind).toBe('failed');
+    if (found.kind !== 'found') return;
+
+    const undo = logProduct('8850987101021', found.product, 110, '2026-11-12', '2026-11-12T12:00:00+07:00');
+    expect(db.get('product', '8850987101021')).toMatchObject({ lastG: 110, source: 'off' });
+    const meal = db.live('meal').find((r) => r.data.method === 'barcode')!;
+    expect(meal.data.items).toEqual([{ name: found.product.name, grams: 110, kcal: 520, protein: 10, carbs: 68, fat: 22, source: 'off', barcode: '8850987101021' }]);
+    // the next scan finds it on the device, without asking Open Food Facts
+    fetch.mockClear();
+    expect(await findProduct('8850987101021')).toMatchObject({ kind: 'found', product: { lastG: 110 } });
+    expect(fetch).not.toHaveBeenCalled();
+    undo();
+    expect(db.get('meal', meal.id)).toBeUndefined();
+    expect(db.get('product', '8850987101021')?.lastG).toBe(110); // kept: it was not saved before, so nothing to put back
+
+    // corrected in a meal, the product itself becomes the user's numbers
+    rememberFoods([{ ...meal.data.items[0], kcal: 500 }]);
+    expect(db.get('product', '8850987101021')).toMatchObject({ source: 'yours', per100: { kcal: 454.55 } });
+    expect(db.get('food', foodKey(meal.data.items[0]))).toBeUndefined();
+  } finally {
+    vi.unstubAllGlobals();
+  }
+});
+
+test('products (B1): a label confirmed is kept under its barcode and found offline', async () => {
+  const p: Product = { name: 'Rice crackers', source: 'label', unit: 'g', per100: { kcal: 480, protein: 8, carbs: 72, fat: 18 }, servingG: 25, packG: 50 };
+  saveProduct(p, '8850999220017');
+  vi.stubGlobal('navigator', { onLine: false });
+  try {
+    expect(await findProduct('8850999220017')).toEqual({ kind: 'found', code: '8850999220017', product: p });
+    expect(await findProduct('8851717040016')).toEqual({ kind: 'offline', code: '8851717040016' });
+  } finally {
+    vi.unstubAllGlobals();
+  }
 });

@@ -1,7 +1,8 @@
 // Photo and text analysis behind one interface (ARCHITECTURE A10): `gemini` in production, `mock` for dev and tests.
 import { env } from '../env.js';
 
-export type VisionInput = { image?: Uint8Array; text?: string; locale: string; hint?: string; signal?: AbortSignal };
+/** `label`: read a nutrition label (B1) instead of naming a meal's food */
+export type VisionInput = { image?: Uint8Array; text?: string; locale: string; hint?: string; label?: true; signal?: AbortSignal };
 export interface VisionProvider {
   /** the model id recorded with each analysis */
   model: string;

@@ -1,0 +1,16 @@
+{
+  "is_label": true,
+  "name": "Rice crackers, seaweed",
+  "unit": "g",
+  "serving_size": 25,
+  "scoops_per_serving": null,
+  "servings_per_pack": 2,
+  "per_serving": {
+    "kcal": 120,
+    "kj": null,
+    "protein_g": 2,
+    "carbs_g": 18,
+    "fat_g": 4.5
+  },
+  "per_100": null
+}
