@@ -129,7 +129,7 @@ IDs are stable. Tests and commits refer to them.
 - The photo review sheet has a "Share to map" choice, off by default for every photo.
 - A shared photo is placed where it was taken: the location saved in the photo, or the phone's position read once at capture after the user turns sharing on. Never live location and never a track. The position is rounded to about 100 m before it leaves the phone, and one sentence explains this before the first location prompt.
 - The map shows the user's and friends' shared meals as photo pins with the person's avatar, and groups nearby pins with a "+N more" count, in the manner of Instagram's map. Tapping a pin shows the photo, its title and its nutrition.
-- Unsharing or deleting the meal, removing the friendship, or deleting the account removes the photo from the map and from storage.
+- Unsharing or deleting the meal, or removing the friendship, removes the photo from the map and from friends' reach at once. The photo is the meal's own thumbnail: it leaves storage with the account, and with the meal once thumbnails are deleted with meals (M9).
 
 ### F18 Landing page
 - A signed-out visitor with no onboarding in progress sees a landing page that says what Ontrack does, with phone frames showing real screens and scroll animations in the OneFin style. It replaces Welcome. "Get started" opens onboarding and "Sign in" opens the sign-in sheet.

@@ -1,7 +1,7 @@
 // The app's side of dev/mock-backend.ts: the Backend interface over fetch to /__mock. Used by `pnpm dev`, the e2e
 // tests and the conformance suite. The session is kept in localStorage like supabase-js keeps its own.
-import type { Rec } from '../../../shared/records';
-import { BackendError, PULL_PAGE, pullPages, type Backend, type FailKind, type User } from './types';
+import type { Program, Rec } from '../../../shared/records';
+import { BackendError, PULL_PAGE, pullPages, type Backend, type FailKind, type Friend, type Person, type SharedMeal, type User } from './types';
 
 type Session = { token: string; userId: string; email: string };
 const SESSION_KEY = 'ontrack:mock-session';
@@ -45,6 +45,7 @@ export function createMockBackend(opts: { base?: string; fetch?: typeof fetch; s
   }
   const post = (path: string, body: unknown, auth = true) =>
     call(path, { method: 'POST', auth, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  const ask = async <T>(path: string, body: unknown = {}) => (await (await post(`/social/${path}`, body))!.json()) as T;
 
   return {
     auth: {
@@ -84,6 +85,17 @@ export function createMockBackend(opts: { base?: string; fetch?: typeof fetch; s
     },
     async accessToken() {
       return current?.token ?? null;
+    },
+    social: {
+      handleFree: async (handle) => (await ask<{ free: boolean }>('free', { handle })).free,
+      search: async (prefix) => (await ask<{ people: Person[] }>('search', { prefix })).people,
+      friends: async () => (await ask<{ friends: Friend[] }>('friends')).friends,
+      request: async (id) => void (await ask('request', { id })),
+      accept: async (id) => void (await ask('accept', { id })),
+      remove: async (id) => void (await ask('remove', { id })),
+      sharedIn: async (box) => (await ask<{ meals: SharedMeal[] }>('shared', box)).meals,
+      photo: async (path) => (await call(`/social/photo/${encodeURIComponent(path)}`))?.blob() ?? null,
+      program: async (id) => (await ask<{ program: Program | null }>('program', { id })).program,
     },
   };
 }
