@@ -251,15 +251,15 @@ otp_expiry = 600
 
 # Ontrack signs in with a 6 digit code typed into the app: a link would open Safari, which does not share storage with
 # the installed app. New users get the confirmation email, returning users the magic link email; both must carry the
-# code. Supabase refuses template changes on the free plan's built in mailer, so these wait for custom SMTP
-# (docs/BLOCKERS.md). Uncomment both and run `supabase config push` once SMTP is set.
-# [auth.email.template.confirmation]
-# subject = "Your Ontrack code"
-# content_path = "./supabase/templates/code.html"
-#
-# [auth.email.template.magic_link]
-# subject = "Your Ontrack code"
-# content_path = "./supabase/templates/code.html"
+# code. Supabase refuses template changes on the free plan's built in mailer, so these rely on the custom SMTP
+# (Gmail) set in the dashboard. SMTP and the Google provider are not declared here, so a push leaves them alone.
+[auth.email.template.confirmation]
+subject = "Your Ontrack code"
+content_path = "./supabase/templates/code.html"
+
+[auth.email.template.magic_link]
+subject = "Your Ontrack code"
+content_path = "./supabase/templates/code.html"
 
 # Uncomment to customize email template
 # [auth.email.template.invite]
