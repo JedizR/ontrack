@@ -1,4 +1,4 @@
-// N1 on the mock backend, through the real /api/analyze handler: Thai dishes from the table (F14) and remembered
+// N1 and N3 on the mock backend, through the real /api/analyze handler: Thai dishes from the table (F14) and remembered
 // nutrition (F15). Fixture pad-thai: pad thai with shrimp, 350 g (FNDDS, 147 kcal in 100 g, so 515), and Thai milk tea,
 // 400 g (SG FoodID, 69 kcal in 100 g, so 276).
 import { expect, test, type Page } from '@playwright/test';
@@ -25,10 +25,11 @@ test('F14: a Thai script alias finds a Thai dish, which shows its source and log
   await open(page);
   await search(page, 'ข้าวมันไก่');
   await expect(page.getByTestId('search-sheet')).toContainText('Khao man kai');
-  await expect(page.getByTestId('portion-kcal')).toHaveText('515');
+  // N3: INMU's Thai FCD, 198 kcal in 100 g, a 350 g plate; the citation links to the dish's own page
+  await expect(page.getByTestId('portion-kcal')).toHaveText('693');
   await expect(page.getByTestId('portion-source')).toHaveText('Database');
-  await expect(page.getByTestId('portion-cite')).toContainText('Values from SG FoodID, Health Promotion Board, Singapore, read on 12 November 2026.');
-  await expect(page.getByTestId('portion-cite').getByRole('link', { name: 'Terms of use' })).toHaveAttribute('href', 'https://go.gov.sg/termsofuse-hpbsgfoodid');
+  await expect(page.getByTestId('portion-cite')).toContainText('Values from Thai Food Composition Database, INMU, Mahidol University, read on 12 November 2026.');
+  await expect(page.getByTestId('portion-cite').getByRole('link', { name: 'Source page' })).toHaveAttribute('href', /^https:\/\/inmu\.mahidol\.ac\.th\/thaifcd\/.*[?&]id=1555&/);
   await page.getByTestId('search-add').click();
   await expect(page.getByTestId('meal').first()).toContainText('Khao man kai');
 });
@@ -107,4 +108,7 @@ test('F15: correcting a logged meal remembers it too, and search can forget it',
   await expect(page.getByTestId('portion-kcal')).toHaveText('276');
   await expect(page.getByTestId('portion-source')).toHaveText('Database');
   await expect(page.getByTestId('portion-default')).toBeHidden();
+  // SG FoodID's licence asks for its name, the date read and its terms wherever its values show
+  await expect(page.getByTestId('portion-cite')).toContainText('Values from SG FoodID, Health Promotion Board, Singapore, read on 12 November 2026.');
+  await expect(page.getByTestId('portion-cite').getByRole('link', { name: 'Terms of use' })).toHaveAttribute('href', 'https://go.gov.sg/termsofuse-hpbsgfoodid');
 });

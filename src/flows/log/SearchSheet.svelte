@@ -53,6 +53,8 @@
   const kcalFor = (f: Food, grams: number) => num(Math.round(((mine(f) ?? f.per100).kcal * grams) / 100));
   const item = $derived(picked ? itemFor(picked.food, picked.grams, mine(picked.food)) : null);
   const cite = $derived(picked ? FOOD_SOURCES[picked.food.source.set] : null);
+  /** a food read from a page (the Thai FCD) links to that page, otherwise the table's terms */
+  const citeLink = $derived(picked?.food.source.url ? { href: picked.food.source.url, text: t.search.page } : cite?.terms ? { href: cite.terms, text: t.search.terms } : null);
 
 
   function add() {
@@ -115,7 +117,7 @@
       {#if cite && item?.source !== 'yours'}
         <p class="text-caption text-ink-2" data-testid="portion-cite">
           {t.search.from(cite.name)}
-          {#if cite.terms}<a href={cite.terms} target="_blank" rel="noopener" class="relative underline after:absolute after:-inset-x-2 after:-inset-y-4">{t.search.terms}</a>{/if}
+          {#if citeLink}<a href={citeLink.href} target="_blank" rel="noopener" class="relative underline after:absolute after:-inset-x-2 after:-inset-y-4">{citeLink.text}</a>{/if}
         </p>
       {/if}
     </div>

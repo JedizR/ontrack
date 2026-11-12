@@ -1,6 +1,7 @@
 // Short names and citations for the sources a plan breakdown or a training recommendation links to. The ledger is docs/SOURCES.md; M9's science
 // screen adds the rest. Citations are data, like food and exercise names, not interface words.
 import type { SourceId } from '$lib/model/engine';
+import type { FoodSet } from './foods';
 
 export const SOURCES: Partial<Record<SourceId, { short: string; cite: string }>> = {
   S1: { short: 'Mifflin and St Jeor, 1990', cite: 'Mifflin MD, St Jeor ST, Hill LA, Scott BJ, Daugherty SA, Koh YO. Am J Clin Nutr. 1990;51(2):241-247' },
@@ -17,11 +18,14 @@ export const SOURCES: Partial<Record<SourceId, { short: string; cite: string }>>
 };
 
 /** The food tables foods.json is built from (TECH-SPEC section 9), cited under a food in Search. SG FoodID's licence
- * asks for the source, the date it was read and a link to its terms wherever its data shows. */
-export const FOOD_SOURCES: Record<'usda-sr-legacy' | 'usda-fndds' | 'sg-foodid', { name: string; terms?: string }> = {
+ * asks for the source, the date it was read and a link to its terms wherever its data shows. A Thai FCD page read
+ * online links to that page instead (the food's `source.url`). */
+export const FOOD_SOURCES: Record<FoodSet, { name: string; terms?: string }> = {
   'usda-sr-legacy': { name: 'USDA FoodData Central, SR Legacy' },
   'usda-fndds': { name: 'USDA FoodData Central, FNDDS 2021 to 2023' },
   'sg-foodid': { name: 'SG FoodID, Health Promotion Board, Singapore, read on 12 November 2026', terms: 'https://go.gov.sg/termsofuse-hpbsgfoodid' },
+  'thai-fcd': { name: 'Thai Food Composition Database, INMU, Mahidol University, read on 12 November 2026', terms: 'https://inmu.mahidol.ac.th/thaifcd/content/term-and-condition' },
+  'thai-fcd-owner': { name: 'Thai Food Composition Database, INMU, Mahidol University', terms: 'https://inmu.mahidol.ac.th/thaifcd/content/term-and-condition' },
 };
 
 /** Open Food Facts (B1, F22): its data is open under the Open Database License, credited wherever it shows. */
