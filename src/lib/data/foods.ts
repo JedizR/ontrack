@@ -61,9 +61,10 @@ export function itemFor(f: Food, grams: number, mine?: Per100): MealItem {
 export const foodKey = (i: { foodId?: string | null; name: string }) => i.foodId || `name:${norm(i.name)}`.slice(0, 80);
 /** The item at its grams with the user's values per 100 g, labelled Yours. */
 export const withMine = (i: MealItem, mine: Per100): MealItem => ({ ...i, ...at(mine, i.grams ?? 0), source: 'yours' });
-/** An item's values per 100 g, to one decimal; null without grams. */
+/** An item's values per 100 g, to two decimals so the same grams give back the same numbers; null without grams. */
 export function per100Of(i: MealItem): Per100 | null {
   if (!i.grams) return null;
   const k = 100 / i.grams;
-  return { kcal: r1(i.kcal * k), protein: r1(i.protein * k), carbs: r1(i.carbs * k), fat: r1(i.fat * k) };
+  const r2 = (n: number) => Math.round(n * k * 100) / 100;
+  return { kcal: r2(i.kcal), protein: r2(i.protein), carbs: r2(i.carbs), fat: r2(i.fat) };
 }

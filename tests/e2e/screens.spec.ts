@@ -299,6 +299,55 @@ for (const theme of ['light', 'dark'] as const) {
 
       // SCREENS.md section 7, photo logging: the first photo notice, the review loading and loaded, the oil control,
       // the logged meal with its thumbnail, two errors, and Describe
+      test('thai', async ({ page }) => {
+        const settled = (id: string) => expect(page.getByTestId(id)).toHaveCSS('transform', 'none');
+        const searchFor = async (q: string) => {
+          await page.getByTestId('add').click();
+          await page.getByTestId('add-search').click();
+          await page.getByTestId('search-field').fill(q);
+          await expect(page.getByTestId('result').first()).toBeVisible();
+          await settled('search-sheet');
+        };
+        const row = () => page.getByTestId('meal-item').first();
+        await withPrefs(page, { photoOk: true });
+        const s = await open(page);
+        await searchFor('ก๋วยเตี๋ยว');
+        await shot(page, 'thai', 'search-thai-script');
+        await page.getByTestId('search-field').fill('ข้าวมันไก่');
+        await page.getByTestId('result').first().click();
+        await shot(page, 'thai', 'search-portion');
+        await page.keyboard.press('Escape');
+        await expect(page.getByTestId('search-sheet')).toBeHidden();
+
+        await vision(page, s, { fixture: 'pad-thai' });
+        await takePhoto(page);
+        await expect(page.getByTestId('meal-item')).toHaveCount(2);
+        await settled('review-sheet');
+        await shot(page, 'thai', 'review');
+        await row().locator('button[aria-expanded]').click();
+        await row().getByTestId('item-correct-open').click();
+        const kcal = row().getByTestId('correct-kcal').getByRole('textbox');
+        await kcal.fill('600');
+        await kcal.press('Enter');
+        await row().getByTestId('item-correct').scrollIntoViewIfNeeded();
+        await shot(page, 'thai', 'review-correct');
+        await page.getByTestId('review-add').click();
+        await expect(page.getByTestId('review-sheet')).toBeHidden();
+        await expect(page.getByRole('button', { name: 'Undo' })).toBeHidden({ timeout: 8000 });
+
+        await takePhoto(page);
+        await expect(row()).toContainText('Yours');
+        await settled('review-sheet');
+        await row().locator('button[aria-expanded]').click();
+        await row().getByTestId('item-default').scrollIntoViewIfNeeded();
+        await shot(page, 'thai', 'review-yours');
+        await page.keyboard.press('Escape');
+        await expect(page.getByTestId('review-sheet')).toBeHidden();
+        await searchFor('pad thai with shrimp');
+        await page.getByTestId('result').first().click();
+        await shot(page, 'thai', 'search-yours');
+      });
+
       test('photo', async ({ page }) => {
         const settled = (id: string) => expect(page.getByTestId(id)).toHaveCSS('transform', 'none');
         const s = await open(page);
