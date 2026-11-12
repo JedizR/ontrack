@@ -2,6 +2,7 @@
 import { describe, expect, test } from 'vitest';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
+import { createHash } from 'node:crypto';
 import { en } from '../../src/lib/i18n/en';
 
 const files = (dir: string): string[] =>
@@ -35,6 +36,15 @@ describe('no emoji', () => {
     for (const e of ['\u{1F4AA}', '\u{1F525}', '\u2705', '\u2764\uFE0F']) expect(e).toMatch(emoji);
     for (const t of ['\u00A9 OpenStreetMap', '\u2192', '\u00D7', '5 \u00B0C']) expect(t).not.toMatch(emoji);
   });
+});
+
+describe('the app icon is frozen', () => {
+  // The owner froze the icon (design/brand/ICON.md). Changing it means changing this hash on purpose.
+  const icon = readFileSync('design/brand/app-icon.svg');
+  test('design/brand/app-icon.svg is unchanged', () => {
+    expect(createHash('sha256').update(icon).digest('hex')).toBe('9639506f439012176d5cd7b41cba8208e8e88b17434a2d00748091d35d0f3d62');
+  });
+  test('public/favicon.svg is a copy of it', () => expect(readFileSync('public/favicon.svg').equals(icon)).toBe(true));
 });
 
 describe('tokens only', () => {

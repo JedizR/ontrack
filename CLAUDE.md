@@ -46,6 +46,7 @@ These are the rules that are easy to break without noticing.
 - **Violet means act, green means reached.** OneFin violet fills the primary action and the dock's plus. Success green marks progress that reached its target. Nothing else is violet or green; lavender tints are surfaces.
 - **iPhone rules.** Inputs at 16 px or larger. `touch-action: manipulation` globally. Respect safe areas. Never set `maximum-scale`. Test at 390 by 844 in Safari with its toolbars (viewport 390 by 664) and at the SE size (375 by 548).
 - **No emoji.** Never type an emoji into the UI, the catalog, data or assets. Anything that needs a picture uses a real icon from the icon set. `tests/unit/invariants.test.ts` enforces it.
+- **The app icon is frozen.** `design/brand/app-icon.svg` is the only source and is never redrawn; `pnpm icons` makes the rest. See `design/brand/ICON.md`.
 - **Class names.** Never name a component class after a Tailwind utility (`block`, `flex`, `hidden`). It has bitten us before.
 
 ## Gotchas
