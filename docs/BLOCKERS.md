@@ -29,6 +29,12 @@ Each entry: what is blocked, what Claude tried, the exact steps for you, and wha
 
 Each entry: what to look at (URL or screenshot paths), what to look for, and which milestone it belongs to.
 
+### T1a: the faster gain pace ships provisional (optional)
+
+- **Where:** `docs/DECISIONS.md` under T1a, `docs/SCIENCE.md` section 6 and vectors H and I, the S7 and S20 to S25 rows in `docs/SOURCES.md`. Nothing new to see in the app until T1b: the pace is left out of onboarding until it has its words and label; the two hybrid templates already show in Train, Change program.
+- **Look for:** whether you agree to ship a pace no source recommends. No paper gives a rate above 0.5 percent a week, so 0.75 is labelled Being checked; the 20 percent surplus cap binds first for most lean people (about 75 kcal a day over the standard pace for the hardgainer). Who may choose it: BMI under 20 and under three years of lifting, an Ontrack choice; once chosen it holds as weight rises until changed. Also: 6 hours between lifting and cardio (the more cautious of 6 and 3 hours), and cycling rather than running on leg days.
+- **Then tell Claude:** "Keep the faster pace as is", or "drop it", or a different BMI limit.
+
 ### D2: the refined look on your iPhone
 
 - **Where:** the pull request's Vercel preview in Safari on the iPhone, light and dark (Settings, Display). Before and after screenshots of Today, an onboarding step, the Add sheet, a sheet and the dock are in the pull request (branch `pr-assets`, folder `d2/`); every screen is in `screenshots/` after `pnpm screenshots`.

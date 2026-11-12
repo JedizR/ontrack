@@ -272,8 +272,8 @@ describe('guardrails and paces', () => {
     expect(under.delta).toBe(0);
     expect(Object.is(effectiveRate(under, 'female'), 0)).toBe(true); // not -0
     expect(plan({ ...B, ratePctPerWeek: -0.75 }).delta).toBe(0); // a negative rate never turns a lose goal into a surplus
-    // the faster gain pace stops at BMI 20 and for advanced lifters
-    expect(plan({ ...A, weightKg: 61.25, ratePctPerWeek: 0.75 }).ratePctPerWeek).toBe(0.5); // BMI 20.0
+    // the faster gain pace is chosen under BMI 20 (paceOptions), then holds as weight rises; advanced lifters never get it
+    expect(plan({ ...A, weightKg: 65, ratePctPerWeek: 0.75 }).ratePctPerWeek).toBe(0.75); // BMI 21.2
     expect(plan({ ...A, experience: 'advanced', ratePctPerWeek: 0.75 }).ratePctPerWeek).toBe(0.25);
   });
 });

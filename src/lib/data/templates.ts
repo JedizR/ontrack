@@ -130,13 +130,14 @@ export const TEMPLATES: Template[] = [
 export type TrainKind = 'lifting' | 'cardio' | 'both';
 
 /**
- * The template to suggest for a week (onboarding RESEARCH section 5), or null. Both: a hybrid. Cardio only, or no
+ * The template to suggest for a week (onboarding RESEARCH section 5), or null. Both: a hybrid from 3 days. Cardio only, or no
  * training yet, with a gain goal: Minimal 2 days, for F10's two strength sessions. Lifting: by days and experience.
  */
 export function suggestTemplate(kind: TrainKind, days: number, experience: Experience, goal: Goal): string | null {
   const novice = experience === 'beginner';
-  if (kind === 'both' && days > 0) return days >= 5 && !novice ? 'upper-lower-cardio-5' : 'full-body-cardio-3';
+  if (kind === 'both' && days > 2) return days >= 5 && !novice ? 'upper-lower-cardio-5' : 'full-body-cardio-3';
   if (kind === 'cardio' || days === 0) return goal === 'gain' ? 'minimal-2' : null;
+  // lifting, or both on one or two days: no hybrid fits, so the two strength sessions
   if (days <= 2) return 'minimal-2';
   if (days === 3 || (days === 4 && novice)) return 'full-body-3';
   return days === 4 || novice ? 'upper-lower-4' : 'push-pull-legs-6';

@@ -15,6 +15,12 @@ export const SOURCES: Partial<Record<SourceId, { short: string; cite: string }>>
   S12: { short: 'Schoenfeld and others, 2016', cite: 'Schoenfeld BJ, Ogborn D, Krieger JW. Effects of resistance training frequency on measures of muscle hypertrophy. Sports Med. 2016;46(11):1689-1697' },
   S13: { short: 'WHO guidelines, 2020', cite: 'Bull FC, Al-Ansari SS, Biddle S, et al. World Health Organization 2020 guidelines on physical activity and sedentary behaviour. Br J Sports Med. 2020;54(24):1451-1462' },
   S14: { short: 'NHLBI, 2000', cite: 'NHLBI and NAASO. The Practical Guide: Identification, Evaluation, and Treatment of Overweight and Obesity in Adults. NIH Publication 00-4084, 2000' },
+  S20: { short: 'Helms and others, 2023', cite: 'Helms ER, Spence AJ, Sousa C, et al. Effect of small and large energy surpluses on strength, muscle, and skinfold thickness in resistance-trained individuals: a parallel groups design. Sports Med Open. 2023;9:102' },
+  S21: { short: 'Forbes, 2000', cite: 'Forbes GB. Body fat content influences the body composition response to nutrition and exercise. Ann N Y Acad Sci. 2000;904:359-365' },
+  S22: { short: 'Eddens and others, 2018', cite: 'Eddens L, van Someren K, Howatson G. The role of intra-session exercise sequence in the interference effect: a systematic review with meta-analysis. Sports Med. 2018;48(1):177-188' },
+  S23: { short: 'Robineau and others, 2016', cite: 'Robineau J, Babault N, Piscione J, Lacome M, Bigard AX. Specific training effects of concurrent aerobic and strength exercises depend on recovery duration. J Strength Cond Res. 2016;30(3):672-683' },
+  S24: { short: 'Schumann and others, 2022', cite: 'Schumann M, Feuerbacher JF, Sunkeler M, et al. Compatibility of concurrent aerobic and strength training for skeletal muscle size and function: an updated systematic review and meta-analysis. Sports Med. 2022;52(3):601-612' },
+  S25: { short: 'Wilson and others, 2012', cite: 'Wilson JM, Marin PJ, Rhea MR, et al. Concurrent training: a meta-analysis examining interference of aerobic and resistance exercises. J Strength Cond Res. 2012;26(8):2293-2307' },
 };
 
 /** The food tables foods.json is built from (TECH-SPEC section 9), cited under a food in Search. SG FoodID's licence

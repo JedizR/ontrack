@@ -93,8 +93,9 @@ export function plan(p: PlanInput): PlanNumbers {
 export function planFromBaseline(b: PlanBasis): PlanNumbers {
   const flags: Flag[] = b.maintainOnly ? ['maintainOnly'] : [];
   const goal: Goal = b.maintainOnly ? 'maintain' : b.goal;
-  // Never faster than the paces offered at this BMI, so a check-in at a new weight keeps the guardrails.
-  const offered = paceOptions(goal, bmi(b.weightKg, b.heightCm), b.experience).map((o) => o.rate);
+  // Never faster than the paces offered at this BMI, so a check-in at a new weight keeps the guardrails. A gain pace is
+  // limited by experience only: the faster pace's BMI limit decides who may choose it, and once chosen it holds (F19).
+  const offered = paceOptions(goal, goal === 'gain' ? 0 : bmi(b.weightKg, b.heightCm), b.experience).map((o) => o.rate);
   const rate = Math.max(0, Math.min(b.ratePctPerWeek, Math.max(0, ...offered)));
   const tdee = tdeeAvg(b);
   const wanted = (((rate / U.percent) * b.weightKg) * V.kcalPerKg) / U.daysPerWeek;

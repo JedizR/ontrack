@@ -81,6 +81,7 @@ test('every template saves as a program record', async () => {
 
 describe('the template suggested for "What do you train?" (onboarding RESEARCH section 5)', () => {
   test.each([
+    ['both', 2, 'intermediate', 'gain', 'minimal-2'],
     ['both', 3, 'beginner', 'gain', 'full-body-cardio-3'],
     ['both', 5, 'beginner', 'lose', 'full-body-cardio-3'],
     ['both', 5, 'intermediate', 'maintain', 'upper-lower-cardio-5'],

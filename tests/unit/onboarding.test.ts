@@ -65,6 +65,12 @@ describe('guardrails', () => {
   test('the faster gain pace stays off the pace screen until T1b labels it', () => {
     expect(paceChoices(A, YEAR).options.map((o) => o.name)).toEqual(['lean', 'standard']);
   });
+  test('a pace no longer offered after an answer changed falls back to the default; 0 still holds', () => {
+    expect(inputOf({ ...A, weightKg: 65, rate: 0.75 }, YEAR).ratePctPerWeek).toBe(0.5); // BMI 21.2: no faster gain pace
+    expect(inputOf({ ...A, rate: 0.25 }, YEAR).ratePctPerWeek).toBe(0.25);
+    expect(inputOf({ ...A, rate: 0 }, YEAR).ratePctPerWeek).toBe(0);
+    expect(inputOf({ ...A, goal: 'lose', weightKg: 70, rate: 0.75 }, YEAR).ratePctPerWeek).toBe(0.5); // BMI 22.9: steady
+  });
   test('advanced lifters gaining get the lean pace only', () => {
     expect(paceChoices({ ...A, experience: 'advanced' }, YEAR)).toMatchObject({ options: [{ name: 'lean' }], why: 'leanOnly', picked: 0.25 });
   });

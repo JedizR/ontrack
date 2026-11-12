@@ -130,4 +130,12 @@ describe('the faster gain pace (vector H): the check-in measures against its ban
   test('gaining faster than the band lowers it', () => {
     expect(checkin(at(0.9)).proposal.reason).toBe('lower');
   });
+  test('past BMI 20 the chosen pace holds: gaining as planned stays on track, never "faster than planned"', () => {
+    // 21 complete days at the even target while gaining at the capped rate: measured maintenance matches the estimate
+    const kgPerDay = ((0.614 / 100) * 60) / 7;
+    const full = { ...window({ complete: 21, intake: 2430.77, kgPerDay }), plan: planH, trendKg: 62 }; // BMI 20.2
+    const r = checkin(full);
+    expect(r.stats.completeDays).toBe(21);
+    expect(r.proposal.reason).toBe('on_track');
+  });
 });

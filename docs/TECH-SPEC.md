@@ -465,7 +465,8 @@ Every muscle has at least four exercises where it is primary. A unit test checks
 Engine contract added in T1 (`docs/SCIENCE.md` sections 6 and 11):
 
 ~~~ts
-// plan.ts: a third gain pace under BMI 20, never for advanced lifters, never the default
+// plan.ts: a third gain pace under BMI 20, never for advanced lifters, never the default. planFromBaseline limits a
+// gain pace by experience only, so a chosen faster pace holds as weight rises; onboarding's inputOf applies the BMI limit
 paceOptions('gain', bmi, experience): Pace[]   // lean 0.25, standard 0.5, faster 0.75 (C.gainPaceFaster, provisional)
 // program.ts
 type HybridPoint = { kind: 'liftFirst' | 'spaceOut' | 'legDayCardio'; weekdays: number[]; value?: number; source: SourceId };
