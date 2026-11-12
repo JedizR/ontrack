@@ -89,7 +89,10 @@ export function createMockServer() {
       const b = await body(visionBody);
       if (!b.success || (b.data.fixture && !isFixture(b.data.fixture))) return fail(400, 'bad_request');
       if (b.data.fixture !== undefined) space.vision = b.data.fixture;
-      if (b.data.used !== undefined) space.aiFrom = b.data.used;
+      if (b.data.used !== undefined) {
+        space.ai.clear();
+        space.aiFrom = b.data.used;
+      }
       return json(200, { ok: true });
     }
 

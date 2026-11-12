@@ -6,9 +6,13 @@
   import MealSheet from './MealSheet.svelte';
   import HowSheet from './HowSheet.svelte';
   import SessionSheet from './SessionSheet.svelte';
+  import DescribeSheet from './DescribeSheet.svelte';
+  import ReviewSheet from './ReviewSheet.svelte';
 </script>
 
 <AddSheet />
+<DescribeSheet />
+<ReviewSheet />
 <MealSheet />
 <SearchSheet />
 <QuickAddSheet />

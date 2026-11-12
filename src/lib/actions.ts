@@ -9,6 +9,7 @@ import { session } from '$lib/session.svelte';
 import { prefs } from '$lib/prefs.svelte';
 import { BackendError } from '$lib/backend';
 import type { FailKind } from '$lib/backend/types';
+import type { AnalyzeRequest, AnalyzeResponse } from '../../shared/analysis';
 import { ids, recSchema, SCHEMAS, type Checkin, type Collection, type DataOf, type Meal, type Plan, type Profile, type Program, type Saved, type SessionLog, type Weight } from '../../shared/records';
 
 const uid = () => crypto.randomUUID();
@@ -80,6 +81,31 @@ export async function mealThumb(mealId: string): Promise<Blob | null> {
   const remote = await session.backend?.getThumb(mealId).catch(() => null);
   if (remote) await db.saveThumb(mealId, remote, false);
   return remote ?? null;
+}
+
+/** Photo or text analysis on the server (TECH-SPEC section 7). Never throws; no connection is `offline`. */
+export type Analyzed = AnalyzeResponse | { ok: false; error: 'offline' };
+const ANALYZE_WAIT_MS = 55_000; // two provider tries of 20 s each, plus the checks around them
+export async function analyzeMeal(req: AnalyzeRequest): Promise<Analyzed> {
+  if (!navigator.onLine) return { ok: false, error: 'offline' };
+  const token = await session.backend?.accessToken();
+  if (!token) return { ok: false, error: 'unauthorized' };
+  try {
+    const res = await fetch('/api/analyze', { method: 'POST', headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' }, body: JSON.stringify(req), signal: AbortSignal.timeout(ANALYZE_WAIT_MS) });
+    const body = (await res.json().catch(() => null)) as AnalyzeResponse | null;
+    // a platform error page (a gateway timeout, a body too large) is not JSON
+    return body && typeof body.ok === 'boolean' ? body : { ok: false, error: res.status === 504 ? 'timeout' : res.status === 413 ? 'too_large' : 'provider_error' };
+  } catch (e) {
+    return { ok: false, error: (e as Error).name === 'TimeoutError' ? 'timeout' : 'offline' };
+  }
+}
+/** A reviewed photo or description: the thumbnail is stored before the meal, so Today shows it at once. Returns the undo. */
+export async function logReviewed(m: Meal, thumb: Blob | null) {
+  const id = uid();
+  // a thumbnail the phone cannot store must not cost the meal
+  const kept = thumb ? await saveMealThumb(id, thumb).then(() => true, () => false) : false;
+  saveMeal(kept ? { ...m, thumb: true } : m, id);
+  return () => { deleteMeal(id); };
 }
 
 // ----- account -----

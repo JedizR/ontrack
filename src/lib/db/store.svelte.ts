@@ -125,9 +125,10 @@ export class Store {
   }
 
   // ----- thumbnails: blob:<mealId>, and blobq for the ones waiting to upload -----
+  // Kept as bytes: WebKit refuses Blobs in IndexedDB in private browsing (and in Playwright's WebKit).
   async saveThumb(mealId: string, blob: Blob, upload = true) {
     if (!this.#idb) return;
-    await set(`blob:${mealId}`, blob, this.#idb);
+    await set(`blob:${mealId}`, { type: blob.type, bytes: await blob.arrayBuffer() }, this.#idb);
     if (upload && !this.#blobq.includes(mealId)) {
       this.#blobq.push(mealId);
       await set('blobq', [...this.#blobq], this.#idb);
@@ -135,7 +136,8 @@ export class Store {
     }
   }
   thumb(mealId: string): Promise<Blob | undefined> {
-    return this.#idb ? get<Blob>(`blob:${mealId}`, this.#idb) : Promise.resolve(undefined);
+    if (!this.#idb) return Promise.resolve(undefined);
+    return get<{ type: string; bytes: ArrayBuffer }>(`blob:${mealId}`, this.#idb).then((v) => (v ? new Blob([v.bytes], { type: v.type }) : undefined));
   }
   thumbQueue() {
     return [...this.#blobq];
