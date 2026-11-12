@@ -42,7 +42,7 @@ IDs are stable. Tests and commits refer to them.
 - Deleting the account removes all rows, photos and the auth user, and says so.
 
 ### F2 Onboarding and plan
-- At most nine screens, one question each, large controls, a visible step count, back always available. Completable in under 90 seconds.
+- Engaging and as little effort as possible, while still personalizing the app (owner's rule, redesigned in O1 from research). Ask only what changes the plan or the app; default, infer or defer the rest. At most nine screens, one question each, large controls, visible progress, back always available. Completable in under 90 seconds, with the tap and time targets set by the O1 research.
 - Collects: goal, sex used for the equation, birth year, height, weight, daily movement outside workouts, training (days, type, length), experience, pace. Optional: body fat, goal weight.
 - Ends on "Your plan": calories for training and rest days, protein, the expected rate of change, and a "how this was calculated" breakdown that sums exactly to the target.
 - The screening step in section 7 runs before any target is shown.

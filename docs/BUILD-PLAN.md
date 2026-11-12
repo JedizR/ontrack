@@ -1,6 +1,6 @@
 # Ontrack: build plan
 
-Ten milestones and six the owner added (D1, N1, N2, T1, L1, S1), each built in its own fresh context: a session when the owner is present, a subagent in an unattended run. Each has a goal, what to read, the steps, a gate that proves it is done, and what the owner checks. Start and finish every milestone with the `milestone` skill. In an unattended run, owner checks are recorded in `docs/BLOCKERS.md` and never hold up the build.
+Ten milestones and seven the owner added (D1, N1, N2, T1, O1, L1, S1), each built in its own fresh context: a session when the owner is present, a subagent in an unattended run. Each has a goal, what to read, the steps, a gate that proves it is done, and what the owner checks. Start and finish every milestone with the `milestone` skill. In an unattended run, owner checks are recorded in `docs/BLOCKERS.md` and never hold up the build.
 
 | | Milestone | Outcome | Owner is needed for |
 | --- | --- | --- | --- |
@@ -16,11 +16,12 @@ Ten milestones and six the owner added (D1, N1, N2, T1, L1, S1), each built in i
 | N1 | Thai foods and remembered nutrition | Thai dishes from a published table, corrections remembered | Logging five usual Thai meals |
 | N2 | Supplements | Whey, creatine and the like logged by scoop in three taps | Logging the morning shake for a few days |
 | T1 | Gain pace and hybrid training | A faster gain pace, strength and cardio planned together, training on Progress | The friends who asked trying it |
+| O1 | Onboarding redesign | Engaging, least effort onboarding that personalizes the app | Doing it cold, timed |
 | L1 | Landing page | A page for signed-out visitors | Scrolling it on the iPhone |
 | S1 | Friends, profiles and the food map | Friends, a profile with an optional program, shared meal photos on a map | A second account as a friend |
 | M9 | Hardening and release | Settings, export, accessibility, speed, security, production | Full device check |
 
-After M8 the order is N1, N2, T1, L1, S1, then M9. It follows the owner's MoSCoW and RICE prioritization: N1, N2, T1 and L1 are Should, with N2 the highest RICE score of the features not yet built, (high value for little effort), S1 is Could, and M9 hardens everything last. T1 comes before L1 because the landing page shows the screens T1 changes.
+After M8 the order is N1, N2, T1, O1, L1, S1, then M9. It follows the owner's MoSCoW and RICE prioritization: N1, N2, T1 and L1 are Should, with N2 the highest RICE score of the features not yet built, (high value for little effort), S1 is Could, and M9 hardens everything last. O1 comes after N2 and T1 so onboarding can personalize with supplements, the faster pace and hybrid templates, and before L1 because the landing page leads into it.
 
 Order: the look is settled before any screen is built (M1), and the logic is settled before any screen needs it (M2, M3). With the owner present, no screen work past M1 starts before he approves the gallery. In an unattended run a clean rubric pass stands in for that approval and the gallery goes on his review list.
 
@@ -173,6 +174,20 @@ Read: `docs/PRD.md` F7, F10, F19 and F20, `docs/SCIENCE.md`, `docs/SCREENS.md` (
 
 Gate: engine vectors for the new pace. End to end tests: a lean user picks the faster pace and gets a plan inside the surplus cap; a hybrid template builds a week and shows its analysis points; Progress shows the training card on seeded data. `verify-ui` passes.
 Owner checks: the friends who suggested these try them.
+
+## O1 Onboarding redesign
+
+The owner's rule: onboarding must be very engaging and easy, personalize the app, and take the least effort to finish. Research on how products and designers handle onboarding in 2026 (TikTok, Duolingo and others) is in `/Users/admin/destination/ontrack-design/onboarding/RESEARCH.md`, with references in `refs/`.
+
+Read: that research, `docs/PRD.md` F2 and section 7, `docs/SCREENS.md` section 4, `docs/SCIENCE.md`, `docs/DESIGN.md`, `src/flows/onboarding/`.
+
+1. Decide the flow from the research. Ask only what changes the plan or the app; default, infer or defer the rest, and state in `docs/DECISIONS.md` what each default or inference costs in accuracy, using SCIENCE.md. Rewrite `docs/SCREENS.md` section 4 before code.
+2. Build it in the OneFin system, with motion from MOTION.md, auto-advance on single choices, the plan number building as the user answers, and a payoff moment that is honest (no fake loading).
+3. Personalize from the answers: Today's first state, a suggested program, supplements set up (F21), the gain pace (F19), Thai foods (F14).
+4. The guardrails in PRD section 7 stay intact: the adult check, and screening before any number is shown.
+
+Gate: end to end tests for the new flow on each goal and for every guardrail exit. The measured taps and time for a typical user beat the current flow and meet the research targets; put both in the pull request. `verify-ui` passes.
+Owner checks: hand the phone to someone who has never seen Ontrack and time them.
 
 ## L1 Landing page
 
