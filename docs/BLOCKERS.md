@@ -29,6 +29,13 @@ Each entry: what is blocked, what Claude tried, the exact steps for you, and wha
 
 Each entry: what to look at (URL or screenshot paths), what to look for, and which milestone it belongs to.
 
+### D2: the refined look on your iPhone
+
+- **Where:** the pull request's Vercel preview in Safari on the iPhone, light and dark (Settings, Display). Before and after screenshots of Today, an onboarding step, the Add sheet, a sheet and the dock are in the pull request (branch `pr-assets`, folder `d2/`); every screen is in `screenshots/` after `pnpm screenshots`.
+- **Look for:** the ink pill (white on dark) as the one action on each screen, with its soft drop and a visible press; violet only as the brand (tiles, links, the promise's key words, progress, the Photo card); Today's hero as a white card with the haze panel and three grey macro tiles; the "Training day" glass chip and the dock's glass, whose blur only Safari draws (Playwright does not); the ONTRACK wordmark on Welcome.
+- **Decide:** whether the stepper's ink keys are welcome or too heavy beside the ink Save (grey keys are one line to change); whether Photo should stay the violet featured card or become a white card; whether Train's summary should also lead with a haze hero (it does not: at most one, and Train has none).
+- **Decided for you:** the D2 list in `docs/DECISIONS.md`, notably the white pill on dark, violet progress, the Hero number in Geist, and the header losing its glass.
+
 ### N3: Thai nutrient facts you find, and five dishes you eat often
 
 - **Where:** the pull request's Vercel preview in Safari on the iPhone, or `pnpm dev` on the Mac (code 123456). Search a Thai dish in English or Thai script (ข้าวซอย, มัสมั่น, ส้มตำ, ขาหมู, ไก่ย่าง); the portion step names the Thai Food Composition Database and links to the dish's page on INMU's site.

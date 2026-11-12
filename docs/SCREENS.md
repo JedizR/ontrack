@@ -25,8 +25,8 @@ Sheets:     Add, Review, Search, Describe, Quick add, Meal, Supplement, Weigh in
 The first screen in a browser that is signed out. Ontrack runs in the browser tab; nothing mentions installing. (L1's landing page replaces Welcome for visitors later.)
 
 **Welcome.**
-- On the brand gradient: the mark and wordmark, then "Eat for the body you are training for." in Title.
-- Three short lines, each one sentence beside a lavender icon tile: a target built from how you train, a photo to log a meal, a weekly correction from your own results.
+- On the brand gradient: the wordmark (D2: the frozen ONTRACK file), then "Eat for the body you are training for." in Title, "you are training for." in violet.
+- Three short lines, each one sentence beside a violet icon tile: a target built from how you train, a photo to log a meal, a weekly correction from your own results.
 - Primary: "Get started". Plain: "I already have an account".
 
 ## 4. Onboarding
@@ -69,7 +69,7 @@ Matches `/gallery/today`.
 
 1. Header: "Today", sync mark, avatar opening Settings.
 2. Week strip. Tapping a day shows that day. Viewing a past day changes the title to its date and adds a "Back to today" chip.
-3. Hero card: calories eaten in Hero style, "of 2,460 kcal", and on the right the counterpart. Under it the track, then "Training day" or "Rest day" on the left and "On track from 2,340" on the right. Then protein, carbs and fat with small tracks. Tapping the card opens How it is calculated.
+3. Hero card (D2: OneFin's "Withdraw" card): on its haze panel, calories eaten in Hero style, "of 2,460 kcal", and on the right the counterpart. Under it the track, then "Training day" or "Rest day" as a glass chip on the left and "On track from 2,340" on the right. Below the panel, protein, carbs and fat as three grey stat tiles with small tracks. Tapping the card opens How it is calculated.
 4. Cards that appear when relevant, at most one at a time, in this priority: weekly check-in ready, easy adds (gain mode in the evening), weigh-in prompt, update notice.
 5. Training card: session name, "Strength, 60 min. Adds 240 kcal", and a "Done" button. After Done: a check mark and "Undo". A long press or the row's menu offers "Skip today". On a rest day: "Rest day" with no button. With no program: "Add your training to sharpen your target".
 6. "Meals" heading with the count, then the list, newest first. Each row opens the Meal sheet. Swipe left to delete, with an undo toast.
@@ -86,7 +86,7 @@ States: first day (hero at zero, a row saying "Log your first meal with the plus
 
 **Add sheet** from the plus button.
 - "Supplements" (N2, F21), first when the user has any: one row per supplement, by name, with the shaker tile, the last amount as its caption ("2 scoops with milk", or "1 scoop" with no calories) and the calories of that amount on the right (none for a supplement with no calories). A row opens the Supplement sheet's amount step. Under the rows a plain "Add a supplement".
-- The ways to log (B1 added Scan): "Photo" first, the full width violet tile (the sheet's main action), then four quiet tiles in a two by two grid: "Scan" ("Barcode on the pack", B1, F22), "Search", "Describe", "Quick add".
+- The ways to log (B1 added Scan): "Photo" first, the full width violet featured card (the sheet's main way), then four quiet tiles in a two by two grid: "Scan" ("Barcode on the pack", B1, F22), "Search", "Describe", "Quick add".
 - With no supplements yet: under the tiles, one row, the shaker tile, "Supplements", caption "Set up once, log by the scoop", and a chevron. It opens the Supplement sheet's first step.
 - "Recent": the last five distinct meals as rows with a trailing plus that logs them again at once, with an undo toast. Logged supplements are not repeated here: they sit at the top.
 - "Saved": saved meals in the same form.
@@ -149,7 +149,7 @@ After capture: the Review sheet opens immediately with the photo at the top and 
 The common case, the morning shake: plus, the Whey row, Add. Three taps when the amount is the last one used; one more on the stepper when it is not. Everything sits in the lower half of the sheet, in thumb reach, and the main action is pinned at the bottom.
 
 1. **Kind**, from "Add a supplement". Title "Add a supplement". Six rows with a chevron, each one tap: "Whey protein", "Plant protein", "Casein", "Mass gainer", "Creatine" and "Something else", each captioned "Set from your tub's label". Under them, in Caption: "Ontrack logs what you take. It does not recommend supplements or amounts."
-2. **From your tub** (owner, during B1: brands differ a lot, so the setup leads with the user's own tub). Title: the kind's name; back returns to Kind. "Brands differ a lot. Copy your tub's numbers in seconds." Two tiles side by side, as on the Add sheet: "Scan the tub" (the violet main tile, line "Barcode on the tub") and "Photograph the label" (quiet, line "Nutrition panel"). Under them a plain "Use typical values for now" for whey and plant protein (USDA's average), or "Type the numbers" for the others.
+2. **From your tub** (owner, during B1: brands differ a lot, so the setup leads with the user's own tub). Title: the kind's name; back returns to Kind. "Brands differ a lot. Copy your tub's numbers in seconds." Two tiles side by side, as on the Add sheet: "Scan the tub" (the violet featured card, line "Barcode on the tub") and "Photograph the label" (quiet, line "Nutrition panel"). Under them a plain "Use typical values for now" for whey and plant protein (USDA's average), or "Type the numbers" for the others.
    - Scan the tub: the Scan sheet's camera and typing, with its states. A product found in the user's products or Open Food Facts fills the Label step: the scoop is the serving divided by the scoops in it ("2 scoops (60 g)" gives 30 g), and the values per scoop follow the scoop. Not found or without nutrition: "This tub is not in Open Food Facts yet. Photograph its label instead." with pinned primary "Photograph the label" and a plain "Type the numbers". Offline: "Finding it needs a connection. Type the numbers, or use typical values for now."
    - Photograph the label: "Reading the label", then the Label step filled: the scoop is the serving divided by the scoops per serving (a mass gainer's "4 scoops (165 g)" gives 41.3 g), the values per scoop likewise. Errors as in the Scan sheet's step 7, with "Try again" and "Type the numbers".
 3. **Label.** Title: the kind's name; back returns to From your tub. From top to bottom:
