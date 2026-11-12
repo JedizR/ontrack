@@ -41,3 +41,9 @@ const TITLE = new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'short'
 export const dayTitle = (date: string) => TITLE.format(local(date));
 /** When something logged now on `date` happened: now, or this clock time on a past day. */
 export const stampOn = (date: string) => (date === today() ? nowIso() : atTime(date, timeOf(nowIso())));
+const SHORT = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' });
+/** "Nov 9": a day on a chart axis or in a list. */
+export const shortDate = (date: string) => SHORT.format(local(date));
+const MONTH = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' });
+/** "November 2026": a month heading. */
+export const monthTitle = (date: string) => MONTH.format(local(date));

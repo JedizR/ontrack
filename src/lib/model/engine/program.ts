@@ -1,7 +1,7 @@
 // Training analysis from the program. docs/SCIENCE.md section 11.
-import { U, V, type SourceId } from './constants';
-import { met, type SessionLike } from './bmr';
-import type { Experience, Goal } from './plan';
+import { U, V, type SourceId } from './constants.ts';
+import { met, type SessionLike } from './bmr.ts';
+import type { Experience, Goal } from './plan.ts';
 
 export type Muscle = 'chest' | 'back' | 'shoulders' | 'biceps' | 'triceps' | 'quads' | 'hamstrings' | 'glutes' | 'calves' | 'core';
 export const MUSCLES: readonly Muscle[] = ['chest', 'back', 'shoulders', 'biceps', 'triceps', 'quads', 'hamstrings', 'glutes', 'calves', 'core'];

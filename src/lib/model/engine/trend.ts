@@ -1,5 +1,5 @@
 // Weight trend for display and the rate for decisions. docs/SCIENCE.md section 10.
-import { V } from './constants';
+import { V } from './constants.ts';
 
 /** A weigh-in on a day number (any integer day count, such as days since 1970-01-01). */
 export type WeighIn = { day: number; kg: number };

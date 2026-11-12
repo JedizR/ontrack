@@ -26,7 +26,7 @@
   const plans = $derived(db.live('plan'));
   const plan = $derived(planFor(plans, view.today));
   // a change made today reaches the targets tomorrow (BUILD-PLAN M7)
-  const pending = $derived(plans.some((p) => p.data.effectiveFrom > view.today));
+  const pending = $derived(plans.some((p) => p.data.source === 'edit' && p.data.effectiveFrom > view.today));
   const program: Program = $derived(db.get('program', 'program') ?? { name: '', sessions: [] });
   const sessions = $derived(program.sessions);
   const todayIs = $derived(weekdayOf(view.today));

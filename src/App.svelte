@@ -43,6 +43,10 @@
   let Log = $state<Component | null>(null);
   const loadLog = async () => { Log ??= (await import('./flows/log/LogSheets.svelte')).default; };
   $effect(() => { if (logOpen() && !Log) void loadLog(); });
+  // the check-in sheet, from Today's card or Progress
+  let Checkin = $state<Component | null>(null);
+  const loadCheckin = async () => { Checkin ??= (await import('./flows/checkin/CheckinSheet.svelte')).default; };
+  $effect(() => { if (sheets.checkin && !Checkin) void loadCheckin(); });
   const add = () => (db.ready ? (sheets.add = true) : (sheets.signin = true));
 
   // First run, and a signed in account with no profile yet, go through onboarding (SCREENS.md section 1). A phone that
@@ -142,4 +146,5 @@
 {#if Account}<Account bind:open={sheets.account} />{/if}
 {#if Log}<Log />{/if}
 {#if Wheel}<Wheel />{/if}
+{#if Checkin}<Checkin />{/if}
 <Toasts />

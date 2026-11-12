@@ -1,7 +1,7 @@
 // Daily targets, macros for a day and on track status. docs/SCIENCE.md sections 7 to 9.
-import { U, V } from './constants';
-import type { Sex } from './bmr';
-import type { Goal, PlanNumbers } from './plan';
+import { U, V } from './constants.ts';
+import type { Sex } from './bmr.ts';
+import type { Goal, PlanNumbers } from './plan.ts';
 
 export type CalorieMode = 'matched' | 'even';
 export type DayStatus = 'below' | 'on' | 'above';

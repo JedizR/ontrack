@@ -15,6 +15,8 @@ export const sheets = $state({
   session: null as { date: string; key: string; name: string } | null,
   /** the meal open in the Meal sheet */
   meal: null as string | null,
+  /** the date of the check-in open in the Check-in sheet: today's, or a stored one */
+  checkin: null as string | null,
   /** Search picks an item for the open meal instead of logging one (Replace, Add an item) */
   pick: null as ((item: MealItem) => void) | null,
 });

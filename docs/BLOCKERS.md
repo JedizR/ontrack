@@ -12,6 +12,14 @@ None open. Resolved items are at the end of this file.
 
 Each entry: what to look at (URL or screenshot paths), what to look for, and which milestone it belongs to.
 
+### M8: each seeded check-in, and Progress, on your iPhone
+
+- **Where:** `pnpm dev` on the Mac (with `--host` to open it on the iPhone in Safari), mock backend. Sign in with the email `raise@seed.test`, then `lower@seed.test`, `on_track@seed.test`, `adherence@seed.test` and `need_data@seed.test`, code 123456 for each (sign out between them). Each is four weeks of meals, sessions and weigh-ins on plan A (the hardgainer) with the check-in due today. Screenshots: `screenshots/progress/` after `pnpm screenshots -- --grep progress` (Today's card, the three steps, Progress from the top, History, an adherence step, a stored check-in; light and dark, 390, SE and Pro Max), `screenshots/stress/*/progress/` and `screenshots/fonts/*-xl/progress/`. A few are on branch `pr-assets`, folder `m8/`.
+- **Walk each check-in:** Today's card, Open, then Next twice. Does the sentence on "What it means" match what the numbers on "Your last three weeks" show? `raise` is vector F (gaining 0.1 percent a week against 0.5 while eating 2,300 against 2,357: raise by 100 to 2,560 and 2,320); `adherence` is vector G (eating 87 percent of the target: no change, "You averaged 310 under it"); `lower` gains about 0.8 percent a week; `on_track` about 0.5; `need_data` has 6 weigh-ins in three weeks. Try Use the new target on one and Keep on another, then Progress, Check-ins, and open the stored one.
+- **Look for on Progress:** the weight chart (dots are weigh-ins, the line the trend, the grey wedge the target rate give or take what the check-in still calls on track), "0.1 percent a week. Target 0.5", maintenance measured against the formula, the weekly intake bars with the target line, the consistency dots, and History opening a past day in Today.
+- **Decide:** the check-in card also shows with too few weigh-ins and then says so (PRD F9 says it appears only with enough data); a program change does not restart the two weeks to the next check-in.
+- **Decided for you:** the M8 list in `docs/DECISIONS.md`, notably the plan a check-in makes carrying the week's sessions, the band's width, weeks as the seven days ending today, step 3 named "Your next target", and every outcome stored when the sheet is finished.
+
 ### D1: your OneFin template licence
 
 - **Question:** does your licence for the OneFin template (N!nh Studio, single use) cover reusing its artwork in Ontrack: the 3D coins and stars, the phone mockups, the app screen images and videos?

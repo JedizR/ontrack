@@ -35,12 +35,13 @@
   import { db } from '$lib/db/store.svelte';
   import { clearSessionLog, deleteMeal, logSession, undoToast } from '$lib/actions';
   import { dayView, mealSource, planFor, weighInDue, totals } from '$lib/model/day';
+  import { checkinDueOn } from '$lib/model/progress';
   import { daysBetween, lastWeek, timeOf } from '$lib/model/dates';
   import { proteinBand, roundTarget, sessionKcal } from '$lib/model/engine';
   import { num } from '$lib/model/format';
   // the weigh-in flow loads on first use: it brings the onboarding limits with it
   const weighIn = (date: string) => import('../flows/log/weigh').then((m) => m.weighIn(date));
-  import type { Meal, Session } from '../../shared/records';
+  import { ids, type Meal, type Session } from '../../shared/records';
 
   // a new device after sign in: nothing local yet, the first pull is on its way
   const bringing = $derived(!!session.user && !sync.pulled && sync.status === 'syncing');
@@ -83,10 +84,11 @@
       : [],
   );
 
-  // at most one card (section 6); in M5 that is the weigh-in prompt, on today only
+  // at most one card (section 6), on today only: the weekly check-in first, then the weigh-in prompt
+  const checkinCard = $derived(!view.past && !!profile && checkinDueOn(plans, profile.checkinWeekday, view.today) && !db.get('checkin', ids.checkin(view.today)));
   const weights = $derived(db.live('weight').map((r) => r.data.date));
   const lastWeigh = $derived(weights.filter((d) => d <= view.today).sort().at(-1));
-  const weighCard = $derived(!view.past && !!profile && weighInDue(weights, view.today));
+  const weighCard = $derived(!view.past && !checkinCard && !!profile && weighInDue(weights, view.today));
 
   const ICON: Record<Meal['method'], Component<{ size?: number; strokeWidth?: number }>> = { photo: Camera, text: TextIcon, search: Search, quick: Hash, saved: Bookmark };
   const titleOf = (m: Meal) => m.title || m.items[0]?.name || t.source.manual;
@@ -161,7 +163,17 @@
       <span id="hero-how" hidden>{t.today.how}</span>
     </Card>
 
-    {#if weighCard}
+    {#if checkinCard}
+      <Card data-testid="checkin-card" {...rise(2)}>
+        <div class="flex items-center gap-3">
+          <div class="min-w-0 flex-1">
+            <p class="text-body font-semibold">{t.checkin.cardTitle}</p>
+            <p class="text-callout text-ink-2 mt-0.5">{t.checkin.cardLine}</p>
+          </div>
+          <Button size="sm" onclick={() => (sheets.checkin = view.today)} data-testid="checkin-open">{t.checkin.open}</Button>
+        </div>
+      </Card>
+    {:else if weighCard}
       <Card data-testid="weigh-card" {...rise(2)}>
         <div class="flex items-center gap-3">
           <div class="min-w-0 flex-1">
