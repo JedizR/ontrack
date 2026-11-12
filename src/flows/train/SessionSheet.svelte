@@ -119,15 +119,15 @@
               <div class="mt-2 flex flex-col gap-2">
                 <div class="flex items-center justify-between gap-3">
                   <span class={label}>{t.train.setsLabel}</span>
-                  <Stepper bind:value={e.sets} min={1} max={MAX.sets} label={t.train.stepSets} />
+                  <Stepper bind:value={e.sets} min={1} max={MAX.sets} label={t.after.sets} />
                 </div>
                 <div class="flex items-center justify-between gap-3">
                   <span class={label}>{t.train.repsFrom}</span>
-                  <Stepper bind:value={() => e.repsMin, (v) => { e.repsMin = v; e.repsMax = Math.max(e.repsMax, v); }} min={1} max={MAX.reps} label={t.train.stepReps} />
+                  <Stepper bind:value={() => e.repsMin, (v) => { e.repsMin = v; e.repsMax = Math.max(e.repsMax, v); }} min={1} max={MAX.reps} label={t.after.reps} />
                 </div>
                 <div class="flex items-center justify-between gap-3">
                   <span class={label}>{t.train.repsTo}</span>
-                  <Stepper bind:value={e.repsMax} min={e.repsMin} max={MAX.reps} label={t.train.stepReps} />
+                  <Stepper bind:value={e.repsMax} min={e.repsMin} max={MAX.reps} label={t.after.reps} />
                 </div>
                 <div><Button variant="danger" size="sm" onclick={() => { s.exercises?.splice(i, 1); opened = null; }} data-testid="exercise-remove">{t.meal.remove}</Button></div>
               </div>

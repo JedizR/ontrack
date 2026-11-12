@@ -39,7 +39,7 @@ test('build a week: add a session, list exercises, see the analysis with its sou
   await expect(page.getByTestId('muscle-back')).toContainText('4');
   await expect(page.getByTestId('muscle-biceps')).toContainText('2');
   const rec = page.getByTestId('rec').first();
-  await expect(rec).toContainText('gets 0 sets a week. Add 10 to reach the range linked with better growth.');
+  await expect(rec).toContainText('gets 0 sets a week, so add 10 to reach the range linked with better growth.');
   await rec.getByTestId('rec-why').click();
   await expect(rec.getByTestId('rec-source')).toContainText('Schoenfeld BJ');
 
@@ -73,7 +73,7 @@ test('a template replaces the program from tomorrow; today and the days before k
   await page.getByTestId('template-confirm').click();
   await expect(page.getByTestId('train-summary')).toContainText('4 sessions, 280 minutes a week');
   await expect(page.getByTestId('train-summary')).toContainText('Upper lower 4 days');
-  await expect(page.getByTestId('train-recs')).toContainText('Your week meets every check.');
+  await expect(page.getByTestId('train-recs')).toContainText('No changes to suggest.');
   await expect(day(page, 3)).toContainText('Upper B'); // Thursday
 
   // today, Wednesday, keeps its session and target; Tuesday, now Lower A, stays a rest day
