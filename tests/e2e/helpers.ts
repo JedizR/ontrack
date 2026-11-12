@@ -138,7 +138,8 @@ export async function keypadEnter(page: Page, digits: string) {
   await pad.getByRole('button', { name: 'Clear' }).click();
   for (const k of digits) await page.locator(`[data-key="${k}"]`).click();
   await page.getByTestId('keypad-save').click();
-  await expect.poll(async () => !(await pad.isVisible()) || (await title.innerText()) !== asked).toBe(true);
+  // the sheet may detach between the two reads: a title that is gone counts as closed instead of waiting for it
+  await expect.poll(async () => !(await pad.isVisible()) || (await title.innerText({ timeout: 200 }).catch(() => '')) !== asked).toBe(true);
 }
 
 export type Answers = {
