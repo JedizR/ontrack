@@ -17,6 +17,14 @@ Each entry: what is blocked, what Claude tried, the exact steps for you, and wha
 
 Each entry: what to look at (URL or screenshot paths), what to look for, and which milestone it belongs to.
 
+### N2: your own whey from the tub, and the morning shake for a few days
+
+- **Where:** the pull request's Vercel preview in Safari on the iPhone, or `pnpm dev` on the Mac against the mock (code 123456). Screenshots: `screenshots/supplements/` after `pnpm screenshots -- --grep supplements` (the entry, the kinds, the label from USDA, with no calories and with the error, the Add sheet with supplements, the amount with milk, taken, an entry in edit mode, the milk not loaded, Today with a shake and creatine taken; light and dark, 390, SE and Pro Max), and `screenshots/fonts/iphone-se-xl/logging/supplement-*.png` for the largest text. A few are on branch `pr-assets`, folder `n2/`.
+- **Set up your whey from the tub:** the plus, Supplements, Whey protein. Type the scoop and the numbers from your label, and the scoops you take. Then log your morning shake for a few days: the plus, Whey protein, Add. Try milk once, and a half scoop more or less. If you take creatine, set it up and log it: it shows as a chip under Taken, with no calories.
+- **Look for:** three taps for the usual shake; calories and protein on Today matching your label times your scoops; the Add sheet starting at your last amount and mix; editing a shake from Today (change the scoops, Save changes) and deleting it with Undo.
+- **Decide:** whether asking "Scoops you take" in the setup is welcome; whether the setup should take the label's serving (several scoops, as on gainer tubs) instead of one scoop; whether the five milks are the right ones (no oat milk in the table); whether correcting an old entry should also change where the next shake starts (it does not, today).
+- **Decided for you:** the N2 list in `docs/DECISIONS.md`, notably plant protein from USDA's soy powder, casein, gainer and creatine starting from the label, and creatine taken not counting toward a complete day.
+
 ### N1: five Thai meals you eat often, and Yours
 
 - **Where:** the pull request's Vercel preview in Safari on the iPhone, or `pnpm dev` on the Mac against the mock (code 123456; photos are answered by fixtures there, so use Search). Screenshots: `screenshots/thai/` after `pnpm screenshots -- --grep thai` (Thai script search, a Thai dish's portion step with its citation, the Review of a Thai dish, Correct open, Yours in Review and in Search; light and dark, 390, SE and Pro Max), and `screenshots/fonts/*-xl/logging/review-correct.png` for the largest text. A few are on branch `pr-assets`, folder `n1/`.
