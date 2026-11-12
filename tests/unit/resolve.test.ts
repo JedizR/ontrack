@@ -37,6 +37,10 @@ describe('vision resolution', () => {
     expect(estimate({ kcal: Number.NaN, protein_g: 0, carbs_g: 0, fat_g: 0 }).kcal).toBe(0);
   });
 
+  test('names start with a capital letter', () => {
+    expect(resolveItems([item({ name: 'som tam' })])[0].name).toBe('Som tam');
+  });
+
   test('at most 12 items, grams clamped to 1 through 2000 and rounded', () => {
     const out = resolveItems([item({ grams: 0 }), item({ grams: 5000 }), item({ grams: 12.4 }), ...Array.from({ length: 20 }, () => item())]);
     expect(out).toHaveLength(12);

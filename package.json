@@ -21,7 +21,8 @@
     "check:pwa": "node scripts/check-pwa.mjs",
     "icons": "cp design/brand/app-icon.svg public/favicon.svg && pwa-assets-generator",
     "format": "prettier --write .",
-    "foods:build": "tsx scripts/build-foods.ts"
+    "foods:build": "tsx scripts/build-foods.ts",
+    "eval:vision": "sh scripts/live-env.sh tsx scripts/eval-vision.ts"
   },
   "dependencies": {
     "@google/genai": "3.0.0",

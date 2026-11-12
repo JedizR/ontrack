@@ -12,6 +12,8 @@ const MACRO_MAX = 100; // grams in 100 g
 const byId = new Map(foods.map((f) => [f.id, f.per100]));
 const clamp = (v: number, lo: number, hi: number) => (Number.isFinite(v) ? Math.min(hi, Math.max(lo, v)) : lo);
 const r1 = (n: number) => Math.round(n * 10) / 10;
+/** The model sometimes writes names in lower case; the app shows them in sentence case. */
+const sentence = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 /** The model's estimate, clamped; kcal recomputed from the macros when it disagrees with them by more than 25 percent. */
 export function estimate(e: ModelOutput['items'][number]['est_per_100g']): Macros {
@@ -32,7 +34,7 @@ export function resolveItems(items: ModelOutput['items']): AnalysisItem[] {
     const per100 = table ? { kcal: table.kcal, protein: table.protein, carbs: table.carbs, fat: table.fat } : estimate(it.est_per_100g);
     const k = grams / 100;
     return {
-      name: it.name.trim().slice(0, 120),
+      name: sentence(it.name.trim()).slice(0, 120),
       grams,
       portionNote: it.portion_note,
       foodId: table ? it.food_id : null,

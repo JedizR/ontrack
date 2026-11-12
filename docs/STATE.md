@@ -14,7 +14,7 @@ Status is one of: not started, in progress, shipped, shipped with cuts, blocked.
 | M3 | Data, sync, sign-in | shipped with cuts | PR #7, merged, `v0.3.0` | Conformance green on mock and live. Live sign in blocked: no Google client, no SMTP for codes. No Privacy and Terms line |
 | M4 | Onboarding and plan | shipped with cuts | PR #8, merged, `v0.4.0` | Gate green on the mock. Saving on production waits for live sign in (M3 blockers). Templates without muscle balance until M7 |
 | M5 | Today and logging | shipped with cuts | PR #9, merged, `v0.5.0` | Gate green on the mock. Three meals do not fit 390 by 844 without scrolling (as in the M1 reference). No install notice card, no deleting a saved meal |
-| M6 | Photo logging | shipped with cuts | PR #10, open | Gate green on the mock. No Gemini key: provider untested, no ten photo eval, no live timing |
+| M6 | Photo logging | shipped with cuts | PR #10, open | Gate green on the mock. Eval on ten Commons photos with `gemini-3.6-flash`; deployed end to end timing not measured (free tier daily cap) |
 | M7 | Training | not started | | |
 | M8 | Progress and check-ins | not started | | |
 | M9 | Hardening and release | not started | | |
@@ -27,7 +27,7 @@ Status is one of: not started, in progress, shipped, shipped with cuts, blocked.
 - Keep-alive: real. `/api/cron/keepalive`, daily 03:17 UTC, answered 200 on the preview.
 - Sync and account deletion: real, checked by `pnpm test:live` (the conformance suite against the project, test users made and deleted). Security advisors clean.
 - Sign in: built for both providers, live on neither yet. Google provider off (no OAuth client; the app hides the button). Email codes need custom SMTP before Supabase lets the template carry the code. Both are in `docs/BLOCKERS.md`. Auth settings (site URL, redirects, 6 digit codes, 10 minutes, 30 s resend) are pushed.
-- Vision: `/api/analyze` built; mock provider only. No Gemini key (`docs/BLOCKERS.md`), so on Vercel a photo shows the failure message. Vercel holds `GEMINI_MODEL=gemini-3.8-flash` (no `VISION_PROVIDER`, so it defaults to Gemini), `VITE_BACKEND=supabase`, the Supabase URL and keys, and `CRON_SECRET` for production and preview.
+- Vision: real. `/api/analyze` with `gemini-3.6-flash`, minimal thinking. Vercel holds `VISION_PROVIDER=gemini`, `GEMINI_MODEL`, and `GEMINI_API_KEY` (the development key, free tier: 20 requests a day per model) for production and preview, plus `VITE_BACKEND=supabase`, the Supabase URL and keys, and `CRON_SECRET`. The key's file is `~/.config/ontrack/gemini-api-key`; `scripts/live-env.sh` reads it for `dev:live` and `eval:vision`.
 
 ## Notes for the next milestone
 
@@ -80,6 +80,6 @@ M6 (photo logging):
 - Mock vision: fixtures in `tests/fixtures/vision/` (basil pork, chicken rice, oats, not food, fail). Tests set the answer with `vision(page, space, { fixture, used })` from `tests/e2e/helpers.ts` (`POST /__mock/vision`); `open()` now returns the space; `takePhoto(page, notice?)` drives the hidden file input. `tests/fixtures/meal.jpg` is a drawn plate.
 - Client: `src/lib/photo.ts` (`preparePhoto`), `analyzeMeal` and `logReviewed` in `actions.ts`, `sheets.review` and `sheets.describe`, `ReviewSheet.svelte`, `DescribeSheet.svelte`, `ItemList.svelte` (shared with the Meal sheet), `Thumb.svelte` (Today rows and the Meal sheet). `prefs.photoOk` remembers the notice. Thumbnails are stored as bytes in IndexedDB (WebKit private mode refuses Blobs).
 - Tests: `tests/unit/analyze.test.ts`, `resolve.test.ts`; `tests/e2e/photo.spec.ts` (light project: success with oil and Save meal, not food, provider failure, limit with Add by hand, offline, Describe); a `photo` case in `screens.spec.ts`; the review sheet in stress's logging walk. CI's timeout is 40 minutes.
-- Not done (no key): the ten photo evaluation and `docs/EVAL-NOTES.md`, the prompt tuning, the live median time. The next session with a key: a small script that runs `geminiProvider` over a folder, then add the key to Vercel preview.
+- Evaluation: `pnpm eval:vision <folder> [<out>]` (`scripts/eval-vision.ts`, macOS `sips` to resize). Ten Wikimedia Commons photos, results in `docs/EVAL-NOTES.md`; photos 2 and 8 still need the tuned prompt's pass, and the owner's own ten meals are still to run. Not measured: the deployed median time to a review (the free tier's 20 a day ran out). The production key with billing is M9.
 - For M9: deleting a photo meal (or Undo) leaves its thumbnail in storage until the account is deleted; delete it with the meal. The Add sheet's Recent and Saved rows have no leading tile (design critic). Alcohol is outside the 4p + 4c + 9f check.
 

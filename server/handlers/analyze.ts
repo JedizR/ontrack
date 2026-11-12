@@ -81,7 +81,8 @@ export async function analyze(request: Request, deps: Deps = liveDeps()): Promis
       const status = (e as { status?: number }).status ?? 0;
       if (attempt === 1 && (timedOut || status >= 500)) continue;
       console.error('analyze provider failed', { model: provider.model, attempt, status, timedOut, ms: Date.now() - started });
-      return fail(timedOut ? 'timeout' : 'provider_error');
+      // the provider's own rate limit (the free tier's daily cap) reads as busy, not broken
+      return fail(timedOut ? 'timeout' : status === 429 ? 'busy' : 'provider_error');
     }
   }
 

@@ -71,6 +71,9 @@ describe('POST /api/analyze', () => {
     const refused = vi.fn(async () => { throw Object.assign(new Error('x'), { status: 400 }); });
     expect((await post(text, deps({ provider: async () => ({ model: 'm', analyze: refused }) }))).status).toBe(502);
     expect(refused).toHaveBeenCalledTimes(1);
+    const limited = vi.fn(async () => { throw Object.assign(new Error('x'), { status: 429 }); });
+    expect((await read(await post(text, deps({ provider: async () => ({ model: 'm', analyze: limited }) })))).body.error).toBe('busy');
+    expect(limited).toHaveBeenCalledTimes(1);
   });
 
   test('a provider that does not answer in time is retried once, then 504', async () => {
