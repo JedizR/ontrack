@@ -10,8 +10,7 @@ Each entry: what is blocked, what Claude tried, the exact steps for you, and wha
 
 - **Blocked:** reading real nutrition labels with `gemini-3.6-flash`. Built and tested on the mock (fixtures `label-snack`, `label-whey`, `not-label`), but not yet run live: the free key's 20 requests a day were already spent when B1 tried three label photos. Gemini answered 503 "high demand" twice, then the daily 429, with about 20 hours to the reset (07:00 in Bangkok on 13 November).
 - **Tried:** the production model twice; `gemini-3.7-flash` (refuses minimal thinking); `gemini-3.5-flash`, which counted against 3.6's quota. Nothing was billed.
-- **Your steps:** after 07:00 Bangkok time, on the Mac: `pnpm eval:vision --label <folder>` with three label photos. The ones B1 picked, all CC BY-SA 3.0 on Wikimedia Commons: "SunnyD Nutrition Facts 01.jpg" (US, per serving), "Nutrition Information Panel.jpg" (kJ and per 100 g) and "HK food drink Longevity brand Sweetened Milk Mar-2014 nutrition information a.jpg" (Hong Kong). Or photograph three packs from your kitchen, a Thai one among them. Each line prints what the model read: compare the serving size and the calories, protein, carbs and fat with the label; anything not printed should be null.
-- **Then tell Claude:** "B1 label eval: <paste the output>", and whether any number was wrong.
+- **No step for you.** The photos are public (Wikimedia Commons: "SunnyD Nutrition Facts 01.jpg", "Nutrition Information Panel.jpg", "HK food drink Longevity brand Sweetened Milk Mar-2014 nutrition information a.jpg"), so Claude runs `pnpm eval:vision --label <folder>` itself after the 07:00 Bangkok reset, during N3, and records the result here. If you like, photograph three packs from your kitchen, a Thai one among them, and Claude adds them to the check.
 
 ### B1: a contact address for Open Food Facts (optional)
 
