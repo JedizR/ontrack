@@ -12,8 +12,10 @@
 
   let { open = $bindable(false), acct }: { open?: boolean; acct: Account } = $props();
 
-  const months = $derived.by(() => {
-    if (!open) return [];
+  // built while open and kept while the sheet slides away, so a closed sheet costs nothing
+  let months = $state<{ title: string; days: DayStats[] }[]>([]);
+  $effect(() => {
+    if (!open) return;
     const out: { title: string; days: DayStats[] }[] = [];
     const n = daysBetween(acct.first ?? view.today, view.today);
     for (let i = 0; i <= n; i++) {
@@ -23,7 +25,7 @@
       if (out.at(-1)?.title !== title) out.push({ title, days: [] });
       out.at(-1)!.days.push(d);
     }
-    return out;
+    months = out;
   });
 
   function show(date: string) {

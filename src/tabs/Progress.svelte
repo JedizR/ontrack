@@ -13,7 +13,7 @@
   import { view } from '$lib/view.svelte';
   import { sheets } from '$lib/sheets.svelte';
   import { accountOf, checkinDueOn } from '$lib/model/progress';
-  import { baseline, calorieStatus, checkin, effectiveRate, roundTarget, weeklyEee, U, V } from '$lib/model/engine';
+  import { baseline, calorieStatus, effectiveRate, roundTarget, weeklyEee, U, V } from '$lib/model/engine';
   import { planFor } from '$lib/model/day';
   import { addDays, dayTitle, daysBetween, shortDate } from '$lib/model/dates';
   import { kgToLb } from '$lib/model/units';
@@ -40,10 +40,7 @@
   const span = $derived(daysBetween(from, today));
 
   // today's check-in numbers: the measured rate and maintenance
-  const result = $derived.by(() => {
-    const input = acct?.checkinInput(today);
-    return input ? checkin(input) : null;
-  });
+  const result = $derived(acct?.checkinOn(today) ?? null);
   const metric = $derived(profile?.units !== 'imperial');
   const inUnit = (kg: number) => (metric ? kg : kgToLb(kg));
   const trendNow = $derived(acct?.trendOn(today));
@@ -92,7 +89,7 @@
           <TrendChart {points} {span} {band} from={shortDate(from)} to={shortDate(today)} label={t.progress.chart(shortDate(from), shortDate(today), num(inUnit(trendNow), 1))} />
         </div>
       {/if}
-      <p class="text-callout mt-3" data-testid="progress-rate">
+      <p class="mt-3 {rate != null ? 'text-callout' : 'text-body text-ink-2'}" data-testid="progress-rate">
         {rate != null ? t.progress.rate(num(rate, 1), num(targetRate, 1)) : t.progress.needWeighIns(num(V.minWeighIns), num(V.minSpanDays / U.daysPerWeek))}
       </p>
       <Button class="mt-4" onclick={() => weighIn(today)} data-testid="progress-log-weight">{t.progress.logWeight}</Button>

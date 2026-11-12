@@ -12,7 +12,7 @@
   import { db } from '$lib/db/store.svelte';
   import { decideCheckin } from '$lib/actions';
   import { accountOf } from '$lib/model/progress';
-  import { checkin, effectiveRate, roundTarget, type CheckinResult, type PlanNumbers } from '$lib/model/engine';
+  import { effectiveRate, roundTarget, type CheckinResult, type PlanNumbers } from '$lib/model/engine';
   import { evenEee, planFor, targetWith, trainingDayEee } from '$lib/model/day';
   import { addDays } from '$lib/model/dates';
   import { num } from '$lib/model/format';
@@ -22,23 +22,25 @@
   // what the sheet shows is read once as it opens, so a sync arriving mid-way cannot change the numbers under the user
   let shown = $state<{ date: string; result: CheckinResult; stored?: Checkin } | null>(null);
   let step = $state(0);
+  // one decision per opening: a second tap while the sheet slides away must not write a second plan
+  let decided = false;
   $effect(() => {
     const date = sheets.checkin;
     if (!date) return;
     untrack(() => {
       const stored = db.get('checkin', ids.checkin(date));
-      const input = stored ? null : accountOf(db)?.checkinInput(date);
-      const result = stored ? { stats: stored.stats, proposal: stored.proposal } : input ? checkin(input) : null;
+      const result = stored ? { stats: stored.stats, proposal: stored.proposal } : accountOf(db)?.checkinOn(date);
       if (!result) return void (sheets.checkin = null);
       shown = { date, result, stored: stored ? $state.snapshot(stored) : undefined };
       step = 0;
+      decided = false;
     });
   });
 
   const profile = $derived(db.get('profile', 'profile'));
   const plans = $derived(db.live('plan'));
-  // the plan the check-in would replace: the one in effect the next day
-  const current = $derived(shown ? planFor(plans, addDays(shown.date, 1)) : null);
+  // the plan the check-in would replace: the one in effect the next day, other than a plan it made itself
+  const current = $derived(shown ? planFor(plans.filter((p) => p.id !== shown?.stored?.planId), addDays(shown.date, 1)) : null);
   const goal = $derived(current?.goal ?? 'gain');
   const s = $derived(shown?.result.stats);
   const reason = $derived(shown?.result.proposal.reason);
@@ -79,7 +81,8 @@
 
   const close = () => (sheets.checkin = null);
   function decide(decision?: 'accepted' | 'kept') {
-    if (shown && !shown.stored) {
+    if (shown && !shown.stored && !decided) {
+      decided = true;
       decideCheckin(shown.date, shown.result, decision);
       if (decision === 'accepted') toast(t.checkin.accepted);
     }

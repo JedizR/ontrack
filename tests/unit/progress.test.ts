@@ -3,7 +3,7 @@
 import { describe, expect, test } from 'vitest';
 import { OUTCOMES, seedRecords } from '../../dev/seed';
 import { account, checkinDueOn, type Records } from '../../src/lib/model/progress';
-import { checkin, dayTarget } from '../../src/lib/model/engine';
+import { dayTarget, eeeByWeekday } from '../../src/lib/model/engine';
 import type { Plan, Rec } from '../../shared/records';
 
 const TODAY = '2026-11-11';
@@ -19,7 +19,7 @@ function records(recs: Rec[]): Records {
     closed: [],
   };
 }
-const run = (o: (typeof OUTCOMES)[number]) => checkin(account(records(seedRecords(o, TODAY))).checkinInput(TODAY)!);
+const run = (o: (typeof OUTCOMES)[number]) => account(records(seedRecords(o, TODAY))).checkinOn(TODAY)!;
 
 test.each(OUTCOMES)('the %s account reaches its outcome', (o) => {
   expect(run(o).proposal.reason).toBe(o);
@@ -40,6 +40,23 @@ test('adherence is vector G: 87 percent of the target, no change', () => {
   const r = run('adherence');
   expect(r.stats.meanIntake! / r.stats.meanTarget).toBeCloseTo(0.87, 2);
   expect(r.proposal).toEqual({ kcalChange: 0, reason: 'adherence' });
+});
+
+test('a program change waiting for tomorrow keeps its exercise energy in the raised plan', () => {
+  const recs = records(seedRecords('raise', TODAY));
+  const today = recs.plans[0].data;
+  const sessions = recs.sessions.filter((s) => s.weekday !== 5); // Saturday's session dropped today
+  recs.plans.push({ updatedAt: 2, data: { ...today, effectiveFrom: '2026-11-12', source: 'edit', eeeByWeekday: eeeByWeekday(sessions, 60), sessions } });
+  const r = account(recs).checkinOn(TODAY)!;
+  expect(r.proposal).toEqual({ kcalChange: 100, reason: 'raise' }); // measured on today's plan, as vector F
+  expect(r.plan!.eeeByWeekday).toEqual(eeeByWeekday(sessions, 60));
+  expect(r.plan!.baseline).toBeCloseTo(1987.18, 2);
+});
+
+test('the window holds no day before the account began', () => {
+  const recs = records(seedRecords('raise', TODAY).filter((r) => r.collection !== 'weight' || (r.data as { date: string }).date >= '2026-10-25'));
+  recs.plans[0].data = { ...recs.plans[0].data, effectiveFrom: '2026-10-25' };
+  expect(account(recs).checkinOn(TODAY)!.stats.days).toBe(18);
 });
 
 describe('due', () => {

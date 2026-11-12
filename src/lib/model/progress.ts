@@ -1,7 +1,7 @@
 // Progress and the weekly check-in, from the stored records (SCREENS.md sections 9 and 10, SCIENCE.md section 10):
 // each day's numbers as Today shows them, weeks of them, the weight trend, and the check-in's input. Pure: callers
 // pass the records in, so the same code runs on the store, the seeder and the tests.
-import { checkinDue, isComplete, smooth, V, U, type CheckinInput } from '$lib/model/engine';
+import { checkin, checkinDue, isComplete, planFromBaseline, smooth, V, U, type CheckinInput, type CheckinResult } from '$lib/model/engine';
 import { dayView, planFor } from './day';
 import { addDays, daysBetween, lastWeek, weekdayOf } from './dates';
 import type { Collection, DataOf, Meal, Plan, Profile, Session, SessionLog, Weight } from '../../../shared/records';
@@ -74,21 +74,37 @@ export function account(r: Records) {
   const trendOn = (date: string) => points.filter((p) => p.date <= date).at(-1)?.trend;
 
   /**
-   * The check-in on `date`: the 21 days ending that day, every weigh-in up to it as day numbers counted from it, and
-   * the plan it would replace, which is the one in effect the next day: it keeps a program change waiting for tomorrow.
+   * The check-in's input on `date`: the 21 days ending that day (none before the account's first), every weigh-in up
+   * to it as day numbers counted from it, and that day's plan, whose maintenance the window measured.
    */
   function checkinInput(date: string): CheckinInput | null {
-    const plan = planFor(r.plans, addDays(date, 1));
+    const plan = planFor(r.plans, date);
     if (!plan) return null;
-    const days = Array.from({ length: V.rateWindowDays }, (_, i) => day(addDays(date, i + 1 - V.rateWindowDays))!).map((d) => ({
-      day: daysBetween(date, d.date), target: d.target, intake: d.intake, items: d.items, closed: d.closed,
-    }));
+    const days = Array.from({ length: V.rateWindowDays }, (_, i) => day(addDays(date, i + 1 - V.rateWindowDays))!)
+      .filter((d) => !first || d.date >= first)
+      .map((d) => ({ day: daysBetween(date, d.date), target: d.target, intake: d.intake, items: d.items, closed: d.closed }));
     const weighIns = weights.filter((w) => w.date <= date).map((w) => ({ day: daysBetween(date, w.date), kg: w.kg }));
     const { sex, heightCm, experience } = r.profile;
     return { today: 0, plan, profile: { sex, heightCm, experience }, weighIns, days, trendKg: trendOn(date) ?? plan.weightKg };
   }
 
-  return { first, day, weeks, points, trendOn, checkinInput };
+  /**
+   * The check-in on `date`. A program change made that day waits in tomorrow's plan; a raise or a lower keeps its
+   * exercise energy, so accepting never undoes it.
+   */
+  function checkinOn(date: string): CheckinResult | null {
+    const input = checkinInput(date);
+    if (!input) return null;
+    const result = checkin(input);
+    const next = planFor(r.plans, addDays(date, 1));
+    const p = result.plan;
+    if (!p || !next || next === input.plan) return result;
+    const { sex, heightCm, experience } = r.profile;
+    const basis = { sex, heightCm, experience, weightKg: p.weightKg, goal: p.goal, ratePctPerWeek: p.ratePctPerWeek, maintainOnly: p.flags.includes('maintainOnly') };
+    return { ...result, plan: planFromBaseline({ ...basis, bmr: p.bmr, baseline: p.baseline, eeeByWeekday: next.eeeByWeekday }) };
+  }
+
+  return { first, day, weeks, points, trendOn, checkinOn };
 }
 export type Account = ReturnType<typeof account>;
 
