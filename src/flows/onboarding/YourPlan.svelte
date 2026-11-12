@@ -6,12 +6,12 @@
   import Row from '$lib/components/Row.svelte';
   import Button from '$lib/components/Button.svelte';
   import Switch from '$lib/components/Switch.svelte';
-  import { C, U, V, floorFor, guardrails, plan } from '$lib/model/engine';
+  import { U, V, floorFor, guardrails, plan } from '$lib/model/engine';
   import { evenEee, kgPerWeek, targetParts, targetWith, trainingDayEee } from '$lib/model/day';
   import { kgToLb, lbToKg, weightText } from '$lib/model/units';
   import { num } from '$lib/model/format';
   import { keypad } from '$lib/keypad.svelte';
-  import { SOURCES } from '$lib/data/sources';
+  import Breakdown from '../plan/Breakdown.svelte';
   import { t } from '$lib/i18n';
   import { LIMITS, goalWeightOf, inputOf, minGoalWeightKg, type Draft } from './draft';
 
@@ -47,21 +47,7 @@
     ),
   );
 
-  // each line of the breakdown names the constants behind it, so it can show their sources and status
-  type Basis = { source: keyof typeof SOURCES; status: string };
   const bodyFat = $derived(input.bodyFatPct != null && input.bodyFatPct >= V.bodyFatRange.min && input.bodyFatPct <= V.bodyFatRange.max);
-  const lines = $derived(
-    [
-      { key: 'bmr', label: t.plan.bmr, value: parts.bmr, basis: [bodyFat ? C.cunningham : C.mifflin] },
-      { key: 'movement', label: t.plan.movement, value: parts.movement, basis: [C.neat] },
-      { key: 'training', label: t.plan.training, value: parts.training, basis: [C.metStrength] },
-      { key: 'goal', label: t.plan.goal, value: parts.goal, basis: [n.goal === 'lose' ? C.losePace : C.gainPace, C.kcalPerKg] },
-      { key: 'floor', label: t.plan.floorLift, value: parts.floorLift, basis: [C.floor] },
-    ].filter((l, i) => i < 2 || l.value !== 0) as { key: string; label: string; value: number; basis: Basis[] }[],
-  );
-  let opened = $state<string | null>(null);
-  const kcal = (v: string) => `${v} ${t.after.kcal}`;
-  const signed = (v: number, first: boolean) => kcal(first || v < 0 ? num(v) : `+${num(v)}`);
 
   let tuneError = $state('');
   const round = (x: number, places: number) => Math.round(x * 10 ** places) / 10 ** places;
@@ -112,22 +98,7 @@
 
     <h2 class="text-heading mt-5">{t.plan.how}</h2>
     <p class="text-callout text-ink-2 -mt-2">{matched ? t.plan.howTraining : t.plan.howEven}</p>
-    <Card list data-testid="plan-breakdown">
-      {#each lines as l, i (l.key)}
-        <Row title={l.label} value={signed(l.value, i === 0)} onclick={() => (opened = opened === l.key ? null : l.key)} testid="line-{l.key}">
-          <!-- one line closed (the first source), every citation and its status open -->
-          {#snippet caption()}
-            {#if opened === l.key}
-              {#each l.basis as b (b.source)}<span class="mt-1 block">{SOURCES[b.source]?.cite}</span>{/each}
-              {#if l.basis.some((b) => b.status === 'assumption')}<span class="mt-1 block">{t.plan.assumption}</span>{/if}
-            {:else}
-              <span class="block">{SOURCES[l.basis[0].source]?.short}</span>
-            {/if}
-          {/snippet}
-        </Row>
-      {/each}
-      <Row title={t.plan.total} value={kcal(num(parts.total))} testid="line-total" />
-    </Card>
+    <Card list data-testid="plan-breakdown"><Breakdown {parts} goal={n.goal} {bodyFat} /></Card>
 
     <h2 class="text-heading mt-5">{t.plan.tune}</h2>
     <Card list>

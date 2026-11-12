@@ -7,6 +7,8 @@ export interface SwipeOpts {
   /** 1 = finger moved left (go to the next tab), -1 = moved right (previous tab) */
   onSwipe: (direction: 1 | -1) => void;
   onCancel: () => void;
+  /** px of travel that counts as a swipe */
+  commit?: number;
 }
 
 // things that own horizontal gestures themselves
@@ -23,7 +25,9 @@ export const swipe: Action<HTMLElement, SwipeOpts> = (node, initial) => {
     mode = 'off';
     if (e.touches.length !== 1) return;
     if (document.querySelector('[data-vaul-drawer][data-state="open"], [data-onboarding]')) return;
-    if ((e.target as Element | null)?.closest?.(BLOCKED)) return;
+    // an element that owns its horizontal gesture blocks swipes on the ones around it, but not its own
+    const owner = (e.target as Element | null)?.closest?.(BLOCKED);
+    if (owner && owner !== node) return;
     sx = e.touches[0].clientX;
     sy = e.touches[0].clientY;
     mode = 'pending';
@@ -44,7 +48,7 @@ export const swipe: Action<HTMLElement, SwipeOpts> = (node, initial) => {
     mode = 'off';
     if (was !== 'h') return;
     const dx = e.changedTouches[0].clientX - sx;
-    if (Math.abs(dx) >= 56) opts.onSwipe(dx < 0 ? 1 : -1);
+    if (Math.abs(dx) >= (opts.commit ?? 56)) opts.onSwipe(dx < 0 ? 1 : -1);
     else opts.onCancel();
   };
   const cancel = () => {

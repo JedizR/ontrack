@@ -12,7 +12,9 @@
   import Today from './tabs/Today.svelte';
   import { session } from '$lib/session.svelte';
   import { sync } from '$lib/sync/engine.svelte';
-  import { sheets } from '$lib/sheets.svelte';
+  import { logOpen, sheets } from '$lib/sheets.svelte';
+  import { view } from '$lib/view.svelte';
+  import { dayTitle } from '$lib/model/dates';
   import { keypad } from '$lib/keypad.svelte';
   import { db } from '$lib/db/store.svelte';
   import type { SyncState } from '$lib/components/SyncMark.svelte';
@@ -37,6 +39,11 @@
     [SignIn, Account, Keypad] = [s.default, a.default, k.default];
   }
   $effect(() => { if ((sheets.signin || sheets.account || keypad.open) && !SignIn) void loadSheets(); });
+  // the logging sheets: Add, Search, Quick add, Meal, How it is calculated and the session menu
+  let Log = $state<Component | null>(null);
+  const loadLog = async () => { Log ??= (await import('./flows/log/LogSheets.svelte')).default; };
+  $effect(() => { if (logOpen() && !Log) void loadLog(); });
+  const add = () => (db.ready ? (sheets.add = true) : (sheets.signin = true));
 
   // First run, and a signed in account with no profile yet, go through onboarding (SCREENS.md section 1). A phone that
   // is signed in but has never pulled shows Today's first load state: the account may already have a plan.
@@ -77,7 +84,10 @@
     applyTheme();
     applyFontSize();
     void session.boot();
-    const preload = setTimeout(() => { void loadTab(1); void loadTab(2); loadSheets().catch(() => undefined); }, 800); // a failed preload retries on first open
+    const preload = setTimeout(() => { void loadTab(1); void loadTab(2); loadSheets().catch(() => undefined); loadLog().catch(() => undefined); }, 800); // a failed preload retries on first open
+    // the installed app can stay open past midnight: Today follows the calendar when it comes back
+    const tick = () => { if (document.visibilityState === 'visible') view.tick(); };
+    document.addEventListener('visibilitychange', tick);
 
     if (import.meta.env.PROD) {
       import('virtual:pwa-register').then(({ registerSW }) => {
@@ -88,7 +98,7 @@
         });
       });
     }
-    return () => clearTimeout(preload);
+    return () => { clearTimeout(preload); document.removeEventListener('visibilitychange', tick); };
   });
 </script>
 
@@ -97,7 +107,7 @@
 {:else}
 <div class="bg-canvas relative mx-auto flex min-h-dvh w-full max-w-[480px] flex-col overflow-x-clip">
   <Header
-    title={TITLES[prefs.tab]}
+    title={prefs.tab === 0 && view.past ? dayTitle(view.date) : TITLES[prefs.tab]}
     sync={MARK[sync.status]}
     signedIn={!!session.user}
     onaccount={() => (session.user ? (sheets.account = true) : (sheets.signin = true))}
@@ -120,11 +130,12 @@
     </div>
   </main>
 
-  <Dock tab={prefs.tab} onselect={(i) => void go(i)} {swipeOpts} />
+  <Dock tab={prefs.tab} onselect={(i) => void go(i)} onadd={add} {swipeOpts} />
 </div>
 {/if}
 
 {#if SignIn}<SignIn bind:open={sheets.signin} title={onboarding && prefs.draft?.at === 'plan' ? t.signin.save : t.signin.welcomeBack} />{/if}
 {#if Account}<Account bind:open={sheets.account} />{/if}
+{#if Log}<Log />{/if}
 {#if Keypad}<Keypad />{/if}
 <Toasts />
