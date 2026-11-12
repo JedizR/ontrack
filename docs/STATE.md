@@ -2,6 +2,21 @@
 
 Handoff note between contexts. Read first, update last. Keep it under one screen.
 
+## Paused (13 November 2026, about 00:45 Bangkok)
+
+The owner paused the run for usage limits. Resume in this order; the conductor role and its rules are in `STARTING_PROMPT.md`, and the final report it describes is still the goal.
+
+1. **S1b (friends screens and the food map):** branch `s1b-social-screens`, pushed, work in progress, no pull request. The main checkout `/Users/admin/destination/ontrack` is on that branch. Its handoff is under the S1 row below.
+   - Left to do: the panel's grab handle (32 px, must be 44), the largest-text stress failures, a rebase on `main` (L1 and O1 merged since it branched), `pnpm verify`, `verify-ui`, a code review, then a pull request with `full-ci`.
+   - Also add the landing page section about friends and the map, which L1 left for S1.
+2. **Gemini checks** (the free key's 20 requests reset at 07:00 Bangkok each day). Photos are kept outside the repo in `/Users/admin/destination/ontrack-design/eval/`:
+   - B1 live label check: `pnpm eval:vision --label /Users/admin/destination/ontrack-design/eval/eval-labels`. Update the B1 entry in `docs/BLOCKERS.md` with the result.
+   - N1 Thai eval rerun after N3: `pnpm eval:vision /Users/admin/destination/ontrack-design/eval/eval-thai`, compared with N1's 7 of 13 items, 3 of 8 dishes and 57 percent of calories from the table. Record it in `docs/EVAL-NOTES.md`.
+3. **M9 (hardening and release):** the BUILD-PLAN section plus every "for M9" note in this file and in `docs/BLOCKERS.md`.
+4. **The final report:** the milestone table, the last lines of a passing `pnpm verify` on `main`, the full `docs/BLOCKERS.md`, the production URL https://ontrack-black.vercel.app, and the three things the owner should do first.
+
+Parallel lanes: worktrees with `E2E_PORT` (see `docs/WORKFLOW.md`). Quick CI is about 4 to 16 minutes; add `full-ci` for data, sync, sign-in or RLS changes.
+
 ## Milestones
 
 Status is one of: not started, in progress, shipped, shipped with cuts, blocked.
@@ -27,7 +42,7 @@ Status is one of: not started, in progress, shipped, shipped with cuts, blocked.
 | T1a | T1's engine and science half | shipped | PR #24, merged, `v0.8.6` | Unit vectors H and I, no Svelte change. Faster gain pace 0.75 provisional (no source for a rate over 0.5), hidden in onboarding until T1b. S20 to S25 checked. T1b builds the screens |
 | T1b | T1's screen half (no onboarding) | shipped | PR #26, merged, `v0.8.7` | Gate green on the mock: a hybrid template builds a week and shows its three points with sources; Progress's training card on the seeder. Two design critic rounds, a code review. Onboarding's faster pace and the breakdown are O1's |
 | O1 | Onboarding redesign (owner, after T1) | shipped | PR #27, merged, `v0.8.9` | Gate green on the mock. Gain user 16 to 12 gestures, modelled 119 to 118 s; cut user 15 to 13, 119 to 114 s. Faster gain pace on Your plan with its Being checked label. Cold users timed by the owner (on his list) |
-| L1 | Landing page (owner, after O1) | in progress | PR #28, open | F18. Replaces Welcome. verify green; initial JS 86.1 KB gzip, landing chunk 16.7 KB. One critic round and one code review, all fixed; no second critic round (paused). Scroll it in Safari: on the owner's list |
+| L1 | Landing page (owner, after O1) | in progress | PR #28, merged, `v0.8.10` | F18. Replaces Welcome. verify green; initial JS 86.1 KB gzip, landing chunk 16.7 KB. One critic round and one code review, all fixed; no second critic round (paused). Scroll it in Safari: on the owner's list |
 | S1 | Friends, profiles and the food map (owner, after L1) | in progress | | F16, F17. Friends by request, optional program on the profile, opt-in meal photos on a map at rounded photo locations. Split: S1a data, S1b screens |
 | S1a | Friends data, S1's data half (alongside T1a) | shipped | PR #25, merged, `v0.8.8` | Visibility suite green on the mock and on live Supabase; `0005_social.sql` and `0006_publish_upsert.sql` pushed, advisors unchanged. No screens: S1b builds them on the notes below |
 | M9 | Hardening and release | not started | | |
