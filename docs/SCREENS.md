@@ -1,6 +1,6 @@
 # Ontrack: screens and flows
 
-Each screen lists what it contains from top to bottom, its states, and its words. Layout values come from `docs/DESIGN.md`. `design/reference-today.html` is the worked example of how a spec here becomes a screen. Strings shown are the seed for `src/lib/i18n/en.ts`.
+Each screen lists what it contains from top to bottom, its states, and its words. Layout values come from `docs/DESIGN.md`. `/gallery/today` is the worked example of how a spec here becomes a screen. Strings shown are the seed for `src/lib/i18n/en.ts`.
 
 ## 1. Map
 
@@ -65,7 +65,7 @@ Sheet over the plan, or over Welcome for returning users.
 
 ## 6. Today
 
-Matches `design/reference-today.html`.
+Matches `/gallery/today`.
 
 1. Header: "Today", sync mark, avatar opening Settings.
 2. Week strip. Tapping a day shows that day. Viewing a past day changes the title to its date and adds a "Back to today" chip.

@@ -41,6 +41,8 @@ export const en = {
     percent: '%',
     kcalTraining: 'kcal on training days',
     kcalDay: 'kcal a day',
+    sessionsWeek: (n: string) => (n === '1' ? 'session a week' : 'sessions a week'),
+    minutesWeek: 'minutes a week',
     proteinDay: 'g protein a day',
   },
   today: {
@@ -58,6 +60,9 @@ export const en = {
     session: (kind: string, min: string, kcal: string) => `${kind}, ${min} min. Adds ${kcal} kcal`,
     done: 'Done',
     doneLine: (kind: string, min: string) => `${kind}, ${min} min. Done`,
+    /** the session's name is its type, so the line does not repeat it */
+    sessionShort: (min: string, kcal: string) => `${min} min. Adds ${kcal} kcal`,
+    doneShort: (min: string) => `${min} min. Done`,
     skippedLine: 'Skipped. The day uses your rest target',
     more: (name: string) => `More for ${name}`,
     skip: 'Skip today',

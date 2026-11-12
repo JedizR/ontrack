@@ -26,10 +26,10 @@
     spellcheck="false"
     placeholder={t.train.search}
     bind:value={q}
-    class="bg-surface-2 placeholder:text-ink-3 text-body h-13 w-full appearance-none rounded-sm px-4 [&::-webkit-search-cancel-button]:appearance-none outline-none focus-visible:outline-2 focus-visible:outline-ink"
+    class="input-field text-body w-full appearance-none [&::-webkit-search-cancel-button]:appearance-none"
     data-testid="exercise-search"
   />
-  <div class="-mx-5 mt-2 flex gap-2 overflow-x-auto px-5" role="group" aria-label={t.train.muscle}>
+  <div class="-mx-6 mt-2 flex gap-2 overflow-x-auto px-6" role="group" aria-label={t.train.muscle}>
     <Chip selected={muscle === null} onclick={() => (muscle = null)}>{t.train.allMuscles}</Chip>
     {#each MUSCLES as m (m)}
       <Chip selected={muscle === m} onclick={() => (muscle = m)}>{t.train.muscles[m]}</Chip>

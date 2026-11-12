@@ -76,31 +76,31 @@
 </script>
 
 <Step title={t.plan.title} onback={back} top testid="your-plan">
-  <div class="-mt-4 flex flex-col gap-3">
+  <div class="-mt-4 flex flex-col gap-4">
     {#if g.doctorCard}
-      <Card class="bg-attention-soft" data-testid="plan-doctor">
+      <Card class="bg-attention-soft!" data-testid="plan-doctor">
         <p class="text-body font-semibold">{t.plan.doctor}</p>
         <p class="text-callout mt-1">{t.plan.doctorBody(num(V.doctorBmi))}</p>
       </Card>
     {/if}
 
     <Card hero data-testid="plan-hero">
-      <p class="text-hero num" data-testid="plan-kcal">{num(parts.total)}</p>
-      <p class="text-caption text-ink-2 mt-2">{matched ? t.after.kcalTraining : t.after.kcalDay}</p>
-      {#if matched}<p class="text-callout num mt-3" data-testid="plan-rest">{t.plan.onRest(num(rest))}</p>{/if}
+      <p class="text-hero" data-testid="plan-kcal">{num(parts.total)}</p>
+      <p class="text-caption text-ink-2 mt-1">{matched ? t.after.kcalTraining : t.after.kcalDay}</p>
+      {#if matched}<p class="text-lead num mt-3" data-testid="plan-rest">{t.plan.onRest(num(rest))}</p>{/if}
       <div class="border-line mt-5 border-t pt-5">
-        <p class="text-display num" data-testid="plan-protein">{num(n.proteinG)}</p>
+        <p class="text-display" data-testid="plan-protein">{num(n.proteinG)}</p>
         <p class="text-caption text-ink-2 mt-1">{t.after.proteinDay}</p>
       </div>
     </Card>
 
-    <p class="text-body mt-2" data-testid="plan-expect">{expect} {t.plan.estimate}</p>
+    <p class="text-lead mt-2" data-testid="plan-expect">{expect} {t.plan.estimate}</p>
 
-    <h2 class="text-heading mt-5">{t.plan.how}</h2>
-    <p class="text-callout text-ink-2 -mt-2">{matched ? t.plan.howTraining : t.plan.howEven}</p>
+    <h2 class="text-heading mt-4 px-1">{t.plan.how}</h2>
+    <p class="text-callout text-ink-2 -mt-2 px-1">{matched ? t.plan.howTraining : t.plan.howEven}</p>
     <Card list data-testid="plan-breakdown"><Breakdown {parts} goal={n.goal} {bodyFat} /></Card>
 
-    <h2 class="text-heading mt-5">{t.plan.tune}</h2>
+    <h2 class="text-heading mt-4 px-1">{t.plan.tune}</h2>
     <Card list>
       <Row title={t.plan.bodyFat} value={d.bodyFatPct ? `${num(d.bodyFatPct, 1)} ${t.after.percent}` : t.plan.noneYet} onclick={askBodyFat} testid="tune-bodyfat" />
       <Row title={t.plan.goalWeight} value={goalWeightOf(d) ? weightText(goalWeightOf(d)!, d.units) : t.plan.noneYet} onclick={askGoalWeight} testid="tune-goalweight" />

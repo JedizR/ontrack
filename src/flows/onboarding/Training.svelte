@@ -35,18 +35,18 @@
   const changed = $derived(days !== start.days || type !== start.type || minutes !== start.minutes || intensity !== start.intensity);
   const program = $derived(!changed && d.train?.kind === 'template' ? TEMPLATES.find((x) => x.id === (d.train as { id: string }).id) : undefined);
 
-  const label = 'text-callout text-ink-2 font-medium';
+  const label = 'text-eyebrow text-ink-2';
 </script>
 
 <Step title={t.train.q} onback={back} {progress} testid="step-train">
-  <div class="flex flex-col gap-5">
+  <div class="flex flex-col gap-6">
     <div class="flex items-center justify-between gap-3">
       <span class={label}>{t.train.days}</span>
       <Stepper bind:value={days} min={1} max={7} label={t.train.days} />
     </div>
-    <div class="flex flex-col gap-1">
+    <div class="flex flex-col gap-3">
       <span class={label}>{t.train.type}</span>
-      <div class="flex flex-wrap gap-x-2" role="group" aria-label={t.train.type}>
+      <div class="flex flex-wrap gap-2" role="group" aria-label={t.train.type}>
         {#each TYPES as ty (ty)}
           <Chip selected={type === ty} onclick={() => (type = ty)}>{t.train.types[ty]}</Chip>
         {/each}
@@ -57,9 +57,9 @@
       <Stepper bind:value={minutes} min={MINUTES.min} max={MINUTES.max} step={MINUTES.step} label={t.train.minutes} />
     </div>
     <!-- chips, not a segmented control: three options clip in one at the largest text on the SE -->
-    <div class="flex flex-col gap-1">
+    <div class="flex flex-col gap-3">
       <span class={label}>{t.train.intensity}</span>
-      <div class="flex flex-wrap gap-x-2" role="group" aria-label={t.train.intensity}>
+      <div class="flex flex-wrap gap-2" role="group" aria-label={t.train.intensity}>
         {#each INTENSITIES as i (i)}
           <Chip selected={intensity === i} onclick={() => (intensity = i)}>{t.train.intensities[i]}</Chip>
         {/each}
@@ -67,7 +67,7 @@
     </div>
     {#if program}<p class="text-callout" data-testid="train-using">{t.train.using(program.name)}</p>{/if}
     <div class="flex flex-col gap-1">
-      <Button full onclick={() => (picking = true)} data-testid="train-choose">{t.train.choose}</Button>
+      <Button variant="secondary" full onclick={() => (picking = true)} data-testid="train-choose">{t.train.choose}</Button>
       <Button variant="plain" full onclick={() => next({ train: { kind: 'later' } })} data-testid="train-later">{t.train.later}</Button>
     </div>
   </div>
@@ -79,7 +79,7 @@
 </Step>
 
 <Sheet bind:open={picking} title={t.train.templates} layer="base" testid="templates-sheet">
-  <div class="-mt-3">
+  <div class="-mt-2">
     {#each TEMPLATES as tpl (tpl.id)}
       <Row
         title={tpl.name}

@@ -58,16 +58,17 @@
     {#if unsent}
       <p class="text-callout text-attention mt-4" role="alert" data-testid="account-unsent">{t.account.unsent(num(db.pending))}</p>
     {/if}
-    <div class="mt-5 flex flex-col gap-1">
+    <!-- Sign out is the second action; Delete account is a quiet danger link under it, not its twin -->
+    <div class="mt-6 flex flex-col items-start gap-2">
       {#if unsent}
         <Button variant="danger" full disabled={busy} onclick={() => leave(true)} data-testid="account-signout-anyway">{t.account.signOutAnyway}</Button>
       {:else}
         <Button full disabled={busy} onclick={() => leave()} data-testid="account-signout">{busy ? t.account.signingOut : t.account.signOut}</Button>
       {/if}
-      <Button variant="danger" full disabled={busy} onclick={() => (mode = 'delete')} data-testid="account-delete">{t.account.delete}</Button>
+      <Button variant="danger" size="sm" class="-ml-4" disabled={busy} onclick={() => (mode = 'delete')} data-testid="account-delete">{t.account.delete}</Button>
     </div>
   {:else}
-    <p class="text-body">{t.account.deleteLead}</p>
+    <p class="text-lead">{t.account.deleteLead}</p>
     <form class="mt-5 flex flex-col gap-2" onsubmit={(e) => { e.preventDefault(); void remove(); }}>
       <label for="delete-confirm" class="text-caption text-ink-2">{t.account.deleteConfirm}</label>
       <input
@@ -77,7 +78,7 @@
         autocapitalize="off"
         spellcheck="false"
         bind:value={typed}
-        class="bg-surface-2 h-13 w-full rounded-sm px-4 outline-none focus-visible:outline-2 focus-visible:outline-ink"
+        class="input-field w-full"
         data-testid="delete-confirm"
       />
     </form>

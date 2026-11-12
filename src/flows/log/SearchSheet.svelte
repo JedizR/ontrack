@@ -12,6 +12,7 @@
   import { sheets } from '$lib/sheets.svelte';
   import { view } from '$lib/view.svelte';
   import Stepper from '$lib/components/Stepper.svelte';
+  import SearchIcon from '@lucide/svelte/icons/search';
   import { db } from '$lib/db/store.svelte';
   import { deleteMeal, saveMeal, undoToast } from '$lib/actions';
   import { itemFor, loadFoods, searchFoods, type Food } from '$lib/data/foods';
@@ -83,15 +84,15 @@
   backLabel={t.search.back}
 >
   {#if picked}
-    <div class="flex flex-col gap-4" data-testid="portion">
+    <div class="flex flex-col gap-5" data-testid="portion">
       <div aria-live="polite">
         <div class="flex items-baseline gap-2">
-          <span class="text-display num" data-testid="portion-kcal">{num(item?.kcal ?? 0)}</span>
+          <span class="text-display" data-testid="portion-kcal">{num(item?.kcal ?? 0)}</span>
           <span class="text-heading text-ink-2">{t.after.kcal}</span>
         </div>
-        {#if item}<p class="text-caption text-ink-2">{t.search.macros(num(item.protein, 1), num(item.carbs, 1), num(item.fat, 1))}</p>{/if}
+        {#if item}<p class="text-caption text-ink-2 mt-2">{t.search.macros(num(item.protein, 1), num(item.carbs, 1), num(item.fat, 1))}</p>{/if}
       </div>
-      <div class="-mx-5 flex gap-2 overflow-x-auto px-5" role="group" aria-label={t.search.portion}>
+      <div class="-mx-6 flex gap-2 overflow-x-auto px-6" role="group" aria-label={t.search.portion}>
         {#each picked.food.portions as p (p.label)}
           <Chip selected={picked.grams === p.grams} onclick={() => { if (picked) picked.grams = p.grams; }}>{p.label}</Chip>
         {/each}
@@ -102,6 +103,8 @@
       </div>
     </div>
   {:else}
+    <div class="relative">
+    <SearchIcon class="text-ink-2 pointer-events-none absolute top-1/2 left-4 -translate-y-1/2" size={22} strokeWidth={2} aria-hidden="true" />
     <input
       aria-label={t.search.field}
       type="search"
@@ -111,9 +114,10 @@
       placeholder={t.search.field}
       bind:value={q}
       {@attach (el) => el.focus()}
-      class="bg-surface-2 placeholder:text-ink-3 h-13 w-full appearance-none rounded-sm px-4 [&::-webkit-search-cancel-button]:appearance-none outline-none focus-visible:outline-2 focus-visible:outline-ink"
+      class="input-field w-full appearance-none pl-12! [&::-webkit-search-cancel-button]:appearance-none"
       data-testid="search-field"
     />
+    </div>
     {#if failed}
       <p class="text-callout text-ink-2 mt-4" role="alert">{t.search.failed}</p>
       <Button class="mt-2" onclick={load}>{t.search.retry}</Button>

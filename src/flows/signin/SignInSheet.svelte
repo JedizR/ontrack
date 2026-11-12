@@ -98,16 +98,16 @@
 {/snippet}
 
 <Sheet bind:open {title} layer="base" testid="signin-sheet">
-  <p class="text-callout text-ink-2">{t.signin.lead}</p>
+  <p class="text-lead text-ink-2">{t.signin.lead}</p>
 
   {#if step === 'email'}
     {#if google}
       <div class="mt-5">
-        <Button full onclick={withGoogle} disabled={busy} data-testid="signin-google">
+        <Button size="lg" full onclick={withGoogle} disabled={busy} data-testid="signin-google">
           <img src="/google.svg" alt="" class="size-5" />{t.signin.google}
         </Button>
       </div>
-      <div class="text-caption text-ink-2 my-4 flex items-center gap-3" aria-hidden="true">
+      <div class="text-eyebrow text-ink-2 my-5 flex items-center gap-3" aria-hidden="true">
         <span class="bg-line h-px flex-1"></span>{t.signin.or}<span class="bg-line h-px flex-1"></span>
       </div>
     {/if}
@@ -122,9 +122,10 @@
         spellcheck="false"
         enterkeyhint="send"
         bind:value={email}
-        class="bg-surface-2 h-13 w-full rounded-sm px-4 outline-none focus-visible:outline-2 focus-visible:outline-ink"
+        class="input-field w-full"
         data-testid="signin-email"
       />
+      <p class="text-caption text-ink-2 mt-1">{t.signin.codeWhy}</p>
     </form>
     {@render message()}
   {:else}
@@ -132,7 +133,7 @@
     <div class="relative mt-4 {shake ? 'animate-shake' : ''}" onanimationend={() => (shake = false)}>
       <div class="grid grid-cols-6 gap-2" aria-hidden="true">
         {#each { length: CODE_LENGTH } as _, i}
-          <div class="num bg-surface-2 text-heading grid h-14 place-items-center rounded-sm {i === code.length && !busy ? 'ring-ink ring-2' : ''}">{code[i] ?? ''}</div>
+          <div class="num bg-surface-2 grid h-15 place-items-center rounded-sm font-semibold {i === code.length && !busy ? 'ring-ink ring-2' : ''}" style="font-size: var(--t-heading)">{code[i] ?? ''}</div>
         {/each}
       </div>
       <input

@@ -57,7 +57,7 @@
     e.preventDefault();
     document.getElementById(id)?.focus();
   };
-  const field = 'bg-surface-2 placeholder:text-ink-3 h-14 w-full min-w-0 rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ink';
+  const field = 'input-field w-full min-w-0';
 </script>
 
 {#snippet footer()}
@@ -102,7 +102,7 @@
               placeholder={t.quick.optional}
               bind:value={macroText[m]}
               onkeydown={onward(i < 2 ? `quick-${MACROS[i + 1]}` : 'quick-name')}
-              class="{field} num pr-7 pl-3"
+              class="{field} num pr-7! pl-3!"
               data-testid="quick-{m}"
             />
             <span class="text-callout text-ink-2 pointer-events-none absolute top-1/2 right-3 -translate-y-1/2" aria-hidden="true">{t.after.g}</span>
@@ -113,7 +113,7 @@
 
     <div class="flex flex-col gap-2">
       <label for="quick-name" class="text-caption text-ink-2">{t.quick.name}</label>
-      <input id="quick-name" type="text" maxlength="120" enterkeyhint="done" placeholder={t.quick.optional} bind:value={name} class="{field} px-5" data-testid="quick-name" />
+      <input id="quick-name" type="text" maxlength="120" enterkeyhint="done" placeholder={t.quick.optional} bind:value={name} class="{field}" data-testid="quick-name" />
     </div>
     <p class="text-callout text-attention min-h-[1lh]" role="alert" data-testid="quick-error">{error}</p>
   </div>

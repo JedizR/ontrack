@@ -23,5 +23,5 @@
 
 <Sheet bind:open={sheets.describe} title={t.describe.title} layer="base" testid="describe-sheet" {footer}>
   <label for="describe-text" class="text-caption text-ink-2">{t.describe.field}</label>
-  <textarea id="describe-text" rows="4" maxlength={MAX_TEXT} {@attach (el) => el.focus()} enterkeyhint="done" bind:value={text} placeholder={t.describe.hint} class="bg-surface-2 placeholder:text-ink-3 mt-2 block w-full resize-none rounded-sm px-4 py-3 outline-none focus-visible:outline-2 focus-visible:outline-ink" data-testid="describe-text"></textarea>
+  <textarea id="describe-text" rows="4" maxlength={MAX_TEXT} {@attach (el) => el.focus()} enterkeyhint="done" bind:value={text} placeholder={t.describe.hint} class="input-field mt-2 block w-full resize-none py-4" data-testid="describe-text"></textarea>
 </Sheet>

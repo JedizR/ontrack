@@ -83,31 +83,43 @@
     if (over !== from) undoToast(t.train.saved, changeProgram({ name: program.name, sessions: sessions.map((s) => (s.key === key ? { ...s, weekday: over } : s)) }));
   }
 
-  const hairline = '[&+&]:before:bg-line [&+&]:before:absolute [&+&]:before:top-0 [&+&]:before:right-0 [&+&]:before:left-15 [&+&]:before:h-px';
-  const pressable = 'active:bg-surface-2 -ml-5 flex min-w-0 flex-1 items-center gap-4 py-4 pl-5 text-left transition-colors duration-[var(--d-press)]';
+  // rows are 64 high: a 48 day tile and 8 above and below; the hairline starts where the text does
+  const hairline = '[&+&]:before:bg-line [&+&]:before:absolute [&+&]:before:top-0 [&+&]:before:right-0 [&+&]:before:left-16 [&+&]:before:h-px';
+  const pressable = 'active:bg-surface-2 -ml-6 flex min-h-16 min-w-0 flex-1 items-center gap-4 py-2 pl-6 text-left transition-colors duration-[var(--d-press)]';
 </script>
 
 {#snippet day(d: number)}
-  <span class="grid size-11 flex-none place-items-center rounded-sm text-caption font-semibold {d === todayIs ? 'bg-ink text-canvas' : 'bg-surface-2'}">{t.train.weekdaysShort[d]}</span>
+  <span class="text-caption grid size-12 flex-none place-items-center rounded-sm font-semibold {d === todayIs ? 'bg-ink text-canvas' : 'bg-surface-2'}">{t.train.weekdaysShort[d]}</span>
 {/snippet}
 
-<section aria-label={t.tabs.train} data-testid="tab-train" class="flex flex-col gap-3 pt-2">
+<section aria-label={t.tabs.train} data-testid="tab-train" class="flex flex-col gap-4 pt-1">
   {#if !plan || !profile}
     <p class="text-ink-2" data-testid="no-plan">{t.today.noPlan}</p>
   {:else}
     <Card data-testid="train-summary">
       {#if sessions.length}
-        <p class="text-heading">{t.train.summary(num(sessions.length), num(minutes))}</p>
-        <p class="text-callout text-ink-2 mt-1">{t.train.adds(num(Math.round(perDay)))}</p>
-        <p class="text-callout text-ink-2">{program.name || t.train.ownProgram}</p>
+        <div class="flex gap-10" role="group" aria-label={t.train.summary(num(sessions.length), num(minutes))}>
+          <div aria-hidden="true">
+            <p class="text-display" data-testid="train-sessions">{num(sessions.length)}</p>
+            <p class="text-caption text-ink-2 mt-1">{t.after.sessionsWeek(num(sessions.length))}</p>
+          </div>
+          <div aria-hidden="true">
+            <p class="text-display" data-testid="train-minutes">{num(minutes)}</p>
+            <p class="text-caption text-ink-2 mt-1">{t.after.minutesWeek}</p>
+          </div>
+        </div>
+        <p class="text-body mt-4 font-semibold">{t.train.adds(num(Math.round(perDay)))}</p>
+        <div class="mt-1 flex items-center gap-3">
+          <p class="text-callout text-ink-2 min-w-0 flex-1">{program.name || t.train.ownProgram}</p>
+          <Button size="sm" onclick={() => (templates = true)} data-testid="train-change">{t.train.change}</Button>
+        </div>
         {#if pending}<p class="text-callout mt-2" data-testid="train-pending">{t.train.fromTomorrow}</p>{/if}
-        <Button variant="plain" class="-ml-5 mt-1" onclick={() => (templates = true)} data-testid="train-change">{t.train.change}</Button>
       {:else}
         <EmptyState text={t.today.noProgram} action={t.train.pick} onaction={() => (templates = true)} />
       {/if}
     </Card>
 
-    <h2 class="text-heading mx-1 mt-2">{t.train.week}</h2>
+    <h2 class="text-heading mt-2 px-1">{t.train.week}</h2>
     <Card list aria-label={t.train.week} data-testid="train-week">
       {#each t.train.weekdays as dayName, d (dayName)}
         {@const list = sessions.filter((s) => s.weekday === d)}
@@ -115,7 +127,7 @@
         {#each list as s (s.key)}
           {@const lifted = drag?.key === s.key}
           <div
-            class="relative flex items-center {hairline} {lifted ? 'bg-surface shadow-float z-10 -mx-5 rounded-md px-5' : lit}"
+            class="relative flex items-center {hairline} {lifted ? 'bg-surface shadow-float z-10 -mx-6 rounded-md px-6' : lit}"
             style={lifted ? `transform: translateY(${drag?.dy}px)` : undefined}
             data-day={d}
             data-key={s.key}
@@ -140,7 +152,7 @@
               onclick={() => { if (!dragged) edit(s); dragged = false; }}
               data-testid="train-handle"
             >
-              <GripVertical size={24} strokeWidth={1.75} />
+              <GripVertical size={24} strokeWidth={2} />
             </button>
           </div>
         {:else}
@@ -148,7 +160,7 @@
             <button type="button" class={pressable} aria-label={t.train.restOn(d === todayIs ? t.train.dayToday(dayName) : dayName)} onclick={() => add(d)} data-testid="train-rest">
               {@render day(d)}
               <span class="text-body text-ink-2 min-w-0 flex-1">{t.train.rest}</span>
-              <Plus class="text-ink-2 mr-0.5 flex-none" size={24} strokeWidth={1.75} aria-hidden="true" />
+              <Plus class="text-ink-2 mr-0.5 flex-none" size={24} strokeWidth={2} aria-hidden="true" />
             </button>
           </div>
         {/each}
@@ -157,7 +169,7 @@
     </Card>
 
     {#if analysis}
-      <h2 class="text-heading mx-1 mt-2">{t.train.analysis}</h2>
+      <h2 class="text-heading mt-2 px-1">{t.train.analysis}</h2>
       {#if analysis.hasExercises}
         <Card aria-label={t.train.balance} data-testid="train-balance">
           <p class="text-body font-semibold">{t.train.balance}</p>

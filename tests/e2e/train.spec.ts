@@ -10,7 +10,8 @@ const kcalOf = (page: Page) => page.getByTestId('hero').getByText(/^of [\d,]+ kc
 test('build a week: add a session, list exercises, see the analysis with its sources, drag a session, delete with undo', { tag: '@smoke' }, async ({ page }) => {
   await open(page);
   await page.getByTestId('tab-1').click();
-  await expect(page.getByTestId('train-summary')).toContainText('4 sessions, 240 minutes a week');
+  await expect(page.getByTestId('train-sessions')).toHaveText('4');
+  await expect(page.getByTestId('train-minutes')).toHaveText('240');
   await expect(page.getByTestId('train-summary')).toContainText('Adds 137 kcal a day on average');
   await expect(page.getByTestId('train-balance-empty')).toContainText('List your exercises to see muscle balance');
 
@@ -71,7 +72,8 @@ test('a template replaces the program from tomorrow; today and the days before k
   await page.getByTestId('template-upper-lower-4').getByTestId('template-use').click();
   await expect(page.getByTestId('template-confirm-sheet')).toContainText('Upper lower 4 days replaces your current program.');
   await page.getByTestId('template-confirm').click();
-  await expect(page.getByTestId('train-summary')).toContainText('4 sessions, 280 minutes a week');
+  await expect(page.getByTestId('train-sessions')).toHaveText('4');
+  await expect(page.getByTestId('train-minutes')).toHaveText('280');
   await expect(page.getByTestId('train-summary')).toContainText('Upper lower 4 days');
   await expect(page.getByTestId('train-recs')).toContainText('No changes to suggest.');
   await expect(day(page, 3)).toContainText('Upper B'); // Thursday
@@ -79,7 +81,7 @@ test('a template replaces the program from tomorrow; today and the days before k
   // today, Wednesday, keeps its session and target; Tuesday, now Lower A, stays a rest day
   await page.getByTestId('tab-0').click();
   await expect(kcalOf(page)).toHaveText('of 2,460 kcal');
-  await expect(page.getByTestId('training')).toContainText('Strength, 60 min. Adds 240 kcal');
+  await expect(page.getByTestId('training')).toContainText('60 min. Adds 240 kcal');
   await page.getByTestId('week').getByRole('button', { name: /Tuesday, November 10/ }).click();
   await expect(kcalOf(page)).toHaveText('of 2,220 kcal');
   await expect(page.getByTestId('day-kind')).toHaveText('Rest day');

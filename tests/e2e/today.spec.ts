@@ -117,10 +117,11 @@ test('a meal opens, edits grams, saves, keeps as a saved meal and deletes with u
 test('done keeps the training target, skip returns to rest; a past day shows its own meals', async ({ page }) => {
   await open(page, '/', MEALS);
   const training = page.getByTestId('training');
-  await expect(training).toContainText('Strength, 60 min. Adds 240 kcal');
+  await expect(training).toContainText('Strength');
+  await expect(training).toContainText('60 min. Adds 240 kcal'); // the type is not repeated when it is the name
   await expect(page.getByTestId('day-kind')).toHaveText('Training day');
   await training.getByTestId('session-done').click();
-  await expect(training).toContainText('Strength, 60 min. Done');
+  await expect(training).toContainText('60 min. Done');
   await expect(kcalOf(page)).toHaveText('of 2,460 kcal');
   await training.getByTestId('session-undo').click();
   await training.getByTestId('session-more').click();
@@ -192,3 +193,14 @@ test('logging works offline and reaches the account once the network is back', {
   await expect.poll(() => pending(page)).toBe(0);
   await expect(page.getByTestId('sync-mark')).toBeHidden();
 });
+
+// Safari with its toolbars showing: the hero card is whole above the dock, on a 390 by 844 phone and on the SE
+for (const [name, viewport] of [['390 by 664', { width: 390, height: 664 }], ['SE, 375 by 548', { width: 375, height: 548 }]] as const) {
+  test(`the hero sits above the dock in Safari, ${name}`, async ({ page }) => {
+    await page.setViewportSize(viewport);
+    await open(page, '/', MEALS);
+    const hero = (await page.getByTestId('hero').boundingBox())!;
+    const dock = (await page.getByTestId('add').boundingBox())!;
+    expect(hero.y + hero.height).toBeLessThanOrEqual(dock.y);
+  });
+}

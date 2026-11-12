@@ -343,12 +343,10 @@ for (const theme of ['light', 'dark'] as const) {
         await shot(page, 'photo', 'describe');
       });
 
-      // Today composed from the real components, next to the static reference mock
+      // Today composed from the real components
       test('today composed', async ({ page }) => {
         await open(page, '/gallery/today');
         await shot(page, 'today', 'composed');
-        await page.goto(`/design/reference-today.html#${theme}`);
-        await shot(page, 'today', 'reference');
       });
     });
   }

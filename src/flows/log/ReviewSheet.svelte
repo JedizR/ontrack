@@ -138,8 +138,8 @@
 
 {#snippet footer()}
   <div class="flex items-center gap-3">
-    <p class="text-callout text-ink-2 num min-w-0 flex-1" data-testid="review-total">{t.meal.total(num(Math.round(sum.kcal)), num(Math.round(sum.protein)))}</p>
-    <span class="text-callout flex-none" aria-hidden="true">{t.review.saveMeal}</span>
+    <p class="text-body num min-w-0 flex-1 font-semibold" data-testid="review-total">{t.meal.total(num(Math.round(sum.kcal)), num(Math.round(sum.protein)))}</p>
+    <span class="text-callout text-ink-2 flex-none" aria-hidden="true">{t.review.saveMeal}</span>
     <Switch bind:checked={keep} label={t.review.saveMeal} testid="review-keep" />
   </div>
   <Button variant="primary" size="lg" full class="mt-2" disabled={!items.length} onclick={add} data-testid="review-add">{t.review.add(num(Math.round(sum.kcal)))}</Button>
@@ -148,7 +148,7 @@
 <Sheet bind:open={() => sheets.review !== null, (v) => { if (!v) close(); }} title={t.review.title} layer="base" testid="review-sheet" footer={status === 'ready' ? footer : undefined}>
   {#if kind === 'photo'}
     {#if photoUrl}
-      <img src={photoUrl} alt={t.review.photo} class="aspect-[4/3] w-full rounded-lg object-cover" data-testid="review-photo" />
+      <img src={photoUrl} alt={t.review.photo} class="shadow-card aspect-[4/3] w-full rounded-lg object-cover" data-testid="review-photo" />
     {:else if status === 'loading'}
       <Skeleton class="aspect-[4/3] w-full rounded-lg" />
     {/if}
@@ -157,7 +157,7 @@
   {#if status === 'loading'}
     <p class="text-callout text-ink-2 mt-4" role="status" data-testid="review-looking">{t.review.looking}</p>
     <!-- the shapes of the name field and three item rows, so nothing jumps when they arrive -->
-    <Skeleton class="mt-4 h-13 w-full rounded-sm" />
+    <Skeleton class="mt-4 h-14 w-full rounded-sm" />
     <div class="mt-4">
       {#each [0, 1, 2] as i (i)}
         <div class="border-line flex flex-col gap-2 border-t py-3 first:border-t-0">
@@ -170,7 +170,7 @@
   {:else if status === 'ready'}
     <div class="mt-4 flex flex-col gap-2">
       <label for="review-title" class="text-caption text-ink-2">{t.meal.name}</label>
-      <input id="review-title" type="text" maxlength="120" enterkeyhint="done" bind:value={title} placeholder={items[0]?.name ?? ''} class="bg-surface-2 placeholder:text-ink-3 h-13 w-full min-w-0 rounded-sm px-4 outline-none focus-visible:outline-2 focus-visible:outline-ink" data-testid="review-title" />
+      <input id="review-title" type="text" maxlength="120" enterkeyhint="done" bind:value={title} placeholder={items[0]?.name ?? ''} class="input-field w-full min-w-0" data-testid="review-title" />
     </div>
     <!-- one item is kept free for the oil -->
     <ItemList bind:lines empty={t.review.empty} max={hidden ? 29 : 30}>

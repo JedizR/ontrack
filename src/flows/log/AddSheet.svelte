@@ -68,10 +68,8 @@
 </script>
 
 {#snippet again(label: string, onclick: () => void)}
-  <button type="button" class="group -mr-1 grid size-11 flex-none place-items-center" aria-label={label} {onclick} data-testid="again">
-    <span class="bg-surface-2 group-active:bg-surface-3 grid size-9 place-items-center rounded-full transition-[transform,background-color] duration-[var(--d-press)] group-active:scale-[0.97]">
-      <Plus size={24} strokeWidth={1.75} />
-    </span>
+  <button type="button" class="bg-surface-2 active:bg-surface-3 -mr-1 grid size-11 flex-none place-items-center rounded-full transition-[transform,background-color] duration-[var(--d-press)] active:scale-[0.97]" aria-label={label} {onclick} data-testid="again">
+    <Plus size={22} strokeWidth={2.25} />
   </button>
 {/snippet}
 
@@ -85,20 +83,22 @@
       <Button variant="plain" size="lg" full onclick={() => (notice = false)}>{t.add.consentNotNow}</Button>
     </div>
   {:else}
+    <!-- Photo is the sheet's main action: the violet 3D face. The others are quiet tiles -->
     <div class="grid grid-cols-2 gap-3">
       {#each WAYS as w (w.key)}
         {@const Icon = w.icon}
-        <button type="button" class="{w.key === 'photo' ? 'bg-lime text-on-lime active:bg-lime-press' : 'bg-surface-2 active:bg-surface-3'} flex min-h-24 flex-col items-start gap-2 rounded-md p-4 text-left transition-[transform,background-color] duration-[var(--d-press)] active:scale-[0.97]" onclick={() => go(w.key)} data-testid="add-{w.key}">
-          <Icon size={24} strokeWidth={1.75} />
+        {@const main = w.key === 'photo'}
+        <button type="button" class="{main ? 'pill-accent active:pill-accent-down' : 'bg-surface-2 active:bg-surface-3 active:scale-[0.97]'} flex min-h-26 flex-col items-start justify-between gap-2 rounded-md p-4 text-left transition-[transform,background-color,box-shadow] duration-[var(--d-press)]" onclick={() => go(w.key)} data-testid="add-{w.key}">
+          <span class="{main ? 'bg-on-accent/20' : 'tile'} grid size-10 place-items-center rounded-sm"><Icon size={22} strokeWidth={2} /></span>
           <span>
             <span class="text-body block font-semibold">{w.label}</span>
-            <span class="text-caption {w.key === 'photo' ? '' : 'text-ink-2'} block">{w.line}</span>
+            <span class="text-caption {main ? '' : 'text-ink-2'} block">{w.line}</span>
           </span>
         </button>
       {/each}
     </div>
 
-    <h3 class="text-heading mt-6">{t.add.recent}</h3>
+    <h3 class="text-heading mt-8">{t.add.recent}</h3>
     {#if recent.length}
       <div data-testid="recent">
         {#each recent as { id, data: m } (id)}
@@ -109,11 +109,11 @@
         {/each}
       </div>
     {:else}
-      <p class="text-callout text-ink-2 mt-2" data-testid="recent-empty">{t.add.noRecent}</p>
+      <p class="text-callout text-ink-2 mt-3" data-testid="recent-empty">{t.add.noRecent}</p>
     {/if}
 
     {#if saved.length}
-      <h3 class="text-heading mt-6">{t.add.saved}</h3>
+      <h3 class="text-heading mt-8">{t.add.saved}</h3>
       <div data-testid="saved">
         {#each saved as { id, data: s } (id)}
           <Row title={s.title} value={kcalOf(s.items)}>

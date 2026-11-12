@@ -60,7 +60,7 @@
     s.exercises = [...(s.exercises ?? []), { exerciseId, ...START }];
     opened = s.exercises.length - 1;
   }
-  const label = 'text-callout text-ink-2 font-medium';
+  const label = 'text-eyebrow text-ink-2';
 </script>
 
 {#snippet footer()}
@@ -82,20 +82,20 @@
         maxlength={60}
         autocomplete="off"
         bind:value={s.name}
-        class="bg-surface-2 placeholder:text-ink-3 text-body h-13 w-full rounded-sm px-4 outline-none focus-visible:outline-2 focus-visible:outline-ink"
+        class="input-field text-body w-full"
         data-testid="session-name"
       />
-      <div class="flex flex-col gap-1">
+      <div class="flex flex-col gap-3">
         <span class={label}>{t.train.day}</span>
-        <div class="flex flex-wrap gap-x-2" role="group" aria-label={t.train.day}>
+        <div class="flex flex-wrap gap-2" role="group" aria-label={t.train.day}>
           {#each t.train.weekdaysShort as d, i (d)}
             <Chip selected={s.weekday === i} onclick={() => (s.weekday = i)}>{d}</Chip>
           {/each}
         </div>
       </div>
-      <div class="flex flex-col gap-1">
+      <div class="flex flex-col gap-3">
         <span class={label}>{t.train.type}</span>
-        <div class="flex flex-wrap gap-x-2" role="group" aria-label={t.train.type}>
+        <div class="flex flex-wrap gap-2" role="group" aria-label={t.train.type}>
           {#each TYPES as ty (ty)}
             <Chip selected={s.type === ty} onclick={() => (s.type = ty)}>{t.train.types[ty]}</Chip>
           {/each}
@@ -106,22 +106,22 @@
         <Stepper bind:value={s.minutes} min={5} max={MAX.minutes} step={5} label={t.train.minutes} />
       </div>
       <!-- chips, not a segmented control, as in onboarding: three options clip in one at the largest text on the SE -->
-      <div class="flex flex-col gap-1">
+      <div class="flex flex-col gap-3">
         <span class={label}>{t.train.intensity}</span>
-        <div class="flex flex-wrap gap-x-2" role="group" aria-label={t.train.intensity}>
+        <div class="flex flex-wrap gap-2" role="group" aria-label={t.train.intensity}>
           {#each INTENSITIES as i (i)}
             <Chip selected={s.intensity === i} onclick={() => (s.intensity = i)}>{t.train.intensities[i]}</Chip>
           {/each}
         </div>
         <p class="text-caption text-ink-2">{t.train.intensityLines[s.intensity]}</p>
       </div>
-      <p class="text-body font-semibold" data-testid="session-kcal">{t.train.sessionAdds(num(Math.round(sessionKcal(s, weightKg))))}</p>
+      <p class="text-heading" data-testid="session-kcal">{t.train.sessionAdds(num(Math.round(sessionKcal(s, weightKg))))}</p>
 
       <div>
         <h3 class="text-heading">{t.train.exercises}</h3>
         {#each s.exercises ?? [] as e, i (i)}
           <div class="border-line border-t py-3 first-of-type:border-t-0" data-testid="session-exercise">
-            <button type="button" class="active:bg-surface-2 -mx-5 flex w-[calc(100%+var(--gutter)*2)] flex-col items-start px-5 py-1 text-left transition-colors duration-[var(--d-press)]" aria-expanded={opened === i} onclick={() => (opened = opened === i ? null : i)}>
+            <button type="button" class="active:bg-surface-2 -mx-6 flex w-[calc(100%+var(--inset)*2)] flex-col items-start px-6 py-1 text-left transition-colors duration-[var(--d-press)]" aria-expanded={opened === i} onclick={() => (opened = opened === i ? null : i)}>
               <span class="text-body line-clamp-2 font-semibold">{LIBRARY[e.exerciseId]?.name ?? e.exerciseId}</span>
               <span class="text-caption text-ink-2">{t.train.exerciseLine(num(e.sets), num(e.repsMin), num(e.repsMax))}</span>
             </button>
@@ -139,7 +139,7 @@
                   <span class={label}>{t.train.repsTo}</span>
                   <Stepper bind:value={e.repsMax} min={e.repsMin} max={MAX.reps} label={t.train.repsTo} />
                 </div>
-                <div><Button variant="danger" size="sm" onclick={() => { s.exercises?.splice(i, 1); opened = null; }} data-testid="exercise-remove">{t.meal.remove}</Button></div>
+                <div><Button variant="danger" size="sm" class="-ml-4" onclick={() => { s.exercises?.splice(i, 1); opened = null; }} data-testid="exercise-remove">{t.meal.remove}</Button></div>
               </div>
             {/if}
           </div>

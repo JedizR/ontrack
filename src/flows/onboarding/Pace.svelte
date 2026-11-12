@@ -42,7 +42,7 @@
 
 <Step title={t.pace.q} onback={back} {progress} testid="step-pace">
   <div class="flex flex-col gap-3">
-    <span class="text-callout text-ink-2 font-medium">{training ? t.pace.trainingDay : t.pace.perDay}</span>
+    <span class="text-eyebrow text-ink-2 text-right">{training ? t.pace.trainingDay : t.pace.perDay}</span>
     <Choices label={t.pace.q} {options} value={picked} onpick={(rate) => next({ rate })} />
     {#if c.why}<p class="text-callout text-ink-2" data-testid="pace-why">{WHY[c.why]}</p>{/if}
   </div>

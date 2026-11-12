@@ -107,7 +107,8 @@
 {#if onboarding}
   {#if Onboarding}<Onboarding />{/if}
 {:else}
-<div class="bg-canvas relative mx-auto flex min-h-dvh w-full max-w-[480px] flex-col overflow-x-clip">
+<!-- svh: the height with Safari's toolbars showing, so nothing reflows when they collapse -->
+<div class="bg-canvas relative mx-auto flex min-h-svh w-full max-w-[480px] flex-col overflow-x-clip">
   <Header
     title={prefs.tab === 0 && view.past ? dayTitle(view.date) : TITLES[prefs.tab]}
     sync={MARK[sync.status]}
@@ -116,7 +117,8 @@
   />
 
   <!-- flex-1: the whole area between header and dock takes swipes, not just the content -->
-  <main class="flex-1 px-5 pb-[calc(env(safe-area-inset-bottom)+var(--dock-h)+40px)]" use:swipe={swipeOpts}>
+  <!-- the content ends clear of the dock, which floats 12 above the safe area -->
+  <main class="flex-1 px-4 pb-[calc(var(--dock-h)+12px+env(safe-area-inset-bottom)+24px)]" use:swipe={swipeOpts}>
     <div style="transform: translateX({dragX}px); transition: {dragging ? 'none' : 'transform 240ms var(--ease-out)'}">
       {#key prefs.tab}
         <div in:fly={{ x: 40 * dir, duration: dur(220), opacity: 0.2 }}>
