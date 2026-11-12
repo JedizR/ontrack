@@ -51,8 +51,16 @@ test('words on the light hero haze', () => {
 });
 
 // L1: words on the landing page's colour washes and violet panels, which look the same in both themes
-test('words on the landing washes and panels', () => {
-  const stops = (name: string) => [...css.slice(css.indexOf(`--${name}:`), css.indexOf(';', css.indexOf(`--${name}:`))).matchAll(/#[0-9a-f]{6}/gi)].map((m) => parse(m[0]));
+test('words on the landing washes, panels and sky', () => {
+  const stops = (name: string, from = 0) => {
+    const at = css.indexOf(`--${name}:`, from);
+    return [...css.slice(at, css.indexOf(';', at)).matchAll(/#[0-9a-f]{6}/gi)].map((m) => parse(m[0]));
+  };
+  // the hero's sky: ink words on every stop of the light one, white on the dark one, violet headline words as large text
+  for (const c of stops('grad-sky')) expect(ratio(parse(light.ink), c), 'grad-sky').toBeGreaterThanOrEqual(4.5);
+  for (const c of stops('grad-sky')) expect(ratio(parse(light['accent-ink']), c), 'grad-sky violet').toBeGreaterThanOrEqual(3);
+  for (const c of stops('grad-sky', css.indexOf('[data-theme="dark"] {'))) expect(ratio(parse(dark.ink), c), 'dark grad-sky').toBeGreaterThanOrEqual(4.5);
+  for (const c of stops('grad-sky', css.indexOf('[data-theme="dark"] {'))) expect(ratio(parse(dark['accent-ink']), c), 'dark grad-sky violet').toBeGreaterThanOrEqual(3);
   for (const w of ['wash-ink', 'wash-blue', 'wash-magenta', 'grad-panel']) for (const c of stops(w)) expect(ratio(parse(light['on-night']), c), w).toBeGreaterThanOrEqual(4.5);
   for (const c of stops('wash-lavender')) expect(ratio(parse(light.night), c), 'wash-lavender').toBeGreaterThanOrEqual(4.5);
 });

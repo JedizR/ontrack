@@ -1,5 +1,6 @@
 // The landing page's phone screens (L1): real screens of the app on the mock backend, in the light theme, as a 390 by
-// 844 iPhone shows them, as WebP (cwebp, from Homebrew's webp). Run after a change to the look, and commit the images:
+// 844 iPhone shows them, as WebP (cwebp, from Homebrew's webp). Run after a change to the look, commit the images, and
+// update t.landing.alt where a number changed:
 //   LANDING_SHOTS=1 pnpm exec playwright test --project=shots
 import { execFileSync } from 'node:child_process';
 import { expect, test, type Page } from '@playwright/test';
@@ -69,6 +70,7 @@ test('supplement', async ({ page }) => {
 });
 
 test('train', async ({ page }) => {
+  await withPrefs(page, { suggestOff: true }); // the week itself, without O1's suggestion card
   await open(page);
   await page.getByTestId('tab-1').click();
   await expect(page.getByTestId('train-week')).toBeVisible();

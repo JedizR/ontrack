@@ -47,14 +47,18 @@
   /** The headline's words in order, marked violet when they sat between asterisks. */
   const hero = L.promise.split('*').flatMap((part, p) => part.trim().split(' ').filter(Boolean).map((w) => ({ w, violet: p % 2 === 1 })));
   // the statement: words that fill in one by one, and whole pills between asterisks; the last pill is the dark one (pick 08)
-  type Part = { pill: string; glue: boolean } | { word: string; i: number; glue: boolean };
+  type Part = { pill: string; tail: string } | { word: string; i: number };
   function partsOf(s: string) {
     const out: Part[] = [];
     let i = 0;
     s.split('*').forEach((chunk, p) => {
-      if (p % 2) out.push({ pill: chunk.trim(), glue: false });
-      // a comma or full stop right after a pill joins it without a space
-      else for (const word of chunk.split(' ').filter(Boolean)) out.push({ word, i: i++, glue: /^[,.]/.test(word) });
+      if (p % 2) out.push({ pill: chunk.trim(), tail: '' });
+      else for (const word of chunk.split(' ').filter(Boolean)) {
+        const last = out.at(-1);
+        // a comma or full stop right after a pill stays on its line
+        if (last && 'pill' in last && /^[,.]$/.test(word)) last.tail = word;
+        else out.push({ word, i: i++ });
+      }
     });
     return out;
   }
@@ -68,12 +72,11 @@
     { icon: Scale, at: 'right-[6%] bottom-16', look: '-rotate-6 size-16', speed: -0.14 },
   ];
 
-  // crop: the share of the phone shown, enough to reach each sheet's main controls
   const LOG = [
-    { shot: photoShot, alt: L.alt.photo, crop: 0.66 },
-    { shot: scanShot, alt: L.alt.scan, crop: 0.82 },
-    { shot: thaiShot, alt: L.alt.thai, crop: 0.66 },
-    { shot: supplementShot, alt: L.alt.supplement, crop: 0.82 },
+    { shot: photoShot, alt: L.alt.photo },
+    { shot: scanShot, alt: L.alt.scan },
+    { shot: thaiShot, alt: L.alt.thai },
+    { shot: supplementShot, alt: L.alt.supplement },
   ].map((x, i) => ({ ...x, ...L.log.cards[i] }));
   const TRAIN = [
     { shot: trainShot, alt: L.alt.train, icon: TrainIcon },
@@ -129,19 +132,19 @@
           <p class="text-lead hero-lead mx-auto mt-6 max-w-[34rem] text-pretty lg:mx-0">{L.lead}</p>
           <div class="mt-8 flex flex-col items-center gap-1 lg:items-start" use:onscreen={(v) => (heroAction = v)}>
             <div class="pop"><Button variant="primary" size="lg" onclick={start} data-testid="landing-start">{L.start}</Button></div>
-            <p class="text-caption text-ink-2 pop" style:--d="0.75s">{L.noAccount}</p>
+            <p class="text-caption pop" style:--d="0.75s">{L.noAccount}</p>
           </div>
         </div>
         <div class="relative mx-auto w-[min(70vw,300px)] lg:w-[min(100%,340px)]">
           <div class="rise"><Phone src={todayShot} alt={L.alt.today} eager crop={0.62} /></div>
           <!-- the chips float over the sky, as OneFin's data cards do (pick 15, 16): glass, tilted, flying in -->
           <div class="drift absolute top-[18%] -left-[12%] z-10" style:--speed="0.12" aria-hidden="true">
-            <span class="glass fly text-callout flex -rotate-6 items-center gap-2 rounded-full py-1 pr-4 pl-1 font-semibold" style:--fx="-120px" style:--fy="-60px" style:--fr="-30deg" style:--d="0.5s">
+            <span class="bg-on-night text-night shadow-card fly text-callout flex -rotate-6 items-center gap-2 rounded-full py-1 pr-4 pl-1 font-semibold" style:--fx="-120px" style:--fy="-60px" style:--fr="-30deg" style:--d="0.5s">
               <i class="bg-accent text-on-accent grid size-8 place-items-center rounded-full"><TrainIcon size={18} /></i>{t.today.trainingDay}
             </span>
           </div>
           <div class="drift absolute top-[48%] -right-[10%] z-10" style:--speed="0.24" aria-hidden="true">
-            <span class="glass fly text-callout flex rotate-[9deg] items-center gap-2 rounded-full py-1 pr-4 pl-1 font-semibold" style:--fx="120px" style:--fy="-80px" style:--fr="30deg" style:--d="0.7s">
+            <span class="bg-on-night text-night shadow-card fly text-callout flex rotate-[9deg] items-center gap-2 rounded-full py-1 pr-4 pl-1 font-semibold" style:--fx="120px" style:--fy="-80px" style:--fr="30deg" style:--d="0.7s">
               <i class="bg-success text-night grid size-8 place-items-center rounded-full"><Check size={16} strokeWidth={3} /></i>{t.today.onTrack}
             </span>
           </div>
@@ -158,7 +161,7 @@
         </div>
       {/each}
       <p class="text-statement statement relative mx-auto max-w-[58rem] text-center text-balance" data-testid="landing-statement" style:--n={n}>
-        {#each parts as x, k (k)}{#if k && !x.glue}{' '}{/if}{#if 'pill' in x}<span class="text-[0.62em] mx-1 inline-flex -translate-y-[0.12em] items-center rounded-full px-[0.9em] py-[0.35em] align-middle leading-none font-medium {k === darkPill ? 'bg-ink text-surface' : 'bg-surface-2 text-ink shadow-card'}">{x.pill}</span>{:else}<span class="fill" style:--i={x.i}>{x.word}</span>{/if}{/each}
+        {#each parts as x, k (k)}{#if k}{' '}{/if}{#if 'pill' in x}<span class="whitespace-nowrap"><span class="text-pill mx-1 inline-flex -translate-y-[0.12em] items-center rounded-full px-[0.9em] py-[0.35em] align-middle leading-none font-medium {k === darkPill ? 'bg-ink text-surface' : 'bg-surface-2 text-ink shadow-card'}">{x.pill}</span>{x.tail}</span>{:else}<span class="fill" style:--i={x.i}>{x.word}</span>{/if}{/each}
       </p>
     </section>
 
@@ -167,10 +170,11 @@
       {@render head('01', L.log.tag, L.log.title, L.log.lead)}
       <div class="mx-auto mt-12 grid max-w-[1200px] gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {#each LOG as c, i (i)}
-          <article class="card flex flex-col items-center overflow-hidden rounded-xl px-6 pt-8 text-center {i === 0 ? 'bg-accent text-on-accent' : 'bg-surface-2'}" use:inview data-reveal style:--i={i % 2}>
-            <h3 class="text-lead font-semibold">{c.title}</h3>
+          <article class="card flex flex-col items-center overflow-clip rounded-xl px-6 pt-8 text-center {i === 0 ? 'bg-accent text-on-accent' : 'bg-surface-2'}" use:inview data-reveal style:--i={i % 2}>
+            <h3 class="text-lead">{c.title}</h3>
             <p class="text-callout mt-2 mb-6 max-w-[18rem] {i === 0 ? 'text-on-accent' : 'text-ink-2'}">{c.line}</p>
-            <Phone src={c.shot} alt={c.alt} crop={c.crop} class="mt-auto w-[min(100%,240px)]" />
+            <!-- one crop for all four, so the phones start level: enough to reach each sheet's main controls -->
+            <Phone src={c.shot} alt={c.alt} crop={0.8} class="mt-auto w-[min(100%,240px)]" />
           </article>
         {/each}
       </div>
@@ -178,21 +182,21 @@
 
     <!-- 02 Training: a dark section with a violet glow (pick 06, 12); dark cards hold lavender panels and settle as they come -->
     <section class="px-2 sm:px-4" data-testid="landing-train">
-      <div data-theme="dark" class="bg-canvas text-ink relative isolate overflow-hidden rounded-xl px-4 pt-20 pb-24">
+      <div data-theme="dark" class="bg-canvas text-ink relative isolate overflow-clip rounded-xl px-4 pt-20 pb-24">
         <div class="absolute inset-x-0 bottom-0 -z-10 h-3/4 bg-(image:--glow)" aria-hidden="true"></div>
         {@render head('02', L.train.tag, L.train.title, L.train.lead)}
         <div class="mx-auto mt-12 grid max-w-[1000px] gap-4 md:grid-cols-2 md:gap-6">
           {#each TRAIN as c, i (i)}
             {@const Icon = c.icon}
             <article class="settle bg-surface rounded-xl p-2 pb-8" style:--tilt="{i ? 5 : -5}deg">
-              <div class="flex justify-center overflow-hidden rounded-sheet bg-(image:--wash-lavender) px-8 pt-8">
+              <div class="bg-lavender flex justify-center overflow-clip rounded-sheet px-8 pt-8">
                 <Phone src={c.shot} alt={c.alt} crop={0.55} class="w-[min(100%,240px)]" />
               </div>
               <div class="mt-6 flex items-center justify-between px-4">
                 <span class="bg-accent text-on-accent grid size-12 place-items-center rounded-sm" aria-hidden="true"><Icon size={24} /></span>
                 <span class="bg-ink text-surface num text-callout grid size-8 place-items-center rounded-xs font-semibold" aria-hidden="true">{i + 1}</span>
               </div>
-              <h3 class="text-lead mt-4 px-4 font-semibold">{c.title}</h3>
+              <h3 class="text-lead mt-4 px-4">{c.title}</h3>
               <p class="text-body text-ink-2 mt-2 px-4">{c.line}</p>
             </article>
           {/each}
@@ -204,16 +208,16 @@
     <section class="px-4 pt-24 pb-28" data-testid="landing-checkin">
       {@render head('03', L.checkin.tag, L.checkin.title, L.checkin.lead)}
       <div class="mx-auto mt-12 grid max-w-[1100px] items-center gap-10 lg:grid-cols-2 lg:gap-16">
-        <div class="tile relative isolate flex justify-center overflow-hidden rounded-xl px-6 pt-12">
+        <div class="bg-lavender text-night relative isolate flex justify-center overflow-clip rounded-xl px-6 pt-12">
           {#each [1, 0.72, 0.44] as r (r)}
-            <span class="border-surface/60 absolute top-[38%] left-1/2 -z-10 aspect-square -translate-1/2 rounded-full border" style:width="{r * 130}%" aria-hidden="true"></span>
+            <span class="border-on-night/60 absolute top-[38%] left-1/2 -z-10 aspect-square -translate-1/2 rounded-full border" style:width="{r * 100}%" aria-hidden="true"></span>
           {/each}
           <Phone src={checkinShot} alt={L.alt.checkin} crop={0.8} class="w-[min(100%,250px)]" />
           <!-- decoration in the check-in's own words: its first step and what vector F's account hears -->
-          <span class="drift-card bg-surface text-ink shadow-float text-callout absolute top-[14%] left-3 max-w-[11rem] -rotate-6 rounded-md px-4 py-3 text-left" aria-hidden="true">
+          <span class="bg-on-night text-night shadow-card text-callout absolute top-[14%] left-3 max-w-[11rem] -rotate-6 rounded-md px-4 py-3 text-left" aria-hidden="true">
             <i class="bg-accent mb-1 block size-2 rounded-full"></i>{t.checkin.steps[0]}
           </span>
-          <span class="drift-card bg-surface text-ink shadow-float text-callout absolute right-3 bottom-[18%] max-w-[12rem] rotate-6 rounded-md px-4 py-3 text-left" aria-hidden="true">
+          <span class="bg-on-night text-night shadow-card text-callout absolute right-3 bottom-[18%] max-w-[12rem] rotate-6 rounded-md px-4 py-3 text-left" aria-hidden="true">
             <i class="bg-accent mb-1 block size-2 rounded-full"></i>{t.checkin.pace.gain.raise}
           </span>
         </div>
@@ -223,7 +227,7 @@
               {#if i < L.checkin.steps.length - 1}<span class="bg-line-strong absolute top-10 bottom-1 left-[19px] w-0.5" aria-hidden="true"></span>{/if}
               <span class="dot num bg-surface-2 text-ink-2 grid size-10 flex-none place-items-center rounded-sm text-body font-semibold">{i + 1}</span>
               <div class="pt-1.5">
-                <h3 class="text-lead font-semibold">{s.title}</h3>
+                <h3 class="text-lead">{s.title}</h3>
                 <p class="text-body text-ink-2 mt-1">{s.line}</p>
               </div>
             </li>
@@ -233,7 +237,7 @@
     </section>
 
     <!-- the dark run to the end: 04 Sources on colour-washed cards (pick 10), the closing call, then the footer -->
-    <div data-theme="dark" class="bg-canvas text-ink relative isolate overflow-hidden rounded-t-xl">
+    <div data-theme="dark" class="bg-canvas text-ink relative isolate overflow-clip rounded-t-xl">
       <section class="px-4 pt-24 pb-16" data-testid="landing-sources">
         {@render head('04', L.sources.tag, L.sources.title, L.sources.lead)}
         <div class="mx-auto mt-12 grid max-w-[1200px] gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -242,7 +246,7 @@
               <span class="grid size-12 place-items-center rounded-sm {i === 3 ? 'bg-accent text-on-accent' : 'bg-on-night/15'}" aria-hidden="true"><BookOpen size={22} /></span>
               <div>
                 <p class="text-callout font-medium opacity-80">{c.label}</p>
-                <p class="text-lead mt-1 font-semibold text-balance">{c.source}</p>
+                <p class="text-lead mt-1 text-balance">{c.source}</p>
               </div>
             </article>
           {/each}
@@ -250,7 +254,9 @@
       </section>
 
       <!-- the closing call: big words sliding in (M18), the violet panel with the white pill -->
-      <section class="relative px-4 pt-12 pb-16 text-center" use:onscreen={(v) => (closing = v)} data-testid="landing-cta">
+      <!-- the floating action stays away from here to the end -->
+      <div use:onscreen={(v) => (closing = v)}>
+      <section class="relative px-4 pt-12 pb-16 text-center" data-testid="landing-cta">
         <h2 class="text-poster flex flex-col items-center">
           {#each L.cta.words as w, i (i)}<span class="slide block {i === 1 ? 'text-on-accent-soft' : ''}" style:--from="{[-40, -70, -25][i]}vw">{w}</span>{/each}
         </h2>
@@ -265,7 +271,8 @@
 
       <!-- the footer (pick 09): the giant wordmark in the violet glow, the back to top tile, nested violet panels -->
       <footer class="relative px-2 pt-16 sm:px-4">
-        <div class="absolute inset-x-0 top-0 -z-10 h-full bg-(image:--glow)" aria-hidden="true"></div>
+        <!-- the glow's brightest point sits at the wordmark's foot: 64 above it, and the wordmark is a sixth of the width -->
+        <div class="absolute inset-x-0 top-0 -z-10 h-[calc(4rem+18vw)] max-h-[22rem] bg-(image:--glow)" aria-hidden="true"></div>
         <div class="text-accent-ink mx-auto max-w-[1200px] px-2 opacity-40" aria-hidden="true"><Wordmark class="aspect-[61/10] w-full" /></div>
         <div class="relative z-10 -mt-6 flex justify-center">
           <button type="button" class="glass text-ink grid size-12 place-items-center rounded-sm active:scale-[0.97]" onclick={top} aria-label={L.footer.top}><ArrowUp size={22} /></button>
@@ -288,6 +295,7 @@
           <p class="text-caption text-ink-2 flex items-center justify-center px-4 pt-5 pb-[max(20px,env(safe-area-inset-bottom))]">{L.footer.year}</p>
         </div>
       </footer>
+      </div>
     </div>
   </main>
 

@@ -38,7 +38,7 @@ export const en = {
       lead: 'Ontrack names each food and estimates the grams. Calories come from published food tables wherever there is a match, and an estimate says it is one.',
       cards: [
         { title: 'Snap the plate', line: 'Each food with its grams, ready to adjust before you add it.' },
-        { title: 'Scan the barcode', line: 'Packaged food logged exactly, from Open Food Facts or a photo of the label.' },
+        { title: 'Scan the barcode', line: 'Packaged food logged from its barcode, with Open Food Facts or a photo of the label.' },
         { title: 'Thai food by name', line: 'Thai dishes from published food tables, Thai ones first, found in English or in Thai script.' },
         { title: 'Shakes by the scoop', line: 'Set up your tub once, then log a shake in three taps.' },
       ],
@@ -57,7 +57,7 @@ export const en = {
       title: 'Corrected every week.',
       lead: 'Equations are a starting point. Your weigh-ins and meals show what your body really uses, and the target follows.',
       steps: [
-        { title: 'Weigh in', line: 'A few mornings a week. One number, a few seconds.' },
+        { title: 'Weigh in', line: 'On a few mornings a week. Your check-in reads from them.' },
         { title: 'Log your meals', line: 'A photo, a scan or a search.' },
         { title: 'Choose your next target', line: 'Once a week Ontrack proposes one, with the reason. Use it or keep yours. Nothing changes on its own.' },
       ],
@@ -86,12 +86,12 @@ export const en = {
     },
     alt: {
       today: 'Today on a training day: 1,840 of 2,460 kcal eaten, 620 to go, with protein, carbs and fat below',
-      photo: 'The review after a photo of basil pork with rice and a fried egg: each food with its grams, then Add 712 kcal',
+      photo: 'The review after a photo of basil pork with rice and a fried egg: each food with its grams and calories',
       scan: 'A scanned packet of instant noodles: 260 kcal a serving from Open Food Facts, with the amount to add',
       thai: 'Search in Thai script: rice noodles, pad kee mao, boat noodles and more, each with its calories',
-      supplement: 'Whey protein, two scoops with 250 g of whole milk: 393 kcal and 55.9 g protein',
+      supplement: 'Whey protein, two scoops with 242 ml of whole milk: 393 kcal and 55.9 g protein',
       train: 'Train: four strength sessions a week, adding 137 kcal a day on average',
-      progress: 'Progress: the weight trend at 60 kg, gaining 0.1 percent a week against a target of 0.5, and maintenance measured at 2,220 kcal a day',
+      progress: 'Progress: the weight trend at 60 kg, gaining 0.1 percent a week against a target of 0.5',
       checkin: 'The weekly check-in proposing a raise to 2,560 kcal on training days and 2,320 on rest days',
     },
   },
