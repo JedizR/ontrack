@@ -5,6 +5,10 @@
 - `main` is always deployable. Work happens on a branch per milestone (`m3-data-sync`) or fix (`fix-wheel-se`), merged by squash through a pull request. Turn on branch protection for `main` if the plan allows it. If not, the rule is held by habit and CI.
 - Conventional commits: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`, `perf`, `ci`, with a scope when it helps (`feat(today): track bar`). Commit at every working step, not at the end.
 - A pull request states what changed, shows the evidence, and lists what the owner should test. CI must pass. Each one gets a Vercel preview URL.
+- CI has two levels (owner's call, 12 November 2026, to keep progress fast while the product is young):
+  - **Quick**, on every pull request and push to main: `pnpm check`, `pnpm test`, `pnpm build`, the `@smoke` end to end tests, and on a pull request the end to end files it changed (light and dark). About as long as `pnpm verify`. Changes to Markdown or `docs/` alone skip CI, except `docs/SOURCES.md`.
+  - **Full**, every end to end test including screenshots and the stress matrix, in three parallel shards: add the `full-ci` label to the pull request, push a `v*` tag, or run the workflow by hand. Use it for a milestone that changes stored data, sync, sign-in, the server or row level security, before a release tag, and whenever a quick run passes but something feels off.
+  - The `verify-ui` skill still shoots its screenshots locally, so UI work is checked at full size before review either way.
 - Tag each merged milestone `v0.<n>.0`. The release is `v1.0.0`.
 - Never commit secrets, `.env` files, the USDA download, screenshots or test reports. `.gitignore` covers them.
 - Dependabot opens one grouped pull request a week. Merge it only when `pnpm verify` passes.
