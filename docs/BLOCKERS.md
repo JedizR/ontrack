@@ -12,6 +12,14 @@ None open. Resolved items are at the end of this file.
 
 Each entry: what to look at (URL or screenshot paths), what to look for, and which milestone it belongs to.
 
+### M7: your real program on your iPhone
+
+- **Where:** the pull request's Vercel preview or, once merged, `https://ontrack-black.vercel.app`, installed; or `pnpm dev` on the Mac against the mock (code 123456). Screenshots: `screenshots/train/` after `pnpm screenshots -- --grep train` (no exercises, the Session sheet with an exercise open, the picker, recommendations with a source, Templates and the confirm, a template's analysis, no program; light and dark, 390, SE and Pro Max), and `screenshots/stress/*/training/` and `screenshots/fonts/*-xl/training/` for every device and the largest text. A few are on branch `pr-assets`, folder `m7/`.
+- **Enter your real program:** Train, then each day: tap Rest to add a session, or a session to edit it. Name, day, type, minutes, intensity, then Add exercise for each lift with its sets and reps. Or start from Change program and edit the template.
+- **Look for:** are the recommendations right for you? Each names a muscle or the week and says what to add or remove; "Why" shows the study. Does the muscle balance match how you think about your split (a set counts 1 for each main muscle and 0.5 for each helper)? Does "Adds N kcal a day on average" look plausible? Drag a session by its handle (the six dots) to another day: on the phone only, the feel of the drag, and whether you can reach Sunday from Monday on a small screen without the list scrolling (the Day chips in the Session sheet do the same job). After any change Today keeps today's target, and tomorrow follows the new program.
+- **Decide:** the Session sheet saves with a Save button instead of saving every tap; intensity is three chips (as in onboarding) instead of a segmented control.
+- **Decided for you:** the M7 list in `docs/DECISIONS.md`, notably plans keeping the week's sessions so past days never change, the week as one row per session with a weekday tile, templates as sections in the sheet, and a new exercise starting at 3 sets of 8 to 12.
+
 ### M6: photo logging on your iPhone
 
 - **Where:** the pull request's Vercel preview once sign in works there (Gemini is set up: `gemini-3.6-flash` with the development key); or `pnpm dev:live` on the Mac, which uses the key in `~/.config/ontrack/gemini-api-key`; or `pnpm dev` against the mock (code 123456), where every photo is answered by fixtures. Screenshots: `screenshots/photo/` after `pnpm screenshots -- --grep photo` (the first photo notice, the review loading and loaded, the oil control, Today with the thumbnail, the Meal sheet, not food, the daily limit, Describe; light and dark, 390, SE and Pro Max), `screenshots/today/add-*` for the Add sheet's four tiles, and `screenshots/stress/*/logging/review.png` and `screenshots/fonts/*-xl/logging/review.png` for every device and the largest text.

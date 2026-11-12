@@ -15,7 +15,7 @@ Status is one of: not started, in progress, shipped, shipped with cuts, blocked.
 | M4 | Onboarding and plan | shipped with cuts | PR #8, merged, `v0.4.0` | Gate green on the mock. Live sign in now works, so production saves plans. Templates without muscle balance until M7 |
 | M5 | Today and logging | shipped with cuts | PR #9, merged, `v0.5.0` | Gate green on the mock. Three meals do not fit 390 by 844 without scrolling (as in the M1 reference). No install notice card, no deleting a saved meal |
 | M6 | Photo logging | shipped with cuts | PR #10, merged, `v0.6.0` | Gate green on the mock. Eval on ten Commons photos with `gemini-3.6-flash`; deployed time to a review 4.8 s on the one full sample (free tier limits) |
-| M7 | Training | not started | | |
+| M7 | Training | shipped | Branch `m7-training`, PR open | Gate green on the mock. Drag on a real phone, and whether the recommendations fit the owner's program, are on his review list |
 | M8 | Progress and check-ins | not started | | |
 | M9 | Hardening and release | not started | | |
 
@@ -30,6 +30,13 @@ Status is one of: not started, in progress, shipped, shipped with cuts, blocked.
 - Vision: real. `/api/analyze` with `gemini-3.6-flash`, minimal thinking. Vercel holds `VISION_PROVIDER=gemini`, `GEMINI_MODEL`, and `GEMINI_API_KEY` (the development key, free tier: 20 requests a day per model) for production and preview, plus `VITE_BACKEND=supabase`, the Supabase URL and keys, and `CRON_SECRET`. The key's file is `~/.config/ontrack/gemini-api-key`; `scripts/live-env.sh` reads it for `dev:live` and `eval:vision`.
 
 ## Notes for the next milestone
+
+M7 (training):
+- Train tab `src/tabs/Train.svelte` (summary, week, analysis, the drag), sheets in `src/flows/train/` (`SessionSheet`, `ExercisePicker`, `TemplatesSheet`), mounted by the tab itself. Words under `t.train`; sources S11 to S13 added to `src/lib/data/sources.ts`.
+- `changeProgram(program)` in `actions.ts` is the only way to change the program after onboarding: it writes the program and a plan from tomorrow (`source: 'edit'`, new exercise energy, everything else from the current plan via `planFromBaseline`), and returns the undo.
+- A plan now keeps `sessions` (the program's sessions without exercises). `dayView` reads `plan.sessions ?? program sessions`, so a past day keeps its own sessions and skips. For M8: a check-in's new plan must carry `sessions` from the plan it replaces (or the current program), and `checkinDue` counts days since a plan started or changed; decide whether an `edit` plan (a program change) restarts that count.
+- Tests: `tests/e2e/train.spec.ts` (light project: build a week with exercises, analysis, Why, drag, delete with undo; a template from tomorrow with today, yesterday and the next day checked, and a skip). `train` case in `screens.spec.ts`; `training layout holds` in stress per device and at the largest text. The new unit test in `actions.test.ts` covers past days and undo.
+- The design refresh after M7 restyles Train too; nothing in M7 was polished beyond the rubric.
 
 - Open since M5 (for M9 if not sooner): the smoke run's returning-user test logs a console error "onboarding failed to load" while still passing. Find the cause.
 
