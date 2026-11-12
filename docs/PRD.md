@@ -132,8 +132,10 @@ IDs are stable. Tests and commits refer to them.
 - Unsharing or deleting the meal, or removing the friendship, removes the photo from the map and from friends' reach at once. The photo is the meal's own thumbnail: it leaves storage with the account, and with the meal once thumbnails are deleted with meals (M9).
 
 ### F18 Landing page
-- A signed-out visitor with no onboarding in progress sees a landing page that says what Ontrack does, with phone frames showing real screens and scroll animations in the OneFin style. It replaces Welcome. "Get started" opens onboarding and "Sign in" opens the sign-in sheet.
-- It respects reduced motion, loads as its own chunk and never mentions installing the app.
+- A signed-out visitor with no onboarding in progress sees a landing page that says what Ontrack does, in the OneFin style of the owner's picks with scroll animations. It replaced Welcome. Each feature it names (photo logging, barcode scanning, Thai foods, supplements by the scoop, training-day targets, gain mode, the weekly check-in) shows a real screen of the app in a phone frame. Friends and the food map join it with S1.
+- "Build your plan" starts onboarding at the first question; "Sign in" opens the sign-in sheet. A returning user, or a visitor with a draft, never sees it.
+- Its words follow the voice guide: no testimonials, ratings, user counts, press logos, prices or claims the app does not keep.
+- It respects reduced motion, loads as its own chunk within the initial JavaScript budget and never mentions installing the app.
 
 ### F19 Faster gain pace
 - With a gain goal, a person at a low body weight can choose a faster pace for gaining weight with some muscle, next to the lean and standard paces. The words say what to expect: a faster gain, with more of it as fat than at the lean pace. No moral words.

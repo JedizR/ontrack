@@ -2,6 +2,19 @@
 
 Changes to a doc's decision, and choices made on the owner's behalf. Newest first, one line each: what, why.
 
+## L1
+
+Landing page, 12 to 13 November 2026. Unattended; from the owner's picks (`ontrack-design/onefin/owner-picks/`), `site/SITE-EXTRACT.md` "Landing sections", `site/motion/MOTION.md` and the landing proposals in `onboarding/COPY.md`. Decided on the owner's behalf:
+- **When it shows.** Wherever Welcome showed: signed out with no draft, back from the first question, and a signed in account with no plan yet (its Sign in switches accounts, as Welcome's did). The draft keeps the 'welcome' screen name for "before the first question", so onboarding's route and O1's code stay as they are; App shows the landing page there.
+- **Words.** The hero is COPY.md's promise, kept; the main action "Build your plan" with "No account until you save it." (O1's measured rule: no "About a minute"); the bar's "Sign in", as COPY.md proposes. Section headlines are claims the app keeps, each ending in a full stop. No testimonials, ratings, counts, logos or prices: OneFin's testimonial slot holds the sources the engine cites, read from `constants.ts`.
+- **Sections.** Hero, statement, 01 Logging (photo, barcode, Thai, supplements), 02 Training (training-day targets, gain mode), 03 Check-in, 04 Sources, closing call, footer. Gain mode is shown on Progress for vector F (a flat trend under the target rate), since Today's hero is already the hero image. Friends and the food map wait for S1.
+- **Real screens** come from `tests/e2e/landing-shots.spec.ts` on the mock at 390 by 844 and 1.6 times, as WebP (about 30 KB each, 250 KB for eight), loaded lazily below the hero and left out of the service worker's precache, so signed in users never download them. Light theme only, in both themes of the page.
+- **One more primary per view, never two at once.** The hero's Build your plan, a floating copy once it has scrolled away (it hides from the closing call to the end), the closing call's white pill and the footer's link. Why: a long page needs the action in reach, and the floating one is the strongest click-through pattern that stays honest.
+- **Motion** is MOTION.md's, only under `prefers-reduced-motion: no-preference`; scroll-scrubbed parts only where `animation-timeline` exists (Safari 26, Chrome), at rest elsewhere. Cut from MOTION.md: pinned sections (M14, M16's pin), the logo ticker (no logos), pointer parallax (M25, M26).
+- **Tokens.** The dark block in `tokens.css` applies to any element marked `data-theme="dark"`, for the dark sections in the light theme. New, for the landing only: Poster, Section, Statement and pill sizes; `--grad-sky`, `--glow`, `--grad-panel`, four `--wash-*`; `--night`, `--on-night` and `--lavender`, the same in both themes. Welcome's `--grad-brand` is gone with it.
+- **No island on the phones.** The screenshots have no status bar, so an island covered the screen titles.
+- **No FAQ section.** OneFin's home has one; the objections it would answer (account, time, privacy) are in the caption under the action and the footer. A candidate after S1.
+
 ## O1
 
 Onboarding redesign, 12 November 2026. Unattended; from `ontrack-design/onboarding/RESEARCH.md` and `COPY.md`. The product owner's three calls (RESEARCH section 11), copied as asked:

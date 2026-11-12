@@ -27,7 +27,7 @@ Status is one of: not started, in progress, shipped, shipped with cuts, blocked.
 | T1a | T1's engine and science half | shipped | PR #24, merged, `v0.8.6` | Unit vectors H and I, no Svelte change. Faster gain pace 0.75 provisional (no source for a rate over 0.5), hidden in onboarding until T1b. S20 to S25 checked. T1b builds the screens |
 | T1b | T1's screen half (no onboarding) | shipped | PR #26, merged, `v0.8.7` | Gate green on the mock: a hybrid template builds a week and shows its three points with sources; Progress's training card on the seeder. Two design critic rounds, a code review. Onboarding's faster pace and the breakdown are O1's |
 | O1 | Onboarding redesign (owner, after T1) | shipped | PR #27, merged, `v0.8.9` | Gate green on the mock. Gain user 16 to 12 gestures, modelled 119 to 118 s; cut user 15 to 13, 119 to 114 s. Faster gain pace on Your plan with its Being checked label. Cold users timed by the owner (on his list) |
-| L1 | Landing page (owner, after O1) | not started | | For signed-out visitors, OneFin style with scroll animations; replaces Welcome |
+| L1 | Landing page (owner, after O1) | in progress | branch `l1-landing` | F18. Built, tested, two review rounds; pull request open, not merged. Replaces Welcome |
 | S1 | Friends, profiles and the food map (owner, after L1) | in progress | | F16, F17. Friends by request, optional program on the profile, opt-in meal photos on a map at rounded photo locations. Split: S1a data, S1b screens |
 | S1a | Friends data, S1's data half (alongside T1a) | shipped | PR #25, merged, `v0.8.8` | Visibility suite green on the mock and on live Supabase; `0005_social.sql` and `0006_publish_upsert.sql` pushed, advisors unchanged. No screens: S1b builds them on the notes below |
 | M9 | Hardening and release | not started | | |
@@ -43,6 +43,13 @@ Status is one of: not started, in progress, shipped, shipped with cuts, blocked.
 - Vision: real. `/api/analyze` with `gemini-3.6-flash`, minimal thinking. Vercel holds `VISION_PROVIDER=gemini`, `GEMINI_MODEL`, and `GEMINI_API_KEY` (the development key, free tier: 20 requests a day per model) for production and preview, plus `VITE_BACKEND=supabase`, the Supabase URL and keys, and `CRON_SECRET`. The key's file is `~/.config/ontrack/gemini-api-key`; `scripts/live-env.sh` reads it for `dev:live` and `eval:vision`.
 
 ## Notes for the next milestone
+
+L1 (landing page; spec `docs/SCREENS.md` section 3, look `docs/DESIGN.md` section 13, decisions under L1):
+- Code: `src/flows/landing/Landing.svelte` (one page, its own lazy chunk), `Phone.svelte` (a real screen in a CSS phone, `crop` shows the top share), `inview.ts` (`inview` sets `data-inview` once; `onscreen` reports in and out). Words under `t.landing`. App shows it where the draft is at 'welcome' (`landing` in `App.svelte`); Welcome and `t.welcome` are gone. Build your plan sets the draft to `step(d, year, 1)` from 'welcome', keeping earlier answers.
+- Screens: `LANDING_SHOTS=1 pnpm exec playwright test --project=shots` rewrites `src/flows/landing/shots/*.webp` (needs `cwebp`). Rerun when the app's look changes, and update `t.landing.alt` if a number moved.
+- Tokens: the dark block applies to any `data-theme="dark"` element (the dark sections). Use `overflow-clip`, not `overflow-hidden`, around scroll-driven motion. Landing-only tokens in `tokens.css` under "Landing page (L1) only".
+- Tests: `tests/e2e/landing.spec.ts` (light project: the new visitor, both actions, the floating action, session and draft skip it, reduced motion), the helpers `toLanding` and `startPlan`, `landing` and `landing on a desktop` in `screens.spec.ts`, the landing at rest inside stress's `checkAll` (every device and text size). Initial JavaScript after L1: see the pull request.
+- For S1b: add one landing section about friends and the food map with a real screen (BUILD-PLAN S1 step 6); add its shot to `landing-shots.spec.ts`.
 
 O1 (onboarding redesign; decisions in `docs/DECISIONS.md` under O1, spec in `docs/SCREENS.md` section 4):
 - Flow: Welcome ("Build your plan") > goal > screening ("None of these apply" advances) > sex > birth year (wheel from 25) > height and weight (units from the region, wheels from the sex's median) > daily movement > training days ("Not yet") > what you train (Lifting, Cardio, Both) > experience (gaining lifters only) > Your plan (pace as a `Segmented`, "Your training" line, Save this plan). Single answers advance 240 ms after the pick (`pick()` in `Onboarding.svelte`); `Training.svelte` and `Pace.svelte` are gone.
