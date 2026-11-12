@@ -225,18 +225,18 @@
           </div>
         {/each}
       </div>
-      <p class="text-caption text-ink-2" data-testid="supplement-why">{preset ? t.supplement.why(FOOD_SOURCES[preset.source.set].name) : t.supplement.copy}</p>
       {#if heavy}
         <p class="text-callout text-attention" role="alert" data-testid="supplement-heavy">{t.supplement.heavy}</p>
       {:else if noCalories({ perScoop: values })}
         <p class="text-callout text-ink-2" data-testid="supplement-zero">{t.supplement.zero}</p>
       {/if}
+      <p class="text-caption text-ink-2" data-testid="supplement-why">{preset ? t.supplement.why(FOOD_SOURCES[preset.source.set].name) : t.supplement.copy}</p>
       <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
         <span class="text-body font-semibold">{t.supplement.usual}</span>
         <div class="ml-auto"><Stepper bind:value={usual} step={0.5} min={0.5} max={MAX_SCOOPS} label={t.supplement.scoops} testid="supplement-usual" column /></div>
       </div>
       {#if id}
-        <Button variant="danger" class="self-start" onclick={removeIt} data-testid="supplement-remove">{t.supplement.remove}</Button>
+        <Button variant="danger" class="-ml-5 self-start" onclick={removeIt} data-testid="supplement-remove">{t.supplement.remove}</Button>
       {/if}
     </div>
   {:else if s}
@@ -252,9 +252,9 @@
           <p class="text-caption text-ink-2 mt-2" data-testid="supplement-macros">{t.search.macros(num(sum.protein, 1), num(sum.carbs, 1), num(sum.fat, 1))}</p>
         </div>
       {/if}
-      <div class="flex items-center justify-between gap-3">
+      <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
         <span class="text-body font-semibold">{t.supplement.scoops}</span>
-        <Stepper bind:value={scoops} step={0.5} min={0.5} max={MAX_SCOOPS} label={t.supplement.scoops} testid="supplement-scoops" />
+        <div class="ml-auto"><Stepper bind:value={scoops} step={0.5} min={0.5} max={MAX_SCOOPS} label={t.supplement.scoops} testid="supplement-scoops" column /></div>
       </div>
       {#if !zero}
         <div class="flex flex-col gap-2">
@@ -262,20 +262,20 @@
           <div class="-mx-6 flex gap-2 overflow-x-auto px-6" role="group" aria-label={t.supplement.mix} data-testid="supplement-mix">
             <Chip selected={!mix} onclick={() => (mix = null)}>{t.supplement.water}</Chip>
             {#each milks as f (f.id)}
-              <Chip selected={mix === f.id} onclick={() => choose(f)}>{f.name}</Chip>
+              <Chip selected={mix === f.id} onclick={() => choose(f)}>{t.supplement.milks[f.id as keyof typeof t.supplement.milks] ?? f.name}</Chip>
             {/each}
           </div>
           {#if failed}<p class="text-caption text-ink-2" role="alert">{t.supplement.milkFailed}</p>{/if}
         </div>
         {#if milk}
-          <div class="flex items-center justify-between gap-3">
+          <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
             <span class="text-body font-semibold">{t.supplement.milk}</span>
-            <Stepper bind:value={milkG} step={50} min={50} max={1000} unit={t.after.g} label={t.after.grams} testid="supplement-milk" />
+            <div class="ml-auto"><Stepper bind:value={milkG} step={50} min={50} max={1000} unit={t.after.g} label={t.after.grams} testid="supplement-milk" column /></div>
           </div>
         {/if}
       {/if}
       {#if mealId}
-        <Button variant="danger" class="self-start" onclick={deleteEntry} data-testid="supplement-delete">{t.supplement.delete}</Button>
+        <Button variant="danger" class="-ml-5 self-start" onclick={deleteEntry} data-testid="supplement-delete">{t.supplement.delete}</Button>
       {:else}
         <Button variant="plain" size="sm" class="-my-2 -ml-4 self-start" onclick={editLabel} data-testid="supplement-edit">{t.supplement.edit}</Button>
       {/if}

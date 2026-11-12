@@ -569,7 +569,7 @@ export const en = {
   /** N2, F21: set up from the tub's label, logged by the scoop. Ontrack never suggests a supplement or an amount. */
   supplement: {
     section: 'Supplements',
-    entryLine: 'Set up your tub once, then log it by the scoop',
+    entryLine: 'Set up once, log by the scoop',
     setup: 'Add a supplement',
     kinds: { whey: 'Whey protein', plant: 'Plant protein', casein: 'Casein', gainer: 'Mass gainer', creatine: 'Creatine', other: 'Something else' },
     fromTable: "Starts from USDA's average",
@@ -594,6 +594,8 @@ export const en = {
     mix: 'Mixed with',
     water: 'Water',
     milk: 'Milk',
+    /** the mix chips, short so the next one shows past the edge; the entry keeps the table's name */
+    milks: { 'milk-whole': 'Whole milk', 'milk-2': '2% milk', 'milk-skim': 'Skim milk', 'soy-milk': 'Soy milk', 'almond-milk': 'Almond milk' },
     milkFailed: 'The milk values did not load. Water still works.',
     take: 'Log as taken',
     taken: 'Taken',

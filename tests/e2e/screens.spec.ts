@@ -380,6 +380,7 @@ for (const theme of ['light', 'dark'] as const) {
       test('supplements logged', async ({ page }) => {
         const { settled, close } = supplementSheet(page);
         await open(page, '/', [...MEALS, ...SUPPLEMENTS]);
+        await expect(page.getByTestId('meals')).toHaveCSS('opacity', '1'); // the first paint's fade has finished
         await shot(page, 'supplements', 'today');
         await page.getByTestId('taken').scrollIntoViewIfNeeded();
         await shot(page, 'supplements', 'today-taken');

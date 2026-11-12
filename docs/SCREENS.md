@@ -86,7 +86,7 @@ States: first day (hero at zero, a row saying "Log your first meal with the plus
 **Add sheet** from the plus button.
 - "Supplements" (N2, F21), first when the user has any: one row per supplement, by name, with the shaker tile, the last amount as its caption ("2 scoops with milk", or "1 scoop" with no calories) and the calories of that amount on the right (none for a supplement with no calories). A row opens the Supplement sheet's amount step. Under the rows a plain "Add a supplement".
 - Four tiles in a two by two grid: "Photo" (the violet primary, the largest emphasis), "Search", "Describe", "Quick add".
-- With no supplements yet: under the tiles, one row, the shaker tile, "Supplements", caption "Set up your tub once, then log it by the scoop", and a chevron. It opens the Supplement sheet's first step.
+- With no supplements yet: under the tiles, one row, the shaker tile, "Supplements", caption "Set up once, log by the scoop", and a chevron. It opens the Supplement sheet's first step.
 - "Recent": the last five distinct meals as rows with a trailing plus that logs them again at once, with an undo toast. Logged supplements are not repeated here: they sit at the top.
 - "Saved": saved meals in the same form.
 
@@ -120,16 +120,16 @@ The common case, the morning shake: plus, the Whey row, Add. Three taps when the
    - "Name", a text field filled with the kind's name ("Something else" starts empty, with the hint "Name on the tub").
    - "Scoop" in grams on a typed stepper. A preset from the table starts at the table's scoop (whey 30 g, plant 45 g); the others at 0, which means not known.
    - Eyebrow "In one scoop", then calories, protein, carbs and fat as labelled rows of typed steppers in one column, as in Correct. A preset from the table starts at its values per 100 g scaled to the scoop, and follows the scoop until a value is changed. The others start at 0. Nobody is asked for a value per 100 g.
-   - One line on why: from the table, "Brands differ, so the label on your tub is more accurate than this average from USDA FoodData Central, SR Legacy."; otherwise "Copy the numbers from the label on your tub."
    - The zero calorie case, live, when the calories are 0: "No calories, so Today shows it as taken."
    - Error, in the attention colour, Save disabled: protein, carbs and fat weigh more than a known scoop, "Protein, carbs and fat add up to more than the scoop. Check the label." An empty name disables Save without a message; the field's hint says what goes there.
+   - One line on why: from the table, "Brands differ, so the label on your tub is more accurate than this average from USDA FoodData Central, SR Legacy."; otherwise "Copy the numbers from the label on your tub."
    - "Scoops you take" on a typed stepper in half steps, starting at 1: the user's own amount, the first one logged, so the common case needs no change on the amount step.
    - Pinned: primary "Save supplement". Saving shows the amount step for it.
    - Opened from the amount step's "Edit supplement": the title is the supplement's name, the values and scoops are its own, the primary reads "Save changes" and goes back to the amount step, and a danger "Remove supplement" closes the sheet with an undo toast, "Whey protein removed". Meals already logged keep their numbers.
 3. **Amount.** Title: the supplement's name.
    - Calories for the chosen amount in Display with "kcal", and under it "48 g protein, 6 g carbs, 3 g fat", both changing as the amount does.
    - "Scoops" on a typed stepper in half steps, from 0.5 to 10, starting at the last amount used (the scoops the user takes, the first time).
-   - "Mixed with": chips, Water first, then the milks from the food table (whole, reduced fat, skim, soy, almond), starting at the last mix. A milk shows "Milk" in grams on a stepper of 50, starting at the last amount or the table's glass (250 g); its calories join the total and its row on Today reads Database. The milk values come from the food table, through the user's remembered numbers (F15) when there are any.
+   - "Mixed with": chips, Water first, then the milks from the food table under short names ("Whole milk", "2% milk", "Skim milk", "Soy milk", "Almond milk"), starting at the last mix. A milk shows "Milk" in grams on a stepper of 50, starting at the last amount or the table's glass (250 g); its calories join the total and its row on Today reads Database. The milk values come from the food table, through the user's remembered numbers (F15) when there are any.
    - A plain "Edit supplement".
    - Pinned: primary "Add 240 kcal". The sheet closes, Today updates, and the toast "Added Whey protein" offers Undo, which also puts back the last amount.
    - No calories: no Display figure and no mix. The line "No calories, so Today shows it as taken." sits over the Scoops stepper, and the primary reads "Log as taken". The toast says "Creatine taken".
