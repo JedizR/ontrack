@@ -49,7 +49,7 @@
 {/snippet}
 
 <!-- the sheet is already a surface, so the rows sit on it directly, on the gutter -->
-<Sheet bind:open title={mode === 'main' ? t.account.title : t.account.delete} layer="base" testid="account-sheet" footer={mode === 'delete' ? confirm : undefined}>
+<Sheet bind:open title={mode === 'main' ? t.account.title : t.account.delete} layer="base" testid="account-sheet" footer={mode === 'delete' ? confirm : undefined} onback={mode === 'delete' && !busy ? () => (mode = 'main') : undefined} backLabel={t.account.back}>
   {#if mode === 'main'}
     <div>
       <Row title={t.account.email} caption={email} />
@@ -83,6 +83,5 @@
       />
     </form>
     <p class="text-callout text-danger mt-3 min-h-5" role="alert">{error}</p>
-    <Button variant="plain" size="sm" class="-ml-4" disabled={busy} onclick={() => (mode = 'main')}>{t.account.back}</Button>
   {/if}
 </Sheet>

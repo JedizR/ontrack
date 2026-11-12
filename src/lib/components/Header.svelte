@@ -20,7 +20,7 @@
     <SyncMark state={sync} />
     <!-- the avatar opens the account, or sign in; 44 to tap around the 36 circle -->
     <button type="button" class="group -mr-1 grid size-11 flex-none place-items-center" aria-label={signedIn ? t.shell.account : t.shell.signIn} onclick={onaccount} data-testid="avatar">
-      <span class="bg-surface text-ink shadow-card group-active:bg-surface-2 grid size-10 place-items-center rounded-full transition-[background-color,transform] duration-[var(--d-press)] group-active:scale-[0.97]">
+      <span class="bg-surface text-ink group-active:bg-surface-2 grid size-11 place-items-center rounded-full transition-[background-color,transform] duration-[var(--d-press)] group-active:scale-[0.97]">
         <User size={22} strokeWidth={2} aria-hidden="true" />
       </span>
     </button>

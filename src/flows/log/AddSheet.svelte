@@ -68,7 +68,7 @@
 </script>
 
 {#snippet again(label: string, onclick: () => void)}
-  <button type="button" class="bg-surface-2 active:bg-surface-3 -mr-1 grid size-11 flex-none place-items-center rounded-full transition-[transform,background-color] duration-[var(--d-press)] active:scale-[0.97]" aria-label={label} {onclick} data-testid="again">
+  <button type="button" class="bg-surface-2 active:bg-surface-3 grid size-11 flex-none place-items-center rounded-full transition-[transform,background-color] duration-[var(--d-press)] active:scale-[0.97]" aria-label={label} {onclick} data-testid="again">
     <Plus size={22} strokeWidth={2.25} />
   </button>
 {/snippet}

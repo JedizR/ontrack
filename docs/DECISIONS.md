@@ -13,6 +13,29 @@ The owner's decisions, which override the earlier DESIGN.md, tokens and CLAUDE.m
 - No OneFin raster or video artwork ships (3D coins and stars, phone mockups, app screen images, videos): it comes with a single-use template licence. Decoration is drawn in CSS or SVG. Why: the owner, through the conductor; see "Needs your eyes" in `docs/BLOCKERS.md`.
 
 Choices made in the build:
+- Visual values follow IDENTITY.md over SITE-EXTRACT.md over the brief; SITE-EXTRACT wins on its four reconciled points (Title line heights, nav width, the mobile FAQ tint, light-card borders, hence derived `--line` values). UX, inputs and layout follow the brief.
+- Success fill `#19DBA8` is about 1.8 to 1 on white. Kept, because the value and the state are always also text (the number, "On track"), so the fill is not the only signal (WCAG 1.4.11). Words and dots use `--success-ink`: `#006644` in light, darker than OneFin's `#198669`, which is 2.6 to 1 on the hero's lavender corner and 4.1 on the canvas; `#19DBA8` in dark, where `#198669` fails.
+- Danger keeps Ontrack's `#D92D20` and dark `#FF6B61`: OneFin's `#FF3421` is 3.6 to 1 for small text and its dark `#FF2244` fails on `--surface-2`. The swipe to delete label is white on `--danger` (red on the pale red was 4.1 to 1). Attention keeps Ontrack's amber: OneFin has no warning colour.
+- `tests/unit/contrast.test.ts` reads `design/tokens.css` and checks the text pairs in both themes, plus ink, ink-2 and success ink on the hero's lavender.
+- The large button keeps OneFin's radius 20 at 56 high (a rounded rectangle), not the brief's capsule; 48 and 36 buttons are radius 16. The 3D pill is one element: a 2 px gradient border is the rim, a gradient background the face, with IDENTITY's inset light and stacked drop. OneFin has no pressed state and its press spring (400/10) takes 1.4 s, so a press sinks 1 px, scales to 0.98 and shortens the drop over 120 ms.
+- Page gutter 16 (IDENTITY's phone margin) instead of the brief's 20; cards and sheets are 24 inside (`--inset`), so content still starts 40 from the screen's edge.
+- Radius tokens: xs 8, sm 16, control 20 (the large button and the segmented track), md 24, lg 32, sheet 40, xl 48. Inputs are 56 high at radius 16 with 16 px text (OneFin's are 56 at 20 with 14 px text; the brief's 52).
+- Dark `--accent-soft` is IDENTITY's active tint `rgba(170,157,236,.1)` with a `#BEBEFF` glyph. The secondary pill in dark is `#3A3A3E` (derived) so it lifts off a dark card.
+- Icons stay Lucide, at stroke 2, in OneFin's tile treatment. Solar Bold, OneFin's set, is CC BY 4.0 and needs attribution; the conductor allowed keeping Ontrack's icons. Tiles are lavender, not violet, because violet means act.
+- The scrim is IDENTITY's `rgba(0,0,0,.2)` (dark `.4`) with a 24 px blur. The header turns to glass once content scrolls under it.
+- Wheel typing opens one field for the whole value (a weight is typed once as 82.4), not one per column. A typed value outside the range is brought inside and the screen or sheet shows the range message, so `t.born.invalid`, the height and weight ranges, the body fat range and the goal weight floor still show.
+- End to end tests open a wheel's field with Enter on its column, the keyboard path: Playwright scrolls a tapped row into view first, which moves the wheel under the tap. Tapping is on the owner's list.
+- Weight wheels run 30.0 to 300.0 kg or 66.2 to 661.3 lb (the kg limits rounded inward to the tenth), not 66.0 to 661.0, so every row is a legal weight. Imperial height is feet 3 to 8 and inches 0 to 11; a pair outside 100 to 250 cm is refused on Continue with the range message.
+- Body fat is a whole percent starting at 20 and goal weight starts at the current weight, both with Clear. Your plan's `tune-error` line is gone: the wheel cannot leave its range, and the range shows in the sheet. Their hints were rewritten ("Leave at 0 to clear it" no longer applies).
+- Search's back chevron sits left of the title and the close button stays, rather than the chevron replacing it: NN/g asks for a visible close.
+- Quick add drops the keypad's "+" sum (brief). A figure over 10,000 kcal or 1,000 g shows the existing message and disables Add.
+- Today's training line drops the type when the session's name is the type ("60 min. Adds 240 kcal"). Macros read on one line ("84 of 108 g") with each track pinned to the bottom of its column, so the hero stays under 280 px and the three tracks stay level when a value wraps; this reverses M1's two-line choice.
+- The Train summary shows sessions and minutes as two Display figures; the sentence is the group's accessible name.
+- Welcome draws its decoration in CSS and SVG: the brand track on a tilted glass tile and a tilted "On track" chip, in OneFin's manner. The words rise in after it (reduced motion: no movement).
+- The static mock `design/reference-today.html` is retired; `/gallery/today`, composed from the real components, is the reference.
+- Builds preload the two woff2 files through a small Vite plugin, because their names are hashed.
+- Test viewports are Safari's: the light, dark and screens projects use Playwright's iPhone 13 as given (390 by 664, scale 3); stress uses 393 by 659, the SE at 375 by 548 (an assumption until the owner's SE reports its own) and the Pro Max at 430 by 739. The home screen device is gone.
+- The young screen's Leave setup and onboarding's Choose a program use the dark secondary pill; Account's Delete account is a small plain danger button under Sign out.
 
 ## M7
 

@@ -108,7 +108,7 @@ After capture: the Review sheet opens immediately with the photo at the top and 
 ## 8. Train
 
 1. Header: "Train".
-2. Summary card: "4 sessions, 240 minutes a week", "Adds 137 kcal a day on average", and the program name. A plain button "Change program" opens Templates.
+2. Summary card: "4 sessions, 240 minutes a week", "Adds 137 kcal a day on average", and the program name. A small neutral button "Change program" opens Templates.
 3. The week, Monday to Sunday: each day is a row with its sessions (name, type, minutes) or "Rest". Today is marked. Tapping a day opens the Session sheet. A session row can be dragged to another day by its handle.
 4. "Analysis" heading, then:
    - Muscle balance card: one row per muscle with a small track where the zone is 10 to 20 sets, and the number of sets. Rows under 10 come first.

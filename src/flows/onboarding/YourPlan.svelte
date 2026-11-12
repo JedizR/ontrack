@@ -98,11 +98,11 @@
 
     <p class="text-lead mt-2" data-testid="plan-expect">{expect} {t.plan.estimate}</p>
 
-    <h2 class="text-heading mt-4 px-1">{t.plan.how}</h2>
-    <p class="text-callout text-ink-2 -mt-2 px-1">{matched ? t.plan.howTraining : t.plan.howEven}</p>
+    <h2 class="text-heading mt-4">{t.plan.how}</h2>
+    <p class="text-callout text-ink-2 -mt-2">{matched ? t.plan.howTraining : t.plan.howEven}</p>
     <Card list data-testid="plan-breakdown"><Breakdown {parts} goal={n.goal} {bodyFat} /></Card>
 
-    <h2 class="text-heading mt-4 px-1">{t.plan.tune}</h2>
+    <h2 class="text-heading mt-4">{t.plan.tune}</h2>
     <Card list>
       <Row title={t.plan.bodyFat} value={d.bodyFatPct ? `${num(d.bodyFatPct, 1)} ${t.after.percent}` : t.plan.noneYet} onclick={askBodyFat} testid="tune-bodyfat" />
       <Row title={t.plan.goalWeight} value={goalWeightOf(d) ? weightText(goalWeightOf(d)!, d.units) : t.plan.noneYet} onclick={askGoalWeight} testid="tune-goalweight" />

@@ -76,15 +76,18 @@
 >
   {#if s}
     <div class="flex flex-col gap-5">
-      <input
-        aria-label={t.train.name}
-        placeholder={t.train.types[s.type]}
-        maxlength={60}
-        autocomplete="off"
-        bind:value={s.name}
-        class="input-field text-body w-full"
-        data-testid="session-name"
-      />
+      <div class="flex flex-col gap-2">
+        <label for="session-name" class="text-caption text-ink-2">{t.train.name}</label>
+        <input
+          id="session-name"
+          placeholder={t.train.types[s.type]}
+          maxlength={60}
+          autocomplete="off"
+          bind:value={s.name}
+          class="input-field text-body w-full"
+          data-testid="session-name"
+        />
+      </div>
       <div class="flex flex-col gap-3">
         <span class={label}>{t.train.day}</span>
         <div class="flex flex-wrap gap-2" role="group" aria-label={t.train.day}>

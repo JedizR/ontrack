@@ -81,7 +81,7 @@
           {@attach (el) => el.focus({ preventScroll: true })}
           onkeydown={onward('quick-protein')}
           class="text-display placeholder:text-ink-3 min-w-[2ch] bg-transparent outline-none"
-          style="width: {Math.max(kcalText.length, 1) + 0.6}ch"
+          style="width: {Math.max(kcalText.length, 1)}ch"
           data-testid="quick-kcal"
         />
         <span class="text-heading text-ink-2">{t.after.kcal}</span>

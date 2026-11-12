@@ -119,7 +119,7 @@
       {/if}
     </Card>
 
-    <h2 class="text-heading mt-2 px-1">{t.train.week}</h2>
+    <h2 class="text-heading mt-2">{t.train.week}</h2>
     <Card list aria-label={t.train.week} data-testid="train-week">
       {#each t.train.weekdays as dayName, d (dayName)}
         {@const list = sessions.filter((s) => s.weekday === d)}
@@ -169,7 +169,7 @@
     </Card>
 
     {#if analysis}
-      <h2 class="text-heading mt-2 px-1">{t.train.analysis}</h2>
+      <h2 class="text-heading mt-2">{t.train.analysis}</h2>
       {#if analysis.hasExercises}
         <Card aria-label={t.train.balance} data-testid="train-balance">
           <p class="text-body font-semibold">{t.train.balance}</p>

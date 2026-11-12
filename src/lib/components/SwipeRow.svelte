@@ -31,7 +31,7 @@
   data-testid={testid}
   use:swipe={opts}
 >
-  <div class="bg-danger text-on-danger text-callout absolute inset-0 flex items-center justify-end px-6 font-semibold" aria-hidden="true">{t.today.delete}</div>
+  {#if dx < 0}<div class="bg-danger text-on-danger text-callout absolute inset-0 flex items-center justify-end px-6 font-semibold" aria-hidden="true">{t.today.delete}</div>{/if}
   <div class="bg-surface relative px-6" style="transform: translateX({dx}px); transition: {dragging ? 'none' : 'transform 180ms var(--ease-out)'}">
     {@render children()}
   </div>

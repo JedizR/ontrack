@@ -12,6 +12,20 @@ None open. Resolved items are at the end of this file.
 
 Each entry: what to look at (URL or screenshot paths), what to look for, and which milestone it belongs to.
 
+### D1: your OneFin template licence
+
+- **Question:** does your licence for the OneFin template (N!nh Studio, single use) cover reusing its artwork in Ontrack: the 3D coins and stars, the phone mockups, the app screen images and videos?
+- **Until you say so, none of it ships.** D1 adopted the identity only (colour, type, components, effects, motion); every decoration in the app is drawn in CSS or SVG, and OneFin's logo and wordmark are not used. The artwork is in `/Users/admin/destination/ontrack-design/onefin/framer/assets/` and `onefin/site/assets/` for reference.
+- **Then tell Claude:** "The licence covers the OneFin artwork" (L1's landing page could use it), or "Keep it out".
+
+### D1: the new look and the wheels on your iPhone, in Safari
+
+- **Where:** the pull request's Vercel preview in Safari on the iPhone (not added to the home screen), `/` for the app and `/gallery` for every component; or `pnpm dev` on the Mac against the mock (code 123456). Screenshots: branch `pr-assets`, folder `d1/` (before, after and the OneFin reference for Today, an onboarding wheel step, Add and Search, Review, Weigh in and Train), and after `pnpm screenshots` every screen in `screenshots/` (light and dark at 390 by 664, the SE at 375 by 548 and the Pro Max at 430 by 739; `screenshots/xl/` for the largest text).
+- **Look for, by thumb:** the wheels. Birth year (step 4), height and weight side by side (step 5), Weigh in from Today's card, and Your plan's Body fat and Goal weight. Flick a column: does it glide and land on a row, and is the value right after it settles? Tap a row above or below the band: it should come to the band. Tap the row on the band: a field opens with the number pad; type and press Done. Steppers (grams in Search and Review, minutes and sets in Train): tap the number and type 125. Quick add: does the number pad come up for calories when the sheet opens?
+- **Look for, by eye:** the violet 3D buttons and their press, the condensed capital titles, the lavender hero, the dock's glass and the sheet's blurred backdrop (the test browser draws no blur), fonts that load without a flash on a second visit, and both themes. With Safari's toolbars showing and collapsed: is Continue on screen at first paint in onboarding, does the dock clear Safari's bar, and do sheets sit above it? On an SE, if you have one: check that nothing is cut off; the tests assume Safari gives it 375 by 548.
+- **Decide:** Welcome's drawn decoration (the track on a tilted glass tile and an "On track" chip), and the green fill being 1.8 to 1 on white (the words carry the state; a darker green would pass but is less OneFin).
+- **Decided for you:** the D1 list in `docs/DECISIONS.md`, notably the 16 px gutter, radius 20 on the large button rather than a capsule, darker green for "On track" words, one field for typing a whole wheel value, and Lucide icons kept.
+
 ### M7: your real program on your iPhone
 
 - **Where:** the pull request's Vercel preview or, once merged, `https://ontrack-black.vercel.app`, installed; or `pnpm dev` on the Mac against the mock (code 123456). Screenshots: `screenshots/train/` after `pnpm screenshots -- --grep train` (no exercises, the Session sheet with an exercise open, the picker, recommendations with a source, Templates and the confirm, a template's analysis, no program; light and dark, 390, SE and Pro Max), and `screenshots/stress/*/training/` and `screenshots/fonts/*-xl/training/` for every device and the largest text. A few are on branch `pr-assets`, folder `m7/`.

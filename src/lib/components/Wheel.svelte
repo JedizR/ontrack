@@ -15,6 +15,7 @@
     step = 1,
     decimals = 0,
     unit = '',
+    band = true,
     label,
     testid,
     onchange,
@@ -28,6 +29,8 @@
     /** 1: a whole column and a tenths column */
     decimals?: 0 | 1;
     unit?: string;
+    /** false when the caller draws one band behind wheels set side by side */
+    band?: boolean;
     label: string;
     testid?: string;
     onchange?: (v: number) => void;
@@ -77,7 +80,7 @@
 </script>
 
 <div bind:this={box} class="group relative w-full select-none" style="height: calc(5 * var(--wheel-row))" data-testid={testid}>
-  <div class="bg-surface-2 ring-ink absolute inset-x-0 top-[calc(2*var(--wheel-row))] h-[var(--wheel-row)] rounded-sm group-has-[[role=slider]:focus-visible]:ring-2" aria-hidden="true"></div>
+  {#if band}<div class="bg-surface-2 ring-ink absolute inset-x-0 top-[calc(2*var(--wheel-row))] h-[var(--wheel-row)] rounded-sm group-has-[[role=slider]:focus-visible]:ring-2" aria-hidden="true"></div>{/if}
   <div class="relative flex h-full items-stretch justify-center">
     {#if decimals}
       <WheelColumn

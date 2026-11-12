@@ -198,9 +198,11 @@
       {/each}
     </Card>
 
-    <div class="mt-2 flex items-baseline justify-between px-1" {...rise(4)}>
-      <h2 class="text-heading">{t.today.meals}</h2>
-      {#if meals.length}<span class="text-caption text-ink-2" data-testid="meal-count">{t.today.logged(num(meals.length))}</span>{/if}
+    <div {...rise(4)}>
+      <div class="mt-2 flex items-baseline justify-between">
+        <h2 class="text-heading">{t.today.meals}</h2>
+        {#if meals.length}<span class="text-caption text-ink-2" data-testid="meal-count">{t.today.logged(num(meals.length))}</span>{/if}
+      </div>
     </div>
     {#snippet tile(Icon: Component<{ size?: number; strokeWidth?: number }>)}
       <div class="bg-surface-2 text-ink-2 grid size-full place-items-center"><Icon size={24} strokeWidth={2} /></div>

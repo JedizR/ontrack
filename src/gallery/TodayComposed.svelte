@@ -51,7 +51,7 @@
     </Row>
   </Card>
 
-  <div class="mt-2 flex items-baseline justify-between px-1">
+  <div class="mt-2 flex items-baseline justify-between">
     <h2 class="text-heading">{t.today.meals}</h2>
     <span class="text-caption text-ink-2">{t.today.logged(String(MEALS.length))}</span>
   </div>

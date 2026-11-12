@@ -32,7 +32,7 @@
   <div class="flex h-[var(--header-h)] flex-none items-center gap-3">
     {#if onback}
       <button type="button" class="group -ml-1 grid size-11 flex-none place-items-center" aria-label={t.onboarding.back} onclick={onback} data-testid="back">
-        <span class="bg-surface text-ink shadow-card group-active:bg-surface-2 grid size-10 place-items-center rounded-full transition-[background-color,transform] duration-[var(--d-press)] group-active:scale-[0.97]">
+        <span class="bg-surface text-ink group-active:bg-surface-2 grid size-11 place-items-center rounded-full transition-[background-color,transform] duration-[var(--d-press)] group-active:scale-[0.97]">
           <ChevronLeft size={22} strokeWidth={2.25} />
         </span>
       </button>
@@ -53,7 +53,7 @@
   </div>
 
   {#if footer}
-    <div class="bg-canvas sticky bottom-0 z-10 -mx-4 flex flex-col gap-1 px-4 pt-3 pb-[max(16px,env(safe-area-inset-bottom))]">
+    <div class="bg-canvas sticky bottom-0 z-10 -mx-4 flex flex-col gap-1 px-4 pt-3 pb-[max(16px,env(safe-area-inset-bottom))] shadow-[0_-1px_0_var(--line)]">
       {@render footer()}
     </div>
   {/if}

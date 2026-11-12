@@ -46,26 +46,27 @@
       options={[{ value: 'metric' as Units, label: t.body.metric }, { value: 'imperial' as Units, label: t.body.imperial }]}
       onchange={(units) => { error = ''; set({ units }); }}
     />
+    <!-- one full width band behind height and weight, as one picker with two halves -->
     <div class="grid grid-cols-2 gap-3">
-      <div class="flex min-w-0 flex-col gap-2">
-        <span class="text-eyebrow text-ink-2 text-center">{t.body.height}</span>
+      <span class="text-eyebrow text-ink-2 text-center">{t.body.height}</span>
+      <span class="text-eyebrow text-ink-2 text-center">{t.body.weight}</span>
+      <div class="group relative col-span-2 grid grid-cols-2 gap-3">
+        <div class="bg-surface-2 ring-ink absolute inset-x-0 top-[calc(2*var(--wheel-row))] h-[var(--wheel-row)] rounded-sm group-has-[[role=slider]:focus-visible]:ring-2" aria-hidden="true"></div>
         {#if metric}
-          <Wheel bind:value={() => Math.round(cm), (v) => (cm = v)} min={lo} max={hi} unit={t.after.cm} label={t.body.height} testid="wheel-height" onchange={() => (error = '')} onclamp={() => (error = heightError())} />
+          <Wheel bind:value={() => Math.round(cm), (v) => (cm = v)} min={lo} max={hi} unit={t.after.cm} band={false} label={t.body.height} testid="wheel-height" onchange={() => (error = '')} onclamp={() => (error = heightError())} />
         {:else}
-          <div class="flex">
-            <Wheel bind:value={() => ftIn.ft, (ft) => (cm = ftInToCm(ft, ftIn.inches))} min={3} max={8} unit={t.after.ft} label={t.body.feet} testid="wheel-height-ft" onchange={() => (error = '')} />
-            <Wheel bind:value={() => ftIn.inches, (inches) => (cm = ftInToCm(ftIn.ft, inches))} min={0} max={11} unit={t.after.in} label={t.body.inches} testid="wheel-height-in" onchange={() => (error = '')} />
+          <div class="flex min-w-0">
+            <Wheel bind:value={() => ftIn.ft, (ft) => (cm = ftInToCm(ft, ftIn.inches))} min={3} max={8} unit={t.after.ft} band={false} label={t.body.feet} testid="wheel-height-ft" onchange={() => (error = '')} />
+            <Wheel bind:value={() => ftIn.inches, (inches) => (cm = ftInToCm(ftIn.ft, inches))} min={0} max={11} unit={t.after.in} band={false} label={t.body.inches} testid="wheel-height-in" onchange={() => (error = '')} />
           </div>
         {/if}
-      </div>
-      <div class="flex min-w-0 flex-col gap-2">
-        <span class="text-eyebrow text-ink-2 text-center">{t.body.weight}</span>
         <Wheel
           bind:value={() => round(metric ? kg : kgToLb(kg), 1), (v) => (kg = metric ? v : lbToKg(v))}
           min={kgBounds.min}
           max={kgBounds.max}
           decimals={1}
           unit={metric ? t.after.kg : t.after.lb}
+          band={false}
           label={t.body.weight}
           testid="wheel-weight"
           onchange={() => (error = '')}
