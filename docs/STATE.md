@@ -15,7 +15,7 @@ Status is one of: not started, in progress, shipped, shipped with cuts, blocked.
 | M4 | Onboarding and plan | shipped with cuts | PR #8, merged, `v0.4.0` | Gate green on the mock. Live sign in now works, so production saves plans. Templates without muscle balance until M7 |
 | M5 | Today and logging | shipped with cuts | PR #9, merged, `v0.5.0` | Gate green on the mock. Three meals do not fit 390 by 844 without scrolling (as in the M1 reference). No install notice card, no deleting a saved meal |
 | M6 | Photo logging | shipped with cuts | PR #10, merged, `v0.6.0` | Gate green on the mock. Eval on ten Commons photos with `gemini-3.6-flash`; deployed time to a review 4.8 s on the one full sample (free tier limits) |
-| M7 | Training | shipped | Branch `m7-training`, PR open | Gate green on the mock. Drag on a real phone, and whether the recommendations fit the owner's program, are on his review list |
+| M7 | Training | shipped | PR #11, open | Gate green on the mock. Drag on a real phone, and whether the recommendations fit the owner's program, are on his review list |
 | M8 | Progress and check-ins | not started | | |
 | M9 | Hardening and release | not started | | |
 
