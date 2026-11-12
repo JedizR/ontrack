@@ -13,7 +13,7 @@ class Session {
   backend: Backend | null = null;
   /** set while signing out, so the session ending is not read as an expiry */
   leaving = false;
-  /** another account signed in while this phone held unsent changes for the last one; it was signed out again */
+  /** another account signed in while this browser held unsent changes for the last one; it was signed out again */
   wrongAccount = $state(false);
 
   async boot() {
@@ -25,7 +25,7 @@ class Session {
       try {
         u = await this.backend.auth.session();
       } catch (e) {
-        // offline with a token due for refresh: still this phone's user, and sync backs off until the network is back
+        // offline with a token due for refresh: still this browser's user, and sync backs off until the network is back
         if (!(e instanceof BackendError && e.kind === 'network' && prefs.lastUser)) throw e;
         u = { userId: prefs.lastUser, email: prefs.lastEmail ?? undefined };
       }
@@ -46,7 +46,7 @@ class Session {
     }
     if (db.ready && db.userId !== u.userId) {
       if (db.pending > 0) {
-        // the changes waiting on this phone belong to the last account and would be stranded: keep it, refuse this one
+        // the changes waiting on this browser belong to the last account and would be stranded: keep it, refuse this one
         this.wrongAccount = true;
         await this.backend.auth.signOut().catch(() => undefined);
         return;

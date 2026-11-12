@@ -1,4 +1,4 @@
-<!-- DESIGN.md section 1: the mark with the word Ontrack beside it, live text. Only on welcome, the install guide and Settings. -->
+<!-- DESIGN.md section 1: the mark with the word Ontrack beside it, live text. Only on Welcome and Settings. -->
 <script lang="ts">
   import { t } from '$lib/i18n';
 </script>

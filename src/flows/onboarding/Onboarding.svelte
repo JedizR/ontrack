@@ -1,12 +1,10 @@
-<!-- SCREENS.md sections 3 and 4: the install guide (Safari on iPhone), welcome, the nine questions with their guardrail
-     screens, and Your plan. Answers live in the prefs draft, so a reload or the Google redirect lands on the same screen.
+<!-- SCREENS.md sections 3 and 4: Welcome, the nine questions with their guardrail screens, and Your plan. Answers live in the prefs draft, so a reload or the Google redirect lands on the same screen.
      Signed out, Save my plan opens sign in; signed in, it writes the plan at once. -->
 <script lang="ts">
   import { fly } from 'svelte/transition';
   import Step from './Step.svelte';
   import Choices from './Choices.svelte';
   import Field from './Field.svelte';
-  import Install from './Install.svelte';
   import Welcome from './Welcome.svelte';
   import Body from './Body.svelte';
   import Training from './Training.svelte';
@@ -21,7 +19,6 @@
   import { C, V, type Experience, type Goal, type Neat, type Sex } from '$lib/model/engine';
   import { today, yearOf } from '$lib/model/dates';
   import { num } from '$lib/model/format';
-  import { isIOS, isStandalone } from '$lib/platform';
   import { dur, haptic } from '$lib/haptics';
   import { t } from '$lib/i18n';
   import { LIMITS, fresh, progress, step, type Draft, type Screen, type Screening } from './draft';
@@ -29,9 +26,6 @@
 
   const year = yearOf(today());
   const d = $derived(prefs.draft ?? fresh());
-  // Safari on iPhone: the home screen app has its own storage, so the guide comes first on every visit until set up
-  // (not once Save my plan was tapped: that visit is coming back from sign in)
-  let install = $state(isIOS() && !isStandalone() && !db.ready && !prefs.draft?.saved);
   let dir = $state<1 | -1>(1);
 
   function set(patch: Partial<Draft>) {
@@ -119,7 +113,7 @@
     next({ birthYear: v });
   }
   // a first visit opens the keypad at once
-  $effect(() => { if (!install && d.at === 'born' && !d.birthYear) void askYear(); });
+  $effect(() => { if (d.at === 'born' && !d.birthYear) void askYear(); });
 </script>
 
 {#snippet cta(disabled: boolean, onclick: () => void)}
@@ -136,9 +130,6 @@
 {/snippet}
 
 <div class="bg-canvas relative mx-auto min-h-dvh w-full max-w-[480px] overflow-x-clip" data-onboarding data-testid="onboarding">
-  {#if install}
-    <Install oncontinue={() => (install = false)} />
-  {:else}
     {#key d.at}
       <div in:fly={{ x: 32 * dir, duration: dur(240) }}>
         {#if d.at === 'welcome'}
@@ -215,5 +206,4 @@
         {/if}
       </div>
     {/key}
-  {/if}
 </div>

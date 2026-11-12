@@ -1,4 +1,4 @@
-<!-- A logged meal's thumbnail, from this phone or downloaded once from the account; the fallback until it is there. -->
+<!-- A logged meal's thumbnail, from this browser or downloaded once from the account; the fallback until it is there. -->
 <script lang="ts">
   import type { Snippet } from 'svelte';
   import { mealThumb } from '$lib/actions';

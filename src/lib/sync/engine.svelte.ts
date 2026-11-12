@@ -128,7 +128,7 @@ export class Sync {
 
   /**
    * A batch the server refuses as a whole (one record it cannot store) would block every later change forever. Send
-   * that batch one by one instead; a refused record stays on this phone, out of the outbox, and is logged.
+   * that batch one by one instead; a refused record stays on this browser, out of the outbox, and is logged.
    */
   async #push(backend: Backend, batch: Rec[]) {
     try {

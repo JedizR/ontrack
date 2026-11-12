@@ -2,7 +2,7 @@
 
 ## 1. Git and GitHub
 
-- `main` is always deployable. Work happens on a branch per milestone (`m3-data-sync`) or fix (`fix-keypad-se`), merged by squash through a pull request. Turn on branch protection for `main` if the plan allows it. If not, the rule is held by habit and CI.
+- `main` is always deployable. Work happens on a branch per milestone (`m3-data-sync`) or fix (`fix-wheel-se`), merged by squash through a pull request. Turn on branch protection for `main` if the plan allows it. If not, the rule is held by habit and CI.
 - Conventional commits: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`, `perf`, `ci`, with a scope when it helps (`feat(today): track bar`). Commit at every working step, not at the end.
 - A pull request states what changed, shows the evidence, and lists what the owner should test. CI must pass. Each one gets a Vercel preview URL.
 - Tag each merged milestone `v0.<n>.0`. The release is `v1.0.0`.
@@ -43,7 +43,7 @@ Split by context, never by job title. There is no frontend agent or backend agen
 | Components | The shadcn-svelte CLI | Generate, then restyle. Do not hand write what the CLI provides |
 | Driving a browser while building | The Playwright CLI (`playwright-cli`) and its skills | Page snapshots stay on disk instead of in context |
 | Regression, screenshots, the device matrix | `@playwright/test` projects in the repo | Deterministic. This is what `verify-ui` and CI run |
-| Real iOS behaviour | Safari in the Xcode Simulator when Xcode is installed, then the owner's iPhone | Playwright's WebKit is not Safari's standalone mode. Keyboard, safe areas, camera and sign in redirects are only proven on a device |
+| Real iOS behaviour | Safari in the Xcode Simulator when Xcode is installed, then the owner's iPhone | Playwright's WebKit is not Safari. Its moving toolbars, keyboard, safe areas, camera and sign in redirects are only proven on a device |
 | The owner's designs | The Figma MCP, when a link is supplied | Ask for one frame at a time. Large frames exceed the tool output limit |
 | Database | The Supabase CLI for migrations. The Supabase MCP for advisors, logs and ad hoc queries | Schema changes only through migration files |
 | Hosting | The Vercel CLI | Environment variables, logs, deployments |

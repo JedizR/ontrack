@@ -13,7 +13,7 @@ Calorie and training tracker for the phone browser: Safari on iPhone first, Chro
 | `pnpm test:e2e` | Playwright, iPhone Safari viewport, light and dark, mock backend |
 | `pnpm screenshots` | Every screen and sheet into `screenshots/` |
 | `pnpm verify` | check + test + build + e2e smoke. Run before calling anything done |
-| `pnpm check:pwa <url>` | Installability and offline reload against a preview or `pnpm preview` |
+| `pnpm check:pwa <url>` | Manifest, service worker and offline reload against a preview or `pnpm preview` |
 | `pnpm icons` | Regenerate the PWA icons from `design/brand/app-icon.svg` |
 | `pnpm foods:build` | Rebuild `src/lib/data/foods.json` from USDA data and `data/food-list.csv` |
 

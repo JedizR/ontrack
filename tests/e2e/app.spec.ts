@@ -117,7 +117,7 @@ test('holding the stepper repeats, an undo toast undoes, the sync mark explains 
   await expect(page.getByText('Meal restored')).toBeVisible();
 
   await page.getByRole('button', { name: /^Offline/ }).click();
-  await expect(page.getByText('Offline. Changes stay on this phone until you reconnect')).toBeVisible();
+  await expect(page.getByText('Offline. Changes stay on this browser until you reconnect')).toBeVisible();
 });
 
 test('the theme and text size change from the gallery and are remembered', async ({ page }) => {

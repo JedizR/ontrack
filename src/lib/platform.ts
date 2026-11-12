@@ -1,7 +1,5 @@
-// iPhone specifics: share-sheet saving, standalone detection.
+// iPhone specifics: share-sheet saving.
 export const isIOS = () => /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-/** Running from the home-screen icon (iOS keeps its storage separate from Safari's). */
-export const isStandalone = () => matchMedia('(display-mode: standalone)').matches || (navigator as { standalone?: boolean }).standalone === true;
 
 /** Save a text file: the iOS share sheet (Save to Files, LINE...) when available, else a normal download. */
 export async function saveFile(name: string, text: string, type: string) {

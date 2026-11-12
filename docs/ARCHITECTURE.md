@@ -5,7 +5,7 @@ Every decision here is settled. "Instead of" names what was weighed, so nobody p
 ## 1. The system
 
 ~~~
-iPhone, installed web app                      Vercel                       Supabase
+iPhone browser (Safari)                        Vercel                       Supabase
 +--------------------------------+   HTTPS   +----------------------+    +---------------------+
 | Svelte 5 SPA + service worker  |---------->| static assets (CDN)  |    | Auth: Google, code  |
 |  tabs, sheets, flows           |           | /api/analyze         |--->| Postgres: records,  |
@@ -18,11 +18,11 @@ iPhone, installed web app                      Vercel                       Supa
 +--------------------------------+
 ~~~
 
-The phone holds the truth for the person using it. Supabase is the replica that makes a second device and a reinstall safe. Server functions exist only for work that needs a secret.
+The phone holds the truth for the person using it. Supabase is the replica that makes a second device and a cleared browser safe. Server functions exist only for work that needs a secret.
 
 ## 2. Decisions
 
-**A1. An installed web app, iPhone first.** One codebase, no store review, free to host, and the owner already ships this way. The app is designed for Safari's standalone mode at 390 by 844 and sits in a centred 480 px column on larger screens. Instead of: native Swift, React Native, Capacitor (a wrapper can come later if push or Health data is needed).
+**A1. A web app in the phone's browser, iPhone first.** One codebase, no store review, free to host. Everyone uses it in a browser tab: Safari on iPhone first, Chrome on Android too, and nothing asks anyone to install it (D1). The app is designed for Safari at 390 by 844 with its toolbars showing (a 390 by 664 viewport) and sits in a centred 480 px column on larger screens. Instead of: native Swift, React Native, Capacitor (a wrapper can come later if push or Health data is needed).
 
 **A2. Svelte 5 single page app on plain Vite.** Ontrack is entirely client rendered and local first, so server rendering and a file router add nothing. This is the same foundation as watermelon, which means its toolchain, pins and code port directly. Instead of: SvelteKit (its one real benefit here, typed server endpoints, is covered by A8), Astro (a content site framework), Next.
 
@@ -38,7 +38,7 @@ The phone holds the truth for the person using it. Supabase is the replica that 
 
 **A8. Three server functions on Vercel, written as portable handlers.** Each handler in `server/` takes a standard `Request` and returns a `Response`. Files in `api/` are thin wrappers for Vercel. A Vite middleware in `dev/` mounts the same handlers locally. Nothing uses a Vercel only API, so moving to Cloudflare Workers is a wrapper change. Instead of: Supabase Edge Functions (a second runtime and deploy path), a long running server.
 
-**A9. Sign-in is Google (redirect flow with PKCE) and email 6 digit code.** Both complete inside the installed app. Magic links are excluded because they open in Safari, which does not share storage with the home screen app. Popups are excluded because standalone mode handles them badly. The session lives in the app's local storage through supabase-js. Instead of: passwords, magic links, Apple sign-in (needs a paid developer account, on the later list).
+**A9. Sign-in is Google (redirect flow with PKCE) and email 6 digit code.** Both complete in the tab that started them. Magic links are excluded because they open wherever the mail app chooses, which may be another browser or device. Popups are excluded because mobile Safari handles them badly. The session lives in the app's local storage through supabase-js. Instead of: passwords, magic links, Apple sign-in (needs a paid developer account, on the later list).
 
 **A10. Photo analysis by Gemini Flash behind a provider interface.** The free tier covers development and the owner has monthly credits for production. `server/vision/` defines `VisionProvider` with two implementations: `gemini` and `mock`. The model id comes from `GEMINI_MODEL`. Check the current Flash model id in Google's docs at M6 and set it in the environment, never in code. Thinking is set to minimal and output is constrained by a JSON schema. Instead of: a self hosted 2B model (far weaker at dishes and portions, no cheaper at this scale), on device WebGPU models (a 1 GB download).
 
@@ -74,23 +74,21 @@ Source paths are as described in watermelon's README and DECISIONS. The scout co
 | All mutations in one module, with undo | `src/lib/actions.ts` | same path | Ontrack actions |
 | Pure model layer and its unit tests | `src/lib/model/` | same path | Keep the units, format, CSV and backup patterns. Replace the domain |
 | Dev backend as Vite middleware, isolated stores for parallel tests | `dev/mock-gas.ts` | `dev/mock-backend.ts` | Emulates records sync, sign-in and `/api` |
-| PWA config, update toast, icon generation, installability check | `vite.config.ts`, `pwa-assets.config.ts`, `scripts/check-pwa.mjs` | same paths | New name, colours and icons |
+| PWA config (service worker for offline), update toast, icon generation, manifest check | `vite.config.ts`, `pwa-assets.config.ts`, `scripts/check-pwa.mjs` | same paths | New name, colours and icons |
 | Sheets with the iOS keyboard fix (vaul `repositionInputs` off, focused field scrolled to centre) | sheet components | `src/lib/components/` | Restyle |
-| Number keypad sheet with adaptive key heights | keypad component | `src/lib/components/Keypad.svelte` | Decimal and unit handling for kg and kcal |
 | Tab shell: lazy tabs, preloading, swipe with intent detection and resistance | `src/App.svelte`, `src/tabs/` | same | Three Ontrack tabs, floating bar |
 | Header: opaque, hairline on scroll, canvas colour behind the status bar | header component | same | Restyle |
 | Theme store with system, light, dark and a quick toggle | theme module | same | Tokens |
 | Text size: device default through `-apple-system-body`, three scales, `--fs` multiplier | text size module | same | Type scale |
 | Haptics through a hidden native switch input | haptics module | same | None |
 | Toasts: top centre, pinned 16 px from the edges, one undo at a time | toast setup | same | Restyle |
-| Safari install guide matching the current iOS menu, standalone detection | onboarding | `src/flows/onboarding/Install.svelte` | English copy, Ontrack icon |
 | Hairline divider and joined parts, used instead of dot separators | `Vr.svelte`, `Parts.svelte` | `src/lib/components/` | None |
 | Lazy chart built on d3 | chart component | `src/lib/components/TrendChart.svelte` | Weight trend, weekly bars |
 | Playwright projects: flows in light and dark, `screens`, `stress` device and text size matrix | `playwright.config.ts`, `tests/` | same | Ontrack screens |
 | Tooling: exact pins, pnpm build script allowlist, `.nvmrc`, `components.json`, Tailwind 4 setup | root config | root | Names |
 | Export: CSV with BOM, JSON backup, iOS share sheet | model and settings | same | Ontrack data |
 | Sign out: wait for unsent changes, then wipe the local database | settings | same | Supabase sign out |
-| What's new screen for existing installs | app shell | same | Used from v1.1 |
+| What's new screen for returning users | app shell | same | Used from v1.1 |
 
 Not reused: Apps Script and Sheets code, invite codes and QR links, the Chakra Petch font and its tabular companion, pastel colour blocks, multi shop logic, the guided tour (later).
 

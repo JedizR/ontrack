@@ -86,7 +86,7 @@
     applyFontSize();
     void session.boot();
     const preload = setTimeout(() => { void loadTab(1); void loadTab(2); loadSheets().catch(() => undefined); loadLog().catch(() => undefined); }, 800); // a failed preload retries on first open
-    // the installed app can stay open past midnight: Today follows the calendar when it comes back
+    // a tab can stay open past midnight: Today follows the calendar when it comes back
     const tick = () => { if (document.visibilityState === 'visible') view.tick(); };
     document.addEventListener('visibilitychange', tick);
     const clock = setInterval(tick, 60_000);

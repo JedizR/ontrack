@@ -31,21 +31,16 @@ export async function takePhoto(page: Page, notice = false) {
 /** The dev server compiles the lazy onboarding chunk on first request, which is slow with every worker asking at once. */
 const FIRST_PAINT = 15_000;
 
-/** Open the app signed out, on a fresh phone: the install guide in Safari on iPhone, Welcome elsewhere. */
+/** Wait for Welcome, the first screen of a signed out browser. */
+export const toWelcome = (page: Page) => expect(page.getByTestId('welcome')).toBeVisible({ timeout: FIRST_PAINT });
+
+/** Open the app signed out, in a fresh browser: Welcome. */
 export async function openFresh(page: Page, s = space('fresh')) {
   await page.clock.setFixedTime(new Date(`${TODAY}T10:00:00+07:00`));
   await useSpace(page, s);
   await page.goto('/');
-  await expect(page.getByTestId('install').or(page.getByTestId('welcome'))).toBeVisible({ timeout: FIRST_PAINT });
+  await toWelcome(page);
   return s;
-}
-
-/** Past Safari's install guide, if it shows, to Welcome. */
-export async function toWelcome(page: Page) {
-  const install = page.getByTestId('install-continue');
-  await expect(install.or(page.getByTestId('welcome'))).toBeVisible({ timeout: FIRST_PAINT });
-  if (await install.isVisible()) await install.click();
-  await expect(page.getByTestId('welcome')).toBeVisible();
 }
 
 /** Seed per-device prefs (theme, text size, last tab) before the app loads, over what the app saved itself. */
@@ -87,10 +82,8 @@ export async function signIn(page: Page, email = EMAIL, { shell = true } = {}) {
   const sheet = page.getByTestId('signin-sheet');
   if (!(await sheet.isVisible())) {
     const avatar = page.getByTestId('avatar');
-    const install = page.getByTestId('install-continue');
     const welcome = page.getByTestId('welcome-signin');
-    await expect(avatar.or(install).or(welcome)).toBeVisible({ timeout: FIRST_PAINT });
-    if (await install.isVisible()) await install.click();
+    await expect(avatar.or(welcome)).toBeVisible({ timeout: FIRST_PAINT });
     await (await avatar.isVisible() ? avatar : welcome).click();
   }
   await page.getByTestId('signin-email').fill(email);
@@ -175,11 +168,9 @@ export type Answers = {
   pace?: number;
 };
 
-/** From Welcome (or the install guide) to Your plan. Defaults are vector A of docs/SCIENCE.md. */
+/** From Welcome to Your plan. Defaults are vector A of docs/SCIENCE.md. */
 export async function onboard(page: Page, a: Answers) {
-  const install = page.getByTestId('install-continue');
-  await expect(install.or(page.getByTestId('welcome-start'))).toBeVisible({ timeout: FIRST_PAINT });
-  if (await install.isVisible()) await install.click();
+  await expect(page.getByTestId('welcome-start')).toBeVisible({ timeout: FIRST_PAINT });
   await page.getByTestId('welcome-start').click();
   await page.getByTestId(`choice-${a.goal}`).click();
 

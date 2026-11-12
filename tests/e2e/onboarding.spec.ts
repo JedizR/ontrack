@@ -1,5 +1,5 @@
-// M4: first run to a saved plan (SCREENS.md sections 3 to 5, PRD F2 and section 7). Each test is a fresh phone in its own
-// mock space. The light and dark projects are WebKit with an iPhone user agent, so Safari's install guide comes first.
+// M4: first run to a saved plan (SCREENS.md sections 3 to 5, PRD F2 and section 7). Each test is a fresh browser in its own
+// mock space, which opens on Welcome.
 import { expect, test, type Page } from '@playwright/test';
 import { EMAIL, TODAY, keypadEnter, onboard, openFresh, seedAccount, signIn } from './helpers';
 
@@ -17,7 +17,7 @@ async function sumsExactly(page: Page) {
   expect(Number((await kcal(page)).replace(/,/g, ''))).toBe(total);
 }
 
-test('a hardgainer goes from the install guide to a saved plan in under 90 seconds', { tag: '@smoke' }, async ({ page }) => {
+test('a hardgainer goes from Welcome to a saved plan in under 90 seconds', { tag: '@smoke' }, async ({ page }) => {
   await openFresh(page);
   const started = Date.now();
   await onboard(page, { goal: 'gain', train: 4 });
@@ -108,7 +108,6 @@ test('a medical condition leads to advice, then a maintenance target only', asyn
 
 test('an eating disorder is advised against tracking and can leave setup', async ({ page }) => {
   await openFresh(page);
-  await page.getByTestId('install-continue').click();
   await page.getByTestId('welcome-start').click();
   await page.getByTestId('choice-lose').click();
   await page.getByTestId('screen-eatingDisorder').click();
@@ -125,7 +124,6 @@ test('an eating disorder is advised against tracking and can leave setup', async
 
 test('a birth year under 18 ends setup with an explanation', async ({ page }) => {
   await openFresh(page);
-  await page.getByTestId('install-continue').click();
   await page.getByTestId('welcome-start').click();
   await page.getByTestId('choice-gain').click();
   await page.getByTestId('screen-none').click();
@@ -181,13 +179,13 @@ test('under BMI 16 a doctor card shows, gaining is still offered, and a low goal
 test('a returning user signs in from Welcome and lands on Today with the account plan', { tag: '@smoke' }, async ({ page }) => {
   const s = await seedAccount(page, { signedIn: false });
   await openFresh(page, s);
-  await signIn(page); // through the install guide and Welcome's "I already have an account"
+  await signIn(page); // through Welcome's "I already have an account"
   await expect(page.getByTestId('tab-today')).toBeVisible();
   expect(await record(page, 'profile', 'profile')).toMatchObject({ birthYear: 2001 });
-  // a reload goes straight to Today, without Welcome or the install guide showing for a moment while the store opens
+  // a reload goes straight to Today, without Welcome showing for a moment while the store opens
   await page.addInitScript(() => {
     new MutationObserver(() => {
-      if (document.querySelector('[data-testid="welcome"], [data-testid="install"]')) (window as unknown as { flashed: boolean }).flashed = true;
+      if (document.querySelector('[data-testid="welcome"]')) (window as unknown as { flashed: boolean }).flashed = true;
     }).observe(document, { childList: true, subtree: true });
   });
   await page.reload();
@@ -220,17 +218,14 @@ test('a signed in account without a plan goes through setup and saves without si
   expect(await plans(page)).toHaveLength(1);
 });
 
-test('the draft survives a reload on any step, and the install guide comes back in Safari', async ({ page }) => {
+test('the draft survives a reload on any step', async ({ page }) => {
   await openFresh(page);
-  await page.getByTestId('install-continue').click();
   await page.getByTestId('welcome-start').click();
   await page.getByTestId('choice-gain').click();
   await page.getByTestId('screen-none').click();
   await page.getByTestId('continue').click();
   await expect(page.getByTestId('step-count')).toHaveText('Step 3 of 9');
   await page.reload();
-  await expect(page.getByTestId('install')).toBeVisible();
-  await page.getByTestId('install-continue').click();
   await expect(page.getByTestId('step-sex')).toBeVisible();
   await page.getByTestId('back').click();
   await expect(page.getByTestId('screen-none')).toHaveAttribute('aria-checked', 'true');

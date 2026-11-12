@@ -1,14 +1,15 @@
 // Visual review: every screen in its main states -> screenshots/<screen>/<state>-<theme>-<device>.png
 //   pnpm screenshots -- --grep "shell"
 import { expect, test, type Page } from '@playwright/test';
-import { EMAIL, MEALS, TODAY, keypadEnter, onboard, open, openFresh, seedAccount, signIn, takePhoto, toWelcome, vision, withPrefs } from './helpers';
+import { EMAIL, MEALS, TODAY, keypadEnter, onboard, open, openFresh, seedAccount, signIn, takePhoto, vision, withPrefs } from './helpers';
 
 const SECTIONS = ['prefs', 'buttons', 'track', 'hero', 'rows', 'chips', 'sheets', 'week', 'feedback', 'states'];
 
+// Safari with its toolbars showing on a 390 by 844 phone, the SE and the Pro Max
 const DEVICES = [
-  { name: '390', width: 390, height: 844 },
-  { name: 'se', width: 375, height: 667 },
-  { name: 'promax', width: 430, height: 932 },
+  { name: '390', width: 390, height: 664 },
+  { name: 'se', width: 375, height: 548 },
+  { name: 'promax', width: 430, height: 739 },
 ];
 
 for (const theme of ['light', 'dark'] as const) {
@@ -79,7 +80,6 @@ for (const theme of ['light', 'dark'] as const) {
       test('signin', async ({ page }) => {
         const s = await seedAccount(page, { signedIn: false });
         await openFresh(page, s);
-        await toWelcome(page);
         await page.getByTestId('welcome-signin').click();
         await page.getByTestId('signin-send').waitFor();
         await shot(page, 'signin', 'email');
@@ -120,13 +120,11 @@ for (const theme of ['light', 'dark'] as const) {
         await shot(page, 'today', 'bringing');
       });
 
-      // SCREENS.md sections 3 and 4: the install guide, Welcome, every question and its guardrail screens, Your plan
+      // SCREENS.md sections 3 and 4: Welcome, every question and its guardrail screens, Your plan
       test('onboarding', async ({ page }) => {
         const go = (id: string) => page.getByTestId(id).click();
         const at = async (id: string, state: string) => { await page.getByTestId(id).waitFor(); await shot(page, 'onboarding', state); };
         await openFresh(page);
-        await at('install', 'install');
-        await go('install-continue');
         await at('welcome', 'welcome');
         await go('welcome-start');
         await at('step-goal', 'goal');
@@ -362,7 +360,7 @@ for (const theme of ['light', 'dark'] as const) {
 // the largest text size on the smallest phone: the composed Today, the keypad, and every gallery section
 for (const theme of ['light', 'dark'] as const) {
   test.describe(`${theme} se xl`, () => {
-    test.use({ colorScheme: theme, viewport: { width: 375, height: 667 } });
+    test.use({ colorScheme: theme, viewport: { width: 375, height: 548 } });
     test('largest text', async ({ page }) => {
       await withPrefs(page, { theme: 'system', fontSize: 'xl' });
       await open(page, '/gallery/today');

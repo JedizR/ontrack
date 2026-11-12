@@ -4,10 +4,11 @@ import { devices, expect, test, type Page } from '@playwright/test';
 import { MEALS, keypadEnter, open, signIn, takePhoto, withPrefs } from './helpers';
 
 const DEVICES = [
-  { name: 'iphone-15-pwa', width: 393, height: 793, mobile: true }, // home screen app: 852 minus the status bar
-  { name: 'iphone-15-safari', width: 393, height: 659, mobile: true }, // Safari with its toolbars
-  { name: 'iphone-15-pro-max', width: 430, height: 873, mobile: true },
-  { name: 'iphone-se', width: 375, height: 647, mobile: true },
+  // phones in Safari with its toolbars showing: what a browser tab gets
+  { name: 'iphone-15-safari', width: 393, height: 659, mobile: true },
+  { name: 'iphone-15-pro-max', width: 430, height: 739, mobile: true },
+  { name: 'iphone-se', width: 375, height: 548, mobile: true }, // an assumption until the owner's SE reports its own
+
   { name: 'android-small', width: 360, height: 740, mobile: true },
   { name: 'landscape-phone', width: 852, height: 393, mobile: true },
   { name: 'ipad', width: 768, height: 1024, mobile: true },
@@ -108,9 +109,9 @@ for (const d of DEVICES) {
 }
 
 const PHONES = [
-  { name: 'iphone-15-pwa', width: 393, height: 793 },
-  { name: 'iphone-se', width: 375, height: 647 },
-  { name: 'iphone-15-pro-max', width: 430, height: 873 },
+  { name: 'iphone-15-safari', width: 393, height: 659 },
+  { name: 'iphone-se', width: 375, height: 548 },
+  { name: 'iphone-15-pro-max', width: 430, height: 739 },
 ];
 for (const d of PHONES) {
   for (const fs of ['m', 'l', 'xl'] as const) {
@@ -132,8 +133,6 @@ async function walkOnboarding(page: Page, dir: string) {
   const check = async (id: string, name: string) => { await page.getByTestId(id).waitFor(); await page.waitForTimeout(300); await checkPage(page, name, dir); };
   await page.clock.setFixedTime(new Date('2026-11-11T10:00:00+07:00'));
   await page.goto('/');
-  await check('install', 'install');
-  await go('install-continue');
   await check('welcome', 'welcome');
   await go('welcome-start');
   await check('step-goal', 'goal');

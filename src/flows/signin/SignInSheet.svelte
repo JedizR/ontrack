@@ -1,5 +1,5 @@
-<!-- SCREENS.md section 5, Sign in: Google, or an email code typed in this app. Both finish inside the installed app
-     (magic links would open Safari, which has its own storage). The six boxes are one input underneath, so iOS can
+<!-- SCREENS.md section 5, Sign in: Google, or an email code typed in this tab. Both finish in the tab that started
+     them (a magic link opens wherever the mail app chooses). The six boxes are one input underneath, so iOS can
      fill the code from Mail and a paste lands whole. -->
 <script lang="ts">
   import { untrack } from 'svelte';
