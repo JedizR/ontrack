@@ -1,6 +1,6 @@
 <!-- SCREENS.md section 9, Progress: the range, then weight (the trend, the chart, the rate against the target, Log
-     weight), maintenance once measured, intake by week with protein, the last four weeks' consistency, check-ins
-     (this week's first when it is ready), and History. -->
+     weight), maintenance once measured, intake by week with protein, the last four weeks' consistency, training in the
+     range, check-ins (this week's first when it is ready), and History. -->
 <script lang="ts">
   import { t } from '$lib/i18n';
   import Figure from '$lib/components/Figure.svelte';
@@ -8,11 +8,14 @@
   import Button from '$lib/components/Button.svelte';
   import Row from '$lib/components/Row.svelte';
   import Segmented from '$lib/components/Segmented.svelte';
+  import Track from '$lib/components/Track.svelte';
+  import EmptyState from '$lib/components/EmptyState.svelte';
   import TrendChart from '$lib/components/TrendChart.svelte';
   import WeekBars from '$lib/components/WeekBars.svelte';
   import { db } from '$lib/db/store.svelte';
   import { view } from '$lib/view.svelte';
   import { sheets } from '$lib/sheets.svelte';
+  import { prefs } from '$lib/prefs.svelte';
   import { accountOf, checkinDueOn } from '$lib/model/progress';
   import { baseline, calorieStatus, effectiveRate, roundTarget, weeklyEee, U, V } from '$lib/model/engine';
   import { planFor } from '$lib/model/day';
@@ -29,6 +32,7 @@
   const plans = $derived(db.live('plan'));
   const today = $derived(view.today);
   const plan = $derived(planFor(plans, today));
+  const hasProgram = $derived(!!db.get('program', 'program')?.sessions.length);
 
   const RANGES = [{ value: 28, label: t.progress.weeks4 }, { value: 91, label: t.progress.months3 }, { value: 0, label: t.progress.all }];
   let range = $state(28);
@@ -64,6 +68,16 @@
   );
   const four = $derived(acct ? acct.weeks(today, 4) : []);
 
+  // the training card (PRD F20): the weeks cover exactly the days in view, so a week's average divides by those days,
+  // a short first week counting as a whole one
+  const training = $derived.by(() => {
+    const sum = (k: 'planned' | 'done' | 'strength' | 'cardioMinutes') => weeks.reduce((a, w) => a + w.training[k], 0);
+    const per = U.daysPerWeek / Math.max(span + 1, U.daysPerWeek);
+    // rounded as shown, so the words and the track agree on whether the target is reached
+    return { planned: sum('planned'), done: sum('done'), strength: Math.round(sum('strength') * per * 10) / 10, cardio: Math.round(sum('cardioMinutes') * per) };
+  });
+  const sessionBars = $derived(weeks.map(({ training: k }) => ({ avg: k.done, target: k.planned, reached: k.planned > 0 && k.done >= k.planned })));
+
   const checkins = $derived(db.live('checkin').map((r) => r.data).sort((a, b) => b.date.localeCompare(a.date)));
   const due = $derived(!!profile && checkinDueOn(plans, profile.checkinWeekday, today) && !checkins.some((c) => c.date === today));
   function outcome(c: Checkin) {
@@ -73,6 +87,14 @@
   }
   let history = $state(false);
 </script>
+
+{#snippet meter(title: string, line: string, value: number, target: number, zone: [number, number], testid: string)}
+  <div data-testid={testid}>
+    <p class="text-body font-semibold">{title}</p>
+    <p class="text-caption text-ink-2">{line}</p>
+    <div class="mt-2"><Track {value} {target} {zone} label="{title}. {line}" /></div>
+  </div>
+{/snippet}
 
 <section aria-label={t.tabs.progress} data-testid="tab-progress" class="flex flex-col gap-4 pt-1">
   {#if !acct || !plan || !profile}
@@ -150,6 +172,28 @@
           </div>
         {/each}
       </div>
+    </Card>
+
+    <Card aria-label={t.progress.training} data-testid="progress-training">
+      <p class="text-eyebrow text-ink-2">{t.progress.training}</p>
+      {#if training.planned}
+        <p class="text-display mt-2" data-testid="progress-sessions-done">{num(training.done)}</p>
+        <p class="text-caption text-ink-2 mt-1">{t.after.ofPlanned(num(training.planned))}</p>
+        <div class="mt-4">
+          <WeekBars weeks={sessionBars} from={shortDate(weeks[0].start)} to={shortDate(today)} label={t.progress.sessionBars(num(weeks.length))} />
+        </div>
+        <p class="text-caption text-ink-2 mt-2">{t.progress.sessionsLine}</p>
+        <div class="border-line mt-4 flex flex-col gap-4 border-t pt-4">
+          {@render meter(t.progress.strength, t.progress.strengthLine(num(training.strength, 1), num(V.strengthSessions)), training.strength, V.strengthSessions, [V.strengthSessions, Infinity], 'progress-strength')}
+          {@render meter(t.progress.cardio, t.progress.cardioLine(num(training.cardio), num(V.aerobicMinutes.min), num(V.aerobicMinutes.max)), training.cardio, V.aerobicMinutes.max, [V.aerobicMinutes.min, V.aerobicMinutes.max], 'progress-cardio')}
+        </div>
+      {:else}
+        <!-- with a program whose first session is still to come there is nothing to plan, only to wait for -->
+        <div class="mt-2">
+          {#if hasProgram}<EmptyState text={t.progress.trainingSoon} />
+          {:else}<EmptyState text={t.progress.trainingNone} action={t.progress.planWeek} onaction={() => { prefs.tab = 1; scrollTo({ top: 0 }); }} />{/if}
+        </div>
+      {/if}
     </Card>
 
     <h2 class="text-heading mt-2">{t.progress.checkins}</h2>

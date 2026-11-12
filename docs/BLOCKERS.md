@@ -29,6 +29,12 @@ Each entry: what is blocked, what Claude tried, the exact steps for you, and wha
 
 Each entry: what to look at (URL or screenshot paths), what to look for, and which milestone it belongs to.
 
+### T1b: hybrid training and the training card, with the friends who asked
+
+- **Where:** the pull request's Vercel preview in Safari on the iPhone. Train, Change program, Full body and cardio 3 days (or Upper lower and cardio 5 days); then the Lifting and cardio card at the bottom of Train. Progress, the Training card after Consistency (it fills as you mark sessions done on Today). Screenshots in the pull request (branch `pr-assets`, folder `t1/`); every state in `screenshots/train/hybrid*`, `screenshots/train/templates-hybrid*`, `screenshots/progress/training*` after `pnpm screenshots`.
+- **Look for:** whether the three points read as advice the friends would follow (lift first, 6 hours apart if they can, cycle on leg days), and whether naming the days in every sentence is too much; whether the training card's numbers match what they did (a session counts only once marked done); whether strength and cardio as weekly averages are clearer than week by week.
+- **Then tell Claude:** what the friends said, or "keep T1 as is".
+
 ### T1a: the faster gain pace ships provisional (optional)
 
 - **Where:** `docs/DECISIONS.md` under T1a, `docs/SCIENCE.md` section 6 and vectors H and I, the S7 and S20 to S25 rows in `docs/SOURCES.md`. Nothing new to see in the app until T1b: the pace is left out of onboarding until it has its words and label; the two hybrid templates already show in Train, Change program.

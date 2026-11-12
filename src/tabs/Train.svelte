@@ -1,6 +1,7 @@
 <!-- SCREENS.md section 8, Train: the summary with Change program, the week Monday to Sunday (a session opens the
      Session sheet; its handle drags it to another day), then the analysis: muscle balance, up to three
-     recommendations with their sources, and cardio minutes against the guideline. -->
+     recommendations with their sources, cardio minutes against the guideline, and how to arrange days with both
+     lifting and cardio. -->
 <script lang="ts">
   import GripVertical from '@lucide/svelte/icons/grip-vertical';
   import Plus from '@lucide/svelte/icons/plus';
@@ -15,7 +16,7 @@
   import { planFor } from '$lib/model/day';
   import { weekdayOf } from '$lib/model/dates';
   import { num } from '$lib/model/format';
-  import { analyseProgram, eeeByWeekday, MUSCLES, U, V, type Finding } from '$lib/model/engine';
+  import { analyseProgram, eeeByWeekday, MUSCLES, U, V, type Finding, type HybridPoint, type SourceId } from '$lib/model/engine';
   import { LIBRARY } from '$lib/data/exercises';
   import { SOURCES } from '$lib/data/sources';
   import SessionSheet from '../flows/train/SessionSheet.svelte';
@@ -58,6 +59,11 @@
       case 'longSession': return r.longSession(num(f.value));
     }
   }
+  function hybridSentence(p: HybridPoint) {
+    const names = p.weekdays.map((d) => t.train.weekdays[d]);
+    const days = names.length > 1 ? t.train.dayList(names.slice(0, -1).join(', '), names[names.length - 1]) : names[0];
+    return p.kind === 'spaceOut' ? t.train.hybridPoints.spaceOut(days, num(p.value ?? 0)) : t.train.hybridPoints[p.kind](days);
+  }
 
   // drag a session by its handle to another day; the rows of the day under the finger light up
   let drag = $state<{ key: string; from: number; y0: number; dy: number; over: number } | null>(null);
@@ -87,6 +93,19 @@
   const hairline = '[&+&]:before:bg-line [&+&]:before:absolute [&+&]:before:top-0 [&+&]:before:right-0 [&+&]:before:left-16 [&+&]:before:h-px';
   const pressable = 'active:bg-surface-2 -ml-6 flex min-h-16 min-w-0 flex-1 items-center gap-4 py-2 pl-6 text-left transition-colors duration-[var(--d-press)]';
 </script>
+
+<!-- one sentence and its Why, which shows the source in place -->
+{#snippet point(id: string, text: string, source: SourceId, testid: string)}
+  <div class="border-line py-3 [&+&]:border-t" data-testid={testid}>
+    <div class="flex items-start gap-3">
+      <p class="text-body min-w-0 flex-1 pt-2.5">{text}</p>
+      <Button variant="plain" size="sm" class="-mr-4" aria-expanded={why === id} onclick={() => (why = why === id ? null : id)} data-testid="rec-why">{t.train.why}</Button>
+    </div>
+    {#if why === id}
+      <p class="text-caption text-ink-2 mt-1" data-testid="rec-source">{source === 'OT' ? t.plan.assumption : SOURCES[source]?.cite}</p>
+    {/if}
+  </div>
+{/snippet}
 
 {#snippet day(d: number)}
   <span class="text-caption grid size-12 flex-none place-items-center rounded-sm font-semibold {d === todayIs ? 'bg-ink text-canvas' : 'bg-surface-2'}">{t.train.weekdaysShort[d]}</span>
@@ -124,17 +143,18 @@
       {#each t.train.weekdays as dayName, d (dayName)}
         {@const list = sessions.filter((s) => s.weekday === d)}
         {@const lit = drag !== null && drag.over === d && drag.over !== drag.from ? 'bg-surface-2' : ''}
-        {#each list as s (s.key)}
+        {#each list as s, i (s.key)}
           {@const lifted = drag?.key === s.key}
+          <!-- a day's later sessions (lifting then cardio) sit under its tile, with no hairline: one day reads as one row -->
           <div
-            class="relative flex items-center {hairline} {lifted ? 'bg-surface shadow-float z-10 -mx-6 rounded-md px-6' : lit}"
+            class="relative flex items-center {hairline} {i ? 'before:hidden' : ''} {lifted ? 'bg-surface shadow-float z-10 -mx-6 rounded-md px-6' : lit}"
             style={lifted ? `transform: translateY(${drag?.dy}px)` : undefined}
             data-day={d}
             data-key={s.key}
             data-testid="train-day-{d}"
           >
             <button type="button" class={pressable} aria-label="{d === todayIs ? t.train.dayToday(dayName) : dayName}, {s.name}" onclick={() => edit(s)} data-testid="train-session">
-              {@render day(d)}
+              {#if i}<span class="size-12 flex-none"></span>{:else}{@render day(d)}{/if}
               <span class="min-w-0 flex-1">
                 <span class="text-body line-clamp-2 block font-semibold">{s.name}</span>
                 <span class="text-caption text-ink-2 block">{t.train.line(t.train.types[s.type], num(s.minutes))}</span>
@@ -193,16 +213,7 @@
 
       <Card list aria-label={t.train.analysis} data-testid="train-recs">
         {#each recs as f (`${f.kind}${f.muscle ?? ''}`)}
-          {@const id = `${f.kind}${f.muscle ?? ''}`}
-          <div class="border-line py-3 [&+&]:border-t" data-testid="rec">
-            <div class="flex items-start gap-3">
-              <p class="text-body min-w-0 flex-1 pt-2.5">{sentence(f)}</p>
-              <Button variant="plain" size="sm" class="-mr-4" aria-expanded={why === id} onclick={() => (why = why === id ? null : id)} data-testid="rec-why">{t.train.why}</Button>
-            </div>
-            {#if why === id}
-              <p class="text-caption text-ink-2 mt-1" data-testid="rec-source">{f.source === 'OT' ? t.plan.assumption : SOURCES[f.source]?.cite}</p>
-            {/if}
-          </div>
+          {@render point(`${f.kind}${f.muscle ?? ''}`, sentence(f), f.source, 'rec')}
         {:else}
           <p class="text-body text-ink-2 py-4">{t.train.allGood}</p>
         {/each}
@@ -217,6 +228,18 @@
           {#each analysis.notes as n (n.kind)}<p class="text-caption text-ink-2 mt-2">{sentence(n)}</p>{/each}
         </div>
       </Card>
+
+      {#if analysis.hybrid.length}
+        <Card list aria-label={t.train.hybrid} data-testid="train-hybrid">
+          <div class="pt-4 pb-3">
+            <p class="text-body font-semibold">{t.train.hybrid}</p>
+            <p class="text-caption text-ink-2">{t.train.hybridLine}</p>
+          </div>
+          <div class="border-line border-t">
+            {#each analysis.hybrid as p (p.kind)}{@render point(`hybrid-${p.kind}`, hybridSentence(p), p.source, 'hybrid-point')}{/each}
+          </div>
+        </Card>
+      {/if}
     {/if}
 
     <SessionSheet bind:editing {program} weightKg={plan.weightKg} />

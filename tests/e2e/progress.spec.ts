@@ -118,7 +118,7 @@ test('Progress: trend, rate against target, maintenance, intake, consistency, an
   await expect(page.getByTestId('chart-dot')).toHaveCount(18);
   await expect(page.getByTestId('progress-measured')).toHaveText('2,220');
   await expect(page.getByTestId('progress-formula')).toHaveText('2,030');
-  await expect(page.getByTestId('bar')).toHaveCount(4);
+  await expect(page.getByTestId('progress-intake').getByTestId('bar')).toHaveCount(4);
   await expect(page.getByTestId('progress-protein')).toContainText('Target 108 g');
   await expect(page.getByTestId('consistency-week')).toHaveCount(4);
   await expect(page.getByTestId('consistency-week').last()).toHaveAttribute('aria-label', /^This week, \d of 7 days on track$/);
@@ -143,6 +143,31 @@ test('Progress: trend, rate against target, maintenance, intake, consistency, an
   await expect(page.getByRole('button', { name: 'Back to today' })).toBeVisible();
 });
 
+test('Progress: the training card counts sessions done against planned, strength sessions and cardio for the range (F20)', async ({ page }) => {
+  // the seeder's program: an hour of strength on Monday, Wednesday, Friday and Saturday, every past session marked done
+  await openSeeded(page, 'raise');
+  await page.getByTestId('tab-2').click();
+  const card = page.getByTestId('progress-training');
+  await expect(card.getByTestId('progress-sessions-done')).toHaveText('15');
+  await expect(card).toContainText('of 16 planned sessions done'); // today's session is still to do
+  await expect(card.getByTestId('bar')).toHaveCount(4);
+  await expect(card.locator('[data-testid="bar"].fill-success')).toHaveCount(3); // this week: 3 of 4 so far
+  await expect(card.getByTestId('progress-strength')).toHaveText(/^Strength sessions\s*3\.8 a week on average\. Target 2\s*$/);
+  await expect(card.getByTestId('progress-strength').getByRole('progressbar')).toHaveAttribute('data-reached', 'true');
+  await expect(card.getByTestId('progress-cardio')).toHaveText(/^Cardio\s*0 of 150 to 300 minutes a week on average\s*$/);
+  await expect(card.getByTestId('progress-cardio').getByRole('progressbar')).toHaveAttribute('data-reached', 'false');
+  await page.getByRole('radio', { name: 'All' }).click();
+  await expect(card).toContainText('of 16 planned sessions done'); // the account is four weeks old
+
+  // today's session marked done on Today counts at once
+  await page.getByTestId('tab-0').click();
+  await page.getByTestId('session-done').click();
+  await page.getByTestId('tab-2').click();
+  await expect(card.getByTestId('progress-sessions-done')).toHaveText('16');
+  await expect(card.locator('[data-testid="bar"].fill-success')).toHaveCount(4);
+  await expect(card.getByTestId('progress-strength')).toHaveText(/^Strength sessions\s*4 a week on average\. Target 2\s*$/);
+});
+
 test('Progress before there is enough: says what is needed', async ({ page }) => {
   await open(page);
   await page.getByTestId('tab-2').click();
@@ -151,4 +176,18 @@ test('Progress before there is enough: says what is needed', async ({ page }) =>
   await expect(page.getByTestId('progress-maintenance')).toHaveCount(0);
   await expect(page.getByTestId('progress-intake')).toContainText('Log two or more items on a day');
   await expect(page.getByTestId('progress-checkins')).toContainText('Your first check-in comes two weeks after your plan starts.');
+  // the plan began today, a training day: one session to do
+  await expect(page.getByTestId('progress-training')).toContainText('of 1 planned session done');
+
+  type Win = { ontrack: { actions: { saveProgram(p: object): void } } };
+  // a program whose first session is tomorrow: nothing to plan, only sessions to come
+  await page.evaluate(() => (window as unknown as Win).ontrack.actions.saveProgram({ name: '', sessions: [{ key: 'th', weekday: 3, name: 'Strength', type: 'strength', minutes: 60, intensity: 'moderate' }] }));
+  await expect(page.getByTestId('progress-training')).toContainText('Sessions you mark done on Today will show here.');
+  await expect(page.getByTestId('progress-training').getByRole('button')).toHaveCount(0);
+
+  // no program: the training card says how to get one, and its button opens Train
+  await page.evaluate(() => (window as unknown as Win).ontrack.actions.saveProgram({ name: '', sessions: [] }));
+  await expect(page.getByTestId('progress-training')).toContainText('Plan your week on Train to see your sessions here.');
+  await page.getByTestId('progress-training').getByRole('button', { name: 'Plan your week' }).click();
+  await expect(page.getByTestId('tab-train')).toBeVisible();
 });

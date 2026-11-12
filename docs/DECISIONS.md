@@ -2,6 +2,15 @@
 
 Changes to a doc's decision, and choices made on the owner's behalf. Newest first, one line each: what, why.
 
+## T1b
+
+Gain pace and hybrid training, the screen half, 12 November 2026. Unattended; decided on the owner's behalf (onboarding, the faster pace's words and the plan breakdown went to O1):
+- **The lifting and cardio points get their own card on Train,** after the recommendations and cardio row, titled "Lifting and cardio", shown only when a day has both. Each point is one sentence that names its weekdays ("On Monday, Wednesday and Friday, lift before your cardio, as strength gains more in that order"), with the same Why as a recommendation. Naming the days in every sentence repeats them, but the leg day point can name fewer days than the other two, and a sentence read alone stays true.
+- **A day with two sessions shows its day tile once** (the design critic): the second session sits under the first with no tile and no hairline, so a hybrid week reads Monday, Tuesday, Wednesday rather than Monday, Monday. Each session keeps its own drag handle.
+- **The two hybrid templates add one line,** their cardio minutes a week against 150 to 300, from the same analysis as Train's cardio row (moderate-equivalent, so 3 x 25 minutes of cycling reads 150).
+- **Progress's training card sits after Consistency,** before Check-ins: sessions done in Display over "of 16 planned sessions done", the week bars Intake uses (done against planned; green once a week's plan is done), then strength sessions and cardio minutes as weekly averages with the small track. An average divides by the days in view, a short first week counting as a whole one, so a new account does not read seven times its one session. The strength average is rounded to the tenth it shows, so its words and its track agree on the target.
+- **Two empty states:** no program says "Plan your week on Train to see your sessions here" with a button to Train; a program whose first session is still to come says "Sessions you mark done on Today will show here" with no button (from the code review: an account that starts on a rest day has nothing to plan).
+
 ## T1a
 
 Gain pace and hybrid training, the engine and science half, 12 November 2026. Unattended; decided on the owner's behalf:

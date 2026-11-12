@@ -29,6 +29,11 @@ for (const theme of ['light', 'dark'] as const) {
         await page.getByTestId('tab-2').click();
         await expect(page.getByTestId('tab-progress')).toBeVisible();
         await shot(page, 'shell', 'progress');
+        // Progress's training card with no sessions planned (the plan began today, so clearing the program clears today)
+        await page.evaluate(() => (window as unknown as { ontrack: { actions: { saveProgram(p: object): void } } }).ontrack.actions.saveProgram({ name: '', sessions: [] }));
+        await page.getByTestId('progress-training').evaluate((el) => scrollTo(0, el.getBoundingClientRect().top + scrollY - 60));
+        await expect(page.getByTestId('progress-training')).toContainText('Plan your week');
+        await shot(page, 'progress', 'training-empty');
       });
 
       // the component gallery, one shot per section with the section at the top, then the interaction states
@@ -291,6 +296,23 @@ for (const theme of ['light', 'dark'] as const) {
         await shot(page, 'train', 'typical');
         await top('train-balance');
         await shot(page, 'train', 'analysis');
+
+        // a hybrid (F20): the two templates with cardio, the week, and the lifting and cardio points with a source open
+        await page.evaluate(() => scrollTo(0, 0));
+        await page.getByTestId('train-change').click();
+        await settled('templates-sheet');
+        await page.getByTestId('template-full-body-cardio-3').scrollIntoViewIfNeeded();
+        await shot(page, 'train', 'templates-hybrid');
+        await page.getByTestId('template-full-body-cardio-3').getByTestId('template-use').click();
+        await settled('template-confirm-sheet');
+        await page.getByTestId('template-confirm').click();
+        await page.getByTestId('templates-sheet').waitFor({ state: 'detached' });
+        await page.locator('[data-sonner-toast]').waitFor({ state: 'detached', timeout: 10_000 }); // the Undo toast
+        await top('train-week');
+        await shot(page, 'train', 'hybrid-week');
+        await top('train-hybrid');
+        await page.getByTestId('train-hybrid').getByTestId('rec-why').nth(1).click();
+        await shot(page, 'train', 'hybrid');
 
         await page.evaluate(() => (window as unknown as { ontrack: { actions: { saveProgram(p: object): void } } }).ontrack.actions.saveProgram({ name: '', sessions: [] }));
         await page.evaluate(() => scrollTo(0, 0));
@@ -628,6 +650,8 @@ for (const theme of ['light', 'dark'] as const) {
         await shot(page, 'progress', 'typical');
         await top('progress-intake');
         await shot(page, 'progress', 'intake');
+        await top('progress-training');
+        await shot(page, 'progress', 'training');
         await top('progress-checkins');
         await shot(page, 'progress', 'checkins');
         await page.getByTestId('progress-history').click();

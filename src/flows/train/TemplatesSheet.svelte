@@ -1,5 +1,6 @@
-<!-- SCREENS.md section 8, Templates: each program with its days a week, who it suits and the muscle balance it
-     produces. "Use this program" replaces the current one after a confirm; the targets follow from tomorrow. -->
+<!-- SCREENS.md section 8, Templates: each program with its days a week, who it suits, the muscle balance it produces
+     and, for the two with cardio, its cardio minutes. "Use this program" replaces the current one after a confirm; the
+     targets follow from tomorrow. -->
 <script lang="ts">
   import Sheet from '$lib/components/Sheet.svelte';
   import Button from '$lib/components/Button.svelte';
@@ -13,10 +14,7 @@
   let { open = $bindable(), goal, experience }: { open: boolean; goal: Goal; experience: Experience } = $props();
   let confirm = $state<Template | null>(null);
 
-  const inRange = (tpl: Template) => {
-    const a = analyseProgram(tpl.sessions, { goal, experience, library: LIBRARY });
-    return MUSCLES.filter((m) => a.muscles[m].band === 'inRange').length;
-  };
+  const analysed = $derived(TEMPLATES.map((tpl) => analyseProgram(tpl.sessions, { goal, experience, library: LIBRARY })));
   function use() {
     if (!confirm) return;
     undoToast(t.train.saved, changeProgram({ name: confirm.name, sessions: $state.snapshot(confirm.sessions) }));
@@ -27,12 +25,14 @@
 
 <Sheet bind:open title={t.train.templates} layer="base" testid="templates-sheet">
   <div class="flex flex-col gap-3">
-  {#each TEMPLATES as tpl (tpl.id)}
+  {#each TEMPLATES as tpl, i (tpl.id)}
+    {@const a = analysed[i]}
     <div class="bg-surface-2 rounded-lg p-6" data-testid="template-{tpl.id}">
       <h3 class="text-body font-semibold">{tpl.name}</h3>
       <p class="text-caption text-ink-2">{t.train.perWeek(num(tpl.daysPerWeek))}</p>
       <p class="text-caption text-ink-2">{t.train.suits[tpl.id]}</p>
-      <p class="text-caption text-ink-2">{t.train.balanceOf(num(inRange(tpl)), num(MUSCLES.length), num(V.setsRange), num(V.setsHigh))}</p>
+      <p class="text-caption text-ink-2">{t.train.balanceOf(num(MUSCLES.filter((m) => a.muscles[m].band === 'inRange').length), num(MUSCLES.length), num(V.setsRange), num(V.setsHigh))}</p>
+      {#if a.aerobicMinutes}<p class="text-caption text-ink-2" data-testid="template-cardio">{t.train.cardioOf(num(a.aerobicMinutes), num(V.aerobicMinutes.min), num(V.aerobicMinutes.max))}</p>{/if}
       <Button variant="plain" size="sm" class="mt-1 -ml-4" onclick={() => (confirm = tpl)} data-testid="template-use">{t.train.use}</Button>
     </div>
   {/each}

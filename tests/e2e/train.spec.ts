@@ -99,3 +99,43 @@ test('a template replaces the program from tomorrow; today and the days before k
   await expect(kcalOf(page)).toHaveText('of 2,460 kcal');
   await expect(page.getByTestId('training')).toContainText('Strength');
 });
+
+test('a hybrid template builds a week of lifting and cardio and says how to arrange it, with its sources (F20)', async ({ page }) => {
+  await open(page);
+  await page.getByTestId('tab-1').click();
+  await expect(page.getByTestId('train-hybrid')).toHaveCount(0); // lifting only: nothing to arrange
+  await page.getByTestId('train-change').click();
+  // the two hybrids show their cardio against the range; lifting only templates have none
+  await expect(page.getByTestId('template-upper-lower-cardio-5').getByTestId('template-cardio')).toHaveText('150 cardio minutes a week. 150 to 300 is the range');
+  await expect(page.getByTestId('template-full-body-3').getByTestId('template-cardio')).toHaveCount(0);
+  const hybrid = page.getByTestId('template-full-body-cardio-3');
+  await expect(hybrid).toContainText('Lifting and cardio on three days. Ride after lifting, hours later if you can.');
+  await expect(hybrid.getByTestId('template-cardio')).toHaveText('150 cardio minutes a week. 150 to 300 is the range');
+  await hybrid.getByTestId('template-use').click();
+  await page.getByTestId('template-confirm').click();
+
+  // Monday, Wednesday and Friday: full body, then a ride
+  await expect(page.getByTestId('train-sessions')).toHaveText('6');
+  await expect(page.getByTestId('train-minutes')).toHaveText('300');
+  for (const d of [0, 2, 4]) {
+    await expect(day(page, d)).toHaveCount(2);
+    await expect(day(page, d).last()).toContainText('Cardio, 25 min');
+  }
+  await expect(page.getByTestId('train-cardio')).toContainText('150 of 150 to 300 minutes a week');
+
+  const points = page.getByTestId('train-hybrid').getByTestId('hybrid-point');
+  await expect(points).toHaveCount(3);
+  await expect(points.nth(0)).toContainText('On Monday, Wednesday and Friday, lift before your cardio, as strength gains more in that order.');
+  await expect(points.nth(1)).toContainText('On Monday, Wednesday and Friday, leave 6 hours or more between lifting and cardio if you can.');
+  await expect(points.nth(2)).toContainText('On Monday, Wednesday and Friday you train legs, so cycle rather than run.');
+  for (const [i, author] of [[0, 'Eddens L'], [1, 'Robineau J'], [2, 'Wilson JM']] as const) {
+    await points.nth(i).getByTestId('rec-why').click();
+    await expect(points.nth(i).getByTestId('rec-source')).toContainText(author);
+  }
+
+  // Friday's ride moved to Sunday: Friday no longer has both
+  await day(page, 4).last().getByTestId('train-session').click();
+  await page.getByTestId('train-session-sheet').getByRole('group', { name: 'Day' }).getByRole('button', { name: 'Sun' }).click();
+  await page.getByTestId('session-save').click();
+  await expect(points.nth(0)).toContainText('On Monday and Wednesday, lift before your cardio');
+});

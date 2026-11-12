@@ -182,11 +182,12 @@ The common case, the morning shake: plus, the Whey row, Add. Three taps when the
    - Muscle balance card: one row per muscle with a small track where the zone is 10 to 20 sets, and the number of sets. Rows under 10 come first.
    - Up to three recommendations as rows: one sentence each and "Why", which opens the source.
    - A cardio row: minutes this week against 150 to 300.
+   - Lifting and cardio card, only when a day has both a strength and a cardio session (PRD F20): "Lifting and cardio" with "On days with both", then up to three points as rows, each one sentence naming its weekdays and "Why", which opens the source. Lift before cardio ("On Monday, Wednesday and Friday, lift before your cardio, as strength gains more in that order"). Leave 6 hours or more between them, "if you can". On a day that trains legs, cycle rather than run.
 5. With a program that has no exercises: the muscle card is replaced by "List your exercises to see muscle balance" and a button.
 
 **Session sheet.** Name, type as chips, minutes with a stepper in fives, intensity as a three way segmented control with one line describing each level, the calories this session adds, the exercise list with sets and reps steppers, "Add exercise", "Delete session".
 **Exercise picker.** Search field, muscle chips, rows with primary muscles as a caption.
-**Templates.** Four cards, each: name, days per week, who it suits, and the muscle balance it produces. "Use this program" replaces the current one after a confirm.
+**Templates.** Six cards, each: name, days per week, who it suits, and the muscle balance it produces. The two that mix lifting and cardio (Full body and cardio 3 days, Upper lower and cardio 5 days) add their cardio minutes a week against 150 to 300. "Use this program" replaces the current one after a confirm.
 
 ## 9. Progress
 
@@ -195,10 +196,11 @@ The common case, the morning shake: plus, the Whey row, Add. Three taps when the
 3. Maintenance card, once measured: "2,120 kcal" in Display, "Measured from your last 3 weeks", and the formula estimate beside it for comparison.
 4. Intake card: bars for weekly average calories with the target as a line, and average protein beneath.
 5. Consistency card: the last four weeks as rows of seven dots, filled in `--success-ink` for on track days, with a count per week.
-6. "Check-ins" list: date, the change made or kept, opening the stored check-in.
-7. "History": opens a month list where any day opens in the Today view.
+6. Training card (PRD F20), for the selected period: sessions done in Display with "of 16 planned sessions done", bars for sessions done each week with what was planned as a line (green once a week's plan is done), then two rows with a small track: "Strength sessions", "2.8 a week on average. Target 2", and "Cardio", "40 of 150 to 300 minutes a week on average". A session counts once it is marked done on Today.
+7. "Check-ins" list: date, the change made or kept, opening the stored check-in.
+8. "History": opens a month list where any day opens in the Today view.
 
-Empty states say what is needed: "Weigh in on 8 days across two weeks to see your trend and get your first check-in".
+Empty states say what is needed: "Weigh in on 8 days across two weeks to see your trend and get your first check-in". With no program, the training card says "Plan your week on Train to see your sessions here" with a button "Plan your week" that opens Train; with a program whose first session is still to come, "Sessions you mark done on Today will show here".
 
 **Weigh in sheet.** A wheel in the user's unit (whole and tenths) starting at the last weigh-in, the hint "One a day. A new one replaces it.", "Save 82.4 kg".
 
