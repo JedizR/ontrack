@@ -2,6 +2,25 @@
 
 Changes to a doc's decision, and choices made on the owner's behalf. Newest first, one line each: what, why.
 
+## M6
+
+- Gemini model `gemini-3.8-flash` (Google's model list, November 2026: the newest stable Flash), set in `GEMINI_MODEL` on Vercel and in `.env.example`, never in code. Thinking is `low`, not `minimal`: 3.8 Flash refuses minimal. If the median time to a review misses 8 s on the live key, `gemini-3.6-flash` accepts minimal. Calls go through `models.generateContent` with `responseJsonSchema` built from the zod schema.
+- The provider returns the reply unvalidated and the handler checks it with zod; the provider interface has no `catalog` field, since the prompt module builds the catalog once.
+- The handler takes its dependencies (token check, quota, provider) as an argument, so the mock backend answers `/api/analyze` with the same code. The mock picks a food fixture by a hash of the input; a description containing "not food" or "fail" picks those cases; tests name the fixture through `POST /__mock/vision`.
+- The quota counts on the server's UTC day, not the phone's `localDate`. Why: a phone that sends other dates could multiply its quota and step around the global cap. The limit resets at 07:00 in Thailand.
+- A model item with a blank name is dropped; a reply with no items left is not food. Why: a meal item needs a name.
+- The photo estimate checks (900 kcal per 100 g, 25 percent from 4p + 4c + 9f) are in `constants.ts` as Ontrack assumptions. Known limit, from the spec's rule: alcohol is not in the macro energy, so a cocktail or soju missing from the food table is recomputed too low. Beer, wine and spirits are in the table.
+- The photo notice shows inside the Add sheet the first time Photo is tapped; Continue opens the camera. Accepting it is remembered per device in prefs (`photoOk`).
+- The Review sheet's photo is cropped to 4 by 3 at full width, so the items start above the fold. The Meal sheet shows the 320 px thumbnail the same way, a little soft.
+- "Add by hand" keeps the photo and the Review sheet, empty, and opens Search to add items one by one. The daily limit shows only "Add by hand", since trying again cannot succeed.
+- Error lines for a description: "We could not find food in that description", "Describing a meal needs a connection", "Could not analyse the description". A busy service has its own line. A photo that cannot be read as an image shows the general failure.
+- "Cooked with oil?" adds vegetable oil from the food table (1 tsp is 4.5 g, 40 kcal; 1 tbsp is 14 g, 124 kcal) as its own item, described under the control rather than as an editable row. The item list then stops at 29 so the oil fits the 30 item limit.
+- A logged photo meal: the thumbnail is stored before the meal so Today shows it at once; a thumbnail the phone cannot store does not stop the meal. Undo deletes the meal only. The model's reply is kept with the meal (`ai.raw`) unless it is over 8 KB.
+- Thumbnails are stored in IndexedDB as bytes and a type, not as Blobs. Why: WebKit refuses Blobs in IndexedDB in private browsing, and so does Playwright's WebKit.
+- The Review and Meal sheets share `ItemList.svelte`; the Review sheet's oil control sits between the items and Add an item, as SCREENS.md orders them.
+- Toast titles keep to one line with an ellipsis (DESIGN.md section 7); a long meal name made "Added ..." wrap.
+- `@google/genai` moved to `dependencies`, since a server function imports it.
+
 ## M5
 
 - The week strip shows the seven days ending today, each with its own weekday letter, instead of Monday to Sunday. Why: F3 asks for any of the last 7 days; a calendar week reaches only today on a Monday. Same cells, letters, dots and today pill.

@@ -85,42 +85,42 @@
       <Button variant="plain" size="lg" full onclick={() => (notice = false)}>{t.add.consentNotNow}</Button>
     </div>
   {:else}
-  <div class="grid grid-cols-2 gap-3">
-    {#each WAYS as w (w.key)}
-      {@const Icon = w.icon}
-      <button type="button" class="{w.key === 'photo' ? 'bg-lime text-on-lime active:bg-lime-press' : 'bg-surface-2 active:bg-surface-3'} flex min-h-24 flex-col items-start gap-2 rounded-md p-4 text-left transition-[transform,background-color] duration-[var(--d-press)] active:scale-[0.97]" onclick={() => go(w.key)} data-testid="add-{w.key}">
-        <Icon size={24} strokeWidth={1.75} />
-        <span>
-          <span class="text-body block font-semibold">{w.label}</span>
-          <span class="text-caption {w.key === 'photo' ? '' : 'text-ink-2'} block">{w.line}</span>
-        </span>
-      </button>
-    {/each}
-  </div>
-
-  <h3 class="text-heading mt-6">{t.add.recent}</h3>
-  {#if recent.length}
-    <div data-testid="recent">
-      {#each recent as { id, data: m } (id)}
-        {@const title = titleOf(m.title, m.items)}
-        <Row {title} value={kcalOf(m.items)}>
-          {#snippet trailing()}{@render again(t.add.again(title), () => logged(relog(m), title))}{/snippet}
-        </Row>
+    <div class="grid grid-cols-2 gap-3">
+      {#each WAYS as w (w.key)}
+        {@const Icon = w.icon}
+        <button type="button" class="{w.key === 'photo' ? 'bg-lime text-on-lime active:bg-lime-press' : 'bg-surface-2 active:bg-surface-3'} flex min-h-24 flex-col items-start gap-2 rounded-md p-4 text-left transition-[transform,background-color] duration-[var(--d-press)] active:scale-[0.97]" onclick={() => go(w.key)} data-testid="add-{w.key}">
+          <Icon size={24} strokeWidth={1.75} />
+          <span>
+            <span class="text-body block font-semibold">{w.label}</span>
+            <span class="text-caption {w.key === 'photo' ? '' : 'text-ink-2'} block">{w.line}</span>
+          </span>
+        </button>
       {/each}
     </div>
-  {:else}
-    <p class="text-callout text-ink-2 mt-2" data-testid="recent-empty">{t.add.noRecent}</p>
-  {/if}
 
-  {#if saved.length}
-    <h3 class="text-heading mt-6">{t.add.saved}</h3>
-    <div data-testid="saved">
-      {#each saved as { id, data: s } (id)}
-        <Row title={s.title} value={kcalOf(s.items)}>
-          {#snippet trailing()}{@render again(t.add.again(s.title), () => logged(logSaved(id, view.date, stampOn(view.date)), s.title))}{/snippet}
-        </Row>
-      {/each}
-    </div>
-  {/if}
+    <h3 class="text-heading mt-6">{t.add.recent}</h3>
+    {#if recent.length}
+      <div data-testid="recent">
+        {#each recent as { id, data: m } (id)}
+          {@const title = titleOf(m.title, m.items)}
+          <Row {title} value={kcalOf(m.items)}>
+            {#snippet trailing()}{@render again(t.add.again(title), () => logged(relog(m), title))}{/snippet}
+          </Row>
+        {/each}
+      </div>
+    {:else}
+      <p class="text-callout text-ink-2 mt-2" data-testid="recent-empty">{t.add.noRecent}</p>
+    {/if}
+
+    {#if saved.length}
+      <h3 class="text-heading mt-6">{t.add.saved}</h3>
+      <div data-testid="saved">
+        {#each saved as { id, data: s } (id)}
+          <Row title={s.title} value={kcalOf(s.items)}>
+            {#snippet trailing()}{@render again(t.add.again(s.title), () => logged(logSaved(id, view.date, stampOn(view.date)), s.title))}{/snippet}
+          </Row>
+        {/each}
+      </div>
+    {/if}
   {/if}
 </Sheet>

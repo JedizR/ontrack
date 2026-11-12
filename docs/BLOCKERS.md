@@ -6,6 +6,16 @@ Everything that needs you, in one place. Newest first within each section.
 
 Each entry: what is blocked, what Claude tried, the exact steps for you, and what to tell Claude afterwards.
 
+### Gemini development key (M6)
+
+- **Blocked:** a Gemini API key, so photo and text analysis run only on the mock provider. The Gemini provider (`server/vision/gemini.ts`) is written against the current model (`gemini-3.8-flash`, set in Vercel as `GEMINI_MODEL`) but has never called the live API. Not done because of it: the ten photo evaluation (`docs/EVAL-NOTES.md` does not exist yet), the one prompt tuning round, and the gate's "median time to a review under 8 s on the live key". On previews and production a photo shows "Could not analyse the photo" until a key is set.
+- **Tried:** the CLI (no `gcloud` on this Mac, and AI Studio keys have no CLI), then your browser through Yab at `aistudio.google.com/apikey`: no answer within 25 s, as at the conductor's own check earlier. A Google key found elsewhere on the Mac was not used, since its billing status is unknown.
+- **Steps:**
+  1. At `https://aistudio.google.com/apikey`, Create API key, in a Google Cloud project with no billing account (the free tier covers development).
+  2. Put it in `.env.local` as `GEMINI_API_KEY=...`, with `VISION_PROVIDER=gemini` and `GEMINI_MODEL=gemini-3.8-flash`. `pnpm dev:live` reads them from there.
+  3. Photograph ten real meals over two days, at least five of them Thai, and put the photos in a folder outside the repository.
+- **Then tell Claude:** "The Gemini key is in .env.local and the photos are in <folder>." Claude runs the ten photos through the provider, writes `docs/EVAL-NOTES.md`, tunes the prompt once, measures the time to a review, and adds the key to Vercel's preview environment by pipe.
+
 ### Google sign in (M3)
 
 - **Blocked:** the Google OAuth client, so the Google provider in Supabase is off and the app hides "Continue with Google" on the live backend. Everything else for Google is built and tested against the mock.
@@ -36,6 +46,13 @@ Each entry: what is blocked, what Claude tried, the exact steps for you, and wha
 ## Needs your eyes
 
 Each entry: what to look at (URL or screenshot paths), what to look for, and which milestone it belongs to.
+
+### M6: photo logging on your iPhone
+
+- **Where:** the pull request's Vercel preview once sign in and the Gemini key work (the entries above); until then `pnpm dev` on the Mac against the mock (code 123456), where every photo is analysed by fixtures. Screenshots: `screenshots/photo/` after `pnpm screenshots -- --grep photo` (the first photo notice, the review loading and loaded, the oil control, Today with the thumbnail, the Meal sheet, not food, the daily limit, Describe; light and dark, 390, SE and Pro Max), `screenshots/today/add-*` for the Add sheet's four tiles, and `screenshots/stress/*/logging/review.png` and `screenshots/fonts/*-xl/logging/review.png` for every device and the largest text.
+- **Look for:** in the installed app, the plus, then Photo: the notice once, then the camera opens straight away (not a menu). Does the review come back in under 8 seconds on 4G? Are the items, grams and the Database or Estimate labels believable for Thai dishes? Try "Cooked with oil?", the stepper and the portion chips, Save meal, then the thumbnail on Today. Turn on airplane mode and take a photo: the message, then Try again once back online. On the phone only: the camera handoff, a portrait photo's orientation, the review photo's crop, and how soft the 320 px thumbnail looks at the top of the Meal sheet.
+- **Decide:** the Review photo is cropped to 4 by 3 so the items show above the fold; at the largest text on the SE the photo still fills most of the sheet. Options: accept, or a shorter photo on small phones. The design critic also noted that the undo toast can sit over a sheet opened within five seconds of logging (as in M5); left as it is.
+- **Decided for you:** the M6 list in `docs/DECISIONS.md`, notably `gemini-3.8-flash` with low thinking, the quota counting on the server's UTC day (it resets at 07:00 in Thailand), Add by hand keeping the photo, the limit error offering only Add by hand, and the alcohol limit of the calorie check.
 
 ### M5: a full day of logging on your iPhone
 

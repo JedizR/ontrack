@@ -40,7 +40,6 @@
   let oilFood = $state<Food | null>(null);
   let keep = $state(false);
   let limit = $state(0);
-  let request: AnalyzeRequest | null = null;
   let thumb: Blob | null = null;
   let ai: Meal['ai'];
   let run = 0; // an answer for a sheet since closed or reopened is dropped
@@ -53,7 +52,7 @@
   function reset() {
     if (photoUrl) URL.revokeObjectURL(photoUrl);
     photoUrl = null;
-    request = thumb = null;
+    thumb = null;
     ai = undefined;
     title = '';
     lines = [];
@@ -66,6 +65,7 @@
     reset();
     kind = r.kind;
     status = 'loading';
+    let request: AnalyzeRequest;
     if (r.kind === 'text') request = { kind: 'text', text: r.text, localDate: view.today, locale: 'en' };
     else {
       const p = await preparePhoto(r.file).catch(() => null);
