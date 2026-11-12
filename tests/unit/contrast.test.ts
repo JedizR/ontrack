@@ -6,7 +6,8 @@ const css = readFileSync('design/tokens.css', 'utf8');
 const block = (sel: string) => css.slice(css.indexOf(`${sel} {`), css.indexOf('}', css.indexOf(`${sel} {`)));
 const vars = (b: string) => Object.fromEntries([...b.matchAll(/--([\w-]+):\s*(#[0-9a-f]{6}|rgba\([^)]+\))/gi)].map((m) => [m[1], m[2]]));
 const light = vars(block(':root'));
-const dark = { ...light, ...vars(block(':root[data-theme="dark"]')) };
+// the dark block also applies to any element marked dark (the landing page's dark sections)
+const dark = { ...light, ...vars(block('[data-theme="dark"]')) };
 
 type RGBA = [number, number, number, number];
 const parse = (v: string): RGBA =>
@@ -47,4 +48,11 @@ describe.each([['light', light], ['dark', dark]] as const)('%s theme', (_, t) =>
 test('words on the light hero haze', () => {
   const lavender = over(parse('rgba(190, 190, 255, 0.75)'), parse('#ffffff'));
   for (const fg of ['ink', 'ink-2', 'success-ink']) expect(ratio(parse(light[fg]), lavender), fg).toBeGreaterThanOrEqual(4.5);
+});
+
+// L1: words on the landing page's colour washes and violet panels, which look the same in both themes
+test('words on the landing washes and panels', () => {
+  const stops = (name: string) => [...css.slice(css.indexOf(`--${name}:`), css.indexOf(';', css.indexOf(`--${name}:`))).matchAll(/#[0-9a-f]{6}/gi)].map((m) => parse(m[0]));
+  for (const w of ['wash-ink', 'wash-blue', 'wash-magenta', 'grad-panel']) for (const c of stops(w)) expect(ratio(parse(light['on-night']), c), w).toBeGreaterThanOrEqual(4.5);
+  for (const c of stops('wash-lavender')) expect(ratio(parse(light.night), c), 'wash-lavender').toBeGreaterThanOrEqual(4.5);
 });
