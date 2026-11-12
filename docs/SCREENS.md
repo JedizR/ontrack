@@ -73,7 +73,8 @@ Matches `/gallery/today`.
 4. Cards that appear when relevant, at most one at a time, in this priority: weekly check-in ready, easy adds (gain mode in the evening), weigh-in prompt, update notice.
 5. Training card: session name, "Strength, 60 min. Adds 240 kcal", and a "Done" button. After Done: a check mark and "Undo". A long press or the row's menu offers "Skip today". On a rest day: "Rest day" with no button. With no program: "Add your training to sharpen your target".
 6. "Meals" heading with the count, then the list, newest first. Each row opens the Meal sheet. Swipe left to delete, with an undo toast.
-   - A supplement with calories (N2, F21) is a row like a meal: the shaker tile, its name, "07:30, 2 scoops with milk", and its calories. The row opens the Supplement sheet's amount step in edit mode; swipe left deletes it with an undo toast, "Whey protein deleted".
+   - A supplement with calories (N2, F21) is a row like a meal: the shaker tile, its name, "07:30, 2 scoops with milk", and its calories. An entry logged on typical values ends its caption with the source label Typical (B1).
+   - A scanned product (B1, F22) is a row with the barcode tile, the product's name, "12:40, Open Food Facts" (or Label, or Yours), and its calories. The row opens the Supplement sheet's amount step in edit mode; swipe left deletes it with an undo toast, "Whey protein deleted".
    - Supplements with no calories (creatine) are not rows and show no 0 kcal. At the end of the card, under a hairline, the word "Taken" in Caption and one chip per supplement taken that day, a check before its name. A chip opens the same edit step. The count beside the heading counts rows only.
 7. At the end of the list after 20:00, a plain button: "Finish day".
 
@@ -85,7 +86,7 @@ States: first day (hero at zero, a row saying "Log your first meal with the plus
 
 **Add sheet** from the plus button.
 - "Supplements" (N2, F21), first when the user has any: one row per supplement, by name, with the shaker tile, the last amount as its caption ("2 scoops with milk", or "1 scoop" with no calories) and the calories of that amount on the right (none for a supplement with no calories). A row opens the Supplement sheet's amount step. Under the rows a plain "Add a supplement".
-- Four tiles in a two by two grid: "Photo" (the violet primary, the largest emphasis), "Search", "Describe", "Quick add".
+- The ways to log (B1 added Scan): "Photo" first, the full width violet tile (the sheet's main action), then four quiet tiles in a two by two grid: "Scan" ("Barcode on the pack", B1, F22), "Search", "Describe", "Quick add".
 - With no supplements yet: under the tiles, one row, the shaker tile, "Supplements", caption "Set up once, log by the scoop", and a chevron. It opens the Supplement sheet's first step.
 - "Recent": the last five distinct meals as rows with a trailing plus that logs them again at once, with an undo toast. Logged supplements are not repeated here: they sit at the top.
 - "Saved": saved meals in the same form.
@@ -111,25 +112,60 @@ After capture: the Review sheet opens immediately with the photo at the top and 
 
 **Meal sheet** for a logged meal: the Review layout in edit mode, with the time editable, "Save changes", "Save as a meal", "Delete".
 
+**Scan sheet** (B1, F22). Packaged food logged exactly from its barcode. One sheet with steps and a back chevron between them. The common case: plus, Scan, hold the pack up (it reads by itself), Add. Three taps, and the camera does the rest.
+
+1. **Camera.** Title "Scan a barcode". The rear camera opens at once in a dark viewfinder the width of the content, 4 by 3, radius 24, with a wide framing guide drawn in white and the area outside it dimmed by the scrim. Under it: "Hold the barcode inside the frame. It reads by itself." A 44 icon button for the light sits on the viewfinder's lower right corner, only where the camera can light, "Turn on the light" and "Turn off the light". Then a neutral "Type the number" button.
+   - Reads EAN-13, EAN-8, UPC-A and UPC-E, checks the check digit, and moves on with a light haptic. Chrome's own `BarcodeDetector` reads where it exists; Safari loads a WebAssembly reader the first time the camera opens, a skeleton viewfinder with "Starting the camera" meanwhile.
+   - After 8 seconds without a read, a line replaces the caption: "Still looking. Move closer, hold steady, or type the number."
+   - The camera stops whenever the step changes or the sheet closes.
+2. **Type the number.** A text field on the number pad, label "Barcode number", hint "The 8 or 13 digits under the bars", focused. Pinned primary "Find product". Digits that do not make a barcode (wrong length or check digit), in the attention colour: "Those digits do not make a barcode. Check them against the pack." Reached from "Type the number", or at once when the camera cannot open, under the reason:
+   - Denied: "Camera access is off for Ontrack. Type the number, or allow the camera for this site in your browser's settings."
+   - No camera, a page that is not secure, or no camera support: "This browser cannot open a camera here. Type the number instead."
+   - Camera in use: "Another app is using the camera. Close it and try again, or type the number." with a neutral "Try again".
+   - The reader did not load (offline before the first scan): "The scanner needs a connection the first time. Type the number instead."
+3. **Finding.** Skeleton rows in the product step's layout with "Finding the product". Products this user saved come first, at once and offline too; then Open Food Facts.
+4. **Product.** Title: the product's name. From top to bottom:
+   - The brand in Caption when known.
+   - Calories for the amount in Display with "kcal", "8.6 g protein, 54.4 g carbs, 17.6 g fat" under it, then the source label: Open Food Facts, Label (read from the photo and confirmed) or Yours (numbers the user typed or changed).
+   - Chips: "1 serving" (when the serving is known), "Whole pack" (when known and different), "100 g" (or "100 ml").
+   - The amount on a typed stepper of 10, in g or ml as the product is measured, starting at the last amount logged for it, else one serving, else the pack, else 100.
+   - A plain "Correct the numbers", which opens the Label step with this product's numbers; saving makes them Yours.
+   - With Open Food Facts numbers, its credit in Caption: "Values from Open Food Facts, open data under the ODbL." and "Terms of use".
+   - Pinned: primary "Add 260 kcal". The sheet closes, Today updates, the toast "Added Mama tom yum" offers Undo. The product is kept in the user's products, so the next scan is instant and works offline.
+5. **New product.** Title "New product". Not in Open Food Facts: "This barcode is not in Open Food Facts yet. Photograph the nutrition label and Ontrack keeps it for your next scan." In Open Food Facts without nutrition: "Open Food Facts has this product without its nutrition. Photograph the label and Ontrack keeps it for your next scan." Then "Barcode 8850999220017" in Caption, a plain "Type the numbers instead", and pinned primary "Photograph the label", which opens the camera for one photo.
+6. **Lookup failed.** Offline: "Finding a new product needs a connection. Products you scanned before work offline." Open Food Facts slow or down: "Open Food Facts did not answer. Try again, or type the numbers from the label." Each with a neutral "Try again" and a plain "Type the numbers instead".
+7. **Reading the label.** Skeleton rows with "Reading the label". It reads only what is printed: per serving and per 100 g when printed, and the serving size; it never estimates. Errors replace the skeleton, each with a neutral "Try again" (another photo) and a plain "Type the numbers instead": not a label, "We could not read a nutrition label in that photo. Take it straight on and close enough to read."; limit, "You have used today's 40 photo analyses. You can still type the numbers."; offline, "Reading a label needs a connection. You can still type the numbers."; failed, "Could not read the label. Try again or type the numbers."
+8. **Label.** Title "Check the label" ("Correct the numbers" from the product step). One column, as in Correct:
+   - "Name", a text field (from the label or Open Food Facts; empty with the hint "Name on the pack").
+   - "Serving" in g or ml on a typed stepper, from the label; a label that prints only per 100 g starts at 100.
+   - Eyebrow "In one serving", then calories, protein, carbs and fat as labelled rows of typed steppers in one column.
+   - "Check each number against the pack." in Caption.
+   - Errors, in the attention colour, Save disabled: protein, carbs and fat weigh more than the serving, "Protein, carbs and fat add up to more than the serving. Check the label."; values with no serving, "Add the serving size from the label." An empty name disables Save without a message.
+   - Pinned: primary "Save product" ("Save changes" when correcting). The product is saved under its barcode, labelled Label when the read numbers were kept and Yours when any was typed or changed, and the Product step follows.
+
 **Supplement sheet** (N2, F21). One sheet with three steps, a back chevron between them. Ontrack logs what the user takes; it never suggests a supplement or an amount.
 
 The common case, the morning shake: plus, the Whey row, Add. Three taps when the amount is the last one used; one more on the stepper when it is not. Everything sits in the lower half of the sheet, in thumb reach, and the main action is pinned at the bottom.
 
-1. **Kind**, from "Add a supplement". Title "Add a supplement". Six rows with a chevron, each one tap: "Whey protein" and "Plant protein", captioned "Starts from USDA's average"; "Casein", "Mass gainer", "Creatine" and "Something else", captioned "From your tub's label". Under them, in Caption: "Ontrack logs what you take. It does not recommend supplements or amounts."
-2. **Label.** Title: the kind's name; back returns to Kind. From top to bottom:
+1. **Kind**, from "Add a supplement". Title "Add a supplement". Six rows with a chevron, each one tap: "Whey protein", "Plant protein", "Casein", "Mass gainer", "Creatine" and "Something else", each captioned "Set from your tub's label". Under them, in Caption: "Ontrack logs what you take. It does not recommend supplements or amounts."
+2. **From your tub** (owner, during B1: brands differ a lot, so the setup leads with the user's own tub). Title: the kind's name; back returns to Kind. "Brands differ a lot. Copy your tub's numbers in seconds." Two tiles side by side, as on the Add sheet: "Scan the tub" (the violet main tile, line "Barcode on the tub") and "Photograph the label" (quiet, line "Nutrition panel"). Under them a plain "Use typical values for now" for whey and plant protein (USDA's average), or "Type the numbers" for the others.
+   - Scan the tub: the Scan sheet's camera and typing, with its states. A product found in the user's products or Open Food Facts fills the Label step: the scoop is the serving divided by the scoops in it ("2 scoops (60 g)" gives 30 g), and the values per scoop follow the scoop. Not found or without nutrition: "This tub is not in Open Food Facts yet. Photograph its label instead." with pinned primary "Photograph the label" and a plain "Type the numbers". Offline: "Finding it needs a connection. Type the numbers, or use typical values for now."
+   - Photograph the label: "Reading the label", then the Label step filled: the scoop is the serving divided by the scoops per serving (a mass gainer's "4 scoops (165 g)" gives 41.3 g), the values per scoop likewise. Errors as in the Scan sheet's step 7, with "Try again" and "Type the numbers".
+3. **Label.** Title: the kind's name; back returns to From your tub. From top to bottom:
    - "Name", a text field filled with the kind's name ("Something else" starts empty, with the hint "Name on the tub").
    - "Scoop" in grams on a typed stepper. A preset from the table starts at the table's scoop (whey 30 g, plant 45 g); the others at 0, which means not known.
    - Eyebrow "In one scoop", then calories, protein, carbs and fat as labelled rows of typed steppers in one column, as in Correct. A preset from the table starts at its values per 100 g scaled to the scoop, and follows the scoop until a value is changed. The others start at 0. Nobody is asked for a value per 100 g.
    - The zero calorie case, live, when the calories are 0: "No calories, so Today shows it as taken."
    - Error, in the attention colour, Save disabled: protein, carbs and fat weigh more than a known scoop, "Protein, carbs and fat add up to more than the scoop. Check the label." An empty name disables Save without a message; the field's hint says what goes there.
-   - One line on why: from the table, "Brands differ, so the label on your tub is more accurate than this average from USDA FoodData Central, SR Legacy."; otherwise "Copy the numbers from the label on your tub."
+   - One line on where the numbers came from: typical values, "Brands differ, so the label on your tub is more accurate than this average from USDA FoodData Central, SR Legacy."; scanned, "From Open Food Facts. Check them against your tub."; read from a photo, "Read from your tub's label. Check each number."; otherwise "Copy the numbers from the label on your tub."
    - "Scoops you take" on a typed stepper in half steps, starting at 1: the user's own amount, the first one logged, so the common case needs no change on the amount step.
-   - Pinned: primary "Save supplement". Saving shows the amount step for it.
+   - Pinned: primary "Save supplement". Saving shows the amount step for it. Saved with the typical values untouched, the supplement is Typical until it is set from the tub; any value changed, scanned or read makes it the user's own.
    - Opened from the amount step's "Edit supplement": the title is the supplement's name, the values and scoops are its own, the primary reads "Save changes" and goes back to the amount step, and a danger "Remove supplement" closes the sheet with an undo toast, "Whey protein removed". Meals already logged keep their numbers.
-3. **Amount.** Title: the supplement's name.
+4. **Amount.** Title: the supplement's name.
    - Calories for the chosen amount in Display with "kcal", and under it "48 g protein, 6 g carbs, 3 g fat", both changing as the amount does.
    - "Scoops" on a typed stepper in half steps, from 0.5 to 10, starting at the last amount used (the scoops the user takes, the first time).
    - "Mixed with": chips, Water first, then the milks from the food table under short names ("Whole milk", "2% milk", "Skim milk", "Soy milk", "Almond milk"), starting at the last mix. A milk shows "Milk" in grams on a stepper of 50, starting at the last amount or the table's glass (250 g); its calories join the total and its row on Today reads Database. The milk values come from the food table, through the user's remembered numbers (F15) when there are any.
+   - A supplement on typical values says so (B1): the source label "Typical" under the macros, and beside it a quiet plain "Set it from your tub", which opens From your tub; saving from there clears Typical, and the line is gone. The Add sheet's row ends its caption with "Typical" too. Nothing else nudges.
    - A plain "Edit supplement".
    - Pinned: primary "Add 240 kcal". The sheet closes, Today updates, and the toast "Added Whey protein" offers Undo, which also puts back the last amount.
    - No calories: no Display figure and no mix. The line "No calories, so Today shows it as taken." sits over the Scoops stepper, and the primary reads "Log as taken". The toast says "Creatine taken".
