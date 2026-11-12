@@ -540,8 +540,6 @@ export const en = {
     faster: 'Faster',
     lean: 'Lean',
     standard: 'Standard',
-    lose: (kg: string) => `Lose about ${kg} a week`,
-    gain: (kg: string) => `Gain about ${kg} a week`,
     noLose: (bmi: string) => `Ontrack does not set a weight loss target below a BMI of ${bmi}. Your plan keeps your weight steady.`,
     gentleOnly: (bmi: string) => `Below a BMI of ${bmi}, only the gentle pace is offered.`,
     noFaster: (bmi: string) => `The faster pace is offered from a BMI of ${bmi}.`,
