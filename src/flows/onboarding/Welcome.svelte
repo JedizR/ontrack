@@ -21,9 +21,9 @@
 
   <!-- decoration: the brand track, large, on a glass tile, with a tilted chip as OneFin floats its cards. Left out on a
        short screen (the SE in Safari), where the words and the buttons need the room -->
-  <div class="relative mx-auto mt-8 grid size-36 flex-none place-items-center [@media(max-height:620px)]:hidden" aria-hidden="true">
+  <div class="relative mx-auto mt-8 grid size-36 flex-none place-items-center [@media(max-height:700px)]:mt-2 [@media(max-height:700px)]:size-28 [@media(max-height:620px)]:hidden" aria-hidden="true">
     <div class="glass appear absolute inset-0 rotate-[-8deg] rounded-xl"></div>
-    <svg viewBox="0 0 64 64" fill="none" class="text-on-accent relative size-24">
+    <svg viewBox="0 0 64 64" fill="none" class="text-on-accent relative size-24 [@media(max-height:700px)]:size-20">
       <rect x="9" y="20" width="46" height="24" rx="12" stroke="currentColor" stroke-width="5" />
       <circle cx="42" cy="20" r="7" fill="currentColor" />
     </svg>

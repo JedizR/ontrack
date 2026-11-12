@@ -41,7 +41,7 @@
 </script>
 
 <Step title={t.body.q} caption={t.body.caption} onback={back} {progress} testid="step-body">
-  <div class="flex flex-col gap-6">
+  <div class="flex flex-col gap-6 [@media(max-height:620px)]:gap-3">
     <Segmented
       label={t.body.units}
       value={d.units}

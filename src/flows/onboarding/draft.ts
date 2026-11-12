@@ -83,7 +83,7 @@ export const ageOf = (d: Draft, year: number) => year - (d.birthYear ?? year);
 /** Lifts some days. Unanswered counts as yes, so the step count can only shrink as answers come in. */
 const lifts = (d: Draft) => d.days !== 0 && d.kind !== 'cardio';
 /** Experience changes only a gain plan's paces and surplus cap (SCIENCE.md section 6), so only gaining lifters are asked. */
-export const asksExperience = (d: Draft) => d.goal === 'gain' && !flagged(d) && lifts(d);
+export const asksExperience = (d: Draft) => (d.goal ?? 'gain') === 'gain' && !flagged(d) && lifts(d);
 
 /** Every screen this draft passes through, in order. Answers decide which apply. */
 export function route(d: Draft, year: number): Screen[] {

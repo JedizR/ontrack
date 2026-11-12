@@ -37,7 +37,8 @@ const smallTargets = (page: Page) => page.evaluate(() => [...document.querySelec
 
 /** Text cut off inside a box (truncate or overflow hidden). */
 const clipped = (page: Page) => page.evaluate(() => [...document.querySelectorAll<HTMLElement>('main *, header *, nav *, [data-vaul-drawer] *, [data-onboarding] *')]
-  .filter((el) => el.childElementCount === 0 && (el.textContent ?? '').trim() && el.scrollWidth > el.clientWidth + 1 && getComputedStyle(el).overflow !== 'visible')
+  // screen reader only text is a 1 px box on purpose
+  .filter((el) => el.childElementCount === 0 && (el.textContent ?? '').trim() && el.scrollWidth > el.clientWidth + 1 && getComputedStyle(el).overflow !== 'visible' && !el.closest('.sr-only'))
   .map((el) => (el.textContent ?? '').trim().slice(0, 20)));
 
 /** Text spilling out of a button (its box is narrower than its label). */

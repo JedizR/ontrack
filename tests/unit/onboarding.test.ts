@@ -34,9 +34,11 @@ describe('route', () => {
     expect(progress({ ...A, days: 0, at: 'days' }, YEAR)).toEqual({ n: 7, total: 7 });
   });
   test('the step count assumes the longest route until an answer shortens it, so it never grows', () => {
-    const before: Draft = { at: 'goal', units: 'metric', goal: 'gain' };
+    const before: Draft = { at: 'goal', units: 'metric' };
     expect(progress(before, YEAR)?.total).toBe(9);
-    expect(progress({ ...before, at: 'days', days: 0 }, YEAR)?.total).toBe(7);
+    expect(progress({ ...before, goal: 'gain' }, YEAR)?.total).toBe(9);
+    expect(progress({ ...before, goal: 'maintain' }, YEAR)?.total).toBe(8);
+    expect(progress({ ...before, goal: 'gain', at: 'days', days: 0 }, YEAR)?.total).toBe(7);
   });
   test('a screening tick adds the advice screen and drops the experience question', () => {
     const r = route({ ...A, screening: { pregnant: true, medical: false, eatingDisorder: false } }, YEAR);

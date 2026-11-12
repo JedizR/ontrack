@@ -136,13 +136,13 @@
   {@const mark = done ? 'bg-ink text-canvas' : 'ring-ink-3 ring-2 ring-inset'}
   <li>
     {#if onclick && !done}
-      <button type="button" class="active:bg-surface-2 -mx-6 flex min-h-11 w-[calc(100%+var(--inset)*2)] items-center gap-3 px-6 py-2 text-left transition-colors duration-[var(--d-press)]" {onclick} data-testid={testid}>
+      <button type="button" class="active:bg-surface-2 -mx-6 flex min-h-14 w-[calc(100%+var(--inset)*2)] items-center gap-3 px-6 py-2 text-left transition-colors duration-[var(--d-press)]" {onclick} data-testid={testid}>
         <span class="size-6 flex-none rounded-full {mark}" aria-hidden="true"></span>
         <span class="text-body text-accent-ink flex-1 font-semibold">{label}</span>
         <ChevronRight class="text-ink-2 flex-none" size={20} strokeWidth={2} aria-hidden="true" />
       </button>
     {:else}
-      <div class="flex min-h-11 items-center gap-3 py-2" aria-label={done ? t.firstDay.done(label) : undefined} data-testid={testid}>
+      <div class="flex min-h-14 items-center gap-3 py-2" aria-label={done ? t.firstDay.done(label) : undefined} data-testid={testid}>
         <span class="grid size-6 flex-none place-items-center rounded-full {mark}" aria-hidden="true">{#if done}<Check size={16} strokeWidth={3} />{/if}</span>
         <span class="text-body flex-1 {done ? 'text-ink-2' : ''}">{label}</span>
       </div>
