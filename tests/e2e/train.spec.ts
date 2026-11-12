@@ -34,7 +34,7 @@ test('build a week: add a session, list exercises, see the analysis with its sou
   await picker.getByRole('button', { name: 'Back', exact: true }).click();
   await picker.getByTestId('exercise-option').filter({ hasText: 'Pull-up' }).click();
   await expect(sheet.getByTestId('session-exercise')).toContainText('3 sets, 8 to 12 reps');
-  await sheet.getByRole('button', { name: 'More sets' }).click();
+  await sheet.getByRole('button', { name: 'More Sets' }).click();
   await sheet.getByTestId('session-save').click();
   await expect(page.getByTestId('muscle-back')).toContainText('4');
   await expect(page.getByTestId('muscle-biceps')).toContainText('2');

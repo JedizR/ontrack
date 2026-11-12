@@ -37,13 +37,13 @@
   const muscles = $derived(analysis ? [...MUSCLES].sort((a, b) => Number(analysis.muscles[a].sets >= V.setsRange) - Number(analysis.muscles[b].sets >= V.setsRange)) : []);
   const recs = $derived(analysis?.recommendations.slice(0, 3) ?? []);
 
+  const MAX_SESSIONS = 28; // the record schema's limit
   let editing = $state<{ session: Session; isNew: boolean } | null>(null);
   let templates = $state(false);
-  let why = $state<number | null>(null);
+  let why = $state<string | null>(null);
   const edit = (s: Session) => (editing = { session: $state.snapshot(s), isNew: false });
-  const add = (weekday: number) => (editing = { session: { key: crypto.randomUUID().slice(0, 8), weekday, name: '', type: 'strength', minutes: 60, intensity: 'moderate' }, isNew: true });
+  const add = (weekday: number) => sessions.length < MAX_SESSIONS && (editing = { session: { key: crypto.randomUUID().slice(0, 8), weekday, name: '', type: 'strength', minutes: 60, intensity: 'moderate' }, isNew: true });
 
-  const MAX_SESSIONS = 28; // the record schema's limit
   const M = t.train.muscles;
   function sentence(f: Finding) {
     const r = t.train.recs;
@@ -137,7 +137,7 @@
               onpointermove={move}
               onpointerup={up}
               onpointercancel={() => (drag = null)}
-              onclick={() => { if (!dragged) edit(s); }}
+              onclick={() => { if (!dragged) edit(s); dragged = false; }}
               data-testid="train-handle"
             >
               <GripVertical size={24} strokeWidth={1.75} />
@@ -180,13 +180,14 @@
       {/if}
 
       <Card list aria-label={t.train.analysis} data-testid="train-recs">
-        {#each recs as f, i (`${f.kind}${f.muscle ?? ''}`)}
+        {#each recs as f (`${f.kind}${f.muscle ?? ''}`)}
+          {@const id = `${f.kind}${f.muscle ?? ''}`}
           <div class="border-line py-3 [&+&]:border-t" data-testid="rec">
             <div class="flex items-start gap-3">
               <p class="text-body min-w-0 flex-1 pt-2.5">{sentence(f)}</p>
-              <Button variant="plain" size="sm" class="-mr-4" aria-expanded={why === i} onclick={() => (why = why === i ? null : i)} data-testid="rec-why">{t.train.why}</Button>
+              <Button variant="plain" size="sm" class="-mr-4" aria-expanded={why === id} onclick={() => (why = why === id ? null : id)} data-testid="rec-why">{t.train.why}</Button>
             </div>
-            {#if why === i}
+            {#if why === id}
               <p class="text-caption text-ink-2 mt-1" data-testid="rec-source">{f.source === 'OT' ? t.plan.assumption : SOURCES[f.source]?.cite}</p>
             {/if}
           </div>

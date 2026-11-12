@@ -33,8 +33,6 @@ export const en = {
     g: 'g',
     /** what a stepper counts, inside "Less grams" */
     grams: 'grams',
-    sets: 'sets',
-    reps: 'reps',
     kg: 'kg',
     lb: 'lb',
     cm: 'cm',
@@ -409,6 +407,8 @@ export const en = {
     add: 'Add session',
     search: 'Search exercises',
     allMuscles: 'All',
+    muscle: 'Muscle',
+    tooLarge: 'This program is too large to save. Remove some exercises.',
     noMatch: 'No exercise matches that name.',
     balanceOf: (n: string, total: string, from: string, to: string) => `${n} of ${total} muscles at ${from} to ${to} sets a week`,
     use: 'Use this program',

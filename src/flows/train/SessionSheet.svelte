@@ -6,6 +6,7 @@
   import Button from '$lib/components/Button.svelte';
   import Chip from '$lib/components/Chip.svelte';
   import Stepper from '$lib/components/Stepper.svelte';
+  import { toast } from 'svelte-sonner';
   import { changeProgram, undoToast } from '$lib/actions';
   import { sessionKcal, type Intensity, type SessionType } from '$lib/model/engine';
   import { LIBRARY } from '$lib/data/exercises';
@@ -33,13 +34,22 @@
   const s = $derived(editing?.session);
 
   function commit(sessions: Session[], message: string) {
-    undoToast(message, changeProgram({ name: program.name, sessions }));
+    try {
+      undoToast(message, changeProgram({ name: program.name, sessions }));
+    } catch {
+      // only size can fail here: the controls keep every other value inside the schema
+      toast(t.train.tooLarge);
+      return;
+    }
     editing = null;
+    opened = null;
   }
   function save() {
     if (!editing) return;
     const next = $state.snapshot(editing.session);
     next.name = next.name.trim() || t.train.types[next.type];
+    // nothing changed: no new plan
+    if (!editing.isNew && JSON.stringify(next) === JSON.stringify(program.sessions.find((x) => x.key === next.key))) return void (editing = null);
     commit(editing.isNew ? [...program.sessions, next] : program.sessions.map((x) => (x.key === next.key ? next : x)), t.train.saved);
   }
   function remove() {
@@ -119,15 +129,15 @@
               <div class="mt-2 flex flex-col gap-2">
                 <div class="flex items-center justify-between gap-3">
                   <span class={label}>{t.train.setsLabel}</span>
-                  <Stepper bind:value={e.sets} min={1} max={MAX.sets} label={t.after.sets} />
+                  <Stepper bind:value={e.sets} min={1} max={MAX.sets} label={t.train.setsLabel} />
                 </div>
                 <div class="flex items-center justify-between gap-3">
                   <span class={label}>{t.train.repsFrom}</span>
-                  <Stepper bind:value={() => e.repsMin, (v) => { e.repsMin = v; e.repsMax = Math.max(e.repsMax, v); }} min={1} max={MAX.reps} label={t.after.reps} />
+                  <Stepper bind:value={() => e.repsMin, (v) => { e.repsMin = v; e.repsMax = Math.max(e.repsMax, v); }} min={1} max={MAX.reps} label={t.train.repsFrom} />
                 </div>
                 <div class="flex items-center justify-between gap-3">
                   <span class={label}>{t.train.repsTo}</span>
-                  <Stepper bind:value={e.repsMax} min={e.repsMin} max={MAX.reps} label={t.after.reps} />
+                  <Stepper bind:value={e.repsMax} min={e.repsMin} max={MAX.reps} label={t.train.repsTo} />
                 </div>
                 <div><Button variant="danger" size="sm" onclick={() => { s.exercises?.splice(i, 1); opened = null; }} data-testid="exercise-remove">{t.meal.remove}</Button></div>
               </div>

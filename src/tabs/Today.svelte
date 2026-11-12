@@ -170,7 +170,7 @@
           {/snippet}
         </Row>
       {:else}
-        <Row title={sessions.length ? t.today.restDay : t.today.noProgram}>
+        <Row title={(day.plan.sessions ?? sessions).length ? t.today.restDay : t.today.noProgram}>
           {#snippet leading()}<div class="bg-surface-2 text-ink-2 grid size-full place-items-center"><TrainIcon /></div>{/snippet}
         </Row>
       {/each}

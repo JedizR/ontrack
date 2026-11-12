@@ -67,7 +67,7 @@ const kept = (p: Program) => p.sessions.map(({ exercises: _, ...s }) => s);
  * Returns the undo: the old program back, the new plan gone.
  */
 export function changeProgram(p: Program) {
-  SCHEMAS.program.parse(p);
+  recSchema.parse({ collection: 'program', id: ids.program(), updatedAt: 0, data: SCHEMAS.program.parse(p) }); // before any write
   const was = JSON.parse(JSON.stringify(db.get('program', 'program') ?? { name: '', sessions: [] })) as Program; // a plain copy, for undo
   const profile = db.get('profile', 'profile');
   const plans = db.live('plan');
