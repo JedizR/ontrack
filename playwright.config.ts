@@ -1,6 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
-const PORT = 5199;
+// E2E_PORT lets two worktrees run end to end tests side by side without reusing each other's server
+const PORT = Number(process.env.E2E_PORT) || 5199;
 // Safari on a 390 by 844 iPhone with its toolbars showing (viewport 390 by 664), WebKit, the mock backend, Bangkok time
 const phone = { ...devices['iPhone 13'], locale: 'en-US', timezoneId: 'Asia/Bangkok' };
 
