@@ -29,7 +29,7 @@ Status is one of: not started, in progress, shipped, shipped with cuts, blocked.
 | O1 | Onboarding redesign (owner, after T1) | not started | | Least effort, engaging, personalizing; words chosen for click-through. Research in `ontrack-design/onboarding/` |
 | L1 | Landing page (owner, after O1) | not started | | For signed-out visitors, OneFin style with scroll animations; replaces Welcome |
 | S1 | Friends, profiles and the food map (owner, after L1) | in progress | | F16, F17. Friends by request, optional program on the profile, opt-in meal photos on a map at rounded photo locations. Split: S1a data, S1b screens |
-| S1a | Friends data, S1's data half (alongside T1a) | shipped | PR #25, open | Visibility suite green on the mock and on live Supabase; `0005_social.sql` and `0006_publish_upsert.sql` pushed, advisors unchanged. No screens: S1b builds them on the notes below |
+| S1a | Friends data, S1's data half (alongside T1a) | shipped | PR #25, merged, `v0.8.8` | Visibility suite green on the mock and on live Supabase; `0005_social.sql` and `0006_publish_upsert.sql` pushed, advisors unchanged. No screens: S1b builds them on the notes below |
 | M9 | Hardening and release | not started | | |
 
 ## What is real and what is mocked
