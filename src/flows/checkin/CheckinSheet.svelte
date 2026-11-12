@@ -98,7 +98,7 @@
   {#if shown && s}
     <p class="text-callout text-ink-2" data-testid="checkin-step">{t.checkin.steps[step]}</p>
     {#if step === 0}
-      <div class="mt-3 flex items-end gap-10">
+      <div class="mt-3 flex items-end justify-between gap-4">
         <div>
           {#if s.ratePctPerWeek != null}
             <p class="text-display" data-testid="checkin-rate">{num(s.ratePctPerWeek, 1)}</p>

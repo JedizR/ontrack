@@ -84,7 +84,8 @@
 
     <Card aria-label={t.progress.weight} data-testid="progress-weight">
       <p class="text-eyebrow text-ink-2">{t.progress.weight}</p>
-      {#if trendNow != null}
+      <!-- a trend needs two weigh-ins in view; with fewer, the card is its empty state -->
+      {#if trendNow != null && points.length > 1}
         <p class="text-display mt-2" data-testid="progress-trend">{num(inUnit(trendNow), 1)}</p>
         <p class="text-caption text-ink-2 mt-1">{metric ? t.after.kg : t.after.lb} {t.after.trend}</p>
         <div class="mt-4">
@@ -126,12 +127,13 @@
         <p class="text-callout mt-3" data-testid="progress-protein">{t.progress.protein(num(Math.round(mean(complete.map((d) => d.protein)))), num(plan.proteinG))}</p>
       {:else}
         <p class="text-body text-ink-2 mt-2">{t.progress.intakeNone}</p>
+        <Button class="mt-4" onclick={() => (sheets.add = true)} data-testid="progress-add">{t.shell.add}</Button>
       {/if}
     </Card>
 
     <Card aria-label={t.progress.consistency} data-testid="progress-consistency">
-      <p class="text-body font-semibold">{t.progress.consistency}</p>
-      <p class="text-caption text-ink-2">{t.progress.consistencyLine}</p>
+      <p class="text-eyebrow text-ink-2">{t.progress.consistency}</p>
+      <p class="text-caption text-ink-2 mt-1">{t.progress.consistencyLine}</p>
       <div class="mt-4 flex flex-col gap-4">
         {#each four as w, i (w.start)}
           <div role="img" aria-label={t.progress.weekOnTrack(t.progress.weeksAgo[i], num(w.onTrack))} data-testid="consistency-week">

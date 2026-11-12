@@ -147,6 +147,7 @@ test('Progress before there is enough: says what is needed', async ({ page }) =>
   await open(page);
   await page.getByTestId('tab-2').click();
   await expect(page.getByTestId('progress-rate')).toHaveText('Weigh in on 8 days across 2 weeks to see your trend and get your first check-in.');
+  await expect(page.getByTestId('weight-chart')).toHaveCount(0); // one weigh-in: no trend yet
   await expect(page.getByTestId('progress-maintenance')).toHaveCount(0);
   await expect(page.getByTestId('progress-intake')).toContainText('Log two or more items on a day');
   await expect(page.getByTestId('progress-checkins')).toContainText('Your first check-in comes two weeks after your plan starts.');

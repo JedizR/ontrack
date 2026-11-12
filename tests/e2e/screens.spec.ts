@@ -27,6 +27,7 @@ for (const theme of ['light', 'dark'] as const) {
         await page.getByTestId('tab-1').click();
         await shot(page, 'shell', 'train');
         await page.getByTestId('tab-2').click();
+        await expect(page.getByTestId('tab-progress')).toBeVisible();
         await shot(page, 'shell', 'progress');
       });
 
@@ -355,6 +356,7 @@ for (const theme of ['light', 'dark'] as const) {
         const settled = (id: string) => expect(page.getByTestId(id)).toHaveCSS('transform', 'none');
         const top = (id: string) => page.getByTestId(id).evaluate((el) => scrollTo(0, el.getBoundingClientRect().top + scrollY - 60));
         await openSeeded(page, 'raise');
+        await expect(page.getByTestId('checkin-open')).toBeVisible();
         await shot(page, 'progress', 'today-card');
         await page.getByTestId('checkin-open').click();
         await settled('checkin-sheet');
