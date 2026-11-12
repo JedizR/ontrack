@@ -24,13 +24,16 @@ const on = (t: Record<string, string>, fg: string, bg: string) => {
   return ratio(over(parse(t[fg] ?? fg), back), back);
 };
 
-// [text, background, bar]. "lavender" is the hero gradient a quarter of the way to white, where its words start.
+// [text, background, bar]. "lavender" is the hero haze's strongest stop, lavender at 75 percent over white.
 const PAIRS: [string, string, number][] = [
   ['ink', 'canvas', 4.5], ['ink', 'surface', 4.5], ['ink', 'surface-2', 4.5], ['ink', 'accent-soft', 4.5],
   ['ink-2', 'canvas', 4.5], ['ink-2', 'surface', 4.5], ['ink-2', 'surface-2', 4.5],
   ['ink-3', 'surface', 3],
   ['success-ink', 'canvas', 4.5], ['success-ink', 'surface', 4.5],
   ['on-accent', 'accent', 4.5], ['on-accent-soft', 'accent-soft', 4.5],
+  ['on-action', 'action', 4.5], ['on-action', 'action-press', 4.5], // the ink pill's label, at rest and pressed
+  ['accent-ink', 'canvas', 4.5], ['accent-ink', 'surface', 4.5], ['accent-ink', 'surface-2', 4.5], // violet links
+  ['ink', 'glass-solid', 4.5], // a glass chip's label without blur
   ['danger', 'surface', 4.5], ['on-danger', 'danger', 4.5],
   ['attention', 'canvas', 4.5], ['attention', 'surface', 4.5],
   ['toast-ink', 'toast-bg', 4.5],
@@ -40,7 +43,7 @@ describe.each([['light', light], ['dark', dark]] as const)('%s theme', (_, t) =>
   test.each(PAIRS)('%s on %s', (fg, bg, bar) => expect(on(t, fg, bg)).toBeGreaterThanOrEqual(bar));
 });
 
-test('words on the light hero gradient', () => {
+test('words on the light hero haze', () => {
   const lavender = over(parse('rgba(190, 190, 255, 0.75)'), parse('#ffffff'));
   for (const fg of ['ink', 'ink-2', 'success-ink']) expect(ratio(parse(light[fg]), lavender), fg).toBeGreaterThanOrEqual(4.5);
 });

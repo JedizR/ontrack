@@ -102,11 +102,11 @@
 
       <section data-section="buttons">
         {@render heading('Buttons')}
-        {@render note('Primary, the violet 3D pill, 56 high. One per screen')}
+        {@render note('Primary, the flat ink pill (white on dark), 56 high. One per screen')}
         <Button variant="primary" size="lg" full onclick={() => toast('Added 720 kcal')}>Add 720 kcal</Button>
-        {@render note('Secondary, the dark 3D pill, at most one per screen')}
-        <Button variant="secondary" full>Choose a program</Button>
-        {@render note('Neutral, plain and danger, 48 high')}
+        {@render note('Neutral, the grey pill for a second action')}
+        <Button full>Choose a program</Button>
+        {@render note('Neutral, plain (a violet link) and danger, 48 high')}
         <div class="flex flex-wrap gap-2">
           <Button>Search</Button>
           <Button variant="plain">Cancel</Button>
@@ -139,8 +139,10 @@
       <section data-section="hero">
         {@render heading('Hero number and card')}
         <Card hero>
-          <HeroNumber value={eaten} caption={t.after.ofKcal(num(target))} side={side.side} sideCaption={side.cap} reached={!side.cap} />
-          <div class="mt-4"><Track hero value={eaten} {target} {zone} label="{num(eaten)} {t.after.ofKcal(num(target))}" /></div>
+          <div class="haze rounded-sheet p-4">
+            <HeroNumber value={eaten} caption={t.after.ofKcal(num(target))} side={side.side} sideCaption={side.cap} reached={!side.cap} />
+            <div class="mt-4"><Track hero value={eaten} {target} {zone} label="{num(eaten)} {t.after.ofKcal(num(target))}" /></div>
+          </div>
         </Card>
         <div class="mt-3 flex flex-wrap gap-2">
           <Button size="sm" onclick={() => (eaten += 250)}>Add 250 kcal</Button>
@@ -235,11 +237,13 @@
         </Card>
         {@render note('Skeleton of the hero card')}
         <Card hero aria-busy="true" aria-label={t.loading}>
-          <div class="flex items-end justify-between">
-            <div><Skeleton class="h-16 w-40 rounded-sm" /><Skeleton class="mt-1 h-4.5 w-24 rounded-xs" /></div>
-            <Skeleton class="h-11 w-16 rounded-sm" />
+          <div class="p-4">
+            <div class="flex items-end justify-between">
+              <div><Skeleton class="h-14 w-40 rounded-sm" /><Skeleton class="mt-1 h-4.5 w-24 rounded-xs" /></div>
+              <Skeleton class="h-11 w-16 rounded-sm" />
+            </div>
+            <Skeleton class="mt-4 h-3.5 rounded-full" />
           </div>
-          <Skeleton class="mt-4 h-3.5 rounded-full" />
         </Card>
       </section>
     {/if}

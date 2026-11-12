@@ -12,7 +12,7 @@
 <svelte:window onscroll={() => (scrolled = scrollY > 4)} />
 
 <header
-  class="sticky top-0 z-30 px-4 pt-[env(safe-area-inset-top)] transition-[box-shadow,background-color] duration-[var(--d-ui)] {scrolled ? 'bar-glass shadow-[0_1px_0_var(--line)]' : 'bg-canvas'}"
+  class="sticky top-0 z-30 px-4 pt-[env(safe-area-inset-top)] transition-[box-shadow,background-color] duration-[var(--d-ui)] bg-canvas {scrolled ? 'shadow-[0_1px_0_var(--line)]' : ''}"
   data-testid="header"
 >
   <div class="flex h-[var(--header-h)] items-center gap-3">

@@ -86,11 +86,14 @@
       </Card>
     {/if}
 
+    <!-- the screen's hero: the target on the haze panel, protein on a grey stat tile beneath, as the "Withdraw" card -->
     <Card hero data-testid="plan-hero">
-      <p class="text-hero" data-testid="plan-kcal">{num(parts.total)}</p>
-      <p class="text-caption text-ink-2 mt-1">{matched ? t.after.kcalTraining : t.after.kcalDay}</p>
-      {#if matched}<p class="text-lead num mt-3" data-testid="plan-rest">{t.plan.onRest(num(rest))}</p>{/if}
-      <div class="border-line mt-5 border-t pt-5">
+      <div class="haze rounded-sheet p-4">
+        <p class="text-hero" data-testid="plan-kcal">{num(parts.total)}</p>
+        <p class="text-caption text-ink-2 mt-1">{matched ? t.after.kcalTraining : t.after.kcalDay}</p>
+        {#if matched}<p class="text-lead num mt-3" data-testid="plan-rest">{t.plan.onRest(num(rest))}</p>{/if}
+      </div>
+      <div class="bg-surface-2 mt-2 rounded-lg p-4">
         <p class="text-display" data-testid="plan-protein">{num(n.proteinG)}</p>
         <p class="text-caption text-ink-2 mt-1">{t.after.proteinDay}</p>
       </div>

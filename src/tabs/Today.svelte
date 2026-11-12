@@ -134,7 +134,7 @@
       <p class="text-callout text-ink-2 mt-1">
         {session.wrongAccount && prefs.lastEmail ? t.session.wrongAccount(prefs.lastEmail) : t.session.expiredLead}
       </p>
-      <Button variant="secondary" class="mt-4" onclick={() => (sheets.signin = true)} data-testid="session-signin">{t.shell.signIn}</Button>
+      <Button variant="primary" class="mt-4" onclick={() => (sheets.signin = true)} data-testid="session-signin">{t.shell.signIn}</Button>
     </Card>
   {/if}
 
@@ -155,22 +155,25 @@
     {/if}
 
     <Card hero aria-label={t.today.calories} data-testid="hero" {...rise(1)}>
-      <!-- the whole card opens How it is calculated; it holds no other control -->
+      <!-- the whole card opens How it is calculated; it holds no other control. OneFin's "Withdraw" card: the number on
+           the screen's one haze panel with a glass chip for the day, then grey stat tiles for the macros -->
       <button type="button" class="block w-full text-left transition-transform duration-[var(--d-press)] active:scale-[0.98]" aria-describedby="hero-how" aria-haspopup="dialog" onclick={() => (sheets.how = true)} data-testid="hero-open">
-        <HeroNumber value={Math.round(day.eaten.kcal)} caption={t.after.ofKcal(num(day.target))} side={side.side} sideCaption={side.cap} reached={!side.cap} />
-        <div class="mt-4"><Track hero value={day.eaten.kcal} target={day.target} zone={day.zone} label="{num(Math.round(day.eaten.kcal))} {t.after.ofKcal(num(day.target))}" /></div>
-        <div class="text-caption text-ink-2 mt-2 flex justify-between gap-4">
-          <span data-testid="day-kind">{day.training ? t.today.trainingDay : t.today.restDay}</span>
-          <span>{t.today.onTrackFrom(num(roundTarget(day.zone[0])))}</span>
+        <div class="haze rounded-sheet p-4">
+          <HeroNumber value={Math.round(day.eaten.kcal)} caption={t.after.ofKcal(num(day.target))} side={side.side} sideCaption={side.cap} reached={!side.cap} />
+          <div class="mt-4"><Track hero value={day.eaten.kcal} target={day.target} zone={day.zone} label="{num(Math.round(day.eaten.kcal))} {t.after.ofKcal(num(day.target))}" /></div>
+          <div class="text-caption text-ink-2 mt-3 flex items-center justify-between gap-4">
+            <span class="glass text-ink rounded-full px-2.5 py-0.5 font-semibold whitespace-nowrap" data-testid="day-kind">{day.training ? t.today.trainingDay : t.today.restDay}</span>
+            <span class="text-right">{t.today.onTrackFrom(num(roundTarget(day.zone[0])))}</span>
+          </div>
         </div>
 
-        <div class="mt-4 grid grid-cols-3 gap-4">
+        <div class="mt-2 grid grid-cols-3 gap-2">
           {#each macros as m (m.key)}
-            <!-- the track sits at the bottom of each column, so the three stay level when a value wraps at large text -->
-            <div class="flex min-w-0 flex-col" data-testid="macro-{m.key}">
+            <!-- the track sits at the bottom of each tile, so the three stay level when a value wraps at large text -->
+            <div class="bg-surface-2 flex min-w-0 flex-col rounded-md px-4 pt-3 pb-4" data-testid="macro-{m.key}">
               <div class="text-caption text-ink-2">{m.label}</div>
-              <div class="text-body num mb-1.5 font-semibold">{num(Math.round(m.value))}{' '}<span class="text-caption text-ink-2 font-medium whitespace-nowrap">{t.after.ofGrams(num(m.target))}</span></div>
-              <div class="mt-auto"><Track value={m.value} target={m.target} zone={m.zone} label="{m.label} {num(Math.round(m.value))} {t.after.ofGrams(num(m.target))}" /></div>
+              <div class="text-body num font-semibold">{num(Math.round(m.value))}{' '}<span class="text-caption text-ink-2 font-medium whitespace-nowrap">{t.after.ofGrams(num(m.target))}</span></div>
+              <div class="mt-auto pt-2"><Track value={m.value} target={m.target} zone={m.zone} label="{m.label} {num(Math.round(m.value))} {t.after.ofGrams(num(m.target))}" /></div>
             </div>
           {/each}
         </div>
@@ -211,7 +214,7 @@
                 <Button variant="plain" size="sm" onclick={() => clearSessionLog(view.date, s.key)} data-testid="session-undo">{t.today.undo}</Button>
               {:else}
                 <Button size="sm" onclick={() => logSession({ date: view.date, sessionKey: s.key, status: 'done' })} data-testid="session-done">{t.today.done}</Button>
-                <button type="button" class="text-ink-2 active:bg-surface-2 -mr-3 grid size-11 flex-none place-items-center rounded-full transition-colors duration-[var(--d-press)]" aria-label={t.today.more(s.name)} onclick={() => (sheets.session = { date: view.date, key: s.key, name: s.name })} data-testid="session-more">
+                <button type="button" class="text-ink-2 active:bg-surface-2 -mr-3 grid size-11 flex-none place-items-center rounded-sm transition-colors duration-[var(--d-press)]" aria-label={t.today.more(s.name)} onclick={() => (sheets.session = { date: view.date, key: s.key, name: s.name })} data-testid="session-more">
                   <Ellipsis size={24} strokeWidth={2} />
                 </button>
               {/if}

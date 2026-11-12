@@ -22,10 +22,11 @@
   ];
 </script>
 
-<!-- DESIGN.md section 7, Dock: a floating glass pill with three tabs, and the violet 3D plus to its right, 12 px above the
-     safe area so it clears Safari's bar. Unselected tabs are ink-2: their labels are text and need 4.5 to 1. -->
+<!-- DESIGN.md section 7, Dock: a floating glass pill with three tabs (OneFin's dark nav pill, in the theme's colours), and
+     the plus to its right as the ink circle of the action family, white on dark. 12 px above the safe area so it clears
+     Safari's bar. Unselected tabs are ink-2: their labels are text and need 4.5 to 1. -->
 <div class="fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+12px)] z-30 mx-auto flex max-w-[480px] items-center gap-3 px-4" data-testid="dock">
-  <nav class="bar-glass shadow-float grid h-[var(--dock-h)] flex-1 grid-cols-3 items-center rounded-full px-2" aria-label={t.tabs.label} use:swipe={swipeOpts}>
+  <nav class="glass-bar shadow-float grid h-[var(--dock-h)] flex-1 grid-cols-3 items-center rounded-full px-2" aria-label={t.tabs.label} use:swipe={swipeOpts}>
     {#each TABS as item, i (item.label)}
       {@const Icon = item.icon}
       {@const on = tab === i}
@@ -41,7 +42,7 @@
     {/each}
   </nav>
   <button
-    class="pill-accent active:pill-accent-down grid size-[var(--dock-h)] flex-none place-items-center rounded-full transition-[transform,box-shadow] duration-[var(--d-press)]"
+    class="bg-action text-on-action shadow-action active:bg-action-press grid size-[var(--dock-h)] flex-none place-items-center rounded-full transition-[transform,background-color] duration-[var(--d-press)] active:scale-[0.97]"
     aria-label={t.shell.add}
     data-testid="add"
     onclick={onadd}

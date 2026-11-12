@@ -3,6 +3,7 @@
      raise or a lower offers Use the new target and Keep my current target; any other outcome ends on Done. A stored
      check-in opens the same steps and ends on what was decided. -->
 <script lang="ts">
+  import Figure from '$lib/components/Figure.svelte';
   import { untrack } from 'svelte';
   import { toast } from 'svelte-sonner';
   import Sheet from '$lib/components/Sheet.svelte';
@@ -104,7 +105,7 @@
       <div class="mt-3 flex items-end justify-between gap-4">
         <div>
           {#if s.ratePctPerWeek != null}
-            <p class="text-display" data-testid="checkin-rate">{num(s.ratePctPerWeek, 1)}</p>
+            <p class="text-display" data-testid="checkin-rate"><Figure text={num(s.ratePctPerWeek, 1)} /></p>
             <p class="text-caption text-ink-2 mt-1">{t.after.percentWeek}</p>
           {:else}
             <p class="text-lead" data-testid="checkin-rate">{t.checkin.noRate}</p>

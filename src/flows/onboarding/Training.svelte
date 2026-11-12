@@ -67,7 +67,7 @@
     </div>
     {#if program}<p class="text-callout" data-testid="train-using">{t.train.using(program.name)}</p>{/if}
     <div class="flex flex-col gap-1">
-      <Button variant="secondary" full onclick={() => (picking = true)} data-testid="train-choose">{t.train.choose}</Button>
+      <Button full onclick={() => (picking = true)} data-testid="train-choose">{t.train.choose}</Button>
       <Button variant="plain" full onclick={() => next({ train: { kind: 'later' } })} data-testid="train-later">{t.train.later}</Button>
     </div>
   </div>

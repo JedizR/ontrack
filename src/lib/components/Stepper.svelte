@@ -71,7 +71,7 @@
   {@const Icon = d === 1 ? Plus : Minus}
   <button
     type="button"
-    class="bg-surface-2 active:bg-surface-3 grid size-11 flex-none place-items-center rounded-full transition-[transform,background-color] duration-[var(--d-press)] select-none active:scale-[0.97] disabled:opacity-40"
+    class="bg-action text-on-action active:bg-action-press disabled:bg-surface-2 disabled:text-ink-3 grid size-11 flex-none place-items-center rounded-sm transition-[transform,background-color] duration-[var(--d-press)] select-none active:scale-[0.97]"
     aria-label={d === 1 ? t.stepper.more(label) : t.stepper.less(label)}
     disabled={d === 1 ? value >= max : value <= min}
     onpointerdown={(e) => { if (e.button === 0) hold(d); }}

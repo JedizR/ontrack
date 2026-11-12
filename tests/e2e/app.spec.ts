@@ -1,6 +1,6 @@
 // The shell: header, three tabs, the dock. Runs in the light and dark projects (WebKit, 390 by 844).
 import { test, expect } from '@playwright/test';
-import { open, swipeAt, wheelType, withPrefs } from './helpers';
+import { MEALS, open, openFresh, swipeAt, wheelType, withPrefs } from './helpers';
 
 const title = (page: import('@playwright/test').Page) => page.getByRole('heading', { level: 1 });
 
@@ -160,4 +160,65 @@ test('the theme and text size change from the gallery and are remembered', async
   await page.reload();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   await expect(page.locator('html')).toHaveAttribute('data-fs', 'xl');
+});
+
+// D2's gate: every button is flat. No gradient, no bevel and no glow on a button or the face that fills it; a soft drop
+// that falls below the button, or a hairline ring, is all the depth a button may have.
+const unflat = (page: import('@playwright/test').Page) => page.evaluate(() => {
+  const layers = (v: string) => (v === 'none' ? [] : v.split(/,(?![^(]*\))/));
+  const glow = (layer: string) => {
+    if (/inset/.test(layer)) return true; // a bevel or inner light
+    const [r, g, b] = (layer.match(/rgba?\(([^)]+)\)/)?.[1] ?? '0, 0, 0').split(',').map(Number);
+    const [, y = 0, blur = 0] = (layer.replace(/rgba?\([^)]+\)/, '').match(/-?[\d.]+px/g) ?? []).map(parseFloat);
+    // a halo with no drop, or a coloured or light shadow, is a glow
+    return blur > 0 && (y <= 0 || Math.max(r, g, b) - Math.min(r, g, b) > 100 || (r + g + b) / 3 > 128);
+  };
+  const bad: string[] = [];
+  for (const btn of document.querySelectorAll<HTMLElement>('button, [role="button"]')) {
+    const box = btn.getBoundingClientRect();
+    if (!box.width || !box.height) continue;
+    // the face: the button itself, or a descendant as wide as it and about as high (Button's inner span)
+    const faces = [btn, ...[...btn.querySelectorAll<HTMLElement>('*')].filter((e) => {
+      const r = e.getBoundingClientRect();
+      return Math.abs(r.width - box.width) < 2 && r.height >= box.height - 10;
+    })];
+    for (const f of faces) {
+      const cs = getComputedStyle(f);
+      if (cs.backgroundImage !== 'none' || cs.textShadow !== 'none' || layers(cs.boxShadow).some(glow))
+        bad.push(`${btn.getAttribute('aria-label') ?? btn.textContent?.trim().slice(0, 30)}: ${cs.backgroundImage} ${cs.boxShadow}`);
+    }
+  }
+  return bad;
+});
+
+test('no gradient, bevel or glow on any button in the gallery, on Today and in the Add sheet', { tag: '@smoke' }, async ({ page }) => {
+  await open(page, '/gallery');
+  // the check itself catches D1's 3D pill and a violet glow, and lets a soft drop through
+  await page.evaluate(() => {
+    const add = (style: string, label: string) => {
+      const b = document.createElement('button');
+      b.setAttribute('aria-label', label);
+      b.style.cssText = `width: 80px; height: 44px; ${style}`;
+      document.body.append(b);
+    };
+    add('background: linear-gradient(#6262fe, #381ac9)', 'probe gradient');
+    add('box-shadow: inset 0 1px 1px #fff, 0 3px 3px rgba(40, 16, 162, 0.32)', 'probe bevel');
+    add('box-shadow: 0 0 24px rgba(98, 98, 254, 0.6)', 'probe glow');
+    add('background: #121214; box-shadow: 0 6px 14px rgba(18, 18, 20, 0.12)', 'probe flat');
+  });
+  const probes = (await unflat(page)).filter((b) => b.startsWith('probe')).map((b) => b.split(':')[0]);
+  expect(probes).toEqual(['probe gradient', 'probe bevel', 'probe glow']);
+  await page.reload();
+  expect(await unflat(page)).toEqual([]);
+
+  await open(page, '/', MEALS);
+  expect(await unflat(page)).toEqual([]);
+  await page.getByTestId('add').click();
+  await expect(page.getByTestId('add-sheet')).toBeVisible();
+  expect(await unflat(page)).toEqual([]);
+});
+
+test('no gradient, bevel or glow on any button on Welcome', async ({ page }) => {
+  await openFresh(page);
+  expect(await unflat(page)).toEqual([]);
 });
