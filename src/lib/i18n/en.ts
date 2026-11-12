@@ -148,6 +148,7 @@ export const en = {
     macros: (p: string, c: string, f: string) => `${p} g protein, ${c} g carbs, ${f} g fat`,
     from: (source: string) => `Values from ${source}.`,
     terms: 'Terms of use',
+    page: 'Source page',
   },
   quick: {
     title: 'Quick add',

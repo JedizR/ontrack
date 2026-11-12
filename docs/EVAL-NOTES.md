@@ -2,6 +2,37 @@
 
 What the vision model got right and wrong on real photos, and what changed because of it. Newest first.
 
+## N3, 12 November 2026: Thai values from the Thai Food Composition Database
+
+**What changed.** 670 foods, 236 tagged `thai`. 98 new Thai foods, 93 of them dishes, snacks and desserts with no table entry before (khao soi, massaman, red, panang and yellow curries, tom kha, som tam, larb, khao kha moo, pad see ew, kai yang, moo daeng, tod man, the khanom and the coconut desserts among them), and 17 existing Thai foods moved to the Thai source. 115 foods now read their values from INMU's Thai Food Composition Database: 23 from the owner's file and 92 from INMU's own pages, snapshotted in `data/thai/`. 23 of them have one value derived by Atwater (13 energy, 10 carbohydrate), marked in `foods.json`. Sources and rules: `docs/DECISIONS.md`, N3.
+
+**Rows of the owner's file left out** (the build prints them with the reason; none of these foods is on the list):
+- Energy against 4p + 4c + 9f off by more than 25 percent or 40 kcal: C2 roasted white sesame (356 kcal against 949), C14 dried snap bean (157 against 257).
+- Energy below what protein and fat alone carry (derived carbohydrate under -2 g): G126 and G128 striped catfish (76 and 68 kcal against 175 and 209), G162 salted mangrove crab (8 against 33), G175 canned oyster (55 against 311), G132 black-banded trevally, G139 Java tilapia, G140 climbing perch, G15 estuarine catfish, G156 mud crab meat, G182 canned clam, G21 boiled featherback, G211 rasbora, G238 fermented featherback, G4 raw giant freshwater prawn, K36 tuna oil (834 kcal against 880; fish oils are counted at about 8.5 kcal a gram of fat).
+- Read by hand: J36 "whey protein, powder" at 7.8 g protein in 100 g (whey powders carry about 75 to 90; the whey preset stays on USDA); T290 pumpkin curry with pork and T275 toddy palm jelly, whose carbohydrate column holds the energy (INMU's pages read 47 kcal and 3.3 g, and 35 kcal and 8.5 g).
+- Kept with carbohydrate at 0, a rounding gap: G101 raw carp, G125 raw spinefoot, G141 raw cuttlefish (derived carbohydrate -1.1 to -1.7 g).
+- 46 codes were read both in the owner's file and on INMU's pages. Besides T290 and T275, one differs by more than 20 percent: T121 dry rice noodles with beef balls (183 kcal derived from the owner's carbohydrate, 152 on the page, whose own energy sits 31 kcal under its macros). Not on the list.
+
+**Existing foods moved to the Thai source, differences over 20 percent** (calories in 100 g, before and after):
+
+| Food | Before | After (Thai FCD) | Change |
+| --- | --- | --- | --- |
+| Sticky rice | 97 (SR Legacy, glutinous rice cooked) | 232 (A23, steamed) | +139 percent |
+| Brown rice | 123 (SR Legacy, long grain cooked) | 181 (A59, cooked) | +47 percent |
+| Rice noodle soup with beef balls | 114 (SG FoodID) | 61 (T123) | -46 percent |
+| Green curry with chicken | 170 (SG FoodID, a thick curry) | 101 (T184) | -41 percent |
+| Khao man kai | 147 (SG FoodID) | 198 (T59) | +35 percent |
+| Kuay jap | 110 (SG FoodID) | 84 (T3) | -24 percent |
+| Roast duck rice | 169 (SG FoodID) | 129 (T207) | -24 percent |
+
+Under 20 percent: white rice 130 to 136, boiled egg 155 to 138, fried rice 174 to 160, pad thai 204 to 171, chicken fat rice 173 to 179, khao mu daeng 170 to 154, fried rice with pork 179 to 144 (FNDDS to T56, -19.6 percent), rice porridge with pork 61 to 57, pork satay 293 to 272, fish maw soup 48 to 56. Sticky rice is the change that matters most: a 100 g bag now reads 232 kcal, not 97; INMU's steamed sticky rice holds far less water than USDA's cooked glutinous rice.
+
+**Odd but kept as INMU measured them:** egg noodle soup with red pork (T92) and rice noodle soup with pork (T127) carry 1.4 and 2.75 g carbohydrate in 100 g, little for noodle soups; their calories (102 and 75) are in line with the others. Nam prik ong (T303) has 0 g available carbohydrate.
+
+**Still without a Thai source:** larb moo, nam tok, moo ping, hor mok, pad pak boong, kai jeow, kaeng jued, Thai milk tea and iced coffee, mango sticky rice, boat noodles, pad thai with a named protein (these keep SG FoodID, FNDDS or SR Legacy, or stay estimates in photos). INMU lists none of them, and the Thai pages found give calories per plate without the macros or the plate's weight.
+
+**The N1 photo evaluation rerun:** not run yet. The free key's 20 requests a day were spent by B1 earlier on 12 November and come back at 07:00 Bangkok time on 13 November, after this run ended; it needs about 10 requests (eight photos and a retry or two). Run `pnpm eval:vision <folder of the eight N1 photos>` and compare with N1's after pass: 7 of 13 items from the table, 3 of 8 dishes whole, 57 percent of calories from the table. Dishes N1 left as estimates that the table now has: khao soi, massaman, som tam, kai yang and sticky rice by INMU's value (beef green curry and crispy pork kra pao still have no entry).
+
 ## N1, 12 November 2026: Thai photos before and after the Thai table
 
 **What changed between the passes.** Before: `main` at v0.8.0, 512 foods (USDA SR Legacy) and the M6 prompt. After: this branch, 571 foods (138 Thai, from SG FoodID and USDA FNDDS added to SR Legacy) and one prompt change: a whole dish in the catalog is one item with its `food_id`, rather than its parts. Nothing else; `est_per_100g` is still asked for (below).

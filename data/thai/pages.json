@@ -1,0 +1,558 @@
+{
+ "source": "Thai Food Composition Database, online version 3 (August 2025), Institute of Nutrition, Mahidol University (INMU). Values per 100 g edible portion. Each page is the answer its \"url\" loads, kept verbatim",
+ "terms": "https://inmu.mahidol.ac.th/thaifcd/content/term-and-condition",
+ "pages": {
+  "F111": {
+   "file": "inmu/F111.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=76&id=900&name=Chicken,%20grilled",
+   "read": "2026-11-12",
+   "sha256": "a7812dbbe8e8e88c4deeb3ed303c19c6d1ab4a0214213a6acdf4b7da32f20fd7"
+  },
+  "F152": {
+   "file": "inmu/F152.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=76&id=1017&name=Pork,%20marinated,%20sun-dried,%20grilled",
+   "read": "2026-11-12",
+   "sha256": "95d155be9aef7c57a865f087d230a8ad81f4b9572579f9c87a2ca146398b1534"
+  },
+  "F162": {
+   "file": "inmu/F162.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=76&id=982&name=Pork,%20belly,%20deep-fried",
+   "read": "2026-11-12",
+   "sha256": "7664551fb144f06d79a0b3faa1a5c29bd1d792e4743d560913e3465f7c9695cb"
+  },
+  "F163": {
+   "file": "inmu/F163.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=76&id=1016&name=Pork,%20marinated,%20roasted",
+   "read": "2026-11-12",
+   "sha256": "03cbd9c1b00d85efffb3a8f0d2da3cc9d74ec5f5cb925681a530791ad89e6c91"
+  },
+  "F56": {
+   "file": "inmu/F56.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=76&id=1012&name=Pork,%20sausage,%20northern%20style,%20packed%20in%20intestine",
+   "read": "2026-11-12",
+   "sha256": "252050a20a788b2ec96dfde7f1a215f815d77578603b40ee9dafb05c05bb852c"
+  },
+  "F97": {
+   "file": "inmu/F97.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=76&id=950&name=Pork,%20shoulder,%20grilled",
+   "read": "2026-11-12",
+   "sha256": "e018862cf9b097ce2833d38cb24a5e95abe25ca6375b34ff5b562d09fbf71979"
+  },
+  "F99": {
+   "file": "inmu/F99.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=76&id=1022&name=Pork,%20shreded,%20Chinese-style",
+   "read": "2026-11-12",
+   "sha256": "a8e747655286317278bc48727821764be2f793b7f95cf625290f33e75df420ce"
+  },
+  "G50": {
+   "file": "inmu/G50.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=77&id=1088&name=Striped%20snake-head%20fish,%20roasted",
+   "read": "2026-11-12",
+   "sha256": "86f9c32fda77ed675d41c5380aa01feaa2b1c53f81b0fd8887708f35829f7412"
+  },
+  "G88": {
+   "file": "inmu/G88.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=77&id=1106&name=Short%20bodied%20mackerel,%20steamed,%20fried",
+   "read": "2026-11-12",
+   "sha256": "86647e615f41f5c184501c3375bd4dffa24192e5777efd6650f062109950a9be"
+  },
+  "T10": {
+   "file": "inmu/T10.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1528&name=Yen-ta-fo%20(Rice%20noodles,%20with%20fish%20ball,%20swamp%20cabbage%20red%20sauce%20and%20soup)",
+   "read": "2026-11-12",
+   "sha256": "cbf60ae2510b651e1c58797b97093d3ef3a58d3701a8f92326603cb3852ba788"
+  },
+  "T101": {
+   "file": "inmu/T101.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1508&name=Meat%20salad,%20Northeastern%20style%20(Lab-nhua)",
+   "read": "2026-11-12",
+   "sha256": "850991b9bbcedb6c6f2f159c81d2c017f66eaea2775fdffc2f3cd89d3b905cfc"
+  },
+  "T11": {
+   "file": "inmu/T11.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1529&name=Guay-teaw-pad%20see-eiw%20(Rice%20noodles,%20fried%20with%20pork,%20kale,%20egg%20and%20dark%20soy%20sauce)",
+   "read": "2026-11-12",
+   "sha256": "3daff6e50020b894d7abaaa2cf53bc3866a04e2c0bc34ac6f189027365df693a"
+  },
+  "T111": {
+   "file": "inmu/T111.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1582&name=Rice%20noodles,%20small%20size,%20with%20pork%20(wihout%20soup)",
+   "read": "2026-11-12",
+   "sha256": "1cf2067605c84939f2b36d1790f87357536aaa53e304ecfe37899e62bdb0dec5"
+  },
+  "T127": {
+   "file": "inmu/T127.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1594&name=Rice%20noodles,%20big%20size,%20with%20pork%20and%20soup",
+   "read": "2026-11-12",
+   "sha256": "649039ee614791358887100f5511456e6b572d48f1ee7d3924b3cf70f0b4db90"
+  },
+  "T131": {
+   "file": "inmu/T131.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1517&name=Mee-krop%20(Rice%20noodles,%20deep%20fried,%20crispy)",
+   "read": "2026-11-12",
+   "sha256": "81232e0edc5518122189647ed985201b291d3d67d5bee83ea461dcd91944d40e"
+  },
+  "T133": {
+   "file": "inmu/T133.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1596&name=Hoi-tod%20(Mussel,%20fried%20with%20egg%20and%20mungbean%20sprout)",
+   "read": "2026-11-12",
+   "sha256": "8876556bdc94217be169b1b79111d5b9f6d1ccb84103df1ed15fdfe631d6bc4d"
+  },
+  "T138": {
+   "file": "inmu/T138.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1616&name=Ka-nom-moh-kaeng%20(mungbean%20custard,%20baked)",
+   "read": "2026-11-12",
+   "sha256": "59d3b185642c23265dbb1cd187c673712a1c1d75c556195c4265dbc899ea8d03"
+  },
+  "T139": {
+   "file": "inmu/T139.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1624&name=Khao-niao-moon%20(glutinous%20rice,%20steamed%20in%20coconut%20milk)",
+   "read": "2026-11-12",
+   "sha256": "06ec5cf25c02c4319ecceccd681c972c783414acc7a1e0b76b4c76f2a6edc722"
+  },
+  "T14": {
+   "file": "inmu/T14.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1757&name=Sausage,%20rice%20and%20pork,%20fermented,%20northeastern%20style",
+   "read": "2026-11-12",
+   "sha256": "b8bf5e7985c55a7d5d59ee1ef1c9aa21701aec3bb2908eba46b7d8d08e46223b"
+  },
+  "T141": {
+   "file": "inmu/T141.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1634&name=Thong-yodd%20(golden%20dropped,%20egg%20yolk%20dropped%20in%20heavy%20syrup)",
+   "read": "2026-11-12",
+   "sha256": "e1a143e415a4d985d409efaef296bbd886bce3476f29fb2b1fa302a3b9808055"
+  },
+  "T142": {
+   "file": "inmu/T142.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1635&name=Thong-yip%20(egg%20yolk%20sheeted%20in%20heavy%20syrup,%20cupped)",
+   "read": "2026-11-12",
+   "sha256": "ce4224eb478521a54772b439c2d5929082c03bfc4364bdecb108dc3b19ae2475"
+  },
+  "T147": {
+   "file": "inmu/T147.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1652&name=Sangkhaya%20(egg%20custard,%20steamed)",
+   "read": "2026-11-12",
+   "sha256": "ca7a9e35d7ba23dd299f023ac54d3f78dcd3d429a859037a48f9b54fc2e8cdff"
+  },
+  "T150": {
+   "file": "inmu/T150.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1646&name=Wun-ka-thi%20(Jelly%20with%20coconut%20cream,%20pandanus%20leaves%20flavoured)",
+   "read": "2026-11-12",
+   "sha256": "5220713eccbdce9eeb6dcf607dbac7e6467df415f17fcb4ed761934702b90cdb"
+  },
+  "T156": {
+   "file": "inmu/T156.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1712&name=Pa-tong-ko%20(Deep-fried%20doughstick)",
+   "read": "2026-11-12",
+   "sha256": "d7d3991c15dec517f5a98a4a4979280e8c2e91a6621428dada4b9b8e27c333ac"
+  },
+  "T160": {
+   "file": "inmu/T160.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1605&name=Ka-nom-shun%20(steamed%20layer%20cake)",
+   "read": "2026-11-12",
+   "sha256": "3b1f0cf6f9c7091686fc193f770d744dfee6135492e50739f31f511f75819937"
+  },
+  "T161": {
+   "file": "inmu/T161.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1607&name=Ka-nom-taan%20(steamed%20toddy%20palm%20cake)",
+   "read": "2026-11-12",
+   "sha256": "051f328c4e099363b841607b0315396c36492e30e090f713e57ad9d83d56d0dc"
+  },
+  "T163": {
+   "file": "inmu/T163.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1642&name=Lod-chong%20in%20coconut%20milk",
+   "read": "2026-11-12",
+   "sha256": "a75f37fddb8f34bb81c826892ceb4ed7f835429d1fe3ba71bf05a95b36ccf6b6"
+  },
+  "T166": {
+   "file": "inmu/T166.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1711&name=Spring%20roll,%20non-fried",
+   "read": "2026-11-12",
+   "sha256": "dec368a433da1027428d395bcd90d150405dce02b5146f8b74cc3dbdb1f08c2a"
+  },
+  "T174": {
+   "file": "inmu/T174.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1446&name=Kra-pao-gai%20(Chicken,%20stir%20fried%20with%20chilli%20and%20basil,%20Thai%20style)",
+   "read": "2026-11-12",
+   "sha256": "485916b4d617febf6eeb4a904e663934b9addce6e419e7c293e7aa3798f7eba2"
+  },
+  "T177": {
+   "file": "inmu/T177.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1533&name=Giew-goong%20(Shrimp%20Wonton%20Soup)",
+   "read": "2026-11-12",
+   "sha256": "95e775a08ab9f04542767da17a89690aa2ac12ed6869e61749361264a2b7d936"
+  },
+  "T179": {
+   "file": "inmu/T179.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1451&name=Curry,%20yellow%20(Kari),%20chicken",
+   "read": "2026-11-12",
+   "sha256": "8d619b333a6447c95bc61f2ec0839f10ad13ce0f5a0c805f9c7600aa119c79a7"
+  },
+  "T184": {
+   "file": "inmu/T184.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1456&name=Curry,%20green,%20chicken",
+   "read": "2026-11-12",
+   "sha256": "9e18e192f550239ae741762bba0e12dd07a20ef0afb30ae268ae4030eddf707e"
+  },
+  "T185": {
+   "file": "inmu/T185.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1458&name=Curry,%20green,%20fish%20ball",
+   "read": "2026-11-12",
+   "sha256": "a8fc0a1a67ebeda60fda8e37bf09934e8dae66778b8fa136736cf7fd94b38eb1"
+  },
+  "T187": {
+   "file": "inmu/T187.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1464&name=Curry,%20red,%20chicken",
+   "read": "2026-11-12",
+   "sha256": "d2e175855f83f4bac591dbba448edda260acfe3222c092f21f382bc0d380341b"
+  },
+  "T188": {
+   "file": "inmu/T188.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1467&name=Curry,%20Pha-naeng,%20chicken/pork",
+   "read": "2026-11-12",
+   "sha256": "004b1431db5f7ca6d16ed5155ddaf33e016d4ce638add9ff1c16aecf4b58e10f"
+  },
+  "T189": {
+   "file": "inmu/T189.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1468&name=Curry,%20Mat-sa-man,%20chicken",
+   "read": "2026-11-12",
+   "sha256": "d0cb70aae81c86b9c08045205c62824f532234cb5c69bf3688997055b052daae"
+  },
+  "T190": {
+   "file": "inmu/T190.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1470&name=Curry,%20Mat-sa-man,%20beef",
+   "read": "2026-11-12",
+   "sha256": "48183722b4ceafe2fe4715120c4a97d1ae677402964f0c8e754a71435cedba44"
+  },
+  "T191": {
+   "file": "inmu/T191.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1471&name=Soup,tamarind,%20mixed%20vegetables",
+   "read": "2026-11-12",
+   "sha256": "735c695a258af6ac34fd78678a756df1cb222b16a8e67004819c90e9fdd8f2b5"
+  },
+  "T192": {
+   "file": "inmu/T192.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1475&name=Soup,%20spicy,%20yellow%20(turmeric),%20with%20chicken,%20southern%20style%20(Gaeng%20luang)",
+   "read": "2026-11-12",
+   "sha256": "a5562bded55f51cc44214133fad398f0b07e110dadd603b8ab2985668593553c"
+  },
+  "T2": {
+   "file": "inmu/T2.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1521&name=Fish%20maw%20soup",
+   "read": "2026-11-12",
+   "sha256": "b98b97e2590208a40931ca467ebc2185018cdf4ab6dc654214b2fb44c64642df"
+  },
+  "T204": {
+   "file": "inmu/T204.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1553&name=Fried%20rice,%20with%20vegetables",
+   "read": "2026-11-12",
+   "sha256": "631d3242c71c6f9ee909826357cf39105ee16cb9c9133d8156c7ce62fef23e5d"
+  },
+  "T205": {
+   "file": "inmu/T205.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1552&name=Fried%20rice,%20not%20specified",
+   "read": "2026-11-12",
+   "sha256": "2c8fd0f1be2345dc634a784a7223e3933191d99f1d726b3d5f217abff22e626c"
+  },
+  "T206": {
+   "file": "inmu/T206.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1556&name=Khao-mun-kai-tod%20(rice%20cooked%20in%20chicken%20broth,%20%20topped%20with%20deep-fried%20chicken)",
+   "read": "2026-11-12",
+   "sha256": "5b966d7e1d4fd51d1bbefc9f8279b1cfd92aa41464130a4b574c9f72c00fd090"
+  },
+  "T207": {
+   "file": "inmu/T207.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1564&name=Rice,%20topped%20%20with%20roasted%20duck)",
+   "read": "2026-11-12",
+   "sha256": "c175637b081e58a859730d6255d36aa3cacb87445adf93c4d7a9228faa373e2c"
+  },
+  "T211": {
+   "file": "inmu/T211.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1489&name=Soup,%20coconut%20milk%20with%20galangal,%20chicken%20(Tom-kha-gai)",
+   "read": "2026-11-12",
+   "sha256": "fdc0a479694865c649762d55bcb5cf9bdb20a78c33366c89101017e9ac978e04"
+  },
+  "T212": {
+   "file": "inmu/T212.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1491&name=Soup,%20spicy%20(hot%20and%20sour),%20shrimp%20(Tom-yum-goong)",
+   "read": "2026-11-12",
+   "sha256": "4ec4b8f6feb6680793d29f5a8e2938db25cd23d5f6723cac97b6db4fb78c1594"
+  },
+  "T213": {
+   "file": "inmu/T213.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1492&name=Soup,%20spicy%20(hot%20and%20sour),%20chicken%20(Tom-yum-gai)",
+   "read": "2026-11-12",
+   "sha256": "feda7f5c1266d5d75dccc663eff9df43abdc3ed744f76edb1fdf84e7fcb70d4d"
+  },
+  "T214": {
+   "file": "inmu/T214.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1495&name=Fried%20fish%20cake%20(Tod-man-pla)",
+   "read": "2026-11-12",
+   "sha256": "29633c7024ee921cec37ab30ba113ec3c0f251270adddfe38cc3c8be26e60715"
+  },
+  "T215": {
+   "file": "inmu/T215.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1494&name=Fried%20shrimp%20cake,%20(Tod-man-goong)",
+   "read": "2026-11-12",
+   "sha256": "85e1fb6de2334b68e3a53ef58b3c1f72328623e8425580cb0af20ec225fd4e96"
+  },
+  "T222": {
+   "file": "inmu/T222.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1502&name=Sweet%20and%20sour%20sauce,%20stir%20fried,%20chicken%20(Pad-priew-wan-gai)",
+   "read": "2026-11-12",
+   "sha256": "38bb475fa865bc894aa25d4e150ae00ee9256e07b06fa1e0bbe390d0361ddc6b"
+  },
+  "T224": {
+   "file": "inmu/T224.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1503&name=Stir-fried,%20chicken%20with%20red%20curry%20paste",
+   "read": "2026-11-12",
+   "sha256": "b7ed3591f8acf8bf796a5281b27cbe07acfd5020902fb19144e480be080e253e"
+  },
+  "T225": {
+   "file": "inmu/T225.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1505&name=stir-fried%20%20long%20bean%20with%20red%20chilli%20paste%20and%20chicken%20(Pad-prik-king-gai)",
+   "read": "2026-11-12",
+   "sha256": "50c48c157accb51e1dff3bac530c34c29b1d3dc7a8eee9580c6c1b9564d143b7"
+  },
+  "T227": {
+   "file": "inmu/T227.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1506&name=Thai%20salad,%20spicy,%20mixed%20%20seafood",
+   "read": "2026-11-12",
+   "sha256": "e5f8c711bd818625ebdec50b1aa36f83b6c68a2b5e949a08cd7956352ac1de40"
+  },
+  "T231": {
+   "file": "inmu/T231.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1513&name=Papaya%20salad,%20spicy,%20with%20dried%20shrimps%20and%20roasted%20peanuts%20(Som-tum%20Thai)",
+   "read": "2026-11-12",
+   "sha256": "712fdb53bcfae42ee78fa3469d31c4ab61c840c4cc604c7decb09c389640c2cd"
+  },
+  "T236": {
+   "file": "inmu/T236.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1599&name=Kluay-buad-shee%20(banana%20in%20sweet%20coconut%20milk)",
+   "read": "2026-11-12",
+   "sha256": "eea6588a6f550bd452b73dd31a72fea0e9d8877c7049a1b83d1d281138f3d704"
+  },
+  "T237": {
+   "file": "inmu/T237.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1600&name=Ka-la-mae%20(Thai%20caramel)",
+   "read": "2026-11-12",
+   "sha256": "d2e5bdfc4003218c20d622d2af5e3d6341c9f9d3b8725f7a61254373f69a5fcb"
+  },
+  "T238": {
+   "file": "inmu/T238.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1602&name=Ka-nom-khrok%20(coconut%20pudding)",
+   "read": "2026-11-12",
+   "sha256": "07adbf484a29bfac98fc8efc32796d7d05750569bbe91bd6fdea27f7c2e4b84f"
+  },
+  "T243": {
+   "file": "inmu/T243.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1664&name=Ka-nom-jeep-moo-sub%20(Chinese%20steamed%20minced%20pork%20dumplings)",
+   "read": "2026-11-12",
+   "sha256": "9431b58ca8c41e6a569d697261c235099228dbfd05f83560aba2b458c1c488c8"
+  },
+  "T245": {
+   "file": "inmu/T245.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1665&name=Ka-nom-tokyo%20(pancakes%20wrapped%20with%20minced%20pork,%20Thai%20style)",
+   "read": "2026-11-12",
+   "sha256": "9557f8d4593d0940a97ea168b79673741d373b1679566f569a657d17eb4e62ae"
+  },
+  "T249": {
+   "file": "inmu/T249.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1611&name=Ka-nom-bua-loi%20(Thai%20glutinous%20rice%20dumplings%20in%20sweet%20coconut%20cream)",
+   "read": "2026-11-12",
+   "sha256": "481907b823465bc575ffec225cb64315cc5b8061f2cd51a544b496f905e329c7"
+  },
+  "T252": {
+   "file": "inmu/T252.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1668&name=Ka-nom%20buang%20Thai%20sai%20khem%20(crispy%20rice%20flour%20sheet%20with%20prawn%20and%20grated%20coconut%20filling)",
+   "read": "2026-11-12",
+   "sha256": "33e42588386c8b17ea84ad5ac54b2f55228f4fc7becbabb562fb4f24457a5abe"
+  },
+  "T255": {
+   "file": "inmu/T255.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1672&name=Kao-tom-mud%20(steamed%20glutinous%20rice%20with%20black%20bean%20and%20banana%20filling)",
+   "read": "2026-11-12",
+   "sha256": "d3dc7132f2c32517a7af53266cbe1bce3b7940b50eca263613d3ca4fe2c0cb30"
+  },
+  "T257": {
+   "file": "inmu/T257.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1685&name=Khao-niao-ping%20(sticky%20rice%20mixed%20with%20coconut%20milk,%20filled%20with%20banana,%20wrapped%20in%20banana%20leaf,%20grilled)",
+   "read": "2026-11-12",
+   "sha256": "13f359fab95369b6a9ecea7cc84ca066e3ec5e8f77e8209a973b44ae5086f742"
+  },
+  "T268": {
+   "file": "inmu/T268.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1720&name=Murtabak,%20chicken",
+   "read": "2026-11-12",
+   "sha256": "fe9c0b014897f35552c5d36950bfeb4ec5a0bcb048e6b3d8a056b6beff3f0727"
+  },
+  "T273": {
+   "file": "inmu/T273.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1643&name=Luk%20chup%20(fruit-shape%20desserts%20made%20of%20mung-bean%20flour%20with%20natural%20colouring)",
+   "read": "2026-11-12",
+   "sha256": "05bbb676e4ffbef972d491e7229022357b8b67c630df9791c2c34ed8fa67be52"
+  },
+  "T279": {
+   "file": "inmu/T279.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1654&name=Sangkhaya%20fuk%20tong%20(egg%20custard,%20with%20pandanus%20leaf,%20steamed%20in%20pumpkin",
+   "read": "2026-11-12",
+   "sha256": "e5ddfca64830b3f767c85ed56191e7bd209e90c8cdfebbce3e76e397a087fbe8"
+  },
+  "T285": {
+   "file": "inmu/T285.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1459&name=Curry,%20green,%20pork",
+   "read": "2026-11-12",
+   "sha256": "92565134058d071349a672402fd60d3ece47e58cd0a90a06baf912bb6dbeaf38"
+  },
+  "T295": {
+   "file": "inmu/T295.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1477&name=Soup,%20spicy%20(Gaeng%20Oom)%20with%20beef,%20northen%20style",
+   "read": "2026-11-12",
+   "sha256": "7854310c52769390b3d2ec17084a0b2fc8559401e01be2ce1bad2c867c5d1a27"
+  },
+  "T297": {
+   "file": "inmu/T297.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1479&name=Curry,%20Hung-le,%20northern%20style",
+   "read": "2026-11-12",
+   "sha256": "006a593e145e44ea948341f49978c91d727d61f2439f0932f59a748d8de5d5c7"
+  },
+  "T3": {
+   "file": "inmu/T3.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1522&name=Noodle%20sheets,%20soup%20with%20meat%20and%20tofu%20(Guay-jub)",
+   "read": "2026-11-12",
+   "sha256": "f3c794e8dc32a88de7bba2c8a24c625066ab9d80e42c6f2f7302e81575e66ccd"
+  },
+  "T303": {
+   "file": "inmu/T303.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1498&name=Nam-prik-ong",
+   "read": "2026-11-12",
+   "sha256": "d99d405e01b0d4dfb9bb2420e480eec1a71150c01827f96d5b3a16b42c9bf6cc"
+  },
+  "T309": {
+   "file": "inmu/T309.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1519&name=Pork,%20satay",
+   "read": "2026-11-12",
+   "sha256": "6397c8903745bda005b33db79d81d8020494d958e0ede1f54bf5865cbc439800"
+  },
+  "T310": {
+   "file": "inmu/T310.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1550&name=Northern%20Thai%20noodle%20with%20chicken%20curry%20soup",
+   "read": "2026-11-12",
+   "sha256": "fcdcb0a9d259f7e481a211894add1951a15b5cc27c213438e46f2282964bee7f"
+  },
+  "T37": {
+   "file": "inmu/T37.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1536&name=Ka-nom-jeen-nam-ngeaw%20(Fermented%20rice%20noodles,%20with%20minced%20pork/%20beef/spareribs%20cooked%20in%20Thai%20herbs%20flavour%20soup)",
+   "read": "2026-11-12",
+   "sha256": "5f17b8b9bc9f41372e5579ff8e551b3c52655e2f5d1b8dbb8aa2171ce2031fdf"
+  },
+  "T39": {
+   "file": "inmu/T39.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1538&name=Ka-nom-jeen-nam-ya%20(Fermented%20rice%20noodles,%20topped%20with%20fish%20curry)",
+   "read": "2026-11-12",
+   "sha256": "c1f2dd80866cce74720394791bfaf3b1ad8f749c3694330934bfd495253080c6"
+  },
+  "T397": {
+   "file": "inmu/T397.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1557&name=Khao-mun%20%20(Rice%20cooked%20in%20chicken%20broth)",
+   "read": "2026-11-12",
+   "sha256": "8fea8ee2d0bcc46c358b6ad441517f624323f0c559334cfc2f6c7b92a4c8e2a5"
+  },
+  "T43": {
+   "file": "inmu/T43.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1560&name=Rice%20and%20beef%20matsaman%20curry",
+   "read": "2026-11-12",
+   "sha256": "5ac2e57cb3cc2528db8524384014bc1d1b1379824cdb8b52458a58803aed2bb9"
+  },
+  "T44": {
+   "file": "inmu/T44.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1562&name=Rice%20topped%20with%20egg%20in%20five%20spices%20soup",
+   "read": "2026-11-12",
+   "sha256": "95c048b91ae3319b2fb20447b7b2d0856304484edbe8003f27c54520f309de3a"
+  },
+  "T46": {
+   "file": "inmu/T46.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1559&name=Khao-rad-kaeng-kheaw-whan-kai%20(Rice+%20green%20curry%20with%20chicken)",
+   "read": "2026-11-12",
+   "sha256": "18126f5ea78f3ba1b931122530c511f1b1aeaffcba05a76da9f4b9c1d308dc3a"
+  },
+  "T48": {
+   "file": "inmu/T48.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1549&name=Rice,%20topped%20with%20pork%20leg%20stew%20in%20gravy)",
+   "read": "2026-11-12",
+   "sha256": "a7d3656b18119cccd71c0ad11bbc25effd440234421eff07e1d00dbd3d2db78c"
+  },
+  "T51": {
+   "file": "inmu/T51.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1551&name=Porridge%20rice%20with%20pork",
+   "read": "2026-11-12",
+   "sha256": "66793ffb3c531d3d769a1fa910dff0799af0736ebb14cc978fc896b6a169b692"
+  },
+  "T54": {
+   "file": "inmu/T54.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1561&name=Rice%20and%20stir%20fried%20chicken%20with%20holy%20basil%20leaves",
+   "read": "2026-11-12",
+   "sha256": "816eb3983b9b5cac10d1a8ea0edb26bb09a0f5f6c2446a4d63db67b4d6a5bef8"
+  },
+  "T59": {
+   "file": "inmu/T59.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1555&name=Khao-mun-kai-tom%20(rice%20cooked%20in%20chicken%20broth,%20topped%20with%20boiled%20chicken)",
+   "read": "2026-11-12",
+   "sha256": "49d7cfcd89834fe674582c66ef054139b80eef49c3ef6fe6f33a80dff3dc95f0"
+  },
+  "T60": {
+   "file": "inmu/T60.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1558&name=Khao-yum-pak-tai%20(Southern%20style%20rice%20salad:%20Rice%20with%20assorted%20vegetables%20served%20with%20southern%20fish%20sauce%20(Nam%20boo-doo))",
+   "read": "2026-11-12",
+   "sha256": "4558437ba342aa5aa0fbba28be657b64d2224a529f0434af3dfea337f5c36d8d"
+  },
+  "T63": {
+   "file": "inmu/T63.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1565&name=Rice%20cooked%20with%20curry%20powder%20and%20a%20piece%20of%20chicken%20breast%20or%20drumstick",
+   "read": "2026-11-12",
+   "sha256": "e6f4082b1fcbf3127fa1424b87ff8c7b1a2d7370290eac182e211a3e9ccf14c9"
+  },
+  "T64": {
+   "file": "inmu/T64.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1567&name=Rice%20with%20roasted%20pork%20and%20gravy",
+   "read": "2026-11-12",
+   "sha256": "aee17a84a87f56997ed8c51c5b11526545907b282b1e3738e7a59f08bbd78d08"
+  },
+  "T65": {
+   "file": "inmu/T65.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1568&name=Rice%20with%20fried%20seasoning%20pork",
+   "read": "2026-11-12",
+   "sha256": "77c2824804f99f8a20167e3c817c3acdbc6d8172e5cf41a918d042fe79ed8853"
+  },
+  "T68": {
+   "file": "inmu/T68.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1569&name=Porridge%20rice%20with%20minced%20pork",
+   "read": "2026-11-12",
+   "sha256": "f6a971a428980df41666861ca3c42f912735f2593c612689f71ae4db3cac0d33"
+  },
+  "T8": {
+   "file": "inmu/T8.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1524&name=Rice%20noodles,%20fried%20with%20pork/chicken%20and%20spices%20(Guay-teaw%20pad-khee-mow)",
+   "read": "2026-11-12",
+   "sha256": "ed4c755718f6e742967bd8008a7c934c3bb0b36729823177af82266d693628b3"
+  },
+  "T9": {
+   "file": "inmu/T9.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1525&name=Rice%20noodles,%20stir%20fried,%20Thai%20style%20(Guay-teaw%20pad-thai)",
+   "read": "2026-11-12",
+   "sha256": "a9cbba21809f0ef5e839908bc70d304baa8c1e75d962f5706a41193ae203a01c"
+  },
+  "T92": {
+   "file": "inmu/T92.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1573&name=Wheat%20noodle%20(Ba-mee)%20with%20roasted%20pork%20and%20soup",
+   "read": "2026-11-12",
+   "sha256": "8ac8542286e7cbceba5229e2ca8c9b07210180f950d9d88ba992598bc74048b9"
+  },
+  "T93": {
+   "file": "inmu/T93.html",
+   "url": "https://inmu.mahidol.ac.th/thaifcd//foodsearch/food_name/?dbcode=STD&food_group_id=84&id=1574&name=Wheat%20noodle%20(Ba-mee)%20with%20roasted%20pork%20(without%20soup)",
+   "read": "2026-11-12",
+   "sha256": "451c3145597386dffed0df14eb43770701b3374c58f38be885179e8fed600e6e"
+  }
+ }
+}

@@ -61,6 +61,11 @@ export const C = {
   estimateKcalMax: k(900, 'kcal per 100 g', 'OT', 'assumption', 'Pure fat is about 884'),
   estimateKcalTolerance: k(0.25, 'share of the energy from the macros', 'OT', 'assumption',
     'A model estimate further from 4p + 4c + 9f is recomputed from its macros; alcohol is not counted'),
+  // Food table rows (N3): a Thai row whose numbers disagree is left out rather than shown
+  tableKcalTolerance: k({ share: 0.25, kcal: 40 }, 'share of the energy, or kcal per 100 g if more', 'OT', 'assumption',
+    'A row whose energy is further than this from 4p + 4c + 9f is left out'),
+  derivedCarbsMin: k(-2, 'g per 100 g', 'OT', 'assumption',
+    'Carbohydrate worked out as (energy - 4p - 9f) / 4 below this means the energy is wrong; above it, rounding, so it counts as 0'),
   proteinPerKg: k({ gain: 1.8, lose: 2, maintain: 1.6 }, 'g per kg of reference weight', 'S8', 'verified',
     'Within 1.6 to 2.2 (S7, S8) and 1.4 to 2.0 (S10); 2.3 to 3.1 g per kg of lean mass when cutting (S9)'),
   proteinRefBmi: k(30, 'kg/m2', 'S15', 'verified', 'Above the obesity threshold, protein uses the weight at this BMI'),

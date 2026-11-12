@@ -1,5 +1,5 @@
 // Photo logging (F4) and Describe (F5) on the mock backend, through the real /api/analyze handler with the mock
-// provider. Each test names the fixture the provider answers with. Fixture numbers: basil pork is 699 kcal, 38 g protein.
+// provider. Each test names the fixture the provider answers with. Fixture numbers: basil pork is 712 kcal, 37 g protein (rice from the Thai FCD since N3).
 import { expect, test, type Page } from '@playwright/test';
 import { open, takePhoto, vision, withPrefs } from './helpers';
 
@@ -22,15 +22,15 @@ test('a photo becomes a reviewed meal with its thumbnail, oil included', { tag: 
   await expect(items(page).nth(0)).toContainText('White rice');
   await expect(items(page).nth(0)).toContainText('Database');
   await expect(items(page).nth(1)).toContainText('Estimate');
-  await expect(page.getByTestId('review-total')).toHaveText('699 kcal, 38 g protein');
+  await expect(page.getByTestId('review-total')).toHaveText('712 kcal, 37 g protein');
   await page.getByRole('radio', { name: '1 tsp' }).click();
   await expect(page.getByTestId('review-oil-adds')).toHaveText('Adds 40 kcal of oil as its own item');
-  await expect(page.getByTestId('review-add')).toHaveText('Add 739 kcal');
+  await expect(page.getByTestId('review-add')).toHaveText('Add 752 kcal');
   await page.getByTestId('review-keep').click();
   await page.getByTestId('review-add').click();
 
   await expect(review(page)).toBeHidden();
-  await expect(hero(page)).toHaveText('739');
+  await expect(hero(page)).toHaveText('752');
   const row = page.getByTestId('meal').first();
   await expect(row).toContainText('Basil pork with rice and fried egg');
   await expect(row.getByTestId('thumb')).toBeVisible();

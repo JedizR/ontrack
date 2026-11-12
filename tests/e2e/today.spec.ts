@@ -21,18 +21,18 @@ test('search a food, pick a portion and add it: Today updates at once', { tag: '
   await page.getByTestId('result').first().click();
   await expect(page.getByTestId('portion')).toBeVisible();
   await page.getByRole('button', { name: '1 plate' }).click();
-  await expect(page.getByTestId('portion-kcal')).toHaveText('325');
+  await expect(page.getByTestId('portion-kcal')).toHaveText('340');
   // grams on the stepper: typed, then nudged by 10
   const grams = page.getByTestId('portion-grams').getByRole('textbox');
   await grams.fill('190');
   await grams.press('Enter');
   await page.getByTestId('portion-grams').getByRole('button', { name: 'More grams' }).click();
   await expect(grams).toHaveValue('200');
-  await expect(page.getByTestId('search-add')).toHaveText('Add 260 kcal');
+  await expect(page.getByTestId('search-add')).toHaveText('Add 272 kcal');
   await page.getByTestId('search-add').click();
 
   await expect(page.getByTestId('search-sheet')).toBeHidden();
-  await expect(hero(page)).toHaveText('260');
+  await expect(hero(page)).toHaveText('272');
   await expect(meals(page)).toHaveCount(1);
   await expect(meals(page).first()).toContainText('White rice');
   await expect(meals(page).first()).toContainText('Database');
@@ -40,7 +40,7 @@ test('search a food, pick a portion and add it: Today updates at once', { tag: '
   // an empty field offers the food again with the grams used last time
   await page.getByTestId('add').click();
   await page.getByTestId('add-search').click();
-  await expect(page.getByTestId('recent-foods').getByTestId('result')).toHaveText(/White rice\s*200 g\s*260/);
+  await expect(page.getByTestId('recent-foods').getByTestId('result')).toHaveText(/White rice\s*200 g\s*272/);
 });
 
 test('quick add with macros and a name, then log it again from Recent in two taps', async ({ page }) => {
