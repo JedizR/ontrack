@@ -30,8 +30,8 @@
   </div>
 
   <div class="flex flex-1 flex-col justify-end py-8">
-    <h1 class="text-title text-balance">{t.welcome.promise}</h1>
-    <ul class="mt-6 flex flex-col gap-3">
+    <h1 class="text-title appear text-balance" style="--i: 3">{t.welcome.promise}</h1>
+    <ul class="appear mt-6 flex flex-col gap-3" style="--i: 5">
       {#each t.welcome.lines as line, i (i)}
         {@const Icon = ICONS[i]}
         <li class="flex items-center gap-4">
