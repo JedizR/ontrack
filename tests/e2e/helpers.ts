@@ -117,6 +117,14 @@ export const MEALS: Seed[] = [
   { collection: 'saved', id: 'sv1', updatedAt: 1, data: { title: 'Usual breakfast', items: [{ name: 'Oats', grams: 80, kcal: 303, protein: 10.5, carbs: 54, fat: 5.5, source: 'db' }], uses: 3, lastUsedAt: at('2026-11-09', '08:00') } },
 ];
 
+/** N2: whey (a 32 g scoop, 120 kcal) and creatine, each logged on TODAY: whey 2 scoops with 250 g whole milk, creatine taken. */
+export const SUPPLEMENTS: Seed[] = [
+  { collection: 'supplement', id: 'sup-whey', updatedAt: 1, data: { name: 'Whey protein', kind: 'whey', scoopG: 32, perScoop: { kcal: 120, protein: 24, carbs: 3, fat: 1.5 }, lastScoops: 2, lastMix: { foodId: 'milk-whole', grams: 250 } } },
+  { collection: 'supplement', id: 'sup-creatine', updatedAt: 1, data: { name: 'Creatine', kind: 'creatine', scoopG: 5, perScoop: { kcal: 0, protein: 0, carbs: 0, fat: 0 }, lastScoops: 1 } },
+  { collection: 'meal', id: 's1', updatedAt: 1, data: { date: TODAY, at: at(TODAY, '07:30'), title: 'Whey protein', method: 'supplement', items: [{ name: 'Whey protein', grams: 64, kcal: 240, protein: 48, carbs: 6, fat: 3, source: 'yours', supplementId: 'sup-whey', scoops: 2 }, { name: 'Whole milk', grams: 250, kcal: 153, protein: 7.9, carbs: 12, fat: 8.1, source: 'db', foodId: 'milk-whole' }] } },
+  { collection: 'meal', id: 's2', updatedAt: 1, data: { date: TODAY, at: at(TODAY, '07:31'), title: 'Creatine', method: 'supplement', items: [{ name: 'Creatine', grams: 5, kcal: 0, protein: 0, carbs: 0, fat: 0, source: 'yours', supplementId: 'sup-creatine', scoops: 1 }] } },
+];
+
 /**
  * An account on the mock server in its own space. `onboarded` (default) gives it a plan, or `account` instead of SEED;
  * `signedIn` (default) signs this page in to it before the app loads, once per tab, so a sign out or a reload is not undone.
