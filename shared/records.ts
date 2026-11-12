@@ -3,7 +3,7 @@
 // zod/mini: the same schemas at a fraction of the bundle, because actions.ts ships in the first chunk
 import * as z from 'zod/mini';
 
-export const COLLECTIONS = ['profile', 'plan', 'weight', 'meal', 'saved', 'program', 'slog', 'checkin', 'day', 'food'] as const;
+export const COLLECTIONS = ['profile', 'plan', 'weight', 'meal', 'saved', 'program', 'slog', 'checkin', 'day', 'food', 'supplement'] as const;
 export type Collection = (typeof COLLECTIONS)[number];
 
 /** The database checks id at 1 to 80 characters and data at 64 KB as jsonb text, which spaces out JSON.stringify's
@@ -91,13 +91,16 @@ export const mealItemSchema = z.object({
   source: z.enum(['db', 'estimate', 'manual', 'yours']),
   foodId: z.optional(str(0, 80)),
   confidence: z.optional(z.enum(['high', 'medium', 'low'])),
+  /** a logged supplement (N2, F21): the supplement it came from and how many scoops */
+  supplementId: z.optional(str(1, 80)),
+  scoops: z.optional(num(0.5, 10)),
 });
 
 export const mealSchema = z.object({
   date,
   at: z.string(),
   title: str(0, 120),
-  method: z.enum(['photo', 'text', 'search', 'quick', 'saved']),
+  method: z.enum(['photo', 'text', 'search', 'quick', 'saved', 'supplement']),
   items: z.array(mealItemSchema).check(z.maxLength(30)),
   thumb: z.optional(z.literal(true)),
   ai: z.optional(z.object({ model: str(0, 80), raw: z.optional(z.unknown()) })),
@@ -138,6 +141,17 @@ export const foodSchema = z.object({
   per100: z.object({ kcal: num(0, 1000), protein: num(0, 100), carbs: num(0, 100), fat: num(0, 100) }),
 });
 
+/** A supplement set up from its tub's label (N2, F21). `scoopG` 0 means the scoop's weight is not known. `lastMix` is the
+ * milk it was last mixed with, from the food table; none means water. */
+export const supplementSchema = z.object({
+  name: str(1, 60),
+  kind: z.enum(['whey', 'casein', 'plant', 'gainer', 'creatine', 'other']),
+  scoopG: num(0, 300),
+  perScoop: z.object({ kcal: num(0, 2000), protein: num(0, 300), carbs: num(0, 300), fat: num(0, 300) }),
+  lastScoops: num(0.5, 10),
+  lastMix: z.optional(z.object({ foodId: str(1, 80), grams: num(1, 1000) })),
+});
+
 export const SCHEMAS = {
   profile: profileSchema,
   plan: planSchema,
@@ -149,6 +163,7 @@ export const SCHEMAS = {
   checkin: checkinSchema,
   day: daySchema,
   food: foodSchema,
+  supplement: supplementSchema,
 } satisfies Record<Collection, z.ZodMiniType>;
 
 export type Profile = z.infer<typeof profileSchema>;
@@ -163,6 +178,7 @@ export type SessionLog = z.infer<typeof sessionLogSchema>;
 export type Checkin = z.infer<typeof checkinSchema>;
 export type Day = z.infer<typeof daySchema>;
 export type FoodMemory = z.infer<typeof foodSchema>;
+export type Supplement = z.infer<typeof supplementSchema>;
 export type DataOf = { [C in Collection]: z.infer<(typeof SCHEMAS)[C]> };
 
 /** Deterministic ids for one-per-user and one-per-day records, so two devices converge instead of duplicating. */

@@ -188,6 +188,18 @@ describe.each(harnesses)('sync conformance: $name', (h) => {
     expect((await z.pull(null)).records).toEqual([]);
   });
 
+  test('supplements (the supplement collection, N2) round trip and stay with their user', async () => {
+    const a = await signIn('s');
+    const z = await signIn('t');
+    const whey: Rec = { collection: 'supplement', id: 'sup-1', updatedAt: 10, data: { name: 'Whey', kind: 'whey', scoopG: 30, perScoop: { kcal: 120, protein: 24, carbs: 3, fat: 1.5 }, lastScoops: 2, lastMix: { foodId: 'milk-whole', grams: 250 } } };
+    const entry: Rec = { collection: 'meal', id: 'meal-s', updatedAt: 10, data: { date: '2026-11-12', at: '2026-11-12T00:30:00.000Z', title: 'Whey', method: 'supplement', items: [{ name: 'Whey', grams: 60, kcal: 240, protein: 48, carbs: 6, fat: 3, source: 'yours', supplementId: 'sup-1', scoops: 2 }] } };
+    await a.push([whey, entry]);
+    const { records } = await a.pull(null);
+    expect(byId(records, 'sup-1')).toEqual(whey);
+    expect(byId(records, 'meal-s')).toEqual(entry);
+    expect((await z.pull(null)).records).toEqual([]);
+  });
+
   test('a record the database would refuse is refused as a bad request', async () => {
     const b = await signIn('g');
     expect(await failKind(b.push([rec('x'.repeat(81), 1)]))).toBe('bad_request');
@@ -278,18 +290,18 @@ describe.each(harnesses)('sync conformance: $name', (h) => {
   });
 });
 
-test('store migration 1: a device that had pulled pulls everything again, still counted as pulled', async () => {
+test.each([1, 2])('store migration from schema %i: a device that had pulled pulls everything again, still counted as pulled', async (from) => {
   const idb = (globalThis.indexedDB = new IDBFactory());
   const old = new Store();
-  await old.open('migrating');
+  await old.open(`migrating-${from}`);
   old.setCursor('2026-11-01T00:00:00.000Z', 1);
-  old.meta.schemaVersion = 1;
+  old.meta.schemaVersion = from;
   old.put('weight', 'weight:2026-11-01', { date: '2026-11-01', kg: 70 }); // a write flushes the meta with it
   await old.settled();
   globalThis.indexedDB = idb;
   const now = new Store();
-  await now.open('migrating');
-  expect(now.meta.schemaVersion).toBe(2);
+  await now.open(`migrating-${from}`);
+  expect(now.meta.schemaVersion).toBe(3);
   expect(now.meta.cursor).toBe(new Date(0).toISOString());
   expect(now.get('weight', 'weight:2026-11-01')).toEqual({ date: '2026-11-01', kg: 70 });
 });
