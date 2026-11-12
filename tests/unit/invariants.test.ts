@@ -38,13 +38,17 @@ describe('no emoji', () => {
   });
 });
 
-describe('the app icon is frozen', () => {
+describe('the app icon, mark and wordmark are frozen', () => {
   // The owner froze the icon (design/brand/ICON.md). Changing it means changing this hash on purpose.
   const icon = readFileSync('design/brand/app-icon.svg');
   test('design/brand/app-icon.svg is unchanged', () => {
     expect(createHash('sha256').update(icon).digest('hex')).toBe('9639506f439012176d5cd7b41cba8208e8e88b17434a2d00748091d35d0f3d62');
   });
   test('public/favicon.svg is a copy of it', () => expect(readFileSync('public/favicon.svg').equals(icon)).toBe(true));
+  test.each([
+    ['design/brand/mark.svg', '60f17514f30aeef2dae2476e8e25950d24818f03796209740cb52c1aea82d2db'],
+    ['design/brand/wordmark.svg', '78cc54b2c5ef4912b0a9826983f092b2137749096d4dbfb5a0aea30ea66d5f07'],
+  ])('%s is unchanged', (f, hash) => expect(createHash('sha256').update(readFileSync(f)).digest('hex')).toBe(hash));
 });
 
 describe('tokens only', () => {
