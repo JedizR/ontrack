@@ -2,7 +2,10 @@
 import 'fake-indexeddb/auto';
 import { beforeAll, expect, test, vi } from 'vitest';
 import { db } from '../../src/lib/db/store.svelte';
-import { changeProgram, deleteMeal, findProduct, forgetFood, logAgain, logProduct, logSaved, logSupplement, logWeight, rememberFoods, removeSupplement, saveMeal, savePlan, saveProduct, saveProfile, saveProgram, saveSaved, saveSupplement } from '../../src/lib/actions';
+import { changeProgram, deleteMeal, findPeople, findProduct, forgetFood, listFriends, logAgain, logProduct, logSaved, logSupplement, logWeight, rememberFoods, removeSupplement, saveMeal, savePlan, saveProduct, saveProfile, saveProgram, saveSaved, saveSocial, saveSupplement, shareMeal, unshareMeal } from '../../src/lib/actions';
+import { session } from '../../src/lib/session.svelte';
+import { createMockServer, MOCK_CODE } from '../../dev/mock-backend';
+import { createMockBackend } from '../../src/lib/backend/mock';
 import { readFileSync } from 'node:fs';
 import { foodKey, withMine, type Food } from '../../src/lib/data/foods';
 import foods from '../../src/lib/data/foods.json';
@@ -195,4 +198,51 @@ test('products (B1): a label confirmed is kept under its barcode and found offli
   } finally {
     vi.unstubAllGlobals();
   }
+});
+
+test('social (S1): the profile saves through the store with its handle checked online; a meal shares rounded and unshares', async () => {
+  const server = createMockServer();
+  const backend = async (email: string) => {
+    const b = createMockBackend({ base: 'http://mock', fetch: (u, i) => server(new Request(u, i)), space: 'actions-social' });
+    await b.auth.sendEmailCode(email);
+    await b.auth.verifyEmailCode(email, MOCK_CODE);
+    return b;
+  };
+  const other = await backend('other@example.com');
+  await other.push([{ collection: 'social', id: 'social', updatedAt: 1, data: { handle: 'taken_one', name: 'Other' } }]);
+  session.backend = await backend('me@example.com');
+  vi.stubGlobal('navigator', { onLine: true });
+  try {
+    expect(await saveSocial({ handle: ' @Taken_One', name: 'Me', showProgram: false })).toBe('taken');
+    expect(db.get('social', 'social')).toBeUndefined();
+    await expect(saveSocial({ handle: 'no spaces', name: 'Me', showProgram: false })).rejects.toThrow();
+    const photo = new Blob([new Uint8Array([255, 216, 255])], { type: 'image/jpeg' });
+    expect(await saveSocial({ handle: '@Nan_Eats', name: ' Nan ', showProgram: true }, photo)).toBe('ok');
+    const mine = db.get('social', 'social')!;
+    expect(mine).toEqual({ handle: 'nan_eats', name: 'Nan', showProgram: true, photo: expect.stringMatching(/^avatar-[0-9a-f-]{36}$/) });
+    expect(await db.thumb(mine.photo!)).toBeTruthy(); // queued to upload with the thumbnails
+    expect(await findPeople('  ')).toEqual({ ok: true, value: [] });
+    expect(await findPeople('@TAKEN')).toMatchObject({ ok: true, value: [{ handle: 'taken_one', name: 'Other', photo: null }] });
+
+    // offline: the name, the photo and the switch save; a new handle and anything about friends cannot
+    vi.stubGlobal('navigator', { onLine: false });
+    expect(await saveSocial({ handle: 'nan_eats', name: 'Nan T', showProgram: false })).toBe('ok');
+    expect(db.get('social', 'social')).toEqual({ handle: 'nan_eats', name: 'Nan T', photo: mine.photo });
+    expect(await saveSocial({ handle: 'nan_t', name: 'Nan T', showProgram: false }, null)).toBe('offline');
+    expect(await saveSocial({ handle: 'nan_eats', name: 'Nan T', showProgram: false }, null)).toBe('ok');
+    expect(db.get('social', 'social')).toEqual({ handle: 'nan_eats', name: 'Nan T' });
+    expect(await listFriends()).toEqual({ ok: false, error: 'offline' });
+  } finally {
+    vi.unstubAllGlobals();
+    session.backend = null;
+  }
+  expect(await listFriends()).toEqual({ ok: false, error: 'auth' });
+
+  const meal = { date: '2026-11-12', at: '2026-11-12T05:30:00.000Z', title: 'Khao man kai', method: 'photo' as const, items: [{ name: 'Khao man kai', grams: 350, kcal: 596, protein: 25.3, carbs: 70.2, fat: 23.1, source: 'db' as const }] };
+  const id = saveMeal({ ...meal, thumb: true });
+  expect(shareMeal(id, { lat: 13.76508, lng: 100.53853 })).toBe(true);
+  expect(db.get('meal', id)?.share).toEqual({ lat: 13.765, lng: 100.539 });
+  unshareMeal(id);
+  expect(db.get('meal', id)).toEqual({ ...meal, thumb: true });
+  expect(shareMeal(saveMeal(meal), { lat: 13.76508, lng: 100.53853 })).toBe(false); // no photo, nothing to pin
 });

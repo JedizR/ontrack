@@ -8,7 +8,8 @@ import { sync } from '$lib/sync/engine.svelte';
 import { session } from '$lib/session.svelte';
 import { prefs } from '$lib/prefs.svelte';
 import { BackendError } from '$lib/backend';
-import type { FailKind } from '$lib/backend/types';
+import type { Backend, Box, FailKind } from '$lib/backend/types';
+import { roundPosition, type Position } from '$lib/geo';
 import { eeeByWeekday, planFromBaseline, type CheckinResult } from '$lib/model/engine';
 import { planFor } from '$lib/model/day';
 import { addDays, today } from '$lib/model/dates';
@@ -18,7 +19,7 @@ import { productItem } from '$lib/model/products';
 import { fetchOff } from '$lib/data/off';
 import { preparePhoto } from '$lib/photo';
 import type { AnalyzeRequest, AnalyzeResponse, LabelResponse } from '../../shared/analysis';
-import { foodSchema, ids, productSchema, recSchema, SCHEMAS, type Checkin, type Collection, type DataOf, type Meal, type MealItem, type Plan, type Product, type Profile, type Program, type Saved, type SessionLog, type Supplement, type Weight } from '../../shared/records';
+import { foodSchema, ids, productSchema, recSchema, SCHEMAS, socialSchema, type Checkin, type Collection, type DataOf, type Meal, type MealItem, type Plan, type Product, type Profile, type Program, type Saved, type SessionLog, type Supplement, type Weight } from '../../shared/records';
 
 const uid = () => crypto.randomUUID();
 /** a plain copy of the store's proxy, for undo */
@@ -258,6 +259,80 @@ export async function logReviewed(m: Meal, thumb: Blob | null) {
   const kept = thumb ? await saveMealThumb(id, thumb).then(() => true, () => false) : false;
   saveMeal(kept ? { ...m, thumb: true } : m, id);
   return () => { deleteMeal(id); };
+}
+
+// ----- friends and the food map (S1, F16, F17) -----
+/** Why a call about friends failed. offline: no connection (friends' data lives on the server only); taken: the handle
+ * is someone else's; auth: signed out or the session ended; bad_request: refused (no such request, no profile yet). */
+export type SocialError = 'offline' | 'taken' | Exclude<FailKind, 'network' | 'wrong_code'>;
+export type SocialResult<T> = { ok: true; value: T } | { ok: false; error: SocialError };
+async function online<T>(f: (b: Backend) => Promise<T>): Promise<SocialResult<T>> {
+  const b = session.backend;
+  if (!b) return { ok: false, error: 'auth' };
+  if (!navigator.onLine) return { ok: false, error: 'offline' };
+  try {
+    return { ok: true, value: await f(b) };
+  } catch (e) {
+    const kind = e instanceof BackendError ? e.kind : 'network';
+    return { ok: false, error: kind === 'network' ? 'offline' : kind === 'wrong_code' ? 'server' : kind };
+  }
+}
+/** A handle as typed: no spaces, no leading @, lower case. */
+const handleOf = (typed: string) => typed.trim().replace(/^@/, '').toLowerCase();
+
+/**
+ * Your profile for friends (F16): a record like the rest of your data, which the server publishes as it syncs. A new
+ * or changed handle is checked with the server first, so it needs the network; the name, the photo and the program
+ * switch save offline. `photo`: a new picture (a small square JPEG), null to remove it, left out to keep it.
+ */
+export async function saveSocial(p: { handle: string; name: string; showProgram: boolean }, photo?: Blob | null): Promise<'ok' | SocialError> {
+  const was = db.get('social', ids.social());
+  const data = socialSchema.parse({ handle: handleOf(p.handle), name: p.name.trim(), ...(p.showProgram ? { showProgram: true } : {}) });
+  if (data.handle !== was?.handle) {
+    const free = await online((b) => b.social.handleFree(data.handle));
+    if (!free.ok) return free.error;
+    if (!free.value) return 'taken';
+  }
+  let name = photo === null ? undefined : was?.photo;
+  if (photo) {
+    name = `avatar-${uid()}`; // a new name for a new picture, so no phone keeps showing the old one
+    await saveMealThumb(name, photo);
+  }
+  write('social', ids.social(), { ...data, ...(name ? { photo: name } : {}) });
+  return 'ok';
+}
+export const handleFree = (typed: string) => online((b) => b.social.handleFree(handleOf(typed)));
+/** People by the start of their handle; nothing for an empty search. */
+export const findPeople = (typed: string) => (handleOf(typed) ? online((b) => b.social.search(handleOf(typed))) : Promise.resolve({ ok: true as const, value: [] }));
+export const listFriends = () => online((b) => b.social.friends());
+/** Asks them, or accepts when they asked you first. */
+export const requestFriend = (userId: string) => online((b) => b.social.request(userId));
+export const acceptFriend = (userId: string) => online((b) => b.social.accept(userId));
+/** Ends a friendship, or withdraws your request: either side can, and it is gone for both at once. */
+export const removeFriend = (userId: string) => online((b) => b.social.remove(userId));
+export const declineFriend = removeFriend;
+/** A friend's program while they show it (null otherwise). */
+export const friendProgram = (userId: string) => online((b) => b.social.program(userId));
+/** Shared meals inside a map box, yours and your friends', newest first: the pins to group with `clusterPins`. */
+export const mapMeals = (box: Box) => online((b) => b.social.sharedIn(box));
+/** A shared meal's or a profile's photo, fetched each time: a friend's photo is never kept on this phone. */
+export const sharedPhoto = (path: string) => online((b) => b.social.photo(path));
+/**
+ * A logged photo meal onto the food map (F17) at where it was taken, rounded to about 100 m here, before it is stored
+ * or sent. Friends see it once it syncs. false when the meal is gone or has no photo.
+ */
+export function shareMeal(id: string, at: Position) {
+  const m = db.get('meal', id);
+  if (!m?.thumb) return false;
+  write('meal', id, { ...copy(m), share: roundPosition(at) });
+  return true;
+}
+/** Off the map: friends stop seeing it, and its photo, once it syncs. Deleting the meal does the same. */
+export function unshareMeal(id: string) {
+  const m = db.get('meal', id);
+  if (!m?.share) return;
+  const { share: _, ...rest } = copy(m);
+  write('meal', id, rest);
 }
 
 // ----- account -----

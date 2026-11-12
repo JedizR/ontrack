@@ -1,14 +1,20 @@
 // The Backend interface over Supabase: auth (Google with PKCE, email code), the records table, the thumbnail bucket.
 // Merging happens in the database (records_lww trigger); row level security scopes every query to the signed in user.
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-import type { Rec } from '../../../shared/records';
-import { BackendError, PULL_PAGE, pullPages, type Backend, type FailKind } from './types';
+import type { Program, Rec } from '../../../shared/records';
+import { BackendError, PULL_PAGE, pullPages, SEARCH_MAX, SHARED_MAX, type Backend, type FailKind, type Person } from './types';
 
 const BUCKET = 'meal-photos';
 type Row = { collection: Rec['collection']; id: string; data: Record<string, unknown>; updated_at: number; deleted: boolean; server_ts: string };
+const PERSON = 'user_id,handle,name,photo_path';
+type PersonRow = { user_id: string; handle: string; name: string; photo_path: string | null };
+const person = (r: PersonRow): Person => ({ id: r.user_id, handle: r.handle, name: r.name, photo: r.photo_path });
+type MealRow = { owner: string; meal_id: string; lat: number; lng: number; taken_at: string; title: string; kcal: number; protein: number; carbs: number; fat: number; photo_path: string | null };
 
 /** Supabase errors come in three shapes (auth, PostgREST, storage); all of them carry a status, a code or a message. */
 function kindOf(e: { status?: number; code?: string; message?: string; name?: string }, status = e.status ?? 0): FailKind {
+  // a constraint the database holds (a unique handle, a profile to befriend, not yourself) refuses the request
+  if (e.code?.startsWith('23')) return 'bad_request';
   if (status === 401 || e.code === 'PGRST301' || e.code === 'PGRST303' || e.code === '42501' || e.name === 'AuthSessionMissingError') return 'auth';
   if (e.code === 'otp_expired') return 'wrong_code';
   if (status === 429 || e.code?.startsWith('over_')) return 'rate_limited';
@@ -36,6 +42,22 @@ export function createSupabaseBackend(sb: SupabaseClient, settingsUrl?: string, 
     return s.user.id;
   };
   let google: Promise<boolean> | null = null;
+  /** null for an object that is missing or not the caller's to read: storage answers 400 or 404 for both */
+  const download = async (path: string) => {
+    const r = await sb.storage.from(BUCKET).download(path);
+    if (r.error) {
+      const status = (r.error as { status?: number; statusCode?: string }).status ?? Number((r.error as { statusCode?: string }).statusCode);
+      if (status === 400 || status === 404) return null;
+      check({ error: r.error, status });
+    }
+    return r.data;
+  };
+  /** their request to me, accepted; the rows it changed */
+  const acceptFrom = async (id: string) => {
+    const r = await sb.from('friendships').update({ status: 'accepted' }).eq('requester', id).eq('addressee', await userId()).select('requester');
+    check(r);
+    return r.data!.length;
+  };
 
   return {
     auth: {
@@ -99,16 +121,74 @@ export function createSupabaseBackend(sb: SupabaseClient, settingsUrl?: string, 
       check(await sb.storage.from(BUCKET).upload(`${await userId()}/${mealId}.jpg`, blob, { upsert: true, contentType: 'image/jpeg' }));
     },
     async getThumb(mealId) {
-      const r = await sb.storage.from(BUCKET).download(`${await userId()}/${mealId}.jpg`);
-      if (r.error) {
-        const status = (r.error as { status?: number; statusCode?: string }).status ?? Number((r.error as { statusCode?: string }).statusCode);
-        if (status === 400 || status === 404) return null; // storage answers 400 or 404 for a missing object
-        check({ error: r.error, status });
-      }
-      return r.data;
+      return download(`${await userId()}/${mealId}.jpg`);
     },
     async accessToken() {
       return (await current().catch(() => null))?.access_token ?? null;
+    },
+
+    // what others may read is decided by row level security (supabase/migrations/0005_social.sql), not by these filters
+    social: {
+      async handleFree(handle) {
+        const r = await sb.from('profiles').select('user_id').eq('handle', handle).neq('user_id', await userId());
+        check(r);
+        return !r.data!.length;
+      },
+      async search(prefix) {
+        const like = `${prefix.replace(/[\\%_]/g, '\\$&')}%`; // an underscore in a handle is not a wildcard
+        const r = await sb.from('profiles').select(PERSON).like('handle', like).neq('user_id', await userId()).order('handle').limit(SEARCH_MAX);
+        check(r);
+        return (r.data as PersonRow[]).map(person);
+      },
+      async friends() {
+        const me = await userId();
+        const f = await sb.from('friendships').select('requester,addressee,status');
+        check(f);
+        const rows = f.data as { requester: string; addressee: string; status: 'requested' | 'accepted' }[];
+        const other = (r: (typeof rows)[number]) => (r.requester === me ? r.addressee : r.requester);
+        if (!rows.length) return [];
+        const p = await sb.from('profiles').select(PERSON).in('user_id', rows.map(other));
+        check(p);
+        const people = new Map((p.data as PersonRow[]).map((row) => [row.user_id, person(row)]));
+        return rows.flatMap((r) => {
+          const who = people.get(other(r));
+          return who ? [{ ...who, status: r.status === 'accepted' ? ('friend' as const) : r.requester === me ? ('outgoing' as const) : ('incoming' as const) }] : [];
+        });
+      },
+      async request(id) {
+        if (await acceptFrom(id)) return;
+        const r = await sb.from('friendships').insert({ requester: await userId(), addressee: id });
+        if (r.error?.code === '23505') return; // asked before
+        check(r);
+      },
+      async accept(id) {
+        if (!(await acceptFrom(id))) throw new BackendError('bad_request');
+      },
+      async remove(id) {
+        const pair = [id, await userId()];
+        check(await sb.from('friendships').delete().in('requester', pair).in('addressee', pair));
+      },
+      async sharedIn(b) {
+        await userId();
+        let q = sb.from('shared_meals').select('owner,meal_id,lat,lng,taken_at,title,kcal,protein,carbs,fat,photo_path').gte('lat', b.south).lte('lat', b.north);
+        q = b.west <= b.east ? q.gte('lng', b.west).lte('lng', b.east) : q.or(`lng.gte.${Number(b.west)},lng.lte.${Number(b.east)}`);
+        const r = await q.order('taken_at', { ascending: false }).limit(SHARED_MAX);
+        check(r);
+        return (r.data as MealRow[]).map((m) => ({
+          owner: m.owner, mealId: m.meal_id, lat: Number(m.lat), lng: Number(m.lng), takenAt: new Date(m.taken_at).toISOString(), title: m.title,
+          kcal: Number(m.kcal), protein: Number(m.protein), carbs: Number(m.carbs), fat: Number(m.fat), photo: m.photo_path,
+        }));
+      },
+      async photo(path) {
+        await userId();
+        return download(path);
+      },
+      async program(id) {
+        await userId();
+        const r = await sb.from('shared_programs').select('program').eq('owner', id).maybeSingle();
+        check(r);
+        return ((r.data as { program: Program } | null)?.program) ?? null;
+      },
     },
   };
 }

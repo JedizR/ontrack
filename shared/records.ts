@@ -3,7 +3,7 @@
 // zod/mini: the same schemas at a fraction of the bundle, because actions.ts ships in the first chunk
 import * as z from 'zod/mini';
 
-export const COLLECTIONS = ['profile', 'plan', 'weight', 'meal', 'saved', 'program', 'slog', 'checkin', 'day', 'food', 'supplement', 'product'] as const;
+export const COLLECTIONS = ['profile', 'plan', 'weight', 'meal', 'saved', 'program', 'slog', 'checkin', 'day', 'food', 'supplement', 'product', 'social'] as const;
 export type Collection = (typeof COLLECTIONS)[number];
 
 /** The database checks id at 1 to 80 characters and data at 64 KB as jsonb text, which spaces out JSON.stringify's
@@ -107,6 +107,8 @@ export const mealSchema = z.object({
   items: z.array(mealItemSchema).check(z.maxLength(30)),
   thumb: z.optional(z.literal(true)),
   ai: z.optional(z.object({ model: str(0, 80), raw: z.optional(z.unknown()) })),
+  /** on the food map (S1, F17): where the photo was taken, rounded to about 100 m on the device (`roundPosition`) */
+  share: z.optional(z.object({ lat: num(-90, 90), lng: num(-180, 180) })),
 });
 
 export const savedSchema = z.object({
@@ -175,6 +177,19 @@ export const productSchema = z.object({
   lastG: z.optional(num(0.1, 10000)),
 });
 
+/** Handles (S1, F16): 3 to 20 lower case letters, digits and underscores, unique. The database checks the same. */
+export const HANDLE = /^[a-z0-9_]{3,20}$/;
+
+/** Your profile for friends (S1, F16), id 'social'. The server publishes it as you sync: anyone signed in can find the
+ * handle, name and photo; friends see the program only while `showProgram` is set. `photo` names the picture, kept
+ * at `meal-photos/<userId>/<photo>.jpg`; a new picture gets a new name. */
+export const socialSchema = z.object({
+  handle: z.string().check(z.regex(HANDLE)),
+  name: str(1, 40),
+  photo: z.optional(z.string().check(z.regex(/^[a-z0-9-]{1,64}$/))),
+  showProgram: z.optional(z.literal(true)),
+});
+
 export const SCHEMAS = {
   profile: profileSchema,
   plan: planSchema,
@@ -188,6 +203,7 @@ export const SCHEMAS = {
   food: foodSchema,
   supplement: supplementSchema,
   product: productSchema,
+  social: socialSchema,
 } satisfies Record<Collection, z.ZodMiniType>;
 
 export type Profile = z.infer<typeof profileSchema>;
@@ -204,11 +220,13 @@ export type Day = z.infer<typeof daySchema>;
 export type FoodMemory = z.infer<typeof foodSchema>;
 export type Supplement = z.infer<typeof supplementSchema>;
 export type Product = z.infer<typeof productSchema>;
+export type Social = z.infer<typeof socialSchema>;
 export type DataOf = { [C in Collection]: z.infer<(typeof SCHEMAS)[C]> };
 
 /** Deterministic ids for one-per-user and one-per-day records, so two devices converge instead of duplicating. */
 export const ids = {
   profile: () => 'profile',
+  social: () => 'social',
   program: () => 'program',
   weight: (date: string) => `weight:${date}`,
   slog: (date: string, key: string) => `slog:${date}:${key}`,

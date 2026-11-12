@@ -1,4 +1,4 @@
-// DELETE /api/account: the caller's thumbnails, then their records, then the auth user (TECH-SPEC section 7).
+// DELETE /api/account: the caller's social rows, thumbnails, records, then the auth user (TECH-SPEC section 7).
 import { admin, caller } from '../auth.js';
 import { json } from '../http.js';
 
@@ -11,7 +11,12 @@ export async function account(request: Request): Promise<Response> {
   const user = await caller(request, db);
   if (!user) return json(401, { ok: false, error: 'unauthorized' });
 
-  // storage keeps objects that point at a user, so they go first
+  // the social side first, so friends stop seeing this person at once (F16, F17); the profile takes the friendships
+  for (const [table, column] of [['shared_meals', 'owner'], ['shared_programs', 'owner'], ['profiles', 'user_id']] as const) {
+    const r = await db.from(table).delete().eq(column, user.id);
+    if (r.error) return failed(table, r.error);
+  }
+  // storage keeps objects that point at a user, so they go before the user
   for (;;) {
     const list = await db.storage.from(BUCKET).list(user.id, { limit: PAGE });
     if (list.error) return failed('list', list.error);

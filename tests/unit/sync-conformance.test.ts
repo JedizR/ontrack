@@ -1,6 +1,7 @@
 // TECH-SPEC section 5, checked against every Backend: the mock always, Supabase when SUPABASE_TEST_EMAIL is set
 // (with SUPABASE_URL, SUPABASE_SECRET_KEY and VITE_SUPABASE_PUBLISHABLE_KEY). Test users are made with the secret key
-// and removed at the end through the real DELETE /api/account handler.
+// and removed at the end through the real DELETE /api/account handler. The social tests (S1) are the visibility suite:
+// a stranger cannot read, a friend can, a removed friend cannot, for rows and photos.
 import 'fake-indexeddb/auto';
 import { IDBFactory } from 'fake-indexeddb';
 import { afterAll, describe, expect, test } from 'vitest';
@@ -23,6 +24,8 @@ type Harness = {
   deleteAccount(b: Backend): Promise<number>;
   /** removes test users whose sessions ended before they could delete themselves */
   cleanup(tag: string): Promise<void>;
+  /** the database client behind a backend, to try what the app never does (Supabase only) */
+  raw?(b: Backend): SupabaseClient;
 };
 
 function mockHarness(): Harness {
@@ -72,6 +75,7 @@ function supabaseHarness(): Harness {
       const res = await account(new Request('http://x/api/account', { method: 'DELETE', headers: { authorization: `Bearer ${await b.accessToken()}` } }));
       return res.status;
     },
+    raw: (b) => clients.get(b)!,
     async cleanup(tag) {
       const { data } = await admin.auth.admin.listUsers({ perPage: 1000 });
       for (const u of data.users.filter((u) => u.email?.includes(tag))) {
@@ -292,17 +296,175 @@ describe.each(harnesses)('sync conformance: $name', (h) => {
     expect(one.store.pending).toBe(1);
   });
 
-  test('deleting the account removes the records', async () => {
-    const b = await signIn('k');
-    await b.push([rec('gone', 1)]);
-    expect(await h.deleteAccount(b)).toBe(200);
-    const fresh = await h.signIn(email('k'));
+  // ----- friends and the food map (S1): the visibility suite -----
+  const world = { south: -90, west: -180, north: 90, east: 180 };
+  const jpeg = (n: number) => new Blob([new Uint8Array([255, 216, 255, n])], { type: 'image/jpeg' });
+  const bytes = async (b: Blob | null) => b && [...new Uint8Array(await b.arrayBuffer())];
+  const social = (handle: string, updatedAt = 1, extra: Record<string, unknown> = {}): Rec => ({ collection: 'social', id: 'social', updatedAt, data: { handle, name: `Name ${handle.slice(0, 2)}`, ...extra } });
+  /** a signed in user with a published profile */
+  const member = async (who: string, extra: Record<string, unknown> = {}) => {
+    const b = await signIn(who);
+    const handle = `${who}_${tag}`;
+    await b.push([social(handle, 1, extra)]);
+    return { b, id: (await b.auth.session())!.userId, handle };
+  };
+  type Member = Awaited<ReturnType<typeof member>>;
+  const befriend = async (x: Member, y: Member) => {
+    await x.b.social.request(y.id);
+    await y.b.social.accept(x.id);
+  };
+  const program: Rec = { collection: 'program', id: 'program', updatedAt: 1, data: { name: 'Upper lower', sessions: [{ key: 'u1', weekday: 0, name: 'Upper', type: 'strength', minutes: 60, intensity: 'moderate' }] } };
+  const shared = (id: string, updatedAt = 1, extra: Record<string, unknown> = {}): Rec => ({
+    collection: 'meal', id, updatedAt,
+    data: {
+      date: '2026-11-12', at: '2026-11-12T05:30:00.000Z', title: 'Khao man kai', method: 'photo', thumb: true, share: { lat: 13.765, lng: 100.539 },
+      items: [{ name: 'Khao man kai', grams: 350, kcal: 596, protein: 25.3, carbs: 70.2, fat: 23.1, source: 'db' }, { name: 'Soup', grams: 200, kcal: 20.4, protein: 1.04, carbs: 1, fat: 1.36, source: 'db' }],
+      ...extra,
+    },
+  });
+
+  test('social visibility: a stranger cannot read, a friend can, a removed friend cannot, rows and photos', async () => {
+    const a = await member('va', { photo: 'avatar-a', showProgram: true });
+    const z = await member('vb');
+    await a.b.push([program, shared('meal-v')]);
+    await a.b.putThumb('meal-v', jpeg(1));
+    await a.b.putThumb('avatar-a', jpeg(2));
+    await a.b.putThumb('meal-private', jpeg(3));
+    const path = `${a.id}/meal-v.jpg`;
+    // the meal's own nutrition, summed and rounded: no day total, target or weight travels
+    const meal = { owner: a.id, mealId: 'meal-v', lat: 13.765, lng: 100.539, takenAt: '2026-11-12T05:30:00.000Z', title: 'Khao man kai', kcal: 616, protein: 26.3, carbs: 71.2, fat: 24.5, photo: path };
+    expect(await a.b.social.sharedIn(world)).toEqual([meal]);
+    expect(await a.b.social.program(a.id)).toEqual(program.data);
+
+    // anyone signed in finds the handle, the name and the profile photo, and nothing else
+    expect(await z.b.social.search(a.handle)).toEqual([{ id: a.id, handle: a.handle, name: 'Name va', photo: `${a.id}/avatar-a.jpg` }]);
+    expect(await bytes(await z.b.social.photo(`${a.id}/avatar-a.jpg`))).toEqual([255, 216, 255, 2]);
+    const hidden = async () => {
+      expect(await z.b.social.sharedIn(world)).toEqual([]);
+      expect(await z.b.social.photo(path)).toBeNull();
+      expect(await z.b.social.program(a.id)).toBeNull();
+      expect(await z.b.social.photo(`${a.id}/meal-private.jpg`)).toBeNull();
+    };
+    await hidden();
+    // asked and not yet accepted: still a stranger
+    await z.b.social.request(a.id);
+    await hidden();
+
+    await a.b.social.accept(z.id);
+    expect(await z.b.social.sharedIn(world)).toEqual([meal]);
+    expect(await bytes(await z.b.social.photo(path))).toEqual([255, 216, 255, 1]);
+    expect(await z.b.social.program(a.id)).toEqual(program.data);
+    // a friend still reads no other photo and no record
+    expect(await z.b.social.photo(`${a.id}/meal-private.jpg`)).toBeNull();
+    expect((await z.b.pull(null)).records.map((r) => r.collection)).toEqual(['social']);
+
+    // removed, by either side
+    await z.b.social.remove(a.id);
+    await hidden();
+    expect(await a.b.social.friends()).toEqual([]);
+  });
+
+  test('social: unsharing, deleting the meal and turning the program off take effect on the server', async () => {
+    const a = await member('wa', { showProgram: true });
+    const z = await member('wb');
+    await befriend(z, a);
+    // a client that forgot to round is rounded by the server
+    await a.b.push([program, shared('m1'), shared('m2', 1, { at: '2026-11-12T06:30:00.000Z', share: { lat: 13.7654, lng: 100.5386 } })]);
+    await a.b.putThumb('m1', jpeg(1));
+    expect((await z.b.social.sharedIn(world)).map((m) => [m.mealId, m.lat, m.lng])).toEqual([['m2', 13.765, 100.539], ['m1', 13.765, 100.539]]);
+    // only inside the box, also one across the 180th meridian
+    expect(await z.b.social.sharedIn({ south: 0, west: 0, north: 10, east: 10 })).toEqual([]);
+    expect(await z.b.social.sharedIn({ south: 13, west: 170, north: 14, east: -170 })).toEqual([]);
+    expect((await z.b.social.sharedIn({ south: 13, west: 100, north: 14, east: -170 })).length).toBe(2);
+
+    // an edit follows; unsharing and deleting take the meal and its photo away
+    await a.b.push([shared('m1', 2, { title: 'Lunch' })]);
+    expect((await z.b.social.sharedIn(world)).find((m) => m.mealId === 'm1')?.title).toBe('Lunch');
+    const { share: _, ...unshared } = shared('m1').data as Record<string, unknown>;
+    await a.b.push([{ ...shared('m1'), updatedAt: 3, data: unshared }, { ...shared('m2'), updatedAt: 3, deleted: true }]);
+    expect(await z.b.social.sharedIn(world)).toEqual([]);
+    expect(await z.b.social.photo(`${a.id}/m1.jpg`)).toBeNull();
+
+    // the program follows the switch
+    expect(await z.b.social.program(a.id)).toEqual(program.data);
+    await a.b.push([social(a.handle, 2)]);
+    expect(await z.b.social.program(a.id)).toBeNull();
+  });
+
+  test('social: handles are unique, a request goes one way, only the one asked accepts, and either side removes', async () => {
+    const a = await member('xa');
+    const zb = await signIn('xb');
+    const z = { b: zb, id: (await zb.auth.session())!.userId, handle: `xb_${tag}` };
+    expect(await z.b.social.handleFree(a.handle)).toBe(false);
+    expect(await a.b.social.handleFree(a.handle)).toBe(true);
+    expect(await z.b.social.handleFree(z.handle)).toBe(true);
+    // a handle someone holds is not published for another, and with no profile there are no requests
+    await z.b.push([social(a.handle)]);
+    expect(await a.b.social.search(a.handle)).toEqual([]);
+    expect(await failKind(z.b.social.request(a.id))).toBe('bad_request');
+
+    await z.b.push([social(z.handle, 2)]);
+    const person = (m: Member) => ({ id: m.id, handle: m.handle, name: `Name ${m.handle.slice(0, 2)}`, photo: null });
+    await z.b.social.request(a.id);
+    await z.b.social.request(a.id); // again: nothing changes
+    expect(await z.b.social.friends()).toEqual([{ ...person(a), status: 'outgoing' }]);
+    expect(await a.b.social.friends()).toEqual([{ ...person(z), status: 'incoming' }]);
+    expect(await failKind(z.b.social.accept(a.id))).toBe('bad_request');
+
+    // declined: gone for both
+    await a.b.social.remove(z.id);
+    expect(await z.b.social.friends()).toEqual([]);
+    expect(await a.b.social.friends()).toEqual([]);
+    // asking someone who asked you accepts
+    await z.b.social.request(a.id);
+    await a.b.social.request(z.id);
+    expect(await a.b.social.friends()).toEqual([{ ...person(z), status: 'friend' }]);
+    expect(await z.b.social.friends()).toEqual([{ ...person(a), status: 'friend' }]);
+    // not yourself, not someone with no profile
+    expect(await failKind(a.b.social.request(a.id))).toBe('bad_request');
+    expect(await failKind(a.b.social.request(crypto.randomUUID()))).toBe('bad_request');
+  });
+
+  test.runIf(!!h.raw)('social: no client writes what the server publishes, or accepts its own request', async () => {
+    const a = await member('ya');
+    const z = await member('yb');
+    const sb = h.raw!(z.b);
+    await a.b.push([shared('m-raw')]);
+    expect((await sb.from('profiles').update({ name: 'Changed' }).eq('user_id', a.id)).error).not.toBeNull();
+    expect((await sb.from('shared_meals').insert({ owner: z.id, meal_id: 'x', lat: 1, lng: 1, taken_at: '2026-11-12T00:00:00Z', title: 'x', kcal: 1, protein: 1, carbs: 1, fat: 1 })).error).not.toBeNull();
+    expect((await sb.from('shared_programs').insert({ owner: z.id, program: {} })).error).not.toBeNull();
+    // a request is yours to make and theirs to accept
+    expect((await sb.from('friendships').insert({ requester: a.id, addressee: z.id })).error).not.toBeNull();
+    await z.b.social.request(a.id);
+    expect((await sb.from('friendships').update({ status: 'accepted' }).eq('requester', z.id).select()).data ?? []).toEqual([]);
+    expect(await z.b.social.sharedIn(world)).toEqual([]);
+    expect((await sb.from('shared_meals').select()).data).toEqual([]);
+  });
+
+  test('deleting the account removes the records, the profile, friendships, shared meals and photos', async () => {
+    const k = await member('ka', { photo: 'avatar-k', showProgram: true });
+    const f = await member('kb');
+    await befriend(f, k);
+    await k.b.push([rec('gone', 1), program, shared('m-k')]);
+    await k.b.putThumb('m-k', jpeg(1));
+    await k.b.putThumb('avatar-k', jpeg(2));
+    expect((await f.b.social.sharedIn(world)).length).toBe(1);
+
+    expect(await h.deleteAccount(k.b)).toBe(200);
+    expect(await f.b.social.friends()).toEqual([]);
+    expect(await f.b.social.sharedIn(world)).toEqual([]);
+    expect(await f.b.social.program(k.id)).toBeNull();
+    expect(await f.b.social.photo(`${k.id}/m-k.jpg`)).toBeNull();
+    expect(await f.b.social.photo(`${k.id}/avatar-k.jpg`)).toBeNull();
+    expect(await f.b.social.search(k.handle)).toEqual([]);
+    expect(await f.b.social.handleFree(k.handle)).toBe(true);
+    const fresh = await h.signIn(email('ka'));
     signedIn.push(fresh);
     expect((await fresh.pull(null)).records).toEqual([]);
   });
 });
 
-test.each([1, 2, 3])('store migration from schema %i: a device that had pulled pulls everything again, still counted as pulled', async (from) => {
+test.each([1, 2, 3, 4])('store migration from schema %i: a device that had pulled pulls everything again, still counted as pulled', async (from) => {
   const idb = (globalThis.indexedDB = new IDBFactory());
   const old = new Store();
   await old.open(`migrating-${from}`);
@@ -313,7 +475,7 @@ test.each([1, 2, 3])('store migration from schema %i: a device that had pulled p
   globalThis.indexedDB = idb;
   const now = new Store();
   await now.open(`migrating-${from}`);
-  expect(now.meta.schemaVersion).toBe(4);
+  expect(now.meta.schemaVersion).toBe(5);
   expect(now.meta.cursor).toBe(new Date(0).toISOString());
   expect(now.get('weight', 'weight:2026-11-01')).toEqual({ date: '2026-11-01', kg: 70 });
 });
