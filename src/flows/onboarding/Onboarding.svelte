@@ -48,7 +48,8 @@
   function move(at: Screen, by: 1 | -1) {
     clearTimeout(timer);
     dir = by;
-    prefs.draft = { ...d, at };
+    // leaving Your plan takes back "Save this plan": a changed answer must not settle before it is saved again
+    prefs.draft = { ...d, at, saved: undefined };
     scrollTo({ top: 0 });
   }
   /** Save this screen's answer, then go to the screen the answers lead to. */
@@ -122,6 +123,8 @@
   const ticked = $derived(ITEMS.some((k) => ticks[k]));
   const none = $derived(!!d.screening && !ITEMS.some((k) => d.screening![k]) && !ticked);
   function tick(k: keyof Screening) {
+    // a tick right after "None of these apply" wins over its pending advance
+    clearTimeout(timer);
     haptic();
     ticks[k] = !ticks[k];
   }

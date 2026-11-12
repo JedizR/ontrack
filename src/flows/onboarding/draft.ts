@@ -30,7 +30,7 @@ export type Draft = {
   /** "What do you train?" (O1) */
   kind?: TrainKind;
   experience?: Experience;
-  /** percent of body weight a week, chosen on Your plan; 0 holds the weight */
+  /** percent of body weight a week, chosen on Your plan among the paces offered */
   rate?: number;
   bodyFatPct?: number;
   goalWeightKg?: number;
@@ -50,9 +50,12 @@ export function upgrade(d: Draft | null): Draft | null {
   if (!train) return was === at ? d : { ...rest, at };
   const tpl = train.kind === 'template' ? TEMPLATES.find((x) => x.id === train.id) : undefined;
   const days = train.kind === 'custom' ? train.days : (tpl?.daysPerWeek ?? 0);
-  const cardio = train.kind === 'custom' ? train.type === 'cardio' : !!tpl?.sessions.some((x) => x.type === 'cardio');
+  // "Sport counts as cardio": only strength and circuit were lifting
+  const cardio = train.kind === 'custom' ? train.type !== 'strength' && train.type !== 'circuit' : !!tpl?.sessions.some((x) => x.type === 'cardio');
   const kind: TrainKind = cardio ? (train.kind === 'custom' ? 'cardio' : 'both') : 'lifting';
-  return { ...rest, at, days, ...(days ? { kind } : {}) };
+  const nd: Draft = { ...rest, at, days, ...(days ? { kind } : {}) };
+  // the experience question is now asked of fewer people; one no longer asked moves on to Your plan
+  return at === 'experience' && !asksExperience(nd) ? { ...nd, at: 'plan' } : nd;
 }
 
 /** What the fields accept, before the engine's own guardrails. Wider than any adult, narrower than the database. */
@@ -112,8 +115,8 @@ export function progress(d: Draft, year: number) {
 }
 
 /** Everything the plan needs is answered. */
-export const complete = (d: Draft) =>
-  !!(d.goal && d.screening && d.sex && d.birthYear && d.heightCm && d.weightKg && d.neat && d.days !== undefined && (d.days === 0 || d.kind));
+export const complete = (d: Draft, year: number) =>
+  !!(d.goal && d.screening && d.sex && d.birthYear && ageOf(d, year) >= V.minAge && d.heightCm && d.weightKg && d.neat && d.days !== undefined && (d.days === 0 || d.kind));
 
 /** Sessions for n days a week, spread out, Monday 0. */
 const SPREAD = [[], [0], [0, 3], [0, 2, 4], [0, 1, 3, 4], [0, 1, 2, 3, 4], [0, 1, 2, 3, 4, 5], [0, 1, 2, 3, 4, 5, 6]];
@@ -133,7 +136,7 @@ export const programOf = (d: Draft): Program => ({ name: '', sessions: d.days &&
 
 /**
  * The engine's input. A goal the guardrails remove becomes maintain; a pace not chosen yet, or no longer offered after
- * an answer changed, is the default. 0 holds the weight. Only here are the faster gain pace's BMI limits applied.
+ * an answer changed, is the default (none for maintain). Only here are the faster gain pace's BMI limits applied.
  */
 export function inputOf(d: Draft, year: number): PlanInput {
   const age = ageOf(d, year);
@@ -152,7 +155,7 @@ export function inputOf(d: Draft, year: number): PlanInput {
     sessions: programOf(d).sessions,
     goal,
     ratePctPerWeek:
-      (d.rate === 0 || paceOptions(goal, g.bmi, experience).some((o) => o.rate === d.rate) ? d.rate : defaultPace(goal, g.bmi, experience)?.rate) ?? 0,
+      (paceOptions(goal, g.bmi, experience).some((o) => o.rate === d.rate) ? d.rate : defaultPace(goal, g.bmi, experience)?.rate) ?? 0,
     experience,
     maintainOnly: flagged(d),
   };

@@ -29,7 +29,7 @@
   import { deleteMeal, findProduct, logSupplement, readLabel, removeSupplement, saveSupplement, undoToast, type Found, type LabelResult } from '$lib/actions';
   import { loadFoods, type Food } from '$lib/data/foods';
   import { FOOD_SOURCES } from '$lib/data/sources';
-  import { GLASS_ML, MAX_SCOOPS, MILKS, PRESET_FOOD, fromServing, kindsFor, mlOf, gramsOf, noCalories, oneScoop, perScoopOf, scoopOf, scoopsIn, supplementItems, type Kind } from '$lib/model/supplements';
+  import { GLASS_ML, MAX_MILK_G, MAX_SCOOPS, MILKS, PRESET_FOOD, fromServing, kindsFor, mlOf, gramsOf, noCalories, oneScoop, perScoopOf, scoopOf, scoopsIn, supplementItems, type Kind } from '$lib/model/supplements';
   import { per100From } from '$lib/model/products';
   import { planFor, totals } from '$lib/model/day';
   import { stampOn, today } from '$lib/model/dates';
@@ -105,7 +105,7 @@
   /** what the supplement keeps: one scoop */
   const kept = $derived(oneScoop(servingG, per, values));
   /** still the table's typical values, untouched (B1) */
-  const typical = $derived(origin === 'typical' && own === null && per === 1 && !!(preset || base));
+  const typical = $derived(origin === 'typical' && own === null && !!(preset || base));
   const heavy = $derived(servingG > 0 && values.protein + values.carbs + values.fat > servingG);
   const named = $derived(name.trim().length > 0);
   /** a scanned or read serving can give a scoop or values the record cannot hold; Save waits for them to be fixed */
@@ -257,9 +257,12 @@
     undoToast(t.supplement.removed(n), undo);
   }
 
+  /** A milk picked: the millilitres shown stay as they were (a glass the first time), its grams follow its own cup. */
   function choose(f: Food) {
+    const was = milk ?? (s?.lastMix ? byId.get(s.lastMix.foodId) : undefined);
+    const ml = was && milkG ? mlOf(was, milkG) : GLASS_ML;
     mix = f.id;
-    if (!milkG) milkG = s?.lastMix?.grams ?? gramsOf(f, GLASS_ML);
+    milkG = Math.min(MAX_MILK_G, gramsOf(f, ml));
   }
   function add() {
     if (!s || !id || !ready) return;
@@ -449,7 +452,7 @@
         {#if milk}
           <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
             <span class="text-body font-semibold">{t.supplement.milk}</span>
-            <div class="ml-auto"><Stepper bind:value={() => mlOf(milk, milkG), (ml) => (milkG = gramsOf(milk, ml))} step={50} min={50} max={1000} unit={t.after.ml} label={t.after.millilitres} testid="supplement-milk" column /></div>
+            <div class="ml-auto"><Stepper bind:value={() => mlOf(milk, milkG), (ml) => (milkG = Math.min(MAX_MILK_G, gramsOf(milk, ml)))} step={50} min={50} max={mlOf(milk, MAX_MILK_G)} unit={t.after.ml} label={t.after.millilitres} testid="supplement-milk" column /></div>
           </div>
         {/if}
       {/if}

@@ -18,6 +18,8 @@ export const MILKS = ['milk-whole', 'milk-2', 'milk-skim', 'soy-milk', 'almond-m
 export const MAX_SCOOPS = 10;
 /** Where the milk stepper starts the first time: a glass, in millilitres (an interface default). */
 export const GLASS_ML = 250;
+/** The most milk a remembered mix holds, in grams (the record's limit). */
+export const MAX_MILK_G = 1000;
 /** Grams in a millilitre of a drink, from the food table's own cup of it (USDA weighs a cup of whole milk at 244 g). */
 const gPerMl = (f: Pick<Food, 'portions'>) => (f.portions.find((p) => p.label === '1 cup')?.grams ?? ML_PER_CUP) / ML_PER_CUP;
 /** A drink's grams as the millilitres shown (owner, after N2: milk in ml), and back. */

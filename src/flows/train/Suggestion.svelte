@@ -27,7 +27,10 @@
 
   function use() {
     if (!tpl) return;
-    undoToast(t.train.saved, changeProgram({ name: tpl.name, sessions: $state.snapshot(tpl.sessions) }));
+    const add = $state.snapshot(tpl.sessions);
+    // the gain case adds the strength sessions to the week the user has, lifting first on a shared day (S22)
+    const program = adds && sessions.length ? { name: '', sessions: [...add, ...$state.snapshot(sessions)] } : { name: tpl.name, sessions: add };
+    undoToast(t.train.saved, changeProgram(program));
   }
 </script>
 

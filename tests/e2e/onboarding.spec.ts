@@ -172,6 +172,19 @@ test('maintain with lifting and cardio: no pace, no experience question, and Tra
   await expect(page.getByTestId('train-suggest')).toHaveCount(0);
 });
 
+test('gaining on cardio alone: Train adds the two strength sessions to the week, keeping the cardio', async ({ page }) => {
+  await openFresh(page);
+  await onboard(page, { goal: 'gain', days: 3, kind: 'cardio' });
+  await expect(page.getByTestId('plan-training')).toHaveText('Cardio 3 days a week, 30 minutes each, at a moderate effort. Change it any time in Train.');
+  await page.getByTestId('plan-save').click();
+  await signIn(page);
+  await page.getByTestId('tab-1').click();
+  await expect(page.getByTestId('train-suggest')).toContainText('Minimal 2 days adds the two strength sessions a week that health guidelines advise.');
+  await page.getByTestId('suggest-use').click();
+  await expect.poll(async () => ((await record(page, 'program', 'program')) as { sessions: { type: string }[] }).sessions.map((s) => s.type).sort())
+    .toEqual(['cardio', 'cardio', 'cardio', 'strength', 'strength']);
+});
+
 test('a medical condition leads to advice, then a maintenance target only', async ({ page }) => {
   await openFresh(page);
   await onboard(page, { goal: 'gain', screening: ['medical'] });

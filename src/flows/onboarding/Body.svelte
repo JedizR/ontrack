@@ -50,8 +50,9 @@
     />
     <!-- one full width band behind height and weight, as one picker with two halves -->
     <div class="grid grid-cols-2 gap-3">
-      <span class="text-eyebrow text-ink-2 text-center">{t.body.height}</span>
-      <span class="text-eyebrow text-ink-2 text-center">{t.body.weight}</span>
+      <!-- the units beside the band name the columns too, so a short screen (the SE) drops these for the wheel -->
+      <span class="text-eyebrow text-ink-2 text-center [@media(max-height:620px)]:hidden">{t.body.height}</span>
+      <span class="text-eyebrow text-ink-2 text-center [@media(max-height:620px)]:hidden">{t.body.weight}</span>
       <div class="group relative col-span-2 grid grid-cols-2 gap-3">
         <div class="bg-surface-2 ring-ink absolute inset-x-0 top-[calc(2*var(--wheel-row))] h-[var(--wheel-row)] rounded-sm group-has-[[role=slider]:focus-visible]:ring-2" aria-hidden="true"></div>
         {#if metric}

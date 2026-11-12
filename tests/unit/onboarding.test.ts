@@ -73,7 +73,11 @@ describe('a draft saved before O1', () => {
     expect(later).toMatchObject({ days: 0 });
     expect(later.kind).toBeUndefined();
     expect(later).not.toHaveProperty('train');
-    expect(complete(later)).toBe(true);
+    expect(complete(later, YEAR)).toBe(true);
+    // the sports that were not lifting count as cardio, and an experience question no longer asked moves on
+    expect(upgrade(old({ kind: 'custom', days: 2, type: 'sport', minutes: 90, intensity: 'hard' }))).toMatchObject({ days: 2, kind: 'cardio' });
+    expect(upgrade({ ...old({ kind: 'custom', days: 3, type: 'strength', minutes: 60, intensity: 'moderate' }, 'experience'), goal: 'lose' })).toMatchObject({ at: 'plan', kind: 'lifting' });
+    expect(upgrade(old({ kind: 'custom', days: 3, type: 'strength', minutes: 60, intensity: 'moderate' }, 'experience'))).toMatchObject({ at: 'experience' });
   });
   test('a current draft is left as it is', () => {
     expect(upgrade(A)).toBe(A);
@@ -122,10 +126,10 @@ describe('guardrails', () => {
     expect(inputOf({ ...A, goal: 'lose', experience: 'advanced' }, YEAR).experience).toBe('beginner');
     expect(inputOf({ ...A, experience: 'advanced' }, YEAR).experience).toBe('advanced');
   });
-  test('a pace no longer offered after an answer changed falls back to the default; 0 still holds', () => {
+  test('a pace no longer offered after an answer changed falls back to the default', () => {
     expect(inputOf({ ...A, weightKg: 65, rate: 0.75 }, YEAR).ratePctPerWeek).toBe(0.5); // BMI 21.2: no faster gain pace
     expect(inputOf({ ...A, rate: 0.25 }, YEAR).ratePctPerWeek).toBe(0.25);
-    expect(inputOf({ ...A, rate: 0 }, YEAR).ratePctPerWeek).toBe(0);
+    expect(inputOf({ ...A, rate: 0 }, YEAR).ratePctPerWeek).toBe(0.5); // the old "hold" answer is no pace now
     expect(inputOf({ ...A, goal: 'lose', weightKg: 70, rate: 0.75 }, YEAR).ratePctPerWeek).toBe(0.5); // BMI 22.9: steady
   });
   test('advanced lifters gaining get the lean pace only', () => {
@@ -139,8 +143,10 @@ describe('guardrails', () => {
 
 describe('records', () => {
   test('vector A becomes a valid profile, program, plan and first weigh-in', () => {
-    expect(complete(A)).toBe(true);
-    expect(complete({ ...A, neat: undefined })).toBe(false);
+    expect(complete(A, YEAR)).toBe(true);
+    expect(complete({ ...A, neat: undefined }, YEAR)).toBe(false);
+    expect(complete({ ...A, days: 3, kind: undefined }, YEAR)).toBe(false);
+    expect(complete({ ...A, birthYear: 2010 }, YEAR)).toBe(false); // never a plan for a minor, whatever the route
     const r = toRecords({ ...A, goalWeightKg: 66, even: true }, '2026-11-11', '2026-11-11T03:00:00.000Z');
     for (const [c, data] of Object.entries(r)) expect(() => SCHEMAS[c as keyof typeof SCHEMAS].parse(data), c).not.toThrow();
     expect(r.profile).toMatchObject({ birthYear: 2001, calorieMode: 'even', checkinWeekday: 2, units: 'metric', screening: { at: '2026-11-11T03:00:00.000Z' } });

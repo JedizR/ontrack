@@ -5,7 +5,7 @@ import { prefs } from '$lib/prefs.svelte';
 import { db } from '$lib/db/store.svelte';
 import { sync } from '$lib/sync/engine.svelte';
 import { finishOnboarding } from '$lib/actions';
-import { nowIso, today } from '$lib/model/dates';
+import { nowIso, today, yearOf } from '$lib/model/dates';
 import { complete, toRecords, upgrade } from './draft';
 
 export function settle() {
@@ -15,7 +15,9 @@ export function settle() {
     prefs.draft = null;
     return;
   }
-  if (!d.saved || !complete(d)) return;
+  if (!d.saved) return;
+  // a saved draft that cannot become a plan goes back to onboarding rather than leaving the account without one
+  if (!complete(d, yearOf(today()))) return void (prefs.draft = { ...d, saved: undefined });
   try {
     finishOnboarding(toRecords(d, today(), nowIso()));
     prefs.draft = null;
