@@ -133,6 +133,15 @@ IDs are stable. Tests and commits refer to them.
 - A signed-out visitor with no onboarding in progress sees a landing page that says what Ontrack does, with phone frames showing real screens and scroll animations in the OneFin style. It replaces Welcome. "Get started" opens onboarding and "Sign in" opens the sign-in sheet.
 - It respects reduced motion, loads as its own chunk and never mentions installing the app.
 
+### F19 Faster gain pace
+- With a gain goal, a person at a low body weight can choose a faster pace for gaining weight with some muscle, next to the lean and standard paces. The words say what to expect: a faster gain, with more of it as fat than at the lean pace. No moral words.
+- The rate and who may choose it come from a checked source in `docs/SCIENCE.md`, or the pace is labelled provisional. The surplus cap, the protein floor and the strength recommendation in F10 still apply, and the check-in measures against this pace's band.
+
+### F20 Strength and cardio together
+- At least two templates mix strength sessions with cardio.
+- When a week has both, the analysis says how to arrange them (order within a day, the gap between them, which cardio suits a leg day), each point with its source.
+- Progress has a training card: sessions done against planned per week, strength sessions, and cardio minutes against the WHO range, for the selected period.
+
 ## 6. Not in v1
 
 In priority order for later: Thai language. Barcode scanning. Set by set workout logging and strength trends. Push reminders. Apple sign-in. Water and micronutrients. Meal plans and recipes. Coach features, a public feed, likes and comments. Payments. Native wrappers and Health data import.

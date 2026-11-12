@@ -1,6 +1,6 @@
 # Ontrack: build plan
 
-Ten milestones and four the owner added (D1, N1, L1, S1), each built in its own fresh context: a session when the owner is present, a subagent in an unattended run. Each has a goal, what to read, the steps, a gate that proves it is done, and what the owner checks. Start and finish every milestone with the `milestone` skill. In an unattended run, owner checks are recorded in `docs/BLOCKERS.md` and never hold up the build.
+Ten milestones and five the owner added (D1, N1, T1, L1, S1), each built in its own fresh context: a session when the owner is present, a subagent in an unattended run. Each has a goal, what to read, the steps, a gate that proves it is done, and what the owner checks. Start and finish every milestone with the `milestone` skill. In an unattended run, owner checks are recorded in `docs/BLOCKERS.md` and never hold up the build.
 
 | | Milestone | Outcome | Owner is needed for |
 | --- | --- | --- | --- |
@@ -14,11 +14,12 @@ Ten milestones and four the owner added (D1, N1, L1, S1), each built in its own 
 | M7 | Training | Program, analysis, training day targets | Entering a real program |
 | M8 | Progress and check-ins | Trends and the weekly correction | A review with seeded data |
 | N1 | Thai foods and remembered nutrition | Thai dishes from a published table, corrections remembered | Logging five usual Thai meals |
+| T1 | Gain pace and hybrid training | A faster gain pace, strength and cardio planned together, training on Progress | The friends who asked trying it |
 | L1 | Landing page | A page for signed-out visitors | Scrolling it on the iPhone |
 | S1 | Friends, profiles and the food map | Friends, a profile with an optional program, shared meal photos on a map | A second account as a friend |
 | M9 | Hardening and release | Settings, export, accessibility, speed, security, production | Full device check |
 
-After M8 the order is N1, L1, S1, then M9. It follows the owner's MoSCoW and RICE prioritization: N1 and L1 are Should (high value for little effort), S1 is Could, and M9 hardens everything last.
+After M8 the order is N1, T1, L1, S1, then M9. It follows the owner's MoSCoW and RICE prioritization: N1, T1 and L1 are Should (high value for little effort), S1 is Could, and M9 hardens everything last. T1 comes before L1 because the landing page shows the screens T1 changes.
 
 Order: the look is settled before any screen is built (M1), and the logic is settled before any screen needs it (M2, M3). With the owner present, no screen work past M1 starts before he approves the gallery. In an unattended run a clean rubric pass stands in for that approval and the gallery goes on his review list.
 
@@ -142,6 +143,20 @@ Read: `docs/PRD.md` F14 and F15, `docs/TECH-SPEC.md` sections 3, 5, 8 and 9, `do
 
 Gate: end to end tests for F14 (search by a Thai script alias, a Thai dish fixture resolves to Database) and F15 (correct, log again, see Yours, forget). Conformance green on both backends. The evaluation numbers are in the pull request.
 Owner checks: log five Thai meals you eat often and judge the numbers.
+
+## T1 Gain pace and hybrid training
+
+From the owner's friends: a way for skinny people to gain weight faster in a healthy way, training analysis and suggestions, and support for people who do both strength and cardio. The analysis and suggestions exist since M7; T1 adds the rest.
+
+Read: `docs/PRD.md` F7, F10, F19 and F20, `docs/SCIENCE.md`, `docs/SCREENS.md` (onboarding pace, Train, Progress).
+
+1. Science first, with the `science-check` skill: a primary source for a faster rate of gain for lean or underweight adults, who may choose it (a BMI or experience limit), and how it sits with the surplus cap. New constants go in `constants.ts` with their sources and engine test vectors. If no source supports a rate, ship the pace as provisional with its label, or not at all, and record which in `docs/DECISIONS.md`.
+2. The pace in onboarding, in the plan breakdown and in the check-in's rate band.
+3. Hybrid: two templates that mix strength and cardio, and analysis points for weeks with both (order, gap, cardio type on leg days), each from a checked source.
+4. Progress: the training card from F20, built from the done and skipped marks that already exist.
+
+Gate: engine vectors for the new pace. End to end tests: a lean user picks the faster pace and gets a plan inside the surplus cap; a hybrid template builds a week and shows its analysis points; Progress shows the training card on seeded data. `verify-ui` passes.
+Owner checks: the friends who suggested these try them.
 
 ## L1 Landing page
 
