@@ -40,6 +40,6 @@
 {#snippet footer()}
   <Button variant="primary" size="lg" full onclick={use} data-testid="template-confirm">{t.train.use}</Button>
 {/snippet}
-<Sheet bind:open={() => confirm !== null, (v) => { if (!v) confirm = null; }} title={confirm ? t.train.useTitle(confirm.name) : ''} layer="nested" testid="template-confirm-sheet" {footer}>
-  <p class="text-body">{t.train.useBody}</p>
+<Sheet bind:open={() => confirm !== null, (v) => { if (!v) confirm = null; }} title={t.train.useTitle} layer="nested" testid="template-confirm-sheet" {footer}>
+  <p class="text-body">{t.train.useBody(confirm?.name ?? '')}</p>
 </Sheet>

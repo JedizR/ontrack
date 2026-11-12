@@ -69,7 +69,7 @@ test('a template replaces the program from tomorrow; today and the days before k
   await page.getByTestId('tab-1').click();
   await page.getByTestId('train-change').click();
   await page.getByTestId('template-upper-lower-4').getByTestId('template-use').click();
-  await expect(page.getByTestId('template-confirm-sheet')).toContainText('It replaces your current program.');
+  await expect(page.getByTestId('template-confirm-sheet')).toContainText('Upper lower 4 days replaces your current program.');
   await page.getByTestId('template-confirm').click();
   await expect(page.getByTestId('train-summary')).toContainText('4 sessions, 280 minutes a week');
   await expect(page.getByTestId('train-summary')).toContainText('Upper lower 4 days');

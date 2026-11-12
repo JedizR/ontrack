@@ -412,8 +412,8 @@ export const en = {
     noMatch: 'No exercise matches that name.',
     balanceOf: (n: string, total: string, from: string, to: string) => `${n} of ${total} muscles at ${from} to ${to} sets a week`,
     use: 'Use this program',
-    useTitle: (name: string) => `Use ${name}?`,
-    useBody: 'It replaces your current program. Your targets follow it from tomorrow.',
+    useTitle: 'Use this program?',
+    useBody: (name: string) => `${name} replaces your current program. Your targets follow it from tomorrow.`,
   },
   experience: {
     q: 'How long have you trained consistently?',

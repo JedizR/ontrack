@@ -15,6 +15,7 @@ Changes to a doc's decision, and choices made on the owner's behalf. Newest firs
 - Recommendations are one sentence each (SCREENS.md), so the PRD's example becomes "Back gets 6 sets a week, so add 4 to reach the range linked with better growth." "Why" opens the citation under the row; an Ontrack assumption (more than 20 sets, rest days) says "Working assumption". With none: "No changes to suggest." The engine's notes (cardio already in the target, a session over 120 minutes) show under the cardio row.
 - Muscle tracks run to 22 sets with the zone at 10 to 20 (the Track scale is 110 percent of its target, here 20); a muscle in range is lime, as a reached target. Rows under 10 sets come first.
 - The "Your week" and "Analysis" headings keep Today's 4 px inset (the Meals heading). The design critic flagged the inset; kept for one look across tabs until the design refresh.
+- The template confirm is titled "Use this program?" with the program's name in the body. Why: the name in the title was cut off at the largest text with CI's fonts.
 - Toasts say "Program saved" and "Session deleted" with Undo; the longer line about tomorrow lives on the summary card. Why: toasts are one line.
 
 ## M6
