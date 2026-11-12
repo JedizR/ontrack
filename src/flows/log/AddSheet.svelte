@@ -7,6 +7,7 @@
   import Hash from '@lucide/svelte/icons/hash';
   import Camera from '@lucide/svelte/icons/camera';
   import TextIcon from '@lucide/svelte/icons/text';
+  import Bookmark from '@lucide/svelte/icons/bookmark';
   import Button from '$lib/components/Button.svelte';
   import { prefs } from '$lib/prefs.svelte';
   import Sheet from '$lib/components/Sheet.svelte';
@@ -59,6 +60,8 @@
     sheets.add = false;
     sheets[to] = true;
   };
+  // a meal's tile shows how it was logged, as on Today
+  const ICON: Record<Meal['method'], Component<{ size?: number; strokeWidth?: number }>> = { photo: Camera, text: TextIcon, search: SearchIcon, quick: Hash, saved: Bookmark };
   const WAYS: { key: Way; label: string; line: string; icon: Component<{ size?: number; strokeWidth?: number }> }[] = [
     { key: 'photo', label: t.add.photo, line: t.add.photoLine, icon: Camera },
     { key: 'search', label: t.add.search, line: t.add.searchLine, icon: SearchIcon },
@@ -103,7 +106,9 @@
       <div data-testid="recent">
         {#each recent as { id, data: m } (id)}
           {@const title = titleOf(m.title, m.items)}
+          {@const Icon = ICON[m.method]}
           <Row {title} value={kcalOf(m.items)}>
+            {#snippet leading()}<div class="bg-surface-2 text-ink-2 grid size-full place-items-center"><Icon size={24} strokeWidth={2} /></div>{/snippet}
             {#snippet trailing()}{@render again(t.add.again(title), () => logged(relog(m), title))}{/snippet}
           </Row>
         {/each}
@@ -117,6 +122,7 @@
       <div data-testid="saved">
         {#each saved as { id, data: s } (id)}
           <Row title={s.title} value={kcalOf(s.items)}>
+            {#snippet leading()}<div class="bg-surface-2 text-ink-2 grid size-full place-items-center"><Bookmark size={24} strokeWidth={2} /></div>{/snippet}
             {#snippet trailing()}{@render again(t.add.again(s.title), () => logged(logSaved(id, view.date, stampOn(view.date)), s.title))}{/snippet}
           </Row>
         {/each}

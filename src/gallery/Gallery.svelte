@@ -116,7 +116,7 @@
         <div class="flex flex-wrap gap-2">
           <Button size="sm">Done</Button>
           <Button variant="plain" size="sm">Skip</Button>
-          <Button variant="primary" disabled>Save</Button>
+          <Button variant="primary" size="sm" disabled>Save</Button>
         </div>
       </section>
 
@@ -196,9 +196,11 @@
       <section data-section="wheel">
         {@render heading('Wheels')}
         {@render note('A bounded value: tap the band to type it')}
-        <div class="grid grid-cols-2 gap-3">
-          <Wheel bind:value={height} min={100} max={250} unit={t.after.cm} label={t.body.height} testid="wheel-height" />
-          <Wheel bind:value={weight} min={30} max={300} decimals={1} unit={t.after.kg} label={t.body.weight} testid="wheel-weight" />
+        <!-- side by side, the two share one band, as on onboarding's height and weight -->
+        <div class="group relative grid grid-cols-2 gap-3">
+          <div class="bg-surface-2 ring-ink absolute inset-x-0 top-[calc(2*var(--wheel-row))] h-[var(--wheel-row)] rounded-sm group-has-[[role=slider]:focus-visible]:ring-2" aria-hidden="true"></div>
+          <Wheel bind:value={height} min={100} max={250} unit={t.after.cm} band={false} label={t.body.height} testid="wheel-height" />
+          <Wheel bind:value={weight} min={30} max={300} decimals={1} unit={t.after.kg} band={false} label={t.body.weight} testid="wheel-weight" />
         </div>
       </section>
 

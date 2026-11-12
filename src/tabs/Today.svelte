@@ -152,7 +152,7 @@
             <!-- the track sits at the bottom of each column, so the three stay level when a value wraps at large text -->
             <div class="flex min-w-0 flex-col" data-testid="macro-{m.key}">
               <div class="text-caption text-ink-2">{m.label}</div>
-              <div class="text-body num mb-1.5 font-semibold">{num(Math.round(m.value))}<span class="text-caption text-ink-2 ml-1 font-medium whitespace-nowrap">{t.after.ofGrams(num(m.target))}</span></div>
+              <div class="text-body num mb-1.5 font-semibold">{num(Math.round(m.value))}{' '}<span class="text-caption text-ink-2 font-medium whitespace-nowrap">{t.after.ofGrams(num(m.target))}</span></div>
               <div class="mt-auto"><Track value={m.value} target={m.target} zone={m.zone} label="{m.label} {num(Math.round(m.value))} {t.after.ofGrams(num(m.target))}" /></div>
             </div>
           {/each}
