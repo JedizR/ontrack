@@ -2,10 +2,12 @@
 import 'fake-indexeddb/auto';
 import { beforeAll, expect, test, vi } from 'vitest';
 import { db } from '../../src/lib/db/store.svelte';
-import { changeProgram, deleteMeal, forgetFood, logAgain, logSaved, logWeight, rememberFoods, saveMeal, savePlan, saveProfile, saveProgram, saveSaved } from '../../src/lib/actions';
-import { foodKey, withMine } from '../../src/lib/data/foods';
+import { changeProgram, deleteMeal, forgetFood, logAgain, logSaved, logSupplement, logWeight, rememberFoods, removeSupplement, saveMeal, savePlan, saveProfile, saveProgram, saveSaved, saveSupplement } from '../../src/lib/actions';
+import { foodKey, withMine, type Food } from '../../src/lib/data/foods';
+import foods from '../../src/lib/data/foods.json';
+import { KINDS, MILKS, PRESET_FOOD, perScoopOf, scoopOf, supplementItems } from '../../src/lib/model/supplements';
 import { dayView, mealSource, planFor } from '../../src/lib/model/day';
-import type { MealItem, Plan, Session } from '../../shared/records';
+import type { MealItem, Plan, Session, Supplement } from '../../shared/records';
 
 beforeAll(() => db.open('actions-test'));
 
@@ -95,4 +97,54 @@ test('remembered nutrition: per 100 g under the table id or the normalised name,
   // a meal's label: any estimate first, then Yours
   expect(mealSource([padThai, { ...padThai, source: 'db' }])).toBe('yours');
   expect(mealSource([padThai, { ...padThai, source: 'estimate' }])).toBe('estimate');
+});
+
+test('supplements: presets from the food table where USDA has them, the rest from the label', () => {
+  const table = new Map((foods as Food[]).map((f) => [f.id, f]));
+  const whey = table.get(PRESET_FOOD.whey!)!;
+  const plant = table.get(PRESET_FOOD.plant!)!;
+  expect([whey.source, plant.source]).toEqual([{ set: 'usda-sr-legacy', id: '173180' }, { set: 'usda-sr-legacy', id: '173181' }]);
+  expect([scoopOf(whey), scoopOf(plant), scoopOf(undefined)]).toEqual([30, 45, 0]);
+  expect(perScoopOf(whey, 30)).toEqual({ kcal: 106, protein: 23.4, carbs: 1.9, fat: 0.5 });
+  expect(perScoopOf(undefined, 5)).toEqual({ kcal: 0, protein: 0, carbs: 0, fat: 0 });
+  expect(KINDS.filter((k) => !PRESET_FOOD[k])).toEqual(['casein', 'gainer', 'creatine', 'other']);
+  for (const m of MILKS) expect(table.get(m)?.tags).toContain('drink');
+});
+
+test('supplements: two scoops with milk become the day\'s items; the last amount and mix are kept, and undo puts them back', () => {
+  const milk = (foods as Food[]).find((f) => f.id === 'milk-whole')!;
+  const whey: Supplement = { name: 'Whey', kind: 'whey', scoopG: 32, perScoop: { kcal: 120, protein: 24, carbs: 3, fat: 1.5 }, lastScoops: 1 };
+  expect(supplementItems('w', whey, 1.5, { food: milk, grams: 250 })).toEqual([
+    { name: 'Whey', grams: 48, kcal: 180, protein: 36, carbs: 4.5, fat: 2.3, source: 'yours', supplementId: 'w', scoops: 1.5 },
+    { name: 'Whole milk', grams: 250, kcal: 153, protein: 7.9, carbs: 12, fat: 8.1, source: 'db', foodId: 'milk-whole' },
+  ]);
+  // a scoop of unknown weight has no grams
+  expect(supplementItems('c', { ...whey, scoopG: 0 }, 1)[0]).not.toHaveProperty('grams');
+
+  const id = saveSupplement(whey);
+  const undo = logSupplement(id, 2, { food: milk, grams: 300 }, '2026-11-12', '2026-11-12T00:30:00.000Z')!;
+  const entry = db.live('meal').find((r) => r.data.method === 'supplement')!;
+  expect(entry.data).toMatchObject({ date: '2026-11-12', title: 'Whey', items: [{ kcal: 240, protein: 48, scoops: 2, supplementId: id }, { foodId: 'milk-whole', grams: 300, kcal: 183 }] });
+  expect(db.get('supplement', id)).toMatchObject({ lastScoops: 2, lastMix: { foodId: 'milk-whole', grams: 300 } });
+
+  // corrected later: the same day and time, water now, from the current label; the next start stays the last logged
+  saveSupplement({ ...db.get('supplement', id)!, perScoop: { ...whey.perScoop, kcal: 130 } }, id);
+  const back = logSupplement(id, 1, null, '2026-11-20', 'ignored', entry.id)!;
+  expect(db.get('meal', entry.id)).toMatchObject({ date: '2026-11-12', at: '2026-11-12T00:30:00.000Z', items: [{ kcal: 130, scoops: 1 }] });
+  expect(db.get('meal', entry.id)!.items).toHaveLength(1);
+  expect(db.get('supplement', id)).toMatchObject({ lastScoops: 2, lastMix: { foodId: 'milk-whole', grams: 300 } });
+  back();
+  expect(db.get('meal', entry.id)!.items).toHaveLength(2);
+  saveSupplement({ ...db.get('supplement', id)!, perScoop: whey.perScoop }, id);
+
+  undo();
+  expect(db.get('meal', entry.id)).toBeUndefined();
+  expect(db.get('supplement', id)).toEqual(whey);
+  // removing it keeps what was logged; its undo brings it back
+  const restore = removeSupplement(id);
+  expect(db.get('supplement', id)).toBeUndefined();
+  restore();
+  expect(db.get('supplement', id)?.name).toBe('Whey');
+  expect(logSupplement('gone', 1, null, '2026-11-12', '2026-11-12T00:30:00.000Z')).toBeNull();
+  expect(() => saveSupplement({ ...whey, lastScoops: 0 })).toThrow();
 });

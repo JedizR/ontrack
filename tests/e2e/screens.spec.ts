@@ -1,7 +1,7 @@
 // Visual review: every screen in its main states -> screenshots/<screen>/<state>-<theme>-<device>.png
 //   pnpm screenshots -- --grep "shell"
 import { expect, test, type Page } from '@playwright/test';
-import { EMAIL, MEALS, TODAY, fieldFill, onboard, open, openFresh, openSeeded, seedAccount, signIn, takePhoto, vision, wheelType, withPrefs } from './helpers';
+import { EMAIL, MEALS, SUPPLEMENTS, TODAY, fieldFill, onboard, open, openFresh, openSeeded, seedAccount, signIn, takePhoto, vision, wheelType, withPrefs } from './helpers';
 
 const SECTIONS = ['prefs', 'buttons', 'track', 'hero', 'rows', 'chips', 'sheets', 'wheel', 'week', 'feedback', 'states'];
 
@@ -346,6 +346,76 @@ for (const theme of ['light', 'dark'] as const) {
         await searchFor('pad thai with shrimp');
         await page.getByTestId('result').first().click();
         await shot(page, 'thai', 'search-yours');
+      });
+
+      // SCREENS.md sections 6 and 7, supplements (N2): the entry, the kinds, the label (a preset, no calories, the error),
+      // the Add sheet with supplements, the amount with milk, taken, an entry in edit mode, the milk not loaded, and Today
+      const supplementSheet = (page: Page) => ({
+        settled: () => expect(page.getByTestId('supplement-sheet')).toHaveCSS('transform', 'none'),
+        close: async () => { await page.keyboard.press('Escape'); await expect(page.getByTestId('supplement-sheet')).toBeHidden(); },
+      });
+      test('supplements setup', async ({ page }) => {
+        const { settled, close } = supplementSheet(page);
+        const typeIn = async (id: string, v: string) => { const f = page.getByTestId(id).getByRole('textbox'); await f.fill(v); await f.press('Enter'); };
+        await open(page);
+        await page.getByTestId('add').click();
+        await expect(page.getByTestId('add-sheet')).toHaveCSS('transform', 'none');
+        await shot(page, 'supplements', 'add-entry');
+        await page.getByTestId('supplement-entry').click();
+        await settled();
+        await shot(page, 'supplements', 'kinds');
+        await page.getByTestId('kind-whey').click();
+        await expect(page.getByTestId('supplement-label')).toBeVisible();
+        await shot(page, 'supplements', 'label-whey');
+        await typeIn('supplement-protein', '40');
+        await page.getByTestId('supplement-heavy').scrollIntoViewIfNeeded();
+        await shot(page, 'supplements', 'label-heavy');
+        await page.getByTestId('sheet-back').click();
+        await page.getByTestId('kind-creatine').click();
+        await page.getByTestId('supplement-zero').scrollIntoViewIfNeeded();
+        await shot(page, 'supplements', 'label-creatine');
+        await close();
+      });
+
+      test('supplements logged', async ({ page }) => {
+        const { settled, close } = supplementSheet(page);
+        await open(page, '/', [...MEALS, ...SUPPLEMENTS]);
+        await expect(page.getByTestId('meals')).toHaveCSS('opacity', '1'); // the first paint's fade has finished
+        await shot(page, 'supplements', 'today');
+        await page.getByTestId('taken').scrollIntoViewIfNeeded();
+        await shot(page, 'supplements', 'today-taken');
+        await page.getByTestId('add').click();
+        await expect(page.getByTestId('add-sheet')).toHaveCSS('transform', 'none');
+        await expect(page.getByTestId('supplement').filter({ hasText: 'Whey' })).toContainText('393');
+        await shot(page, 'supplements', 'add');
+        await page.getByTestId('supplement').filter({ hasText: 'Whey' }).click();
+        await settled();
+        await expect(page.getByTestId('supplement-milk')).toBeVisible();
+        await shot(page, 'supplements', 'amount-milk');
+        await page.getByTestId('supplement-edit').click();
+        await shot(page, 'supplements', 'label-edit');
+        await close();
+        await page.getByTestId('add').click();
+        await page.getByTestId('supplement').filter({ hasText: 'Creatine' }).click();
+        await settled();
+        await shot(page, 'supplements', 'amount-taken');
+        await close();
+        await page.getByTestId('meal').filter({ hasText: 'Whey protein' }).getByRole('button').first().click();
+        await settled();
+        await shot(page, 'supplements', 'edit');
+        await close();
+      });
+
+      // the milk values not loaded: water still works
+      test('supplements milk not loaded', async ({ page }) => {
+        const { settled } = supplementSheet(page);
+        await page.route('**/foods.json*', (r) => r.abort());
+        await open(page, '/', SUPPLEMENTS);
+        await page.getByTestId('add').click();
+        await page.getByTestId('supplement').filter({ hasText: 'Whey' }).click();
+        await expect(page.getByText('The milk values did not load. Water still works.')).toBeVisible();
+        await settled();
+        await shot(page, 'supplements', 'milk-failed');
       });
 
       test('photo', async ({ page }) => {

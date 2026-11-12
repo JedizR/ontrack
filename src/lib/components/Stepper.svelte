@@ -24,7 +24,8 @@
     /** what is counted, "grams" */
     label: string;
     testid?: string;
-    /** steppers stacked in rows: the number right aligned and the unit in a fixed slot, so rows form columns */
+    /** steppers stacked in rows: the number right aligned in at least four digits and the unit in a fixed slot, kept
+     * without a unit too, so rows form columns */
     column?: boolean;
   } = $props();
 
@@ -62,7 +63,7 @@
     el.value = String(value);
   }
   // the field is as wide as its number, so the unit follows it; the label keeps room for the longest
-  const longest = $derived(Math.max(String(Number.isFinite(max) ? max : value).length, 2));
+  const longest = $derived(Math.max(String(Number.isFinite(max) ? max : value).length, column ? 4 : 2));
   let editing = $state(false);
 </script>
 
@@ -86,7 +87,7 @@
 
 <div class="flex items-center gap-2" data-testid={testid}>
   {@render key(-1)}
-  <label class="active:bg-surface-2 flex h-11 items-baseline {column ? 'justify-end' : 'justify-center'} gap-1 rounded-sm px-1 transition-colors duration-[var(--d-press)]" style="min-width: calc({longest + 1}ch + {unit ? (column ? 2.7 : 2) : 0}em)">
+  <label class="active:bg-surface-2 flex h-11 items-baseline {column ? 'justify-end' : 'justify-center'} gap-1 rounded-sm px-1 transition-colors duration-[var(--d-press)]" style="min-width: calc({longest + 1}ch + {column ? 2.7 : unit ? 2 : 0}em)">
     <input
       type="text"
       inputmode={step % 1 ? 'decimal' : 'numeric'}
@@ -102,7 +103,7 @@
       onchange={(e) => typed(e.currentTarget)}
       onblur={(e) => { editing = false; typed(e.currentTarget); }}
     />
-    {#if unit}<span class="text-ink-2 text-callout font-semibold {column ? 'w-[2.4em]' : ''}" aria-hidden="true">{unit}</span>{/if}
+    {#if unit || column}<span class="text-ink-2 text-callout font-semibold {column ? 'w-[2.4em]' : ''}" aria-hidden="true">{unit}</span>{/if}
   </label>
   {@render key(1)}
 </div>

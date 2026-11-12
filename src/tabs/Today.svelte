@@ -1,5 +1,6 @@
 <!-- SCREENS.md section 6, Today: the week strip, the hero with the track and macros, at most one card, the training
-     card, and the day's meals, newest first. A past day picked in the strip shows the same view. -->
+     card, and the day's meals, newest first. Supplements with calories are rows; those with none are chips under "Taken"
+     (N2). A past day picked in the strip shows the same view. -->
 <script lang="ts" module>
   // the cards fade up once, on the first paint of a session (DESIGN.md section 10)
   let first = true;
@@ -26,6 +27,7 @@
   import SourceLabel from '$lib/components/SourceLabel.svelte';
   import Skeleton from '$lib/components/Skeleton.svelte';
   import TrainIcon from '$lib/components/TrainIcon.svelte';
+  import ShakerIcon from '$lib/components/ShakerIcon.svelte';
   import Thumb from '../flows/log/Thumb.svelte';
   import { sync } from '$lib/sync/engine.svelte';
   import { session } from '$lib/session.svelte';
@@ -64,7 +66,11 @@
 
   const day = $derived(viewOf(view.date));
   const week = $derived(lastWeek(view.today).map((date) => ({ date, onTrack: !!byDate.get(date)?.length && viewOf(date)?.status === 'on' })));
-  const meals = $derived([...(byDate.get(view.date) ?? [])].sort((a, b) => b.data.at.localeCompare(a.data.at)));
+  const logged = $derived([...(byDate.get(view.date) ?? [])].sort((a, b) => b.data.at.localeCompare(a.data.at)));
+  // a supplement with no calories is not a meal row: it shows as taken (F21)
+  const isTaken = (m: Meal) => m.method === 'supplement' && totals(m.items).kcal === 0;
+  const meals = $derived(logged.filter((r) => !isTaken(r.data)));
+  const taken = $derived(logged.filter((r) => isTaken(r.data)).reverse());
 
   // the counterpart (section 6): to go or left until the zone, then On track, past it the amount over in plain ink
   const side = $derived.by(() => {
@@ -90,12 +96,20 @@
   const lastWeigh = $derived(weights.filter((d) => d <= view.today).sort().at(-1));
   const weighCard = $derived(!view.past && !checkinCard && !!profile && weighInDue(weights, view.today));
 
-  const ICON: Record<Meal['method'], Component<{ size?: number; strokeWidth?: number }>> = { photo: Camera, text: TextIcon, search: Search, quick: Hash, saved: Bookmark };
+  const ICON: Record<Meal['method'], Component<{ size?: number; strokeWidth?: number }>> = { photo: Camera, text: TextIcon, search: Search, quick: Hash, saved: Bookmark, supplement: ShakerIcon };
   const titleOf = (m: Meal) => m.title || m.items[0]?.name || t.source.manual;
 
-  function remove(id: string) {
-    undoToast(t.toast.mealDeleted, deleteMeal(id));
+  function remove(id: string, m: Meal) {
+    undoToast(m.method === 'supplement' ? t.supplement.deleted(titleOf(m)) : t.toast.mealDeleted, deleteMeal(id));
   }
+  /** A supplement entry opens its amount step to edit, while the supplement is still set up; anything else the Meal sheet. */
+  function openMeal(id: string, m: Meal) {
+    if (bySupplement(m)) sheets.supplement = { id: m.items[0].supplementId!, meal: id };
+    else sheets.meal = id;
+  }
+  const amountOf = (m: Meal) => t.supplement.amount(num(m.items[0]?.scoops ?? 1, 1), m.items.length > 1);
+  /** an entry edits in its amount step, so its scoops stay true; once its supplement is gone it edits as a meal */
+  const bySupplement = (m: Meal) => m.method === 'supplement' && !!m.items[0]?.supplementId && !!db.get('supplement', m.items[0].supplementId);
   const kindOf = (s: Session) => t.train.types[s.type];
   // the line under a session: its type only when the name says something else
   const lineOf = (s: Session, status: string | undefined) => {
@@ -222,17 +236,29 @@
     <Card list aria-label={t.today.meals} data-testid="meals" {...rise(5)}>
       {#each meals as { id, data: m } (id)}
         {@const Icon = ICON[m.method]}
-        <SwipeRow ondelete={() => remove(id)} testid="meal">
-          <Row title={titleOf(m)} value={num(Math.round(totals(m.items).kcal))} onclick={() => (sheets.meal = id)}>
+        <SwipeRow ondelete={() => remove(id, m)} testid="meal">
+          <Row title={titleOf(m)} value={num(Math.round(totals(m.items).kcal))} onclick={() => openMeal(id, m)}>
             {#snippet leading()}
               {#if m.thumb}<Thumb {id} class="size-full">{#snippet fallback()}{@render tile(Icon)}{/snippet}</Thumb>{:else}{@render tile(Icon)}{/if}
             {/snippet}
-            {#snippet caption()}{timeOf(m.at)}, <SourceLabel source={mealSource(m.items)} />{/snippet}
+            {#snippet caption()}{timeOf(m.at)}, {#if bySupplement(m)}{amountOf(m)}{:else}<SourceLabel source={mealSource(m.items)} />{/if}{/snippet}
           </Row>
         </SwipeRow>
       {:else}
         <p class="text-body text-ink-2 py-4" data-testid="meals-empty">{allMeals.length ? t.today.noMeals : t.today.firstMeal}</p>
       {/each}
+      {#if taken.length}
+        <div class="border-line flex flex-wrap items-center gap-x-2 border-t py-2" data-testid="taken">
+          <span class="text-caption text-ink-2 mr-1">{t.supplement.taken}</span>
+          {#each taken as { id, data: m } (id)}
+            <button type="button" class="group inline-grid min-h-[var(--tap)] flex-none place-items-center" aria-label={t.supplement.takenChip(titleOf(m))} onclick={() => openMeal(id, m)} data-testid="taken-chip">
+              <span class="text-callout bg-surface-2 group-active:bg-surface-3 inline-flex h-11 items-center gap-1.5 rounded-sm px-3 font-semibold whitespace-nowrap transition-[transform,background-color] duration-[var(--d-press)] group-active:scale-[0.97]">
+                <Check size={18} strokeWidth={2.5} aria-hidden="true" />{titleOf(m)}
+              </span>
+            </button>
+          {/each}
+        </div>
+      {/if}
     </Card>
   {/if}
 </section>

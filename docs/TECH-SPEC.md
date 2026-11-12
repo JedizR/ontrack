@@ -61,7 +61,7 @@ Everything a user owns is a record in a named collection. Weekdays are numbered 
 // shared/records.ts
 export type Collection =
   | 'profile' | 'plan' | 'weight' | 'meal' | 'saved'
-  | 'program' | 'slog' | 'checkin' | 'day' | 'food';
+  | 'program' | 'slog' | 'checkin' | 'day' | 'food' | 'supplement';
 
 export type Rec<T = unknown> = {
   collection: Collection;
@@ -113,12 +113,14 @@ export type MealItem = {
   source: 'db' | 'estimate' | 'manual' | 'yours';   // yours: the user's remembered numbers for the food (F15)
   foodId?: string;
   confidence?: 'high' | 'medium' | 'low';
+  supplementId?: string;              // a logged supplement (F21): the supplement it came from
+  scoops?: number;                    // and how many scoops, 0.5 to 10
 };
 export type Meal = {                  // id: uuid
   date: string;
   at: string;                         // ISO timestamp
   title: string;
-  method: 'photo' | 'text' | 'search' | 'quick' | 'saved';
+  method: 'photo' | 'text' | 'search' | 'quick' | 'saved' | 'supplement';
   items: MealItem[];
   thumb?: true;
   ai?: { model: string; raw?: unknown };   // compact model output, at most 4 KB, kept for later evaluation
@@ -157,9 +159,21 @@ export type Day = { date: string; closed?: true };            // id: `day:${date
 // Remembered nutrition (F15), what the user corrected a food to. id: the food's table id, or `name:` and its
 // normalised name (lower case, accents dropped, Thai script kept) when it has none; at most 80 characters.
 export type FoodMemory = { name: string; per100: { kcal: number; protein: number; carbs: number; fat: number } };
+
+// A supplement set up from its tub's label (F21, N2). id: uuid. scoopG 0: the scoop's weight is not known.
+export type Supplement = {
+  name: string;                       // 1 to 60 characters
+  kind: 'whey' | 'casein' | 'plant' | 'gainer' | 'creatine' | 'other';
+  scoopG: number;
+  perScoop: { kcal: number; protein: number; carbs: number; fat: number };
+  lastScoops: number;                 // 0.5 to 10: where the amount step starts, the scoops the user takes at first
+  lastMix?: { foodId: string; grams: number };   // the milk from the food table it was last mixed with; none is water
+};
 ~~~
 
 Remembered nutrition is written by `rememberFoods` when a Review or Meal sheet is saved with items the user corrected (per 100 g, two decimals, from the item's numbers and grams; an item without grams or past 900 kcal in 100 g is not remembered) and removed by `forgetFood` ("Use default values"). It is applied on the device: to a photo or description's items after the server's resolution, and to Search's results and portion step. The server never sees it.
+
+A logged supplement (F21) is a meal with `method: 'supplement'`: its first item is the supplement at its scoops (`supplementId`, `scoops`, source `yours`, from the label's values per scoop), then the milk it was mixed with as a table item. `logSupplement` writes it from the supplement's current label; a new entry's amount and mix become the supplement's `lastScoops` and `lastMix`, a corrected one leaves them. A supplement with no calories is shown as taken, and its item does not count toward a complete day. Presets start from the food table where USDA has the powder (whey: SR Legacy 173180, plant: SR Legacy 173181, soy based); casein, mass gainer and creatine have no USDA entry and start at 0, for the label.
 
 Derived and never stored: day totals, the day's target, on track status, trend weight, weekly averages. They are functions in `src/lib/model/`.
 
@@ -168,7 +182,7 @@ Device only, kept in `localStorage` under `ontrack:prefs` and never synced: them
 ## 4. On the device
 
 - One idb-keyval store per user, named `ontrack-<userId>`. Keys: `r:<collection>:<id>` holds a `Rec`. `outbox` holds the keys changed since the last successful push. `meta` holds `{ schemaVersion, cursor, lastSyncAt }`. `blob:<mealId>` holds a thumbnail. `blobq` holds meal ids waiting to upload.
-- At start the store reads every record into `$state` maps, one per collection. Screens read from these maps. Schema changes are handled by numbered migrations in `src/lib/db/migrations.ts`, as in watermelon. A migration takes the records and the meta. Adding a collection needs one: an older version on another device skips the new collection's records but moves its cursor past them, so the migration sets a cursor back to the epoch (schema 2, N1), which pulls everything once without the first load state.
+- At start the store reads every record into `$state` maps, one per collection. Screens read from these maps. Schema changes are handled by numbered migrations in `src/lib/db/migrations.ts`, as in watermelon. A migration takes the records and the meta. Adding a collection needs one: an older version on another device skips the new collection's records but moves its cursor past them, so the migration sets a cursor back to the epoch (schema 2 for `food` in N1, schema 3 for `supplement` in N2), which pulls everything once without the first load state.
 - Every mutation goes through `actions.ts`: validate with zod, stamp `updatedAt` with `Date.now()`, write memory, write IndexedDB, add the key to the outbox, wake the sync engine. Actions that delete return an undo function.
 - Onboarding happens before sign-in. Answers live in the prefs draft so they survive the Google redirect. After sign-in and the first pull: if the account already has a profile, the draft is discarded. If not, the draft becomes the profile, program and first plan.
 
@@ -216,7 +230,7 @@ export interface Backend {
 create table public.records (
   user_id    uuid        not null default auth.uid() references auth.users (id) on delete cascade,
   collection text        not null check (collection in
-               ('profile','plan','weight','meal','saved','program','slog','checkin','day','food')),   -- 'food' from 0002
+               ('profile','plan','weight','meal','saved','program','slog','checkin','day','food','supplement')),   -- 'food' from 0002, 'supplement' from 0003
   id         text        not null check (char_length(id) between 1 and 80),
   data       jsonb       not null check (octet_length(data::text) <= 65536),
   updated_at bigint      not null,
@@ -405,7 +419,7 @@ type Food = {
   - SG FoodID, Health Promotion Board, Singapore (licence: use and redistribution, commercial or not, with a conspicuous notice of the source and a link to the terms): no bulk file, so the API's answer for each listed food (`https://pphtpc.hpb.gov.sg/bff/v1/food-portal/foods/details/<id>`) is kept verbatim in `data/sgfoodid/foods.json` with its URL and the date read, under `foods.json.sha256`. The script fetches a listed food the extract lacks and fails if the file no longer matches its checksum. Values are `baseFoodNutrients`, per 100 g edible portion; null or a negative number is missing.
 - The script reads energy, protein, carbohydrate, fat and fibre for each listed food and writes the JSON. It fails on a missing id or a missing nutrient (fibre is optional). A unit test checks the extract's checksum and that every SG FoodID food carries its values exactly.
 - Search's portion step cites the food's table under the numbers (`FOOD_SOURCES` in `src/lib/data/sources.ts`); for SG FoodID with the date read and a link to its terms. The citation hides while the numbers are the user's own.
-- Coverage: 571 foods. v1 asked for at least 350: staples and grains cooked and raw (40), meat, poultry, fish and eggs by common cut and cooking method (70), dairy and alternatives (30), fruit (40), vegetables (50), legumes, nuts and seeds (30), oils, fats and sauces (25), breads, noodles and breakfast foods (30), snacks and sweets (20), drinks (15). At least 25 foods carry the `dense` tag for gain mode. N1: at least 80 carry `thai`, each with a Thai script alias (138 at N1).
+- Coverage: 572 foods (N2 added soy protein powder, the Plant protein preset). v1 asked for at least 350: staples and grains cooked and raw (40), meat, poultry, fish and eggs by common cut and cooking method (70), dairy and alternatives (30), fruit (40), vegetables (50), legumes, nuts and seeds (30), oils, fats and sauces (25), breads, noodles and breakfast foods (30), snacks and sweets (20), drinks (15). At least 25 foods carry the `dense` tag for gain mode. N1: at least 80 carry `thai`, each with a Thai script alias (138 at N1).
 - Two entries have fixed ids used by the oil control: `oil-vegetable` and `butter`.
 - Search on the device is a small scored match over `name` and `aliases`: prefix beats word start beats substring, shorter names win ties. No library. Normalising keeps Thai script (U+0E00 to U+0E7F); Thai has no spaces, so a Thai query matches by prefix or substring.
 

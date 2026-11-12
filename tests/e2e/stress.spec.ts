@@ -1,7 +1,7 @@
 // Device and text size matrix: layout checks on every screen.
 //   pnpm exec playwright test --project=stress   -> screenshots/stress/<device>/*.png
 import { devices, expect, test, type Page } from '@playwright/test';
-import { MEALS, fieldFill, open, openSeeded, signIn, takePhoto, wheelType, withPrefs } from './helpers';
+import { MEALS, SUPPLEMENTS, fieldFill, open, openSeeded, signIn, takePhoto, wheelType, withPrefs } from './helpers';
 
 const DEVICES = [
   // phones in Safari with its toolbars showing: what a browser tab gets
@@ -207,10 +207,22 @@ async function walkLogging(page: Page, dir: string) {
     await page.keyboard.press('Escape');
     await page.getByTestId(id).waitFor({ state: 'detached' });
   };
-  await open(page, '/', MEALS);
+  await open(page, '/', [...MEALS, ...SUPPLEMENTS]);
   await checkPage(page, 'today-meals', dir);
   await page.getByTestId('add').click();
   await sheet('add-sheet', 'add');
+  // supplements (N2): the amount with milk, the label, and the kinds
+  await page.getByTestId('supplement').filter({ hasText: 'Whey' }).click();
+  await expect(page.getByTestId('supplement-milk')).toBeVisible();
+  await sheet('supplement-sheet', 'supplement-amount', 'supplement-add');
+  await page.getByTestId('supplement-edit').click();
+  await sheet('supplement-sheet', 'supplement-label', 'supplement-save');
+  await close('supplement-sheet');
+  await page.getByTestId('add').click();
+  await page.getByTestId('supplement-new').click();
+  await sheet('supplement-sheet', 'supplement-kinds');
+  await close('supplement-sheet');
+  await page.getByTestId('add').click();
   await page.getByTestId('add-search').click();
   await page.getByTestId('search-field').fill('chicken');
   await sheet('search-sheet', 'search');

@@ -12,9 +12,10 @@ import type { FailKind } from '$lib/backend/types';
 import { eeeByWeekday, planFromBaseline, type CheckinResult } from '$lib/model/engine';
 import { planFor } from '$lib/model/day';
 import { addDays, today } from '$lib/model/dates';
-import { foodKey, per100Of } from '$lib/data/foods';
+import { foodKey, per100Of, type Food } from '$lib/data/foods';
+import { supplementItems } from '$lib/model/supplements';
 import type { AnalyzeRequest, AnalyzeResponse } from '../../shared/analysis';
-import { foodSchema, ids, recSchema, SCHEMAS, type Checkin, type Collection, type DataOf, type Meal, type MealItem, type Plan, type Profile, type Program, type Saved, type SessionLog, type Weight } from '../../shared/records';
+import { foodSchema, ids, recSchema, SCHEMAS, type Checkin, type Collection, type DataOf, type Meal, type MealItem, type Plan, type Profile, type Program, type Saved, type SessionLog, type Supplement, type Weight } from '../../shared/records';
 
 const uid = () => crypto.randomUUID();
 
@@ -72,6 +73,32 @@ export function rememberFoods(items: MealItem[]) {
 /** Forgets the user's numbers for a food: it goes back to the table's or the model's. */
 export const forgetFood = (key: string) => remove('food', key);
 export const saveAsMeal = (m: Meal, title: string) => saveSaved({ title, items: m.items, uses: 0, lastUsedAt: m.at });
+/** A supplement set up from its label, or changes to one (N2, F21). Returns its id. */
+export const saveSupplement = (s: Supplement, id: string = uid()) => write('supplement', id, s).id;
+/** Removes a supplement; what was logged from it keeps its numbers. Returns the undo. */
+export const removeSupplement = (id: string) => remove('supplement', id);
+/**
+ * A supplement logged on a day, or a logged one changed (`mealId`, keeping its day and time). Its items come from the
+ * supplement's current label. A new entry's amount and mix become the next start; correcting an old entry leaves the
+ * start alone. Returns the undo: the entry gone (or as it was) and the last amount and mix back.
+ */
+export function logSupplement(id: string, scoops: number, milk: { food: Food; grams: number } | null, date: string, at: string, mealId?: string) {
+  const s = db.get('supplement', id);
+  if (!s) return null;
+  const copy = <T>(v: T) => JSON.parse(JSON.stringify(v)) as T; // a plain copy of the store's proxy, for undo
+  const was = copy(s);
+  const before = mealId ? db.get('meal', mealId) : undefined;
+  const old = before && copy(before);
+  const items = supplementItems(id, s, scoops, milk ? { ...milk, mine: db.get('food', milk.food.id)?.per100 } : undefined);
+  const newId = saveMeal({ ...(old ?? { date, at, method: 'supplement' as const }), title: s.name, items }, mealId);
+  const { lastMix: _, ...rest } = was;
+  if (!mealId) saveSupplement({ ...rest, lastScoops: scoops, ...(milk ? { lastMix: { foodId: milk.food.id, grams: milk.grams } } : {}) }, id);
+  return () => {
+    if (old) return void saveMeal(old, newId);
+    deleteMeal(newId);
+    saveSupplement(was, id);
+  };
+}
 const kept = (p: Program) => p.sessions.map(({ exercises: _, ...s }) => s);
 /**
  * A changed program, with a plan from tomorrow whose exercise energy follows it: today and every day before keep their

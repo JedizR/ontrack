@@ -99,7 +99,7 @@ These bands are assumptions for feedback, not science. A day counts toward the w
 
 **Rate for decisions.** Ordinary least squares slope over the raw weigh-ins of the last 21 days (the check-in day included), in kg per day. Needs at least 8 weigh-ins spanning at least 14 days, first to last inclusive. The observed rate in percent per week uses the trend weight.
 
-**Complete day.** A day is complete when the user closed it, or when it has at least two logged items and at least 50 percent of that day's target.
+**Complete day.** A day is complete when the user closed it, or when it has at least two logged items and at least 50 percent of that day's target. A supplement taken with no calories (creatine, N2) is not a logged item.
 
 **The check-in** runs on the user's chosen weekday when at least 14 days have passed since the plan started or last changed.
 

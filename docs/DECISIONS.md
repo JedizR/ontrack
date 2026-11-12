@@ -2,6 +2,21 @@
 
 Changes to a doc's decision, and choices made on the owner's behalf. Newest first, one line each: what, why.
 
+## N2
+
+Supplements (PRD F21), decided on the owner's behalf:
+- **Presets from USDA where it has the powder.** Whey from SR Legacy 173180 "Protein powder whey based" (already in the table, scoop 30 g). Plant protein from SR Legacy 173181 "Protein powder soy based", added to the table as Soy protein powder with USDA's own scoop of 45 g: USDA has no pea or blended plant powder, and soy is a plant protein. Casein, mass gainer and creatine are in neither SR Legacy nor FNDDS (searched casein, gainer, weight gain, creatine and every "powder mix"; Muscle Milk and the nutritional powder mixes are protein blends, not gainers), so they start at 0 with "Copy the numbers from the label on your tub." Nobody types a nutrient value.
+- **Values per scoop, as the PRD says.** A label that states a serving of several scoops (most mass gainers) has to be divided by the user. Asking for the label's serving instead is on the owner's list.
+- **"Scoops you take" in the setup.** The scoops stepper moves in half steps, so 1 to 2 scoops is two taps, while the PRD counts "the number of scoops" as one of three taps. Asking once for the user's own amount (a habit, not advice) makes the daily shake the plus, the supplement, Add. Chips of amounts would make any amount one tap, but the owner's rule names wheels or the typed stepper for scoops.
+- **A logged supplement is a meal** with method `supplement`: the supplement's item (`supplementId`, `scoops`, source Yours, the label's numbers) and the milk as a table item. Today, totals, sync, offline, swipe to delete and undo all come with it. Recent leaves supplement entries out, since they sit at the top of the Add sheet.
+- **Mixed with:** Water or one of five milks from the table (whole, 2%, skim, soy, almond) under short chip names, in grams on a stepper of 50 from the table's glass (250 g), through remembered nutrition (F15) when the user corrected that milk. No oat milk: the table has none.
+- **No calories means 0 kcal a scoop.** It logs as taken, has no mix, shows as a chip under "Taken" at the end of Today's meals card, and its item does not count toward a complete day (SCIENCE.md's "two logged items" means food).
+- **Editing an entry** from Today opens its amount step while the supplement exists (Save changes, Delete with undo) and recomputes it from the current label; it keeps its day and time and does not move the next start. Entries of a removed supplement keep their numbers and open in the Meal sheet. An entry's time is not editable in the amount step.
+- The Add sheet's supplement rows show the calories of the last amount and mix, loading the food table when a milk is involved.
+- Known limits: an older app version (updates are on prompt) refuses to save a `supplement` entry again (Recent's plus, the Meal sheet) until it updates; a phone offline that logs a supplement removed elsewhere brings it back (last write wins, as for every record).
+- A shaker icon drawn in Lucide's style (`ShakerIcon.svelte`): Lucide has no scoop or shaker. The setup's first step says "Ontrack logs what you take. It does not recommend supplements or amounts."
+- `Stepper` with `column` now reserves four digits and the unit slot, so every stepper on a sheet is one width (the design critic).
+
 ## N1
 
 Thai sources (step 1). Checked 12 November 2026; terms quoted in the pull request:

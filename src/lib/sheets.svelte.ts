@@ -13,6 +13,8 @@ export const sheets = $state({
   review: null as { kind: 'photo'; file: Blob } | { kind: 'text'; text: string } | null,
   /** the session whose menu is open: Skip today */
   session: null as { date: string; key: string; name: string } | null,
+  /** the Supplement sheet (N2): `id` null sets one up; `meal` edits a logged entry */
+  supplement: null as { id: string | null; meal?: string } | null,
   /** the meal open in the Meal sheet */
   meal: null as string | null,
   /** the date of the check-in open in the Check-in sheet: today's, or a stored one */
@@ -22,4 +24,4 @@ export const sheets = $state({
 });
 
 /** The sheets the logging flow owns, loaded together. */
-export const logOpen = () => sheets.add || sheets.search || sheets.quick || sheets.how || sheets.describe || sheets.review !== null || sheets.meal !== null || sheets.session !== null;
+export const logOpen = () => sheets.add || sheets.search || sheets.quick || sheets.how || sheets.describe || sheets.review !== null || sheets.meal !== null || sheets.session !== null || sheets.supplement !== null;

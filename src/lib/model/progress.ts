@@ -47,7 +47,8 @@ export function account(r: Records) {
     if (!plan) return null;
     const meals = byDate.get(date) ?? [];
     const v = dayView({ plan, sex: r.profile.sex, mode: r.profile.calorieMode, date, sessions: r.sessions, logs: r.logs, meals });
-    const items = meals.reduce((a, m) => a + m.items.length, 0);
+    // a supplement taken with no calories (creatine) is not a logged food: it does not make a day complete
+    const items = meals.reduce((a, m) => a + m.items.filter((i) => i.kcal > 0 || !i.supplementId).length, 0);
     const d = { target: v.target, intake: v.eaten.kcal, items, closed: closed.has(date) };
     return { date, ...d, protein: v.eaten.protein, onTrack: meals.length > 0 && v.status === 'on', complete: isComplete({ day: 0, ...d }) };
   }
