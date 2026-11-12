@@ -104,11 +104,12 @@
   }
   /** A supplement entry opens its amount step to edit, while the supplement is still set up; anything else the Meal sheet. */
   function openMeal(id: string, m: Meal) {
-    const sid = m.method === 'supplement' ? m.items[0]?.supplementId : undefined;
-    if (sid && db.get('supplement', sid)) sheets.supplement = { id: sid, meal: id };
+    if (bySupplement(m)) sheets.supplement = { id: m.items[0].supplementId!, meal: id };
     else sheets.meal = id;
   }
   const amountOf = (m: Meal) => t.supplement.amount(num(m.items[0]?.scoops ?? 1, 1), m.items.length > 1);
+  /** an entry edits in its amount step, so its scoops stay true; once its supplement is gone it edits as a meal */
+  const bySupplement = (m: Meal) => m.method === 'supplement' && !!m.items[0]?.supplementId && !!db.get('supplement', m.items[0].supplementId);
   const kindOf = (s: Session) => t.train.types[s.type];
   // the line under a session: its type only when the name says something else
   const lineOf = (s: Session, status: string | undefined) => {
@@ -240,7 +241,7 @@
             {#snippet leading()}
               {#if m.thumb}<Thumb {id} class="size-full">{#snippet fallback()}{@render tile(Icon)}{/snippet}</Thumb>{:else}{@render tile(Icon)}{/if}
             {/snippet}
-            {#snippet caption()}{timeOf(m.at)}, {#if m.method === 'supplement'}{amountOf(m)}{:else}<SourceLabel source={mealSource(m.items)} />{/if}{/snippet}
+            {#snippet caption()}{timeOf(m.at)}, {#if bySupplement(m)}{amountOf(m)}{:else}<SourceLabel source={mealSource(m.items)} />{/if}{/snippet}
           </Row>
         </SwipeRow>
       {:else}

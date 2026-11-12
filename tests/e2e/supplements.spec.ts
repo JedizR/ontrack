@@ -139,16 +139,16 @@ test('F21: mixed with milk, edited, deleted with undo; the label edited and the 
   await page.getByRole('button', { name: 'Undo' }).click();
   await expect(hero(page)).toHaveText('333');
 
-  // the label, from the amount step: a new number, then Remove with undo
+  // the label, from the amount step: a new number, then Remove with undo. Correcting the entry left the next start alone
   await page.getByTestId('add').click();
-  await expect(page.getByTestId('supplement')).toContainText('1.5 scoops with milk');
-  await expect(page.getByTestId('supplement')).toContainText('333');
+  await expect(page.getByTestId('supplement')).toContainText('2 scoops with milk');
+  await expect(page.getByTestId('supplement')).toContainText('393');
   await page.getByTestId('supplement').click();
   await page.getByTestId('supplement-edit').click();
   await expect(page.getByTestId('supplement-why')).toHaveText('Copy the numbers from the label on your tub.');
   await type(page, 'supplement-kcal', '130');
   await page.getByTestId('supplement-save').click();
-  await expect(page.getByTestId('supplement-kcal')).toHaveText('348');
+  await expect(page.getByTestId('supplement-kcal')).toHaveText('413');
   await page.getByTestId('supplement-edit').click();
   await page.getByTestId('supplement-remove').click();
   await expect(sheet(page)).toBeHidden();

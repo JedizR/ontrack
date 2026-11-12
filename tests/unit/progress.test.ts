@@ -25,6 +25,16 @@ test.each(OUTCOMES)('the %s account reaches its outcome', (o) => {
   expect(run(o).proposal.reason).toBe(o);
 });
 
+test('a supplement taken with no calories does not make a day complete; one with calories counts as an item', () => {
+  const recs = seedRecords('raise', TODAY);
+  const d = '2026-11-12';
+  const supp = (kcal: number) => ({ name: 'S', kcal, protein: 0, carbs: 0, fat: 0, source: 'yours' as const, supplementId: 'x', scoops: 1 });
+  const meal = (id: string, items: object[]) => ({ collection: 'meal' as const, id, updatedAt: 1, data: { date: d, at: `${d}T01:00:00.000Z`, title: 'M', method: 'quick', items } });
+  const big = { name: 'Big', kcal: 2000, protein: 50, carbs: 250, fat: 70, source: 'manual' };
+  expect(account(records([...recs, meal('a', [big]), meal('b', [supp(0)])])).day(d)?.complete).toBe(false);
+  expect(account(records([...recs, meal('a', [big]), meal('b', [supp(120)])])).day(d)?.complete).toBe(true);
+});
+
 test('raise is vector F: raise by 100, to 2,560 on training days and 2,320 on rest days', () => {
   const r = run('raise');
   expect(r.stats.completeDays).toBe(12);

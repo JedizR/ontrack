@@ -25,7 +25,7 @@
   import { haptic } from '$lib/haptics';
   import { t } from '$lib/i18n';
   import { loadFoods, type Food } from '$lib/data/foods';
-  import { supplementItems } from '$lib/model/supplements';
+  import { noCalories, supplementItems } from '$lib/model/supplements';
   import type { Meal, MealItem, Supplement } from '../../../shared/records';
 
   // logged supplements are not repeated here: they sit at the top
@@ -36,6 +36,7 @@
   $effect(() => { if (sheets.add && !foods && supplements.some((r) => r.data.lastMix)) loadFoods().then((f) => (foods = f), () => {}); });
   /** the calories of the last amount and mix; none while the milk's values load, or with no calories at all */
   function lastKcal(id: string, s: Supplement) {
+    if (noCalories(s)) return undefined; // no mix either: it logs as taken
     const milk = s.lastMix && foods?.find((f) => f.id === s.lastMix?.foodId);
     if (s.lastMix && !milk) return undefined;
     const kcal = totals(supplementItems(id, s, s.lastScoops, milk ? { food: milk, grams: s.lastMix!.grams, mine: db.get('food', milk.id)?.per100 } : undefined)).kcal;
@@ -111,7 +112,7 @@
       <h3 class="text-heading">{t.supplement.section}</h3>
       <div data-testid="supplements">
         {#each supplements as { id, data: s } (id)}
-          <Row title={s.name} caption={t.supplement.amount(num(s.lastScoops, 1), !!s.lastMix && s.perScoop.kcal > 0)} value={lastKcal(id, s)} onclick={() => supplement(id)} testid="supplement">
+          <Row title={s.name} caption={t.supplement.amount(num(s.lastScoops, 1), !!s.lastMix && !noCalories(s))} value={lastKcal(id, s)} onclick={() => supplement(id)} testid="supplement">
             {#snippet leading()}<div class="bg-surface-2 text-ink-2 grid size-full place-items-center"><ShakerIcon /></div>{/snippet}
           </Row>
         {/each}

@@ -61,7 +61,8 @@
       failed = false;
     } catch {
       failed = true;
-      mix = null; // no milk values: water
+      // no milk values: water, except on a logged entry, which must not lose its milk (Save waits for a choice)
+      if (!mealId) mix = null;
     }
     return foods ?? [];
   }
@@ -107,11 +108,13 @@
   $effect(() => { if (sheets.supplement && id && !s) untrack(close); });
 
   async function pick(k: Kind) {
+    const opened = sheets.supplement;
+    const list = PRESET_FOOD[k] ? (foods ?? (await load())) : [];
+    if (sheets.supplement !== opened) return; // closed or opened elsewhere while the table loaded
     kind = k;
     name = k === 'other' ? '' : t.supplement.kinds[k];
     own = null;
     usual = 1;
-    const list = PRESET_FOOD[k] ? (foods ?? (await load())) : [];
     preset = list.find((f) => f.id === PRESET_FOOD[k]);
     scoopG = scoopOf(preset);
     step = 'label';
@@ -126,7 +129,8 @@
     preset = undefined;
     step = 'label';
   }
-  const setValue = (key: keyof Values, v: number) => { own = { ...values, [key]: v }; };
+  // a field the user only touched (the stepper sets on blur) leaves a preset following the scoop
+  const setValue = (key: keyof Values, v: number) => { if (values[key] !== v) own = { ...values, [key]: v }; };
 
   function save() {
     if (!named || heavy) return;

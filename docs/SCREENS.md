@@ -133,7 +133,7 @@ The common case, the morning shake: plus, the Whey row, Add. Three taps when the
    - A plain "Edit supplement".
    - Pinned: primary "Add 240 kcal". The sheet closes, Today updates, and the toast "Added Whey protein" offers Undo, which also puts back the last amount.
    - No calories: no Display figure and no mix. The line "No calories, so Today shows it as taken." sits over the Scoops stepper, and the primary reads "Log as taken". The toast says "Creatine taken".
-   - Edit mode, from a row or a chip on Today: the logged amount and mix, primary "Save changes" (toast "Changes saved"), and at the end a danger "Delete" with an undo toast. No "Edit supplement" here. Saving uses the supplement's current label, so a corrected label also corrects the entry.
+   - Edit mode, from a row or a chip on Today: the logged amount and mix, primary "Save changes" (toast "Changes saved"), and at the end a danger "Delete" with an undo toast. No "Edit supplement" here. Saving uses the supplement's current label, so a corrected label also corrects the entry. Correcting an entry leaves the next start, the last amount logged, alone.
    - States: the milk values not loaded (offline before the food table was cached) leave Water and say "The milk values did not load. Water still works."; a supplement removed on another device closes the sheet, and its logged entries open in the Meal sheet instead. Offline, everything works and syncs later.
 
 ## 8. Train

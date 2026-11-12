@@ -127,20 +127,23 @@ test('supplements: two scoops with milk become the day\'s items; the last amount
   expect(entry.data).toMatchObject({ date: '2026-11-12', title: 'Whey', items: [{ kcal: 240, protein: 48, scoops: 2, supplementId: id }, { foodId: 'milk-whole', grams: 300, kcal: 183 }] });
   expect(db.get('supplement', id)).toMatchObject({ lastScoops: 2, lastMix: { foodId: 'milk-whole', grams: 300 } });
 
-  // changed later: the same day and time, water now, from the current label
+  // corrected later: the same day and time, water now, from the current label; the next start stays the last logged
   saveSupplement({ ...db.get('supplement', id)!, perScoop: { ...whey.perScoop, kcal: 130 } }, id);
-  logSupplement(id, 1, null, '2026-11-20', 'ignored', entry.id);
+  const back = logSupplement(id, 1, null, '2026-11-20', 'ignored', entry.id)!;
   expect(db.get('meal', entry.id)).toMatchObject({ date: '2026-11-12', at: '2026-11-12T00:30:00.000Z', items: [{ kcal: 130, scoops: 1 }] });
   expect(db.get('meal', entry.id)!.items).toHaveLength(1);
-  expect(db.get('supplement', id)).not.toHaveProperty('lastMix');
+  expect(db.get('supplement', id)).toMatchObject({ lastScoops: 2, lastMix: { foodId: 'milk-whole', grams: 300 } });
+  back();
+  expect(db.get('meal', entry.id)!.items).toHaveLength(2);
+  saveSupplement({ ...db.get('supplement', id)!, perScoop: whey.perScoop }, id);
 
   undo();
   expect(db.get('meal', entry.id)).toBeUndefined();
   expect(db.get('supplement', id)).toEqual(whey);
   // removing it keeps what was logged; its undo brings it back
-  const back = removeSupplement(id);
+  const restore = removeSupplement(id);
   expect(db.get('supplement', id)).toBeUndefined();
-  back();
+  restore();
   expect(db.get('supplement', id)?.name).toBe('Whey');
   expect(logSupplement('gone', 1, null, '2026-11-12', '2026-11-12T00:30:00.000Z')).toBeNull();
   expect(() => saveSupplement({ ...whey, lastScoops: 0 })).toThrow();

@@ -79,8 +79,8 @@ export const saveSupplement = (s: Supplement, id: string = uid()) => write('supp
 export const removeSupplement = (id: string) => remove('supplement', id);
 /**
  * A supplement logged on a day, or a logged one changed (`mealId`, keeping its day and time). Its items come from the
- * supplement's current label; the amount and mix become the next start. Returns the undo: the entry gone (or as it was)
- * and the last amount and mix back.
+ * supplement's current label. A new entry's amount and mix become the next start; correcting an old entry leaves the
+ * start alone. Returns the undo: the entry gone (or as it was) and the last amount and mix back.
  */
 export function logSupplement(id: string, scoops: number, milk: { food: Food; grams: number } | null, date: string, at: string, mealId?: string) {
   const s = db.get('supplement', id);
@@ -92,10 +92,10 @@ export function logSupplement(id: string, scoops: number, milk: { food: Food; gr
   const items = supplementItems(id, s, scoops, milk ? { ...milk, mine: db.get('food', milk.food.id)?.per100 } : undefined);
   const newId = saveMeal({ ...(old ?? { date, at, method: 'supplement' as const }), title: s.name, items }, mealId);
   const { lastMix: _, ...rest } = was;
-  saveSupplement({ ...rest, lastScoops: scoops, ...(milk ? { lastMix: { foodId: milk.food.id, grams: milk.grams } } : {}) }, id);
+  if (!mealId) saveSupplement({ ...rest, lastScoops: scoops, ...(milk ? { lastMix: { foodId: milk.food.id, grams: milk.grams } } : {}) }, id);
   return () => {
-    if (old) saveMeal(old, newId);
-    else deleteMeal(newId);
+    if (old) return void saveMeal(old, newId);
+    deleteMeal(newId);
     saveSupplement(was, id);
   };
 }
