@@ -13,7 +13,7 @@ Status is one of: not started, in progress, shipped, shipped with cuts, blocked.
 | M2 | Engine | shipped | PR #6, merged, `v0.2.0` | 19 sources checked; 3 values kept against their source, on the owner's review list |
 | M3 | Data, sync, sign-in | shipped with cuts | PR #7, merged, `v0.3.0` | Conformance green on mock and live. Live sign in blocked: no Google client, no SMTP for codes. No Privacy and Terms line |
 | M4 | Onboarding and plan | shipped with cuts | PR #8, merged, `v0.4.0` | Gate green on the mock. Saving on production waits for live sign in (M3 blockers). Templates without muscle balance until M7 |
-| M5 | Today and logging | shipped with cuts | branch `m5-today` | Gate green on the mock. Three meals do not fit 390 by 844 without scrolling (as in the M1 reference). No install notice card, no deleting a saved meal |
+| M5 | Today and logging | shipped with cuts | PR #9, open | Gate green on the mock. Three meals do not fit 390 by 844 without scrolling (as in the M1 reference). No install notice card, no deleting a saved meal |
 | M6 | Photo logging | not started | | |
 | M7 | Training | not started | | |
 | M8 | Progress and check-ins | not started | | |
