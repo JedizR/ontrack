@@ -185,7 +185,7 @@
         <div class="bg-surface-2 rounded-md p-4" data-testid="panel-setup">
           <p class="text-body font-semibold">{t.social.setup}</p>
           <p class="text-callout text-ink-2 mt-1">{t.social.setupLine}</p>
-          <Button class="mt-3" onclick={() => (sheets.profile = {})} data-testid="panel-setup-open">{t.social.setupAction}</Button>
+          <Button variant="primary" class="mt-3" onclick={() => (sheets.profile = {})} data-testid="panel-setup-open">{t.social.setupAction}</Button>
         </div>
       {/if}
 

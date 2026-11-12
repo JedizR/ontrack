@@ -24,6 +24,7 @@
   const initial = $derived(name.trim().charAt(0).toUpperCase());
 </script>
 
-<span class="tile grid flex-none place-items-center overflow-hidden rounded-full font-semibold {SIZE[size]} {ring ? 'ring-accent ring-offset-surface ring-2 ring-offset-2' : ''} {cls}" aria-hidden="true" data-testid="avatar-person">
-  {#if url}<img src={url} alt="" class="size-full object-cover" />{:else}{initial}{/if}
+<!-- the lavender sits on the surface: in dark it is translucent, and a pin's avatar sits on a photo -->
+<span class="bg-surface block flex-none overflow-hidden rounded-full font-semibold {SIZE[size]} {ring ? 'ring-accent ring-offset-surface ring-2 ring-offset-2' : ''} {cls}" aria-hidden="true" data-testid="avatar-person">
+  {#if url}<img src={url} alt="" class="size-full object-cover" />{:else}<span class="tile grid size-full place-items-center">{initial}</span>{/if}
 </span>

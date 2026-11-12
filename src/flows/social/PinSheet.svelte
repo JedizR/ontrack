@@ -13,12 +13,13 @@
   import type { SharedMeal } from '$lib/backend/types';
   import Avatar from './Avatar.svelte';
   import Photo from './Photo.svelte';
+  import type { Who } from './who';
 
   let {
     meals = $bindable(null),
     whoOf,
     me,
-  }: { meals?: SharedMeal[] | null; whoOf: (owner: string) => { name: string; path: string | null; local: string | null }; me: string } = $props();
+  }: { meals?: SharedMeal[] | null; whoOf: (owner: string) => Who; me: string } = $props();
 
   let i = $state(0);
   $effect(() => { if (meals) i = Math.min(i, meals.length - 1); else i = 0; });
@@ -55,7 +56,7 @@
       </div>
     {/if}
     <div class="mt-4 flex items-center gap-3" data-testid="pin-who">
-      <Avatar name={who.name} path={who.path} local={who.local} size="md" />
+      <Avatar name={who.initial} path={who.path} local={who.local} size="md" />
       <div class="min-w-0">
         <p class="text-body truncate font-semibold">{who.name}</p>
         <p class="text-caption text-ink-2 num">{when(m.takenAt)}</p>

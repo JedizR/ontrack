@@ -27,6 +27,7 @@
   import Avatar from './Avatar.svelte';
   import Photo from './Photo.svelte';
   import { forgetPhotos } from './photos';
+  import type { Who } from './who';
 
   // OpenFreeMap's styles: quiet grounds, so the photos carry the colour (docs/DECISIONS.md, S1b). Free, no key; MapLibre
   // shows the attribution the tiles carry.
@@ -65,10 +66,10 @@
   const clusters = $derived(clusterPins(pins, zoom));
 
   /** Who a pin belongs to: you, or a friend from the list (a name only until the list arrives). */
-  function whoOf(owner: string): { name: string; path: string | null; local: string | null } {
-    if (owner === me) return { name: t.social.you, path: null, local: social?.photo ?? null };
+  function whoOf(owner: string): Who {
+    if (owner === me) return { name: t.social.you, initial: social?.name ?? '', path: null, local: social?.photo ?? null };
     const f = friends.list.find((p) => p.id === owner);
-    return { name: f?.name ?? '', path: f?.photo ?? null, local: null };
+    return { name: f?.name ?? '', initial: f?.name ?? '', path: f?.photo ?? null, local: null };
   }
 
   function webgl() {
@@ -94,7 +95,7 @@
         style: document.documentElement.dataset.theme === 'dark' ? STYLE.dark : STYLE.light,
         center: [-new Date().getTimezoneOffset() / 4, 20],
         zoom: 1.5,
-        attributionControl: { compact: true },
+        attributionControl: { compact: false }, // the credit line in full: no 24 px toggle to tap
         dragRotate: false,
         pitchWithRotate: false,
         touchPitch: false,
@@ -169,6 +170,7 @@
     if (mealsError === 'auth') return { text: t.social.signedOut, action: t.social.signIn, run: () => (sheets.signin = true) };
     if (mealsError && mealsError !== 'offline') return { text: t.social.mapFailed, action: t.social.retry, run: () => void loadMeals() };
     if (note === 'off') return { text: t.social.locateOff };
+    if (status === 'ready' && !mealsError && !pins.length) return { text: t.social.mapEmpty };
     return null;
   });
 
@@ -218,7 +220,7 @@
             >
               <span class="bg-surface shadow-float relative block rounded-control p-1">
                 <Photo path={c.lead.owner === me ? null : c.lead.photo} local={c.lead.owner === me ? c.lead.mealId : null} class="block size-14 rounded-sm" />
-                <Avatar name={who.name} path={who.path} local={who.local} size="sm" ring class="absolute bottom-2 left-2" />
+                <Avatar name={who.initial} path={who.path} local={who.local} size="sm" ring class="absolute bottom-2 left-2" />
               </span>
               <svg class="fill-surface -mt-px block h-2 w-4" viewBox="0 0 16 8" aria-hidden="true"><path d="M0 0h16L8 8z" /></svg>
               {#if c.more.length}

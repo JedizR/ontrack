@@ -869,6 +869,7 @@ export const en = {
     noGl: 'This browser cannot draw the map. Your friends are still below.',
     mapFailed: 'The map did not load. Check your connection and try again.',
     retry: 'Try again',
+    mapEmpty: 'Meals you and your friends share show here. Turn on Share to map when you review a photo.',
     signedOut: 'Sign in again to see your friends.',
     signIn: 'Sign in',
     /** a pin, read aloud: who, what, and how many more meals it holds */
