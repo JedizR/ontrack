@@ -142,6 +142,13 @@ IDs are stable. Tests and commits refer to them.
 - When a week has both, the analysis says how to arrange them (order within a day, the gap between them, which cardio suits a leg day), each point with its source.
 - Progress has a training card: sessions done against planned per week, strength sessions, and cardio minutes against the WHO range, for the selected period.
 
+### F21 Supplements
+- "My supplements": add one from a short list of common supplements (whey protein, casein, plant protein, mass gainer, creatine) or a custom one, and set its serving from the tub's label: scoop size in grams, and calories, protein, carbs and fat per scoop. A preset starts from the food table where the table has it; the label's values win.
+- Logging takes three taps from the plus button: the supplement, the number of scoops (half steps, starting at the last amount used), Add. The sheet shows the calories and protein for the chosen amount as it changes. Optionally mixed with water or milk, remembered for next time.
+- A logged supplement counts toward the day like any meal item: it can be edited or deleted with undo, works offline and syncs.
+- A supplement with no calories, such as creatine, is logged as taken and shown compactly, without a 0 kcal line.
+- Ontrack does not recommend supplements or doses.
+
 ## 6. Not in v1
 
 In priority order for later: Thai language. Barcode scanning. Set by set workout logging and strength trends. Push reminders. Apple sign-in. Water and micronutrients. Meal plans and recipes. Coach features, a public feed, likes and comments. Payments. Native wrappers and Health data import.

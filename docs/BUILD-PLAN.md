@@ -1,6 +1,6 @@
 # Ontrack: build plan
 
-Ten milestones and five the owner added (D1, N1, T1, L1, S1), each built in its own fresh context: a session when the owner is present, a subagent in an unattended run. Each has a goal, what to read, the steps, a gate that proves it is done, and what the owner checks. Start and finish every milestone with the `milestone` skill. In an unattended run, owner checks are recorded in `docs/BLOCKERS.md` and never hold up the build.
+Ten milestones and six the owner added (D1, N1, N2, T1, L1, S1), each built in its own fresh context: a session when the owner is present, a subagent in an unattended run. Each has a goal, what to read, the steps, a gate that proves it is done, and what the owner checks. Start and finish every milestone with the `milestone` skill. In an unattended run, owner checks are recorded in `docs/BLOCKERS.md` and never hold up the build.
 
 | | Milestone | Outcome | Owner is needed for |
 | --- | --- | --- | --- |
@@ -14,12 +14,13 @@ Ten milestones and five the owner added (D1, N1, T1, L1, S1), each built in its 
 | M7 | Training | Program, analysis, training day targets | Entering a real program |
 | M8 | Progress and check-ins | Trends and the weekly correction | A review with seeded data |
 | N1 | Thai foods and remembered nutrition | Thai dishes from a published table, corrections remembered | Logging five usual Thai meals |
+| N2 | Supplements | Whey, creatine and the like logged by scoop in three taps | Logging the morning shake for a few days |
 | T1 | Gain pace and hybrid training | A faster gain pace, strength and cardio planned together, training on Progress | The friends who asked trying it |
 | L1 | Landing page | A page for signed-out visitors | Scrolling it on the iPhone |
 | S1 | Friends, profiles and the food map | Friends, a profile with an optional program, shared meal photos on a map | A second account as a friend |
 | M9 | Hardening and release | Settings, export, accessibility, speed, security, production | Full device check |
 
-After M8 the order is N1, T1, L1, S1, then M9. It follows the owner's MoSCoW and RICE prioritization: N1, T1 and L1 are Should (high value for little effort), S1 is Could, and M9 hardens everything last. T1 comes before L1 because the landing page shows the screens T1 changes.
+After M8 the order is N1, N2, T1, L1, S1, then M9. It follows the owner's MoSCoW and RICE prioritization: N1, N2, T1 and L1 are Should, with N2 the highest RICE score of the features not yet built, (high value for little effort), S1 is Could, and M9 hardens everything last. T1 comes before L1 because the landing page shows the screens T1 changes.
 
 Order: the look is settled before any screen is built (M1), and the logic is settled before any screen needs it (M2, M3). With the owner present, no screen work past M1 starts before he approves the gallery. In an unattended run a clean rubric pass stands in for that approval and the gallery goes on his review list.
 
@@ -143,6 +144,21 @@ Read: `docs/PRD.md` F14 and F15, `docs/TECH-SPEC.md` sections 3, 5, 8 and 9, `do
 
 Gate: end to end tests for F14 (search by a Thai script alias, a Thai dish fixture resolves to Database) and F15 (correct, log again, see Yours, forget). Conformance green on both backends. The evaluation numbers are in the pull request.
 Owner checks: log five Thai meals you eat often and judge the numbers.
+
+## N2 Supplements
+
+Why: the owner's own pain point. Many lifters have a protein shake as their breakfast. Photographing a shaker is awkward and searching for it is slow; "whey, 2 scoops" should be three taps.
+
+Read: `docs/PRD.md` F5 and F21, `docs/SCREENS.md` sections 6 and 7, `docs/DESIGN.md`, `docs/TECH-SPEC.md` sections 3 and 5.
+
+1. UX first. Before code, write the flow into `docs/SCREENS.md`: setting up a supplement from its label, logging it, changing the amount, editing and removing it, the zero calorie case, and every empty and error state. Lay it out against the OneFin references and the existing Add sheet. Use the fewest taps for the common case and one-hand reach, with wheels or typed steppers and no keypad.
+2. Data: a synced per user supplements collection (name, kind, scoop grams, nutrition per scoop, last amount, last mix) through `actions.ts`, the store and sync, with the conformance suite on both backends and a Supabase migration with row level security. A logged supplement is a meal item that refers to it.
+3. Presets for whey, casein, plant protein, mass gainer and creatine. Defaults come from the food table through `foods:build` where USDA has the item; otherwise the user enters the label. The setup says in one line why the label is the better number.
+4. The user's supplements sit at the top of the Add sheet. The amount sheet shows calories and protein live, starts at the last amount, and offers water or milk (milk from the food table).
+5. Today and past days show logged supplements. Creatine and other zero calorie supplements show as taken, compactly.
+
+Gate: end to end tests: set up whey from its label, then log 2 scoops in three taps from the plus and see Today update; log creatine as taken; edit and delete with undo; log offline. Conformance green on both backends. `verify-ui` passes, with the design critic judging against OneFin.
+Owner checks: set up your own whey from the tub and log your morning shake for a few days.
 
 ## T1 Gain pace and hybrid training
 

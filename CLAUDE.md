@@ -57,6 +57,7 @@ These are the rules that are easy to break without noticing.
 
 - Branch per milestone or fix, conventional commits, pull request into `main`. Never commit `.env*` files other than `.env.example`.
 - Finish a task by running `pnpm verify`. Finish UI work by running the `verify-ui` skill as well.
+- Every feature is designed for its UX before it is built: the fewest taps for the common case, one-hand reach, every state worded, and the OneFin system in `docs/DESIGN.md`. The owner's rule: no feature ships without being thought through for UX and shown in the OneFin design.
 - State that the next session needs goes in `docs/STATE.md`. A lasting gotcha goes here. Keep this file short.
 - When compacting, keep: the current milestone and step, files changed, failing checks, and anything the owner said.
 
