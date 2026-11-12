@@ -51,13 +51,20 @@
 
   // First run, and a signed in account with no profile yet, go through onboarding (SCREENS.md section 1). A phone that
   // is signed in but has never pulled shows Today's first load state: the account may already have a plan.
-  // While the last user's store opens, the shell: a returning user never sees Welcome flash by.
+  // While the last user's store opens, the shell: a returning user never sees the landing page flash by.
   const onboarded = $derived(db.ready && !!db.get('profile', 'profile'));
   const pulledOnce = $derived(sync.pulled || (db.ready && db.meta.cursor !== null));
   const onboarding = $derived(db.ready ? !onboarded && pulledOnce && !prefs.draft?.saved : !prefs.lastUser);
   let Onboarding = $state<Component | null>(null);
   $effect(() => {
     if (onboarding && !Onboarding) import('./flows/onboarding/Onboarding.svelte').then((m) => (Onboarding = m.default), (e) => console.error('onboarding failed to load', e));
+  });
+  // L1: before the first question comes the landing page, its own chunk (it replaced Welcome): a signed-out visitor with
+  // no draft, one who came back from the first question, or an account with no plan yet. Onboarding loads beside it
+  const landing = $derived(onboarding && (prefs.draft?.at ?? 'welcome') === 'welcome');
+  let Landing = $state<Component | null>(null);
+  $effect(() => {
+    if (landing && !Landing) import('./flows/landing/Landing.svelte').then((m) => (Landing = m.default), (e) => console.error('the landing page failed to load', e));
   });
   // a draft meets the account after sign in: it becomes the plan, or the account's own plan wins
   $effect(() => {
@@ -108,7 +115,9 @@
   });
 </script>
 
-{#if onboarding}
+{#if landing}
+  {#if Landing}<Landing />{/if}
+{:else if onboarding}
   {#if Onboarding}<Onboarding />{/if}
 {:else}
 <!-- svh: the height with Safari's toolbars showing, so nothing reflows when they collapse -->

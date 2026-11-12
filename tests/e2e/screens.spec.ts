@@ -87,7 +87,7 @@ for (const theme of ['light', 'dark'] as const) {
       test('signin', async ({ page }) => {
         const s = await seedAccount(page, { signedIn: false });
         await openFresh(page, s);
-        await page.getByTestId('welcome-signin').click();
+        await page.getByTestId('landing-signin').click();
         await page.getByTestId('signin-send').waitFor();
         await shot(page, 'signin', 'email');
         await page.getByTestId('signin-email').fill('me@example.com');
@@ -127,13 +127,29 @@ for (const theme of ['light', 'dark'] as const) {
         await shot(page, 'today', 'bringing');
       });
 
-      // SCREENS.md sections 3 and 4: Welcome, every question and its guardrail screens, Your plan
+      // SCREENS.md section 3, the landing page (L1): the first view after the hero's entrance, each view as a visitor
+      // scrolls, and the whole page once everything has played
+      test('landing', async ({ page }) => {
+        test.slow(); // about twenty views on the SE
+        await openFresh(page);
+        await page.waitForTimeout(2600);
+        await shot(page, 'landing', 'scroll-00');
+        const step = Math.round(d.height * 0.85);
+        const total = await page.evaluate(() => document.documentElement.scrollHeight);
+        for (let y = step, i = 1; y < total; y += step, i++) {
+          await page.evaluate((y) => scrollTo(0, y), y);
+          await page.waitForTimeout(600);
+          await shot(page, 'landing', `scroll-${String(i).padStart(2, '0')}`);
+        }
+        await page.screenshot({ path: `screenshots/landing/full-${theme}-${d.name}.png`, fullPage: true });
+      });
+
+      // SCREENS.md section 4: every question and its guardrail screens, Your plan
       test('onboarding', async ({ page }) => {
         const go = (id: string) => page.getByTestId(id).click();
         const at = async (id: string, state: string) => { await page.getByTestId(id).waitFor(); await shot(page, 'onboarding', state); };
         await openFresh(page);
-        await at('welcome', 'welcome');
-        await go('welcome-start');
+        await go('landing-start');
         await at('step-goal', 'goal');
         await go('choice-lose');
         await at('step-screening', 'screening');
@@ -721,3 +737,23 @@ test.describe('wide', () => {
     await page.screenshot({ path: 'screenshots/shell/today-light-desktop.png' });
   });
 });
+
+// the landing page on a desktop browser (L1): the first view, each view as it scrolls, and the whole page
+for (const theme of ['light', 'dark'] as const) {
+  test.describe(`${theme} desktop`, () => {
+    test.use({ colorScheme: theme, viewport: { width: 1280, height: 800 }, isMobile: false, hasTouch: false });
+    test('landing on a desktop', async ({ page }) => {
+      test.slow();
+      await openFresh(page);
+      await page.waitForTimeout(2600);
+      await page.screenshot({ path: `screenshots/landing/scroll-00-${theme}-desktop.png` });
+      const total = await page.evaluate(() => document.documentElement.scrollHeight);
+      for (let y = 680, i = 1; y < total; y += 680, i++) {
+        await page.evaluate((y) => scrollTo(0, y), y);
+        await page.waitForTimeout(1000);
+        await page.screenshot({ path: `screenshots/landing/scroll-${String(i).padStart(2, '0')}-${theme}-desktop.png` });
+      }
+      await page.screenshot({ path: `screenshots/landing/full-${theme}-desktop.png`, fullPage: true });
+    });
+  });
+}

@@ -239,9 +239,9 @@ test('no gradient, bevel or glow on any button in the gallery, on Today and in t
   expect(add.checked).toBeGreaterThan(today.checked);
 });
 
-test('no gradient, bevel or glow on any button on Welcome', async ({ page }) => {
+test('no gradient, bevel or glow on any button on the landing page', async ({ page }) => {
   await openFresh(page);
-  const welcome = await unflat(page);
-  expect(welcome.bad).toEqual([]);
-  expect(welcome.checked).toBeGreaterThanOrEqual(2);
+  const landing = await unflat(page);
+  expect(landing.bad).toEqual([]);
+  expect(landing.checked).toBeGreaterThanOrEqual(6);
 });

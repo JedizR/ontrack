@@ -1,8 +1,8 @@
 // M4 and O1: first run to a saved plan (SCREENS.md sections 3 to 5, PRD F2 and section 7). Each goal, each guardrail exit,
 // the number that builds, the pace on Your plan, and what the answers change afterwards. Each test is a fresh browser in
-// its own mock space, which opens on Welcome.
+// its own mock space, which opens on the landing page (L1).
 import { expect, test, type Page } from '@playwright/test';
-import { EMAIL, PACE, TODAY, onboard, openFresh, pickerSave, seedAccount, signIn, space, useSpace, wheelType, withPrefs } from './helpers';
+import { EMAIL, PACE, TODAY, onboard, openFresh, pickerSave, seedAccount, signIn, space, startPlan, useSpace, wheelType, withPrefs } from './helpers';
 
 type Hook = { ontrack: { db: { get(c: string, id: string): unknown; live(c: string): { data: unknown }[] } } };
 const record = (page: Page, c: string, id: string) => page.evaluate(([c, id]) => (window as unknown as Hook).ontrack.db.get(c, id), [c, id] as const);
@@ -22,8 +22,8 @@ async function sumsExactly(page: Page) {
 test('a hardgainer watches the number build, tunes the pace and saves the plan in under 90 seconds', { tag: '@smoke' }, async ({ page }) => {
   await openFresh(page);
   const started = Date.now();
-  await expect(page.getByTestId('welcome')).toContainText('No account until you save it.');
-  await page.getByTestId('welcome-start').click();
+  await expect(page.getByTestId('landing-hero')).toContainText('No account until you save it.');
+  await startPlan(page);
   await page.getByTestId('choice-gain').click();
   await page.getByTestId('screen-none').click(); // one tap answers and moves on
   await page.getByTestId('choice-male').click();
@@ -104,7 +104,7 @@ test('no number shows before screening is answered and the body is known', async
     await expect(page.getByTestId('so-far')).toHaveCount(0);
     await expect(page.getByText(/\bkcal\b/)).toHaveCount(0);
   };
-  await page.getByTestId('welcome-start').click();
+  await startPlan(page);
   await noNumber();
   await page.getByTestId('choice-lose').click();
   await expect(page.getByTestId('step-screening')).toBeVisible();
@@ -199,7 +199,7 @@ test('a medical condition leads to advice, then a maintenance target only', asyn
 
 test('an eating disorder is advised against tracking and can leave setup', async ({ page }) => {
   await openFresh(page);
-  await page.getByTestId('welcome-start').click();
+  await startPlan(page);
   await page.getByTestId('choice-lose').click();
   await page.getByTestId('screen-eatingDisorder').click();
   await expect(page.getByTestId('continue')).toBeVisible(); // a tick shows Continue
@@ -211,13 +211,13 @@ test('an eating disorder is advised against tracking and can leave setup', async
   await expect(page.getByTestId('step-advice')).toContainText('Thank you for telling us.');
   await expect(page.getByTestId('step-advice')).toContainText('Support comes first');
   await page.getByTestId('advice-leave').click();
-  await expect(page.getByTestId('welcome')).toBeVisible();
+  await expect(page.getByTestId('landing')).toBeVisible();
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('ot-ui')!).draft)).toBeNull();
 });
 
 test('pregnancy leads to advice and maintenance', async ({ page }) => {
   await openFresh(page);
-  await page.getByTestId('welcome-start').click();
+  await startPlan(page);
   await page.getByTestId('choice-lose').click();
   await page.getByTestId('screen-pregnant').click();
   await page.getByTestId('continue').click();
@@ -229,7 +229,7 @@ test('pregnancy leads to advice and maintenance', async ({ page }) => {
 
 test('a birth year under 18 ends setup with an explanation', async ({ page }) => {
   await openFresh(page);
-  await page.getByTestId('welcome-start').click();
+  await startPlan(page);
   await page.getByTestId('choice-gain').click();
   await page.getByTestId('screen-none').click();
   await page.getByTestId('choice-male').click();
@@ -245,7 +245,7 @@ test('a birth year under 18 ends setup with an explanation', async ({ page }) =>
   await wheelType(page, 'wheel-year', '2012');
   await page.getByTestId('continue').click();
   await page.getByTestId('young-leave').click();
-  await expect(page.getByTestId('welcome')).toBeVisible();
+  await expect(page.getByTestId('landing')).toBeVisible();
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('ot-ui')!).draft)).toBeNull();
 });
 
@@ -302,17 +302,17 @@ test('under BMI 16 a doctor card shows, gaining is still offered, and a low goal
   await expect(page.getByTestId('tune-goalweight')).toContainText('None yet');
 });
 
-test('a returning user signs in from Welcome and lands on Today with the account plan', { tag: '@smoke' }, async ({ page }) => {
+test('a returning user signs in from the landing page and lands on Today with the account plan', { tag: '@smoke' }, async ({ page }) => {
   const s = await seedAccount(page, { signedIn: false });
   await openFresh(page, s);
-  await signIn(page); // through Welcome's "I already have an account"
+  await signIn(page); // through the landing page's Sign in
   await expect(page.getByTestId('tab-today')).toBeVisible();
   expect(await record(page, 'profile', 'profile')).toMatchObject({ birthYear: 2001 });
   await expect(page.getByTestId('first-day')).toHaveCount(0); // set up on another phone
-  // a reload goes straight to Today, without Welcome showing for a moment while the store opens
+  // a reload goes straight to Today, without the landing page showing for a moment while the store opens
   await page.addInitScript(() => {
     new MutationObserver(() => {
-      if (document.querySelector('[data-testid="welcome"]')) (window as unknown as { flashed: boolean }).flashed = true;
+      if (document.querySelector('[data-testid="landing"]')) (window as unknown as { flashed: boolean }).flashed = true;
     }).observe(document, { childList: true, subtree: true });
   });
   await page.reload();
@@ -336,8 +336,8 @@ test('a signed in account without a plan goes through setup and saves without si
   const s = await seedAccount(page, { onboarded: false, signedIn: false });
   await openFresh(page, s);
   await signIn(page, EMAIL, { shell: false });
-  await expect(page.getByTestId('welcome')).toBeVisible();
-  await expect(page.getByTestId('welcome-signin')).toBeVisible(); // the way to switch to another account
+  await expect(page.getByTestId('landing')).toBeVisible();
+  await expect(page.getByTestId('landing-signin')).toBeVisible(); // the way to switch to another account
   await onboard(page, { goal: 'gain' });
   await expect(page.getByTestId('plan-save-line')).toHaveCount(0); // already signed in
   await page.getByTestId('plan-save').click();
@@ -348,7 +348,7 @@ test('a signed in account without a plan goes through setup and saves without si
 
 test('the draft survives a reload on any step', async ({ page }) => {
   await openFresh(page);
-  await page.getByTestId('welcome-start').click();
+  await startPlan(page);
   await page.getByTestId('choice-gain').click();
   await page.getByTestId('screen-none').click();
   await expect(page.getByTestId('step-count')).toHaveText('Step 3 of 9');
@@ -368,7 +368,7 @@ test('a draft saved before O1 opens on the same plan in the new flow', async ({ 
   await page.clock.setFixedTime(new Date(`${TODAY}T10:00:00+07:00`));
   await useSpace(page, space('old-draft'));
   await page.goto('/');
-  await expect(page.getByTestId('your-plan')).toBeVisible({ timeout: 15_000 }); // not Welcome
+  await expect(page.getByTestId('your-plan')).toBeVisible({ timeout: 15_000 }); // not the landing page
   await expect(kcal(page)).toHaveText('2,460');
   await page.getByTestId('back').click();
   await expect(page.getByTestId('step-experience')).toBeVisible();

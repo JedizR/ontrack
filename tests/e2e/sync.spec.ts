@@ -2,17 +2,17 @@
 // server space; two browser contexts in one space are two phones on one account. Data is logged through the real
 // actions (window.ontrack, dev only) until the logging screens exist.
 import { expect, test, type Browser, type Page } from '@playwright/test';
-import { EMAIL, seedAccount, signIn, space, toWelcome } from './helpers';
+import { EMAIL, seedAccount, signIn, space, toLanding } from './helpers';
 
 type Hook = { ontrack: { actions: Record<string, (...a: unknown[]) => unknown>; db: { pending: number; ready: boolean; get(c: string, id: string): unknown }; sync: { status: string } } };
 
-/** A phone: a fresh browser context in the given space, signed out on Welcome. The account already has a plan. */
+/** A phone: a fresh browser context in the given space, signed out on the landing page. The account already has a plan. */
 async function phone(browser: Browser, s: string, email = EMAIL) {
   const context = await browser.newContext();
   const page = await context.newPage();
   await seedAccount(page, { space: s, email, signedIn: false });
   await page.goto('/');
-  await toWelcome(page);
+  await toLanding(page);
   await expect.poll(() => page.evaluate(() => 'ontrack' in window)).toBe(true);
   return { context, page };
 }
@@ -45,7 +45,7 @@ test('a weigh-in logged offline reaches a second phone after reconnecting', { ta
 
 test('a wrong code says so and clears, the right one signs in', { tag: '@smoke' }, async ({ browser }) => {
   const { page, context } = await phone(browser, space('code'));
-  await page.getByTestId('welcome-signin').click();
+  await page.getByTestId('landing-signin').click();
   await expect(page.getByTestId('signin-send')).toBeDisabled();
   await page.getByTestId('signin-email').fill(EMAIL);
   await page.getByTestId('signin-send').click();
@@ -60,7 +60,7 @@ test('a wrong code says so and clears, the right one signs in', { tag: '@smoke' 
 
 test('Google sign in leaves the app and comes back signed in', async ({ browser }) => {
   const { page, context } = await phone(browser, space('google'), 'google.user@example.com');
-  await page.getByTestId('welcome-signin').click();
+  await page.getByTestId('landing-signin').click();
   await page.getByTestId('signin-google').click();
   await expect(page.getByTestId('avatar')).toHaveAttribute('aria-label', 'Account');
   expect(new URL(page.url()).hash).toBe('');
@@ -129,11 +129,11 @@ test('signing out sends what is waiting, then deletes the data from the phone', 
 
   await expect.poll(() => pending(page)).toBe(0);
   await page.getByTestId('avatar').click();
-  // sign out reloads the page; Welcome can show for a moment before it does
+  // sign out reloads the page; the landing page can show for a moment before it does
   const reloaded = page.waitForEvent('load');
   await page.getByTestId('account-signout').click();
   await reloaded;
-  await toWelcome(page);
+  await toLanding(page);
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('ot-ui')!).lastUser)).toBeNull();
   const left = await page.evaluate(
     (id) => new Promise<number>((done) => {
@@ -161,7 +161,7 @@ test('deleting the account removes its data everywhere', async ({ browser }) => 
   await expect(page.getByTestId('delete-confirm-button')).toBeDisabled();
   await page.getByTestId('delete-confirm').fill(EMAIL);
   await page.getByTestId('delete-confirm-button').click();
-  await toWelcome(page);
+  await toLanding(page);
 
   const b = await phone(browser, s);
   await signIn(b.page);
