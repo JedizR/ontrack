@@ -1,7 +1,7 @@
 // Visual review: every screen in its main states -> screenshots/<screen>/<state>-<theme>-<device>.png
 //   pnpm screenshots -- --grep "shell"
 import { expect, test, type Page } from '@playwright/test';
-import { EMAIL, MEALS, TODAY, fieldFill, onboard, open, openFresh, seedAccount, signIn, takePhoto, vision, wheelType, withPrefs } from './helpers';
+import { EMAIL, MEALS, TODAY, fieldFill, onboard, open, openFresh, openSeeded, seedAccount, signIn, takePhoto, vision, wheelType, withPrefs } from './helpers';
 
 const SECTIONS = ['prefs', 'buttons', 'track', 'hero', 'rows', 'chips', 'sheets', 'wheel', 'week', 'feedback', 'states'];
 
@@ -346,6 +346,52 @@ for (const theme of ['light', 'dark'] as const) {
         await page.getByTestId('describe-text').fill('Two eggs, toast with butter and a latte');
         await settled('describe-sheet');
         await shot(page, 'photo', 'describe');
+      });
+
+      // SCREENS.md sections 9 and 10 on the seeder's vector F account: Today's check-in card, the three steps, Progress
+      // from the top down and History; then the adherence step and a stored check-in. shell shoots Progress with too little data
+      test('progress', async ({ page }) => {
+        test.slow();
+        const settled = (id: string) => expect(page.getByTestId(id)).toHaveCSS('transform', 'none');
+        const top = (id: string) => page.getByTestId(id).evaluate((el) => scrollTo(0, el.getBoundingClientRect().top + scrollY - 60));
+        await openSeeded(page, 'raise');
+        await shot(page, 'progress', 'today-card');
+        await page.getByTestId('checkin-open').click();
+        await settled('checkin-sheet');
+        await shot(page, 'progress', 'checkin-numbers');
+        await page.getByTestId('checkin-next').click();
+        await shot(page, 'progress', 'checkin-meaning');
+        await page.getByTestId('checkin-next').click();
+        await shot(page, 'progress', 'checkin-proposal');
+        await page.keyboard.press('Escape');
+        await page.getByTestId('checkin-sheet').waitFor({ state: 'detached' });
+
+        await page.getByTestId('tab-2').click();
+        await shot(page, 'progress', 'typical');
+        await top('progress-intake');
+        await shot(page, 'progress', 'intake');
+        await top('progress-checkins');
+        await shot(page, 'progress', 'checkins');
+        await page.getByTestId('progress-history').click();
+        await settled('history-sheet');
+        await shot(page, 'progress', 'history');
+        await page.keyboard.press('Escape');
+        await page.getByTestId('history-sheet').waitFor({ state: 'detached' });
+      });
+
+      test('progress adherence', async ({ page }) => {
+        const settled = (id: string) => expect(page.getByTestId(id)).toHaveCSS('transform', 'none');
+        const top = (id: string) => page.getByTestId(id).evaluate((el) => scrollTo(0, el.getBoundingClientRect().top + scrollY - 60));
+        await openSeeded(page, 'adherence');
+        await page.getByTestId('checkin-open').click();
+        await page.getByTestId('checkin-next').click();
+        await settled('checkin-sheet');
+        await shot(page, 'progress', 'checkin-adherence');
+        await page.getByTestId('checkin-next').click();
+        await page.getByTestId('checkin-done').click();
+        await page.getByTestId('tab-2').click();
+        await top('progress-checkins');
+        await shot(page, 'progress', 'checkin-stored');
       });
 
       // Today composed from the real components

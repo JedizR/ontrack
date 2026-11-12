@@ -1,7 +1,7 @@
 // Device and text size matrix: layout checks on every screen.
 //   pnpm exec playwright test --project=stress   -> screenshots/stress/<device>/*.png
 import { devices, expect, test, type Page } from '@playwright/test';
-import { MEALS, fieldFill, open, signIn, takePhoto, wheelType, withPrefs } from './helpers';
+import { MEALS, fieldFill, open, openSeeded, signIn, takePhoto, wheelType, withPrefs } from './helpers';
 
 const DEVICES = [
   // phones in Safari with its toolbars showing: what a browser tab gets
@@ -283,6 +283,47 @@ for (const d of PHONES) {
     test('training holds at the largest text', async ({ page }) => {
       await withPrefs(page, { theme: 'light', fontSize: 'xl' });
       await walkTraining(page, `screenshots/fonts/${d.name}-xl/training`);
+    });
+  });
+}
+
+/** Progress with four weeks of the seeder's logs, History, and each step of the check-in with its action on screen. */
+async function walkProgress(page: Page, dir: string) {
+  const sheet = async (id: string, name: string, action?: string) => {
+    await expect(page.getByTestId(id)).toHaveCSS('transform', 'none'); // the sheet has finished sliding up
+    if (action && page.viewportSize()!.height > page.viewportSize()!.width) await expect(page.getByTestId(action)).toBeInViewport({ ratio: 1 });
+    await checkPage(page, name, dir);
+  };
+  await openSeeded(page, 'raise');
+  await checkPage(page, 'today-checkin-card', dir);
+  await page.getByTestId('checkin-open').click();
+  await sheet('checkin-sheet', 'checkin-numbers', 'checkin-next');
+  await page.getByTestId('checkin-next').click();
+  await sheet('checkin-sheet', 'checkin-meaning', 'checkin-next');
+  await page.getByTestId('checkin-next').click();
+  await sheet('checkin-sheet', 'checkin-proposal', 'checkin-keep');
+  await page.keyboard.press('Escape');
+  await page.getByTestId('checkin-sheet').waitFor({ state: 'detached' });
+  await page.getByTestId('tab-2').click();
+  await page.waitForTimeout(300);
+  await checkPage(page, 'progress-data', dir);
+  await page.getByTestId('progress-history').click();
+  await sheet('history-sheet', 'history');
+}
+for (const d of DEVICES.filter((x) => x.mobile)) {
+  test.describe(d.name, () => {
+    test.use({ viewport: { width: d.width, height: d.height }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
+    test('progress layout holds', async ({ page }) => {
+      await walkProgress(page, `screenshots/stress/${d.name}/progress`);
+    });
+  });
+}
+for (const d of PHONES) {
+  test.describe(`font xl ${d.name}`, () => {
+    test.use({ viewport: { width: d.width, height: d.height }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
+    test('progress holds at the largest text', async ({ page }) => {
+      await withPrefs(page, { theme: 'light', fontSize: 'xl' });
+      await walkProgress(page, `screenshots/fonts/${d.name}-xl/progress`);
     });
   });
 }

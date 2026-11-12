@@ -56,7 +56,7 @@
       return goal === 'lose' ? t.checkin.adherenceOver(gap) : t.checkin.adherenceUnder(gap);
     }
     const pace = t.checkin.pace[goal][reason];
-    return s.tdeeObserved == null ? `${pace}. ${t.checkin.rateOnly}` : `${pace} ${t.checkin.cause[reason]}`;
+    return s.tdeeObserved == null ? t.checkin.rateOnly(pace) : t.checkin.cause[reason](pace);
   });
 
   /** A plan's targets as Your plan shows them: training and rest days in matched mode with training, else one. */

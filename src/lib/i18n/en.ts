@@ -515,7 +515,7 @@ export const en = {
     cardTitle: 'Your weekly check-in is ready',
     cardLine: 'What three weeks of weigh-ins and meals say about your target.',
     open: 'Open',
-    steps: ['Your last three weeks', 'What it means', 'Next'],
+    steps: ['Your last three weeks', 'What it means', 'Your next target'],
     next: 'Next',
     done: 'Done',
     target: (n: string) => `Target ${n}`,
@@ -529,11 +529,12 @@ export const en = {
       lose: { raise: 'You are losing faster than planned', lower: 'You are losing slower than planned' },
       maintain: { raise: 'Your weight is going down', lower: 'Your weight is going up' },
     },
+    /** the pace from `pace`, then why */
     cause: {
-      raise: 'while eating to your target. Your body uses more than we estimated.',
-      lower: 'while eating to your target. Your body uses less than we estimated.',
+      raise: (pace: string) => `${pace} while eating to your target. Your body uses more than we estimated.`,
+      lower: (pace: string) => `${pace} while eating to your target. Your body uses less than we estimated.`,
     },
-    rateOnly: 'Too few days were fully logged to measure your intake, so this change follows your weight alone.',
+    rateOnly: (pace: string) => `${pace}. Too few days were fully logged to measure your intake, so this change follows your weight alone.`,
     onTrack: {
       gain: 'You are gaining at the pace you chose. No change needed.',
       lose: 'You are losing at the pace you chose. No change needed.',

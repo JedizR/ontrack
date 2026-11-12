@@ -17,7 +17,7 @@ async function readCheckin(page: Page, sentence: string) {
   await next(page);
   await expect(page.getByTestId('checkin-sentence')).toHaveText(sentence);
   await next(page);
-  await expect(page.getByTestId('checkin-step')).toHaveText('Next');
+  await expect(page.getByTestId('checkin-step')).toHaveText('Your next target');
 }
 
 test('vector F: the check-in raises by 100 to 2,560 and 2,320 from tomorrow, carrying the sessions; Progress records it', { tag: '@smoke' }, async ({ page }) => {
