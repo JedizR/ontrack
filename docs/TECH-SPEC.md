@@ -35,6 +35,7 @@ src/
   settings/
   lib/
     model/    engine/ dates.ts units.ts format.ts day.ts trend.ts foods.ts export.ts
+    geo.ts    the food map's positions: GPS from a photo, rounding, pin grouping (S1)
     db/       store.svelte.ts schema.ts migrations.ts
     sync/     engine.svelte.ts
     backend/  types.ts supabase.ts mock.ts index.ts
@@ -61,7 +62,7 @@ Everything a user owns is a record in a named collection. Weekdays are numbered 
 // shared/records.ts
 export type Collection =
   | 'profile' | 'plan' | 'weight' | 'meal' | 'saved'
-  | 'program' | 'slog' | 'checkin' | 'day' | 'food' | 'supplement' | 'product';
+  | 'program' | 'slog' | 'checkin' | 'day' | 'food' | 'supplement' | 'product' | 'social';
 
 export type Rec<T = unknown> = {
   collection: Collection;
@@ -126,6 +127,7 @@ export type Meal = {                  // id: uuid
   items: MealItem[];
   thumb?: true;
   ai?: { model: string; raw?: unknown };   // compact model output, at most 4 KB, kept for later evaluation
+  share?: { lat: number; lng: number };    // S1, F17: on the food map, where the photo was taken, rounded to 0.001 degree
 };
 
 export type Saved = { title: string; items: MealItem[]; uses: number; lastUsedAt: string };   // id: uuid
@@ -186,6 +188,14 @@ export type Product = {
   serving?: string;                   // the serving as Open Food Facts prints it ("2 scoops (60 g)")
   lastG?: number;                     // where the amount starts next time
 };
+
+// Your profile for friends (F16, S1). id: 'social'. Published by the server as it syncs (section 6).
+export type Social = {
+  handle: string;                     // 3 to 20 of a-z, 0-9 and _, unique across users
+  name: string;                       // 1 to 40 characters
+  photo?: string;                     // the picture's name: meal-photos/<userId>/<photo>.jpg; a new picture, a new name
+  showProgram?: true;                 // friends see the program; off unless set
+};
 ~~~
 
 Remembered nutrition is written by `rememberFoods` when a Review or Meal sheet is saved with items the user corrected (per 100 g, two decimals, from the item's numbers and grams; an item without grams or past 900 kcal in 100 g is not remembered) and removed by `forgetFood` ("Use default values"). It is applied on the device: to a photo or description's items after the server's resolution, and to Search's results and portion step. The server never sees it.
@@ -193,6 +203,8 @@ Remembered nutrition is written by `rememberFoods` when a Review or Meal sheet i
 A logged supplement (F21) is a meal with `method: 'supplement'`: its first item is the supplement at its scoops (`supplementId`, `scoops`, source `yours`, from the label's values per scoop), then the milk it was mixed with as a table item. `logSupplement` writes it from the supplement's current label; a new entry's amount and mix become the supplement's `lastScoops` and `lastMix`, a corrected one leaves them. A supplement with no calories is shown as taken, and its item does not count toward a complete day. Presets start from the food table where USDA has the powder (whey: SR Legacy 173180, plant: SR Legacy 173181, soy based); casein, mass gainer and creatine have no USDA entry and start at 0, for the label.
 
 A scanned product (F22) is kept in `product` when the user logs it from Open Food Facts or confirms its label, so the next scan of that barcode is instant and works offline. `logProduct` writes a meal with `method: 'barcode'` and one item carrying `barcode`, labelled as the product is; it keeps the amount as the product's `lastG`. Correcting such an item in the Meal sheet (`rememberFoods`) rewrites the product's values as Yours instead of a food memory. A supplement saved with the table's typical values untouched carries `typical`; its logged items read Typical, and setting it from the tub (a scan or a label photo) clears it.
+
+Friends and the food map (S1, F16, F17). What a user owns stays a record: the profile for friends (`social`), the program, and a meal's place on the map (`share`). `saveSocial` checks a new or changed handle with the server first (so a handle needs the network) and saves the rest offline; a new photo is stored like a thumbnail and uploads from the same queue. `shareMeal(id, position)`, or `logReviewed(meal, thumb, position)` from the review sheet, needs a meal with a photo and rounds the position before it is stored (`roundPosition`, 0.001 degree); `unshareMeal` drops `share`. The server publishes these records into read only tables (section 6), so sharing works offline and takes effect when it syncs. Friendships, search and friends' data are read from the server: those actions need the network and answer `{ ok: false, error: 'offline' }` without it (`SocialResult` in `actions.ts`). A friend's photo is fetched each time and never kept on the phone. Positions come from the photo file's Exif (`photoPosition`, read before the canvas strips it; JPEG and HEIC) or one `getCurrentPosition` (S1b); `clusterPins(pins, zoom)` groups pins closer than 48 px at a zoom level, newest first, for "+N more".
 
 Derived and never stored: day totals, the day's target, on track status, trend weight, weekly averages. They are functions in `src/lib/model/`.
 
@@ -236,7 +248,21 @@ export interface Backend {
   putThumb(mealId: string, blob: Blob): Promise<void>;
   getThumb(mealId: string): Promise<Blob | null>;
   accessToken(): Promise<string | null>;               // for /api calls
+  social: {                                            // S1: network only; what others may read is row level security's call
+    handleFree(handle: string): Promise<boolean>;      // nobody else has it
+    search(prefix: string): Promise<Person[]>;         // by the start of a handle, not you, at most 20
+    friends(): Promise<Friend[]>;                      // Person & { status: 'friend' | 'incoming' | 'outgoing' }
+    request(userId: string): Promise<void>;            // accepts instead when they asked you first; again changes nothing
+    accept(userId: string): Promise<void>;             // bad_request when there is no request from them
+    remove(userId: string): Promise<void>;             // declines, withdraws or ends it, for both
+    sharedIn(box: Box): Promise<SharedMeal[]>;         // yours and accepted friends', newest first, at most 500
+    photo(path: string): Promise<Blob | null>;         // a shared meal's or a profile's photo; null when not yours to see
+    program(userId: string): Promise<Program | null>;  // a friend's program while they show it
+  };
 }
+// Person = { id, handle, name, photo: storage path | null }. Box = { south, west, north, east } in degrees; west > east
+// crosses the 180th meridian. SharedMeal = { owner, mealId, lat, lng, takenAt, title, kcal, protein, carbs, fat, photo }:
+// the meal's own nutrition, never a day's total, a target or a weight (PRD section 7).
 ~~~
 
 `VITE_BACKEND=mock` selects `mock.ts`, which talks to `dev/mock-backend.ts`: an in memory implementation of the same rules, with a fake sign-in, isolated per test through a key in the request.
@@ -249,7 +275,7 @@ export interface Backend {
 create table public.records (
   user_id    uuid        not null default auth.uid() references auth.users (id) on delete cascade,
   collection text        not null check (collection in
-               ('profile','plan','weight','meal','saved','program','slog','checkin','day','food','supplement','product')),   -- 'food' from 0002, 'supplement' from 0003, 'product' from 0004
+               ('profile','plan','weight','meal','saved','program','slog','checkin','day','food','supplement','product','social')),   -- 'food' from 0002, 'supplement' from 0003, 'product' from 0004, 'social' from 0005
   id         text        not null check (char_length(id) between 1 and 80),
   data       jsonb       not null check (octet_length(data::text) <= 65536),
   updated_at bigint      not null,
@@ -313,6 +339,17 @@ create policy thumbs_delete on storage.objects for delete to authenticated
   using (bucket_id = 'meal-photos' and (storage.foldername(name))[1] = (select auth.uid())::text);
 ~~~
 
+**Friends and the food map** (`0005_social.sql`, S1). The `records_publish` trigger runs after each accepted write of a `social`, `program` or `meal` record (a stale write is skipped by `records_lww` and publishes nothing) and keeps three tables that clients may only read:
+
+| Table | Holds | Who reads it |
+| --- | --- | --- |
+| `profiles` (user_id, handle unique, name, photo_path, show_program) | The `social` record; a tombstone deletes it and its friendships | Anyone signed in, so a handle can be found |
+| `shared_programs` (owner, program) | The `program` record while `show_program` is on | The owner and accepted friends |
+| `shared_meals` (owner, meal_id, lat, lng, taken_at, title, kcal, protein, carbs, fat, photo_path) | A meal with `share`; its nutrition summed (kcal whole, macros to 0.1); lat and lng `numeric(_, 3)`, rounded again whatever a client sends. Without `share`, or deleted, the row goes | The owner and accepted friends |
+| `friendships` (requester, addressee, status `requested` or `accepted`) | Written by users: insert as requester, update to `accepted` as addressee only (the `status` column only), delete by either side. One row per pair | Its two people |
+
+"Accepted friends" is `private.sees(owner)`, a security invoker function in a schema the API does not expose: the owner, or an accepted friendship either way, read under friendships' own policy. The trigger is `private.publish()`, security definer, since clients hold no write privilege on the published tables. A handle taken by someone else between the app's check and the sync is not published (the rest is); the old handle stays. Photos: the `meal-photos` read policy also lets a caller read an object named by a `shared_meals.photo_path` they may read, or by any `profiles.photo_path`. A shared meal's photo is its thumbnail, so unsharing, deleting the meal or ending the friendship takes it out of friends' reach at once; the object itself goes with the account (and with the meal from M9).
+
 The upsert from the client uses `onConflict: 'user_id,collection,id'`. Apply migrations with `supabase db push`. After applying, run the Supabase security advisors and fix anything they flag.
 
 Supabase settings to make by hand or by CLI: Google provider on. Email one time code on, 6 digits, 10 minute expiry, with `{{ .Token }}` in the email template. Site URL set to production. Redirect allow list: `http://localhost:5173/**`, the production URL, and the project's Vercel preview pattern.
@@ -360,7 +397,7 @@ Steps, in order:
 
 ### DELETE /api/account
 
-Verifies the token, deletes the user's objects under `meal-photos/<userId>/`, deletes their rows, then deletes the auth user with the secret key. Returns `{ ok: true }`.
+Verifies the token, deletes the user's `shared_meals`, `shared_programs` and `profiles` rows (friendships go with the profile) so friends stop seeing them at once, then their objects under `meal-photos/<userId>/`, their records, then the auth user with the secret key. Returns `{ ok: true }`.
 
 ### GET /api/cron/keepalive
 
@@ -503,7 +540,8 @@ Port watermelon's vite-plugin-pwa setup. Manifest: name and short name Ontrack, 
 | --- | --- | --- |
 | Unit | `tests/unit/engine.test.ts` | Every vector in `docs/SCIENCE.md` section 13, plus caps, floors and guardrails |
 | Unit | `tests/unit/checkin.test.ts`, `trend.test.ts`, `day.test.ts`, `program.test.ts` | Check-in decisions, regression slope, day totals and on track status, program analysis |
-| Unit | `tests/unit/sync-conformance.test.ts` | Section 5 rules against the mock always, and against Supabase when `SUPABASE_TEST_EMAIL` is set |
+| Unit | `tests/unit/sync-conformance.test.ts` | Section 5 rules against the mock always, and against Supabase when `SUPABASE_TEST_EMAIL` is set (`pnpm test:live`). Includes the S1 visibility suite: a stranger, a friend and a removed friend, for rows and photos; handles and requests; what an edit, unsharing, deleting and the program switch publish; account deletion; and, on Supabase, direct writes the policies refuse. Supabase allows 30 code sign-ins per 5 minutes per address and a run makes about 25, so new tests reuse users and runs are 5 minutes apart |
+| Unit | `tests/unit/geo.test.ts` | GPS from Exif in both byte orders, rounding, pin grouping by zoom and across the 180th meridian |
 | Unit | `tests/unit/resolve.test.ts`, `foods.test.ts`, `data.test.ts` | Vision resolution and clamps, food search ranking, library and template validity |
 | End to end | `tests/e2e/*.spec.ts`, WebKit at 390 by 844, light and dark | One spec per feature F1 to F13 against the mock backend, including offline log then reconnect |
 | Camera | `tests/e2e/camera.spec.ts`, project `camera`, Chromium | A barcode read by a fake camera playing `tests/fixtures/barcodes/scan.y4m`, with the browser's reader and with the WebAssembly reader (B1). Full CI only |

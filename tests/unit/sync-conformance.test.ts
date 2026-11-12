@@ -297,6 +297,7 @@ describe.each(harnesses)('sync conformance: $name', (h) => {
   });
 
   // ----- friends and the food map (S1): the visibility suite -----
+  const SLOW = 60_000; // dozens of round trips to Supabase each
   const world = { south: -90, west: -180, north: 90, east: 180 };
   const jpeg = (n: number) => new Blob([new Uint8Array([255, 216, 255, n])], { type: 'image/jpeg' });
   const bytes = async (b: Blob | null) => b && [...new Uint8Array(await b.arrayBuffer())];
@@ -323,6 +324,7 @@ describe.each(harnesses)('sync conformance: $name', (h) => {
     },
   });
 
+  // Supabase allows 30 code sign-ins per 5 minutes per address, and a run makes about 25: keep new users few
   test('social visibility: a stranger cannot read, a friend can, a removed friend cannot, rows and photos', async () => {
     const a = await member('va', { photo: 'avatar-a', showProgram: true });
     const z = await member('vb');
@@ -350,6 +352,18 @@ describe.each(harnesses)('sync conformance: $name', (h) => {
     await z.b.social.request(a.id);
     await hidden();
 
+    if (h.raw) {
+      // straight at the database: nobody writes what the server publishes, and a request is the other side's to accept
+      const sb = h.raw(z.b);
+      expect((await sb.from('shared_meals').select()).data).toEqual([]);
+      expect((await sb.from('profiles').update({ name: 'Changed' }).eq('user_id', a.id)).error).not.toBeNull();
+      expect((await sb.from('shared_meals').insert({ owner: z.id, meal_id: 'x', lat: 1, lng: 1, taken_at: '2026-11-12T00:00:00Z', title: 'x', kcal: 1, protein: 1, carbs: 1, fat: 1 })).error).not.toBeNull();
+      expect((await sb.from('shared_programs').insert({ owner: z.id, program: {} })).error).not.toBeNull();
+      expect((await sb.from('friendships').insert({ requester: a.id, addressee: z.id })).error).not.toBeNull();
+      expect((await sb.from('friendships').update({ status: 'accepted' }).eq('requester', z.id).select()).data ?? []).toEqual([]);
+      await hidden();
+    }
+
     await a.b.social.accept(z.id);
     expect(await z.b.social.sharedIn(world)).toEqual([meal]);
     expect(await bytes(await z.b.social.photo(path))).toEqual([255, 216, 255, 1]);
@@ -362,36 +376,9 @@ describe.each(harnesses)('sync conformance: $name', (h) => {
     await z.b.social.remove(a.id);
     await hidden();
     expect(await a.b.social.friends()).toEqual([]);
-  });
+  }, SLOW);
 
-  test('social: unsharing, deleting the meal and turning the program off take effect on the server', async () => {
-    const a = await member('wa', { showProgram: true });
-    const z = await member('wb');
-    await befriend(z, a);
-    // a client that forgot to round is rounded by the server
-    await a.b.push([program, shared('m1'), shared('m2', 1, { at: '2026-11-12T06:30:00.000Z', share: { lat: 13.7654, lng: 100.5386 } })]);
-    await a.b.putThumb('m1', jpeg(1));
-    expect((await z.b.social.sharedIn(world)).map((m) => [m.mealId, m.lat, m.lng])).toEqual([['m2', 13.765, 100.539], ['m1', 13.765, 100.539]]);
-    // only inside the box, also one across the 180th meridian
-    expect(await z.b.social.sharedIn({ south: 0, west: 0, north: 10, east: 10 })).toEqual([]);
-    expect(await z.b.social.sharedIn({ south: 13, west: 170, north: 14, east: -170 })).toEqual([]);
-    expect((await z.b.social.sharedIn({ south: 13, west: 100, north: 14, east: -170 })).length).toBe(2);
-
-    // an edit follows; unsharing and deleting take the meal and its photo away
-    await a.b.push([shared('m1', 2, { title: 'Lunch' })]);
-    expect((await z.b.social.sharedIn(world)).find((m) => m.mealId === 'm1')?.title).toBe('Lunch');
-    const { share: _, ...unshared } = shared('m1').data as Record<string, unknown>;
-    await a.b.push([{ ...shared('m1'), updatedAt: 3, data: unshared }, { ...shared('m2'), updatedAt: 3, deleted: true }]);
-    expect(await z.b.social.sharedIn(world)).toEqual([]);
-    expect(await z.b.social.photo(`${a.id}/m1.jpg`)).toBeNull();
-
-    // the program follows the switch
-    expect(await z.b.social.program(a.id)).toEqual(program.data);
-    await a.b.push([social(a.handle, 2)]);
-    expect(await z.b.social.program(a.id)).toBeNull();
-  });
-
-  test('social: handles are unique, a request goes one way, only the one asked accepts, and either side removes', async () => {
+  test('social: handles are unique, a request goes one way, only the one asked accepts, either side removes, and changes publish', async () => {
     const a = await member('xa');
     const zb = await signIn('xb');
     const z = { b: zb, id: (await zb.auth.session())!.userId, handle: `xb_${tag}` };
@@ -423,23 +410,31 @@ describe.each(harnesses)('sync conformance: $name', (h) => {
     // not yourself, not someone with no profile
     expect(await failKind(a.b.social.request(a.id))).toBe('bad_request');
     expect(await failKind(a.b.social.request(crypto.randomUUID()))).toBe('bad_request');
-  });
 
-  test.runIf(!!h.raw)('social: no client writes what the server publishes, or accepts its own request', async () => {
-    const a = await member('ya');
-    const z = await member('yb');
-    const sb = h.raw!(z.b);
-    await a.b.push([shared('m-raw')]);
-    expect((await sb.from('profiles').update({ name: 'Changed' }).eq('user_id', a.id)).error).not.toBeNull();
-    expect((await sb.from('shared_meals').insert({ owner: z.id, meal_id: 'x', lat: 1, lng: 1, taken_at: '2026-11-12T00:00:00Z', title: 'x', kcal: 1, protein: 1, carbs: 1, fat: 1 })).error).not.toBeNull();
-    expect((await sb.from('shared_programs').insert({ owner: z.id, program: {} })).error).not.toBeNull();
-    // a request is yours to make and theirs to accept
-    expect((await sb.from('friendships').insert({ requester: a.id, addressee: z.id })).error).not.toBeNull();
-    await z.b.social.request(a.id);
-    expect((await sb.from('friendships').update({ status: 'accepted' }).eq('requester', z.id).select()).data ?? []).toEqual([]);
+    // friends now: an edit, unsharing, deleting the meal and turning the program off take effect on the server
+    // a client that forgot to round is rounded by the server
+    await a.b.push([social(a.handle, 3, { showProgram: true }), program, shared('m1'), shared('m2', 1, { at: '2026-11-12T06:30:00.000Z', share: { lat: 13.7654, lng: 100.5386 } })]);
+    await a.b.putThumb('m1', jpeg(1));
+    expect((await z.b.social.sharedIn(world)).map((m) => [m.mealId, m.lat, m.lng])).toEqual([['m2', 13.765, 100.539], ['m1', 13.765, 100.539]]);
+    // only inside the box, also one across the 180th meridian
+    expect(await z.b.social.sharedIn({ south: 0, west: 0, north: 10, east: 10 })).toEqual([]);
+    expect(await z.b.social.sharedIn({ south: 13, west: 170, north: 14, east: -170 })).toEqual([]);
+    expect((await z.b.social.sharedIn({ south: 13, west: 100, north: 14, east: -170 })).length).toBe(2);
+
+    // an edit follows; unsharing and deleting take the meal and its photo away
+    await a.b.push([shared('m1', 2, { title: 'Lunch' })]);
+    expect((await z.b.social.sharedIn(world)).find((m) => m.mealId === 'm1')?.title).toBe('Lunch');
+    expect(await z.b.social.photo(`${a.id}/m1.jpg`)).not.toBeNull();
+    const { share: _, ...unshared } = shared('m1').data as Record<string, unknown>;
+    await a.b.push([{ ...shared('m1'), updatedAt: 3, data: unshared }, { ...shared('m2'), updatedAt: 3, deleted: true }]);
     expect(await z.b.social.sharedIn(world)).toEqual([]);
-    expect((await sb.from('shared_meals').select()).data).toEqual([]);
-  });
+    expect(await z.b.social.photo(`${a.id}/m1.jpg`)).toBeNull();
+
+    // the program follows the switch
+    expect(await z.b.social.program(a.id)).toEqual(program.data);
+    await a.b.push([social(a.handle, 4)]);
+    expect(await z.b.social.program(a.id)).toBeNull();
+  }, SLOW);
 
   test('deleting the account removes the records, the profile, friendships, shared meals and photos', async () => {
     const k = await member('ka', { photo: 'avatar-k', showProgram: true });
@@ -461,7 +456,7 @@ describe.each(harnesses)('sync conformance: $name', (h) => {
     const fresh = await h.signIn(email('ka'));
     signedIn.push(fresh);
     expect((await fresh.pull(null)).records).toEqual([]);
-  });
+  }, SLOW);
 });
 
 test.each([1, 2, 3, 4])('store migration from schema %i: a device that had pulled pulls everything again, still counted as pulled', async (from) => {

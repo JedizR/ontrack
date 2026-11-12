@@ -2,6 +2,31 @@
 
 Changes to a doc's decision, and choices made on the owner's behalf. Newest first, one line each: what, why.
 
+## S1a
+
+Friends, profiles and the food map, the data half (no screens; S1b builds them), decided on the owner's behalf:
+- **Your own data stays a record; the server publishes what you chose to share.** The profile for friends is the `social` record, a meal goes on the map by gaining `share`, and the program is the `program` record. After each accepted write a trigger copies them into `profiles`, `shared_programs` and `shared_meals`, which clients can only read. Why: the one way to change data holds (actions, store, sync), sharing and unsharing work offline and take effect when they sync, an edit to a shared meal follows it, and no client can write a published row directly, so nothing appears that the user did not share. Friendships are the exception: they involve two people, so users write them directly, under policies.
+- **Handles:** 3 to 20 lower case letters, digits and underscores, unique. Typed capitals, spaces and a leading @ are tidied. Why: easy to say aloud and type on any keyboard, and stored lower case so "Nan" and "nan" cannot both exist. No reserved names (Ontrack has no staff accounts). A new or changed handle needs the network, since it is checked first; if two people take the same free handle within one sync, the later keeps their old one (a commented shortcut in the trigger).
+- **Rounding:** three decimals of a degree on both axes, on the phone in `shareMeal` before the record is written, and again by the database (`numeric(_, 3)`). That is 111 m north to south and 108 m east to west in Bangkok (79 m at 45 degrees, narrower toward the poles). Why: "about 100 m" where the owner and his friends live, one rule both sides apply the same way, and a fixed grid rather than random jitter, so sharing from the same place many times cannot be averaged back to the exact spot.
+- **What others can see:**
+
+| Who | Sees |
+| --- | --- |
+| Anyone signed in | Your handle, display name and profile photo, so they can find you by handle. Not your meals, program or friends |
+| Someone with a request either way | The same, and the request |
+| An accepted friend | Your shared meals (photo, title, that meal's calories, protein, carbs and fat, the rounded place, the time) and, while the switch is on, your training program |
+| Nobody | Weight, targets, daily totals, the food log, meals you did not share, other photos, streaks or rankings (PRD section 7) |
+
+- **Profiles can be found by anyone signed in**, never by signed-out visitors. F16 asks to find people by handle, and row level security cannot tell a search from a listing; a search function that bypassed it would slow listing only a little and add a function the security advisors flag. A profile holds only what its owner chose to publish.
+- **A shared meal's photo is its 320 px thumbnail,** in the private `meal-photos` bucket, readable through a policy that follows the shared row. No second copy to upload, keep or delete. Unsharing, deleting the meal or ending the friendship takes it out of friends' reach at once; the object stays as the owner's own thumbnail and goes with the account (and with the meal once M9 deletes thumbnails with meals, as before S1). PRD F17's last point now says this. If 320 px looks soft in S1b's photo sheet, upload a larger copy then.
+- **Profile photos** are readable by anyone signed in while they are the current one. A new photo gets a new name (`avatar-<uuid>`), so no phone keeps showing an old one; replaced photos stay in the owner's folder until the account goes (shortcut).
+- **Requests:** asking someone who already asked you accepts; asking twice changes nothing; declining, withdrawing and removing are the same delete, by either side; only the one asked can accept. No blocking and no limit on requests: a class project among friends. Revisit if Ontrack goes public.
+- **Search** is by the start of a handle, at most 20 people, never yourself; an empty search finds nobody.
+- **GPS from the photo:** the reader looks for the Exif block anywhere in the file instead of walking JPEG segments, so it reads HEIC too; 0, 0 counts as no position (cameras write it without a fix). Safari on iPhone may strip location from library photos, so S1b's fallback, one `getCurrentPosition` after the user turns sharing on, will often be the path.
+- **Pin grouping** is a pure helper, not MapLibre's clustering, since S1b's pins are photo markers: by distance in screen pixels at the zoom level (Web Mercator, 512 px tiles), the newest pin leads, 48 px by default, the 180th meridian handled. Every pair is compared, fine for the 500 pins a box returns.
+- **A Postgres integrity error now reads as `bad_request`** in the Supabase backend (a taken handle, befriending someone with no profile, yourself), so the app can say what was refused instead of "try again".
+- **The visibility suite runs inside the conformance file,** so `pnpm test:live` covers it. Supabase allows 30 code sign-ins per 5 minutes per address (`token_verifications`), and a run now makes about 25: the social tests reuse users, and two live runs need 5 minutes between them. The production limit stays as it is.
+
 ## T1b
 
 Gain pace and hybrid training, the screen half, 12 November 2026. Unattended; decided on the owner's behalf (onboarding, the faster pace's words and the plan breakdown went to O1):

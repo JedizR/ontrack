@@ -2,7 +2,7 @@
 import 'fake-indexeddb/auto';
 import { beforeAll, expect, test, vi } from 'vitest';
 import { db } from '../../src/lib/db/store.svelte';
-import { changeProgram, deleteMeal, findPeople, findProduct, forgetFood, listFriends, logAgain, logProduct, logSaved, logSupplement, logWeight, rememberFoods, removeSupplement, saveMeal, savePlan, saveProduct, saveProfile, saveProgram, saveSaved, saveSocial, saveSupplement, shareMeal, unshareMeal } from '../../src/lib/actions';
+import { changeProgram, deleteMeal, findPeople, logReviewed, findProduct, forgetFood, listFriends, logAgain, logProduct, logSaved, logSupplement, logWeight, rememberFoods, removeSupplement, saveMeal, savePlan, saveProduct, saveProfile, saveProgram, saveSaved, saveSocial, saveSupplement, shareMeal, unshareMeal } from '../../src/lib/actions';
 import { session } from '../../src/lib/session.svelte';
 import { createMockServer, MOCK_CODE } from '../../dev/mock-backend';
 import { createMockBackend } from '../../src/lib/backend/mock';
@@ -245,4 +245,9 @@ test('social (S1): the profile saves through the store with its handle checked o
   unshareMeal(id);
   expect(db.get('meal', id)).toEqual({ ...meal, thumb: true });
   expect(shareMeal(saveMeal(meal), { lat: 13.76508, lng: 100.53853 })).toBe(false); // no photo, nothing to pin
+  // straight from the review sheet, with its photo
+  await logReviewed(meal, new Blob([new Uint8Array([255, 216, 255])], { type: 'image/jpeg' }), { lat: -12.04663, lng: -77.02843 });
+  expect(db.live('meal').find((r) => r.data.share?.lat === -12.047)?.data).toEqual({ ...meal, thumb: true, share: { lat: -12.047, lng: -77.028 } });
+  await logReviewed({ ...meal, title: 'Described' }, null, { lat: 1, lng: 1 });
+  expect(db.live('meal').find((r) => r.data.title === 'Described')?.data.share).toBeUndefined();
 });

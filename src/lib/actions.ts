@@ -252,12 +252,16 @@ async function analyze<R extends { ok: true }>(req: AnalyzeRequest): Promise<R |
     return { ok: false, error: (e as Error).name === 'TimeoutError' ? 'timeout' : 'offline' };
   }
 }
-/** A reviewed photo or description: the thumbnail is stored before the meal, so Today shows it at once. Returns the undo. */
-export async function logReviewed(m: Meal, thumb: Blob | null) {
+/**
+ * A reviewed photo or description: the thumbnail is stored before the meal, so Today shows it at once. `share`: where
+ * the photo was taken, to put it on the food map (F17), rounded like `shareMeal`; only a meal with its photo goes on.
+ * Returns the undo.
+ */
+export async function logReviewed(m: Meal, thumb: Blob | null, share?: Position) {
   const id = uid();
   // a thumbnail the phone cannot store must not cost the meal
   const kept = thumb ? await saveMealThumb(id, thumb).then(() => true, () => false) : false;
-  saveMeal(kept ? { ...m, thumb: true } : m, id);
+  saveMeal(kept ? { ...m, thumb: true, ...(share ? { share: roundPosition(share) } : {}) } : m, id);
   return () => { deleteMeal(id); };
 }
 
