@@ -21,13 +21,13 @@ Everyone trains or intends to. Ontrack is not for people under 18, during pregna
 3. **The plan adapts to the person.** Targets move with training days and with measured results.
 4. **No guilt.** No red for food, no streaks to break, no moral words about eating.
 5. **Works without signal.** Everything except photo and text analysis works offline and syncs later.
-6. **Private by default.** Photos are analysed and discarded. Only a thumbnail is kept.
+6. **Private by default.** Photos are analysed and discarded. Only a thumbnail is kept. Nothing is shared unless the user shares it, one photo at a time, with friends they accepted.
 
 ## 4. The three differentiators in v1
 
 | Differentiator | What v1 ships | What comes later |
 | --- | --- | --- |
-| Camera logging, better for Thai food | Photo to itemised meal in one step. The model identifies components and grams. A bundled USDA table supplies nutrition when there is a match. Everything else is labelled an estimate. A one tap "cooked with oil" correction. Every analysis is kept so it can become an evaluation set | A Thai food table, Thai dish aliases, and an accuracy loop measured on real photos |
+| Camera logging, better for Thai food | Photo to itemised meal in one step. The model identifies components and grams. A bundled table supplies nutrition when there is a match: USDA for general foods, a published Thai food composition source for Thai dishes, with Thai aliases. Values the user corrected are remembered. Everything else is labelled an estimate. A one tap "cooked with oil" correction. Every analysis is kept so it can become an evaluation set | Thai language, and an accuracy loop measured on real photos |
 | Your training makes the target accurate | A weekly program (days, type, duration, intensity, optional exercises). Exercise energy is computed per session from Compendium MET values and added to that day's target. Program analysis with recommendations from the literature. A weekly check-in that measures real maintenance from weigh-ins and intake and corrects the target | Set by set logging, strength trends, wearable import through a native shell |
 | Works for skinny people building muscle | Gain mode: the target is a floor, progress fills toward it, going a little over is still on track. Evening "easy adds" when behind. A protein floor. Gain rate tracked against a lean bulk band. The target rises when weight is flat | Push reminders, meal plans |
 
@@ -109,9 +109,33 @@ IDs are stable. Tests and commits refer to them.
 - When a new version is ready, a toast offers to update. No silent reloads.
 - A small status mark shows synced, syncing, waiting for connection, or needs attention.
 
+### F14 Thai food table
+- The food table includes common Thai dishes and Thai ingredients, with nutrition per 100 g from a published Thai food composition source. Every row cites its source. Thai script and romanised names are searchable aliases.
+- In a photo or a description, a Thai dish that matches the table takes its nutrition from the table. The model only names it and estimates the grams, and the source label says Database.
+- The pull request reports, on the Thai evaluation photos, the share of items that resolve to the table and the time to a review sheet, before and after.
+
+### F15 Remembered nutrition
+- Correcting an item's calories or macros, in the review sheet or on a logged meal, remembers those values for that food for this user. Remembered values sync across devices.
+- The next time that food is logged by photo, description or search, the remembered values are used and the source label says Yours. One tap returns to the default values and forgets them.
+
+### F16 Friends and profiles
+- A profile with a display name, a unique handle and an optional photo. Find people by handle, send a friend request, accept or decline it. Either side can remove the friendship.
+- A switch shows the training program on the profile to friends. It is off by default.
+- Friends see only what was shared with them. Weight, targets and the food log are never shared.
+
+### F17 Food photo map
+- The photo review sheet has a "Share to map" choice, off by default for every photo.
+- A shared photo is placed where it was taken: the location saved in the photo, or the phone's position read once at capture after the user turns sharing on. Never live location and never a track. The position is rounded to about 100 m before it leaves the phone, and one sentence explains this before the first location prompt.
+- The map shows the user's and friends' shared meals as photo pins with the person's avatar, and groups nearby pins with a "+N more" count, in the manner of Instagram's map. Tapping a pin shows the photo, its title and its nutrition.
+- Unsharing or deleting the meal, removing the friendship, or deleting the account removes the photo from the map and from storage.
+
+### F18 Landing page
+- A signed-out visitor with no onboarding in progress sees a landing page that says what Ontrack does, with phone frames showing real screens and scroll animations in the OneFin style. It replaces Welcome. "Get started" opens onboarding and "Sign in" opens the sign-in sheet.
+- It respects reduced motion, loads as its own chunk and never mentions installing the app.
+
 ## 6. Not in v1
 
-In priority order for later: Thai food table and Thai language. Barcode scanning. Set by set workout logging and strength trends. Push reminders. Apple sign-in. Water and micronutrients. Meal plans and recipes. Coach or social features. Payments. Native wrappers and Health data import.
+In priority order for later: Thai language. Barcode scanning. Set by set workout logging and strength trends. Push reminders. Apple sign-in. Water and micronutrients. Meal plans and recipes. Coach features, a public feed, likes and comments. Payments. Native wrappers and Health data import.
 
 ## 7. Guardrails
 
@@ -124,12 +148,13 @@ Ontrack gives general wellness guidance, not medical advice, and says so at onbo
 - BMI under 16 shows a card suggesting a doctor's visit, without blocking a gain or maintain plan.
 - Language is neutral. No "good" or "bad" foods, no "cheat", no "burn off". Going over a target is shown in neutral ink, never red.
 - No before and after imagery, no body shape goals, no weight loss countdowns.
+- Social features show no weights, targets, daily totals, streaks or rankings. No leaderboards. A shared meal shows its nutrition in neutral words.
 
 ## 8. Quality bars
 
 | Measure | Bar |
 | --- | --- |
-| Initial JavaScript, gzip | 130 KB or less. Supabase, charts, camera and settings load lazily |
+| Initial JavaScript, gzip | 130 KB or less. Supabase, charts, camera, settings, the map and the landing page load lazily |
 | Cold start to interactive, iPhone 12 | 1.5 s or less |
 | Tap to visible response | 100 ms or less. Every tap has a pressed state |
 | Photo to review sheet | 8 s or less at the median |

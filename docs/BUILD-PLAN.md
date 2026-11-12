@@ -1,6 +1,6 @@
 # Ontrack: build plan
 
-Ten milestones, each built in its own fresh context: a session when the owner is present, a subagent in an unattended run. Each has a goal, what to read, the steps, a gate that proves it is done, and what the owner checks. Start and finish every milestone with the `milestone` skill. In an unattended run, owner checks are recorded in `docs/BLOCKERS.md` and never hold up the build.
+Ten milestones and four the owner added (D1, N1, L1, S1), each built in its own fresh context: a session when the owner is present, a subagent in an unattended run. Each has a goal, what to read, the steps, a gate that proves it is done, and what the owner checks. Start and finish every milestone with the `milestone` skill. In an unattended run, owner checks are recorded in `docs/BLOCKERS.md` and never hold up the build.
 
 | | Milestone | Outcome | Owner is needed for |
 | --- | --- | --- | --- |
@@ -13,7 +13,12 @@ Ten milestones, each built in its own fresh context: a session when the owner is
 | M6 | Photo logging | Camera to reviewed meal | A Gemini key, ten real meals |
 | M7 | Training | Program, analysis, training day targets | Entering a real program |
 | M8 | Progress and check-ins | Trends and the weekly correction | A review with seeded data |
+| N1 | Thai foods and remembered nutrition | Thai dishes from a published table, corrections remembered | Logging five usual Thai meals |
+| L1 | Landing page | A page for signed-out visitors | Scrolling it on the iPhone |
+| S1 | Friends, profiles and the food map | Friends, a profile with an optional program, shared meal photos on a map | A second account as a friend |
 | M9 | Hardening and release | Settings, export, accessibility, speed, security, production | Full device check |
+
+After M8 the order is N1, L1, S1, then M9. It follows the owner's MoSCoW and RICE prioritization: N1 and L1 are Should (high value for little effort), S1 is Could, and M9 hardens everything last.
 
 Order: the look is settled before any screen is built (M1), and the logic is settled before any screen needs it (M2, M3). With the owner present, no screen work past M1 starts before he approves the gallery. In an unattended run a clean rubric pass stands in for that approval and the gallery goes on his review list.
 
@@ -125,11 +130,47 @@ Build the chart, the Progress cards, history, and the check-in flow. Add a devel
 Gate: end to end tests for F9 and F11 using the seeder, one per check-in reason. Vectors F and G drive the screens to the expected proposal. `verify-ui` passes.
 Owner checks: walk through each seeded check-in and judge whether the sentence matches what the numbers show.
 
+## N1 Thai foods and remembered nutrition
+
+Read: `docs/PRD.md` F14 and F15, `docs/TECH-SPEC.md` sections 3, 5, 8 and 9, `docs/SCREENS.md` section 7, `docs/EVAL-NOTES.md`.
+
+1. Find a published Thai food composition source whose terms allow use in an app. Candidates: the Thai Food Composition Database from INMU, Mahidol University; the Department of Health's nutritive values of Thai foods; the ASEAN Food Composition Database. Record the source, edition and terms. "Nobody types a nutrient value" still holds: `pnpm foods:build` reads the source file, or a checked-in extract of it with page references and a checksum, and fails on a missing value.
+2. At least 80 Thai dishes and Thai ingredients: rice and noodle dishes, curries, stir fries, soups, salads, grilled meats, sticky rice, desserts, drinks. Thai script and romanised aliases, and Thai portions (plate, bowl, bag of sticky rice). Mixed dishes stay as one item when the table has the dish.
+3. The vision catalog carries the Thai dishes, and the prompt prefers a catalogued dish over its parts. If the evaluation shows it helps, drop `est_per_100g` from the output when `food_id` is set, to cut tokens and time.
+4. Remembered nutrition: a synced per user collection keyed by `food_id`, or by the normalised name when there is none, through `actions.ts`, the store and sync, with the sync conformance suite extended. Applied on the device after resolution and in search. The source label says Yours, with a control to forget it.
+5. Rerun the evaluation on the Thai photos with the free key (about 20 requests a day, so budget them): table match rate and time to a review sheet, before and after, in `docs/EVAL-NOTES.md`.
+
+Gate: end to end tests for F14 (search by a Thai script alias, a Thai dish fixture resolves to Database) and F15 (correct, log again, see Yours, forget). Conformance green on both backends. The evaluation numbers are in the pull request.
+Owner checks: log five Thai meals you eat often and judge the numbers.
+
+## L1 Landing page
+
+Read: `docs/PRD.md` F18, `docs/DESIGN.md`, `docs/SCREENS.md` (Welcome), and in `/Users/admin/destination/ontrack-design/onefin/`: `site/SITE-EXTRACT.md` (the "Landing sections" chapter) and `site/motion/MOTION.md`.
+
+Build the landing page for signed-out visitors (no session and no onboarding draft) in the OneFin style, with scroll animations from MOTION.md. It replaces Welcome. "Get started" opens onboarding, "Sign in" opens the sign-in sheet. Phone frames show real screenshots of the app. No OneFin raster or video artwork ships; decoration is CSS or SVG. A lazy chunk, reduced motion respected, no install wording. Update `docs/SCREENS.md` and `docs/PRD.md`.
+
+Gate: end to end tests: a new visitor sees the landing page, both buttons work, a returning user with a draft or a session skips it, reduced motion shows everything without animation. The initial JavaScript budget still holds. `verify-ui` passes at every size.
+Owner checks: scroll it on the iPhone in Safari.
+
+## S1 Friends, profiles and the food map
+
+Read: `docs/PRD.md` F16, F17 and section 7, `docs/TECH-SPEC.md` sections 3, 5, 6 and 8, `docs/SCREENS.md`.
+
+1. Data: profiles with a unique handle, friendships (requested, accepted), shared meals (owner, photo path, rounded latitude and longitude, taken at, title, nutrition). Row level security: a shared row is readable by its owner and accepted friends only. Shared photos sit in a private bucket readable the same way. Removing a friendship, unsharing and deleting the account all take effect on the server. Supabase advisors clean.
+2. The mock backend matches, and a visibility suite runs on both backends: a stranger cannot read, a friend can, a removed friend cannot.
+3. Profile and friends screens: handle, display name, optional photo, search by handle, requests, remove, the program visibility switch.
+4. "Share to map" in the photo review sheet, off by default. Location: the GPS data in the original file if present, read before the canvas strips it, otherwise one `getCurrentPosition` call after the user turns sharing on. Round to about 100 m on the device.
+5. The map: MapLibre GL JS with OpenFreeMap tiles (free, no key; confirm the terms and show the attribution), in a lazy chunk. Photo pins with the person's avatar, grouping with "+N more", back and recenter controls, a bottom sheet with friend search, taking its layout cues from Instagram's map and its look from DESIGN.md. Tapping a pin shows the photo, title and nutrition. Offline shows a plain message.
+6. Add one landing page section about friends and the map.
+
+Gate: end to end tests on the mock with two users: request, accept, share, see the pin, open it, unshare, remove the friend. The visibility suite passes on live Supabase. The initial JavaScript budget still holds. `verify-ui` passes.
+Owner checks: make a second account a friend, share three meals from different places, check what each account can see.
+
 ## M9 Hardening and release
 
 1. Settings in full, exports, The science, Report a problem.
 2. Privacy and Terms as plain language drafts in `public/`, marked for the owner's review.
-3. Gain mode easy adds, the finish day control, and anything cut from earlier milestones and recorded in `docs/STATE.md`.
+3. Gain mode easy adds, the finish day control, and anything cut from earlier milestones and recorded in `docs/STATE.md`. Privacy and Terms cover sharing, location and friends.
 4. Accessibility pass against `docs/DESIGN.md` section 12. The stress matrix over every screen.
 5. Speed: bundle report against the budgets in the PRD, lazy chunks confirmed, start time measured with a year of seeded data.
 6. Offline pass: every feature in airplane mode.
@@ -141,4 +182,4 @@ Owner checks, on the iPhone, installed: sign in, onboard, log by every method, w
 
 ## After v1
 
-Thai food table and Thai language. Barcode scanning. Set by set logging. Push reminders. A dietitian's review of the guardrails and copy before any public launch.
+Thai language. Barcode scanning. Set by set logging. Push reminders. A dietitian's review of the guardrails and copy before any public launch.
