@@ -24,6 +24,19 @@ describe('copy rules', () => {
   });
 });
 
+describe('no emoji', () => {
+  // The owner's rule: icons are real icons, never typed emoji. Copyright, registered and trademark signs are text, not emoji.
+  const emoji = /(?![\u00A9\u00AE\u2122])\p{Extended_Pictographic}|\uFE0F|\u200D/u;
+  const text = [...files('src').filter((f) => /\.(ts|svelte|css|html|json)$/.test(f)), 'index.html',
+    ...files('public').filter((f) => /\.(html|svg|webmanifest|txt|md)$/.test(f))];
+  test.each(text)('%s has no emoji', (f) => expect(readFileSync(f, 'utf8')).not.toMatch(emoji));
+  test.each(strings(en))('catalog %s has no emoji', (_, s) => expect(s).not.toMatch(emoji));
+  test('the check catches emoji and lets text symbols through', () => {
+    for (const e of ['\u{1F4AA}', '\u{1F525}', '\u2705', '\u2764\uFE0F']) expect(e).toMatch(emoji);
+    for (const t of ['\u00A9 OpenStreetMap', '\u2192', '\u00D7', '5 \u00B0C']) expect(t).not.toMatch(emoji);
+  });
+});
+
 describe('tokens only', () => {
   test.each(src)('%s has no raw hex colours or pixel font sizes', (f) => {
     const code = readFileSync(f, 'utf8');
