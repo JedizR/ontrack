@@ -12,8 +12,9 @@ import type { FailKind } from '$lib/backend/types';
 import { eeeByWeekday, planFromBaseline, type CheckinResult } from '$lib/model/engine';
 import { planFor } from '$lib/model/day';
 import { addDays, today } from '$lib/model/dates';
+import { foodKey, per100Of } from '$lib/data/foods';
 import type { AnalyzeRequest, AnalyzeResponse } from '../../shared/analysis';
-import { ids, recSchema, SCHEMAS, type Checkin, type Collection, type DataOf, type Meal, type Plan, type Profile, type Program, type Saved, type SessionLog, type Weight } from '../../shared/records';
+import { foodSchema, ids, recSchema, SCHEMAS, type Checkin, type Collection, type DataOf, type Meal, type MealItem, type Plan, type Profile, type Program, type Saved, type SessionLog, type Weight } from '../../shared/records';
 
 const uid = () => crypto.randomUUID();
 
@@ -59,6 +60,16 @@ export function logSaved(id: string, date: string, at: string) {
   return () => { deleteMeal(mealId); saveSaved(was, id); };
 }
 /** Keep a meal to log again from Saved. */
+/** Remembers the numbers the user corrected these items to, per 100 g, for the next time each food is logged (F15).
+ * An item without grams, or with values no food has (over 900 kcal in 100 g, a typo), is not remembered. */
+export function rememberFoods(items: MealItem[]) {
+  for (const i of items) {
+    const data = { name: i.name, per100: per100Of(i) };
+    if (foodSchema.safeParse(data).success) write('food', foodKey(i), data as DataOf['food']);
+  }
+}
+/** Forgets the user's numbers for a food: it goes back to the table's or the model's. */
+export const forgetFood = (key: string) => remove('food', key);
 export const saveAsMeal = (m: Meal, title: string) => saveSaved({ title, items: m.items, uses: 0, lastUsedAt: m.at });
 const kept = (p: Program) => p.sessions.map(({ exercises: _, ...s }) => s);
 /**

@@ -1,0 +1,8 @@
+{
+  "is_food": true,
+  "title": "Pad thai with shrimp and Thai milk tea",
+  "items": [
+    { "name": "Pad thai with shrimp", "grams": 350, "portion_note": "One plate", "food_id": "pad-thai-shrimp", "est_per_100g": { "kcal": 170, "protein_g": 7, "carbs_g": 22, "fat_g": 6.5 }, "confidence": "high", "hidden_fat": false },
+    { "name": "Thai milk tea", "grams": 400, "portion_note": "One cup", "food_id": "thai-milk-tea", "est_per_100g": { "kcal": 70, "protein_g": 0.8, "carbs_g": 11, "fat_g": 2.3 }, "confidence": "high", "hidden_fat": false }
+  ]
+}

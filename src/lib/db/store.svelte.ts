@@ -39,7 +39,7 @@ export class Store {
     this.meta = { ...freshMeta(), ...(meta as Meta | undefined) };
     const dirty = new Set<string>();
     while (this.meta.schemaVersion < SCHEMA_VERSION) {
-      MIGRATIONS[this.meta.schemaVersion]?.(loaded);
+      MIGRATIONS[this.meta.schemaVersion]?.(loaded, this.meta);
       loaded.forEach((r) => dirty.add(recKey(r.collection, r.id)));
       this.meta.schemaVersion++;
     }

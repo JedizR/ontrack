@@ -123,7 +123,7 @@ describe.each(harnesses)('sync conformance: $name', (h) => {
     // one deletion per user is enough; later ones fail with 401, which is fine
     for (const b of signedIn) await h.deleteAccount(b).catch(() => 0);
     await h.cleanup(tag);
-  });
+  }, 60_000); // a network round trip per test user on Supabase
 
   test('records round trip with their data and tombstones', async () => {
     const b = await signIn('a');
@@ -175,6 +175,17 @@ describe.each(harnesses)('sync conformance: $name', (h) => {
     const got = await a.getThumb('meal-1');
     expect([...new Uint8Array(await got!.arrayBuffer())]).toEqual([255, 216, 255, 1, 2, 3]);
     expect(await a.getThumb('never')).toBeNull();
+  });
+
+  test('remembered nutrition (the food collection, N1) round trips and stays with its user', async () => {
+    const a = await signIn('m');
+    const z = await signIn('n');
+    const food = (id: string, kcal: number): Rec => ({ collection: 'food', id, updatedAt: 10, data: { name: 'Pad thai', per100: { kcal, protein: 7.4, carbs: 24.9, fat: 8.4 } } });
+    await a.push([food('pad-thai', 180), food('name:khao soi', 150)]);
+    const { records } = await a.pull(null);
+    expect(byId(records, 'pad-thai')).toEqual(food('pad-thai', 180));
+    expect(byId(records, 'name:khao soi')).toEqual(food('name:khao soi', 150));
+    expect((await z.pull(null)).records).toEqual([]);
   });
 
   test('a record the database would refuse is refused as a bad request', async () => {
@@ -265,4 +276,20 @@ describe.each(harnesses)('sync conformance: $name', (h) => {
     signedIn.push(fresh);
     expect((await fresh.pull(null)).records).toEqual([]);
   });
+});
+
+test('store migration 1: a device that had pulled pulls everything again, still counted as pulled', async () => {
+  const idb = (globalThis.indexedDB = new IDBFactory());
+  const old = new Store();
+  await old.open('migrating');
+  old.setCursor('2026-11-01T00:00:00.000Z', 1);
+  old.meta.schemaVersion = 1;
+  old.put('weight', 'weight:2026-11-01', { date: '2026-11-01', kg: 70 }); // a write flushes the meta with it
+  await old.settled();
+  globalThis.indexedDB = idb;
+  const now = new Store();
+  await now.open('migrating');
+  expect(now.meta.schemaVersion).toBe(2);
+  expect(now.meta.cursor).toBe(new Date(0).toISOString());
+  expect(now.get('weight', 'weight:2026-11-01')).toEqual({ date: '2026-11-01', kg: 70 });
 });

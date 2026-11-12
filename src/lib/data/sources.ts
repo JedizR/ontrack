@@ -15,3 +15,11 @@ export const SOURCES: Partial<Record<SourceId, { short: string; cite: string }>>
   S13: { short: 'WHO guidelines, 2020', cite: 'Bull FC, Al-Ansari SS, Biddle S, et al. World Health Organization 2020 guidelines on physical activity and sedentary behaviour. Br J Sports Med. 2020;54(24):1451-1462' },
   S14: { short: 'NHLBI, 2000', cite: 'NHLBI and NAASO. The Practical Guide: Identification, Evaluation, and Treatment of Overweight and Obesity in Adults. NIH Publication 00-4084, 2000' },
 };
+
+/** The food tables foods.json is built from (TECH-SPEC section 9), cited under a food in Search. SG FoodID's licence
+ * asks for the source, the date it was read and a link to its terms wherever its data shows. */
+export const FOOD_SOURCES: Record<'usda-sr-legacy' | 'usda-fndds' | 'sg-foodid', { name: string; terms?: string }> = {
+  'usda-sr-legacy': { name: 'USDA FoodData Central, SR Legacy' },
+  'usda-fndds': { name: 'USDA FoodData Central, FNDDS 2021 to 2023' },
+  'sg-foodid': { name: 'SG FoodID, Health Promotion Board, Singapore, read on 12 November 2026', terms: 'https://go.gov.sg/termsofuse-hpbsgfoodid' },
+};

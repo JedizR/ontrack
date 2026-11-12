@@ -3,7 +3,7 @@ import foods from '../../src/lib/data/foods.json' with { type: 'json' };
 
 const RULES = `You identify food for a nutrition log. Reply with JSON only, matching the schema.
 
-- List each distinct component of the meal as its own item (rice, curry, fried egg), not the dish as one line, unless the dish itself is in the catalog.
+- When a whole dish is in the catalog (pad thai, khao man kai, pad kra pao pork with rice and fried egg, boat noodles), give it as one item with that food_id rather than its parts. Otherwise list each distinct component as its own item (rice, curry, fried egg).
 - For each item estimate the edible weight in grams as served. Use visible cues: plate and bowl size, cutlery, hands, packaging. Give your single best number.
 - Set food_id to a catalog entry's id only when the entry matches both the food and how it was cooked: rice cooked in chicken fat, stock or coconut milk is not plain rice, and fried is not boiled. If nothing fits well, set food_id to null.
 - Always fill est_per_100g from your own knowledge of the food as cooked.
