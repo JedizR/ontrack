@@ -1,5 +1,6 @@
-<!-- SCREENS.md section 9, the intake bars: each week's average calories as a bar, ink until it is on track and then
-     green (DESIGN.md section 4, rule 3), with that week's average target as a line across its slot. -->
+<!-- SCREENS.md section 9, the intake and training bars: each week's value as a bar (average calories, sessions done),
+     violet until it reaches its target and then green (DESIGN.md section 4, rule 3), with that week's target as a line
+     across its slot. -->
 <script lang="ts">
   import { scaleLinear } from 'd3-scale';
 
@@ -14,7 +15,7 @@
   const bar = $derived(Math.min(32, slot * 0.6));
 </script>
 
-<div bind:clientWidth={w} data-testid="intake-bars">
+<div bind:clientWidth={w} data-testid="week-bars">
   <svg width={w} height={H} role="img" aria-label={label} class="block">
     <line x1="0" x2={w} y1={y(0)} y2={y(0)} class="stroke-line" />
     {#each weeks as k, i (i)}

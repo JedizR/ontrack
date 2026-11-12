@@ -449,6 +449,16 @@ export const en = {
     },
     cardio: 'Cardio',
     cardioLine: (min: string, from: string, to: string) => `${min} of ${from} to ${to} minutes a week`,
+    // a week with lifting and cardio on one day (PRD F20): one sentence per point, naming its weekdays
+    hybrid: 'Lifting and cardio',
+    hybridLine: 'On days with both',
+    hybridPoints: {
+      liftFirst: (days: string) => `On ${days}, lift before your cardio, as strength gains more in that order.`,
+      spaceOut: (days: string, hours: string) => `On ${days}, leave ${hours} hours or more between lifting and cardio if you can.`,
+      legDayCardio: (days: string) => `On ${days} you train legs, so cycle rather than run.`,
+    },
+    /** "Monday, Wednesday and Friday" */
+    dayList: (days: string[]) => (days.length < 2 ? days.join('') : `${days.slice(0, -1).join(', ')} and ${days.at(-1)}`),
     // the Session sheet, the exercise picker and Templates
     newSession: 'New session',
     name: 'Name',
@@ -475,6 +485,7 @@ export const en = {
     tooLarge: 'This program is too large to save. Remove some exercises.',
     noMatch: 'No exercise matches that name.',
     balanceOf: (n: string, total: string, from: string, to: string) => `${n} of ${total} muscles at ${from} to ${to} sets a week`,
+    cardioOf: (min: string, from: string, to: string) => `${min} cardio minutes a week. ${from} to ${to} is the range`,
     use: 'Use this program',
     useTitle: 'Use this program?',
     useBody: (name: string) => `${name} replaces your current program. Your targets follow it from tomorrow.`,
@@ -562,6 +573,17 @@ export const en = {
     weeksAgo: ['3 weeks ago', '2 weeks ago', 'Last week', 'This week'],
     ofSeven: (n: string) => `${n} of 7`,
     weekOnTrack: (week: string, n: string) => `${week}, ${n} of 7 days on track`,
+    // the training card (PRD F20), for the range in view
+    training: 'Training',
+    ofPlanned: (n: string) => `of ${n} planned ${n === '1' ? 'session' : 'sessions'} done`,
+    sessionBars: (n: string) => `Sessions done each week against planned, ${n} weeks`,
+    sessionsLine: 'Sessions marked done each week. The line is what you planned.',
+    strength: 'Strength sessions',
+    strengthLine: (n: string, target: string) => `${n} a week on average. Target ${target}`,
+    cardio: 'Cardio',
+    cardioLine: (min: string, from: string, to: string) => `${min} of ${from} to ${to} minutes a week on average`,
+    trainingNone: 'Plan your week on Train to see your sessions here.',
+    planWeek: 'Plan your week',
     checkins: 'Check-ins',
     checkinsNone: 'Your first check-in comes two weeks after your plan starts.',
     ready: "This week's check-in",
