@@ -29,6 +29,14 @@ Each entry: what is blocked, what Claude tried, the exact steps for you, and wha
 
 Each entry: what to look at (URL or screenshot paths), what to look for, and which milestone it belongs to.
 
+### O1: hand the phone to someone who has never seen Ontrack, and time them
+
+- **Where:** the pull request's Vercel preview in Safari on the iPhone, signed out (a private tab), or `pnpm dev` on the Mac against the mock (code 123456). Screenshots of every step in `screenshots/onboarding/` after `pnpm screenshots -- --grep onboarding` (light and dark, 390, SE and Pro Max), plus `screenshots/today/first-day-*`, `screenshots/shell/train-*`; a few on branch `pr-assets`, folder `o1/`.
+- **Time five people who have never seen it,** from the tap on "Build your plan" to the tap on "Save this plan", without help. The research's targets: median under 75 seconds, nobody over 120, four of five finish alone. If the median is under 60 seconds, tell Claude and "About a minute." can go under Build your plan (the owner's rule; it does not ship on a model).
+- **Look for:** whether the number card in the footer reads as the plan forming (it grows from daily movement on, and Your plan counts up from it); whether the 240 ms before a screen slides feels quick or sluggish on the phone; the pace control on Your plan, and the faster gain pace with "Being checked"; Today's Getting started card, Train's "Suggested for your week", and the Add sheet's shake line.
+- **Decide:** whether experience should also be asked of people losing or maintaining (it changes no target for them, but Train's set advice and the suggestion read it); whether "Getting started" should last one day or two.
+- **Decided for you:** the O1 list in `docs/DECISIONS.md`, notably training days before "What do you train?", the defaults and their costs, the faster pace's wording, the main action labels app-wide, and the supplement setup in serving terms with milk in ml.
+
 ### S1a: who can see what, before friends use it
 
 - **Where:** the table "What others can see" in `docs/DECISIONS.md`, section S1a. No screen yet; S1b builds them.
@@ -75,7 +83,7 @@ Each entry: what to look at (URL or screenshot paths), what to look for, and whi
 - **Where:** the pull request's Vercel preview in Safari on the iPhone, or `pnpm dev` on the Mac against the mock (code 123456). Screenshots: `screenshots/supplements/` after `pnpm screenshots -- --grep supplements` (the entry, the kinds, the label from USDA, with no calories and with the error, the Add sheet with supplements, the amount with milk, taken, an entry in edit mode, the milk not loaded, Today with a shake and creatine taken; light and dark, 390, SE and Pro Max), and `screenshots/fonts/iphone-se-xl/logging/supplement-*.png` for the largest text. A few are on branch `pr-assets`, folder `n2/`.
 - **Set up your whey from the tub:** the plus, Supplements, Whey protein. Type the scoop and the numbers from your label, and the scoops you take. Then log your morning shake for a few days: the plus, Whey protein, Add. Try milk once, and a half scoop more or less. If you take creatine, set it up and log it: it shows as a chip under Taken, with no calories.
 - **Look for:** three taps for the usual shake; calories and protein on Today matching your label times your scoops; the Add sheet starting at your last amount and mix; editing a shake from Today (change the scoops, Save changes) and deleting it with Undo.
-- **Decide:** whether asking "Scoops you take" in the setup is welcome; whether the setup should take the label's serving (several scoops, as on gainer tubs) instead of one scoop; whether the five milks are the right ones (no oat milk in the table); whether correcting an old entry should also change where the next shake starts (it does not, today).
+- **Decide:** whether asking "Scoops you take" in the setup is welcome; (decided after N2, built in O1: the setup takes the label's serving and the scoops in it); whether the five milks are the right ones (no oat milk in the table); whether correcting an old entry should also change where the next shake starts (it does not, today).
 - **Decided for you:** the N2 list in `docs/DECISIONS.md`, notably plant protein from USDA's soy powder, casein, gainer and creatine starting from the label, and creatine taken not counting toward a complete day.
 
 ### N1: five Thai meals you eat often, and Yours

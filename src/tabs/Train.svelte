@@ -21,6 +21,7 @@
   import { SOURCES } from '$lib/data/sources';
   import SessionSheet from '../flows/train/SessionSheet.svelte';
   import TemplatesSheet from '../flows/train/TemplatesSheet.svelte';
+  import Suggestion from '../flows/train/Suggestion.svelte';
   import type { Program, Session } from '../../shared/records';
 
   const profile = $derived(db.get('profile', 'profile'));
@@ -137,6 +138,7 @@
         <EmptyState text={t.today.noProgram} action={t.train.pick} onaction={() => (templates = true)} />
       {/if}
     </Card>
+    <Suggestion {sessions} goal={plan.goal} experience={profile.experience} />
 
     <h2 class="text-heading mt-2">{t.train.week}</h2>
     <Card list aria-label={t.train.week} data-testid="train-week">

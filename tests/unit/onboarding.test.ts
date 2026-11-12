@@ -6,31 +6,44 @@ import { plan, type PlanNumbers } from '../../src/lib/model/engine';
 import { kgPerWeek, targetParts, targetWith, trainingDayEee } from '../../src/lib/model/day';
 import { cmToFtIn, ftInToCm, kgToLb, lbToKg } from '../../src/lib/model/units';
 import { weekdayOf } from '../../src/lib/model/dates';
-import { complete, goalWeightOf, inputOf, paceChoices, progress, programOf, route, sessionsFor, toRecords, type Draft } from '../../src/flows/onboarding/draft';
+import { complete, goalWeightOf, inputOf, paceChoices, progress, programOf, route, sessionsFor, soFar, toRecords, upgrade, type Draft } from '../../src/flows/onboarding/draft';
 
 const YEAR = 2026;
 const A: Draft = {
   at: 'plan', units: 'metric', goal: 'gain', screening: { pregnant: false, medical: false, eatingDisorder: false },
   sex: 'male', birthYear: 2001, heightCm: 175, weightKg: 60, neat: 'seated',
-  train: { kind: 'custom', days: 4, type: 'strength', minutes: 60, intensity: 'moderate' }, experience: 'beginner',
+  days: 4, kind: 'lifting', experience: 'beginner',
 };
 
 describe('route', () => {
-  test('a gain goal with strength training asks all nine questions', () => {
-    expect(route(A, YEAR)).toEqual(['welcome', 'goal', 'screening', 'sex', 'born', 'body', 'move', 'train', 'experience', 'pace', 'plan']);
+  test('a gaining lifter answers all nine questions; the pace is chosen on Your plan', () => {
+    expect(route(A, YEAR)).toEqual(['welcome', 'goal', 'screening', 'sex', 'born', 'body', 'move', 'days', 'kind', 'experience', 'plan']);
     expect(progress({ ...A, at: 'sex' }, YEAR)).toEqual({ n: 3, total: 9 });
     expect(progress({ ...A, at: 'plan' }, YEAR)).toBeNull();
   });
-  test('maintain has no pace; cardio only has no experience question', () => {
-    const r = route({ ...A, goal: 'maintain', train: { kind: 'custom', days: 3, type: 'cardio', minutes: 30, intensity: 'hard' } }, YEAR);
-    expect(r).not.toContain('pace');
-    expect(r).not.toContain('experience');
-    expect(progress({ ...A, goal: 'maintain', at: 'train' }, YEAR)).toEqual({ n: 7, total: 8 });
+  test('experience is asked only of gaining lifters; cardio and Not yet skip it', () => {
+    expect(route({ ...A, goal: 'lose' }, YEAR)).not.toContain('experience');
+    expect(route({ ...A, goal: 'maintain' }, YEAR)).not.toContain('experience');
+    expect(route({ ...A, kind: 'cardio' }, YEAR)).not.toContain('experience');
+    expect(route({ ...A, kind: 'both' }, YEAR)).toContain('experience');
+    expect(progress({ ...A, goal: 'maintain', at: 'days' }, YEAR)).toEqual({ n: 7, total: 8 });
   });
-  test('a screening tick adds the advice screen and removes the pace', () => {
+  test('Not yet skips what is trained and the experience', () => {
+    const r = route({ ...A, days: 0, kind: undefined }, YEAR);
+    expect(r.slice(-3)).toEqual(['move', 'days', 'plan']);
+    expect(progress({ ...A, days: 0, at: 'days' }, YEAR)).toEqual({ n: 7, total: 7 });
+  });
+  test('the step count assumes the longest route until an answer shortens it, so it never grows', () => {
+    const before: Draft = { at: 'goal', units: 'metric' };
+    expect(progress(before, YEAR)?.total).toBe(9);
+    expect(progress({ ...before, goal: 'gain' }, YEAR)?.total).toBe(9);
+    expect(progress({ ...before, goal: 'maintain' }, YEAR)?.total).toBe(8);
+    expect(progress({ ...before, goal: 'gain', at: 'days', days: 0 }, YEAR)?.total).toBe(7);
+  });
+  test('a screening tick adds the advice screen and drops the experience question', () => {
     const r = route({ ...A, screening: { pregnant: true, medical: false, eatingDisorder: false } }, YEAR);
     expect(r.slice(0, 5)).toEqual(['welcome', 'goal', 'screening', 'advice', 'sex']);
-    expect(r).not.toContain('pace');
+    expect(r).not.toContain('experience');
   });
   test('under 18 ends at the age screen', () => {
     expect(route({ ...A, birthYear: 2009 }, YEAR).at(-1)).toBe('young');
@@ -39,15 +52,53 @@ describe('route', () => {
 });
 
 describe('program', () => {
-  test('a custom week spreads its sessions from Monday', () => {
+  test('the days and what is trained make the week, spread from Monday', () => {
     const p = programOf(A);
     expect(p.sessions.map((s) => s.weekday)).toEqual([0, 1, 3, 4]);
     expect(p.sessions[0]).toEqual({ key: 'd0', weekday: 0, name: 'Strength', type: 'strength', minutes: 60, intensity: 'moderate' });
-    for (let n = 1; n <= 7; n++) expect(new Set(programOf({ ...A, train: { kind: 'custom', days: n, type: 'walk', minutes: 30, intensity: 'light' } }).sessions.map((s) => s.weekday)).size).toBe(n);
+    for (let n = 1; n <= 7; n++) expect(new Set(programOf({ ...A, kind: 'cardio', days: n }).sessions.map((s) => s.weekday)).size).toBe(n);
   });
-  test('a template is copied whole, later is an empty week', () => {
-    expect(programOf({ ...A, train: { kind: 'template', id: 'minimal-2' } })).toMatchObject({ name: 'Minimal 2 days' });
-    expect(programOf({ ...A, train: { kind: 'later' } })).toEqual({ name: '', sessions: [] });
+  test('Not yet is an empty week', () => {
+    expect(programOf({ ...A, days: 0, kind: undefined })).toEqual({ name: '', sessions: [] });
+  });
+});
+
+describe('a draft saved before O1', () => {
+  const old = (train: unknown, at = 'pace') => ({ ...A, days: undefined, kind: undefined, at, train }) as unknown as Draft;
+  test('keeps its answers in the new terms and moves off the screens that are gone', () => {
+    expect(upgrade(old({ kind: 'custom', days: 4, type: 'strength', minutes: 60, intensity: 'moderate' }))).toEqual({ ...A, at: 'plan' });
+    expect(upgrade(old({ kind: 'custom', days: 3, type: 'cardio', minutes: 30, intensity: 'hard' }, 'train'))).toMatchObject({ at: 'days', days: 3, kind: 'cardio' });
+    expect(upgrade(old({ kind: 'template', id: 'upper-lower-cardio-5' }))).toMatchObject({ days: 5, kind: 'both' });
+    const later = upgrade(old({ kind: 'later' }))!;
+    expect(later).toMatchObject({ days: 0 });
+    expect(later.kind).toBeUndefined();
+    expect(later).not.toHaveProperty('train');
+    expect(complete(later, YEAR)).toBe(true);
+    // the sports that were not lifting count as cardio, and an experience question no longer asked moves on
+    expect(upgrade(old({ kind: 'custom', days: 2, type: 'sport', minutes: 90, intensity: 'hard' }))).toMatchObject({ days: 2, kind: 'cardio' });
+    expect(upgrade({ ...old({ kind: 'custom', days: 3, type: 'strength', minutes: 60, intensity: 'moderate' }, 'experience'), goal: 'lose' })).toMatchObject({ at: 'plan', kind: 'lifting' });
+    expect(upgrade(old({ kind: 'custom', days: 3, type: 'strength', minutes: 60, intensity: 'moderate' }, 'experience'))).toMatchObject({ at: 'experience' });
+  });
+  test('a current draft is left as it is', () => {
+    expect(upgrade(A)).toBe(A);
+    expect(upgrade(null)).toBeNull();
+  });
+});
+
+describe('your number so far', () => {
+  test('nothing before screening and the body are answered', () => {
+    expect(soFar({ ...A, screening: undefined }, YEAR)).toBeNull();
+    expect(soFar({ ...A, weightKg: undefined }, YEAR)).toBeNull();
+  });
+  test("vector A: resting energy, then daily movement, then a training day, in the breakdown's own rows", () => {
+    const at = { ...A, neat: undefined, days: undefined, kind: undefined };
+    expect(soFar(at, YEAR)).toEqual({ row: 'bmr', value: 1574, added: 0 });
+    expect(soFar({ ...at, neat: 'seated' }, YEAR)).toEqual({ row: 'movement', value: 1890, added: 316 });
+    expect(soFar({ ...at, neat: 'seated', days: 4 }, YEAR)).toEqual({ row: 'movement', value: 1890, added: 316 }); // kind not yet known
+    expect(soFar(A, YEAR)).toEqual({ row: 'training', value: 2130, added: 240 });
+    // Your plan then adds the goal: 2,130 + 330 = 2,460
+    const p = plan(inputOf(A, YEAR));
+    expect(targetWith(p, 'male', trainingDayEee(p)) - soFar(A, YEAR)!.value).toBe(330);
   });
 });
 
@@ -62,13 +113,23 @@ describe('guardrails', () => {
     expect(paceChoices({ ...A, goal: 'lose', weightKg: 70 }, YEAR).why).toBe('noFaster');
     expect(paceChoices({ ...A, goal: 'lose', weightKg: 90 }, YEAR)).toMatchObject({ options: [{}, {}, { name: 'faster' }], why: null, picked: 0.5 });
   });
-  test('the faster gain pace stays off the pace screen until T1b labels it', () => {
-    expect(paceChoices(A, YEAR).options.map((o) => o.name)).toEqual(['lean', 'standard']);
+  test('the faster gain pace is offered under BMI 20 (F19), never as the default, and holds inside the surplus cap', () => {
+    expect(paceChoices(A, YEAR)).toMatchObject({ options: [{ name: 'lean' }, { name: 'standard' }, { name: 'faster' }], why: null, picked: 0.5 });
+    const p = plan(inputOf({ ...A, rate: 0.75 }, YEAR));
+    expect(p.ratePctPerWeek).toBe(0.75);
+    expect(p.delta).toBeLessThanOrEqual(0.2 * (p.baseline + p.eeeByWeekday.reduce((a, b) => a + b, 0) / 7) + 1e-9);
   });
-  test('a pace no longer offered after an answer changed falls back to the default; 0 still holds', () => {
+  test('gaining at BMI 20 or more says why the faster pace is missing, in its own words', () => {
+    expect(paceChoices({ ...A, weightKg: 65 }, YEAR)).toMatchObject({ options: [{ name: 'lean' }, { name: 'standard' }], why: 'noFasterGain' });
+  });
+  test('experience counts only for a gaining lifter', () => {
+    expect(inputOf({ ...A, goal: 'lose', experience: 'advanced' }, YEAR).experience).toBe('beginner');
+    expect(inputOf({ ...A, experience: 'advanced' }, YEAR).experience).toBe('advanced');
+  });
+  test('a pace no longer offered after an answer changed falls back to the default', () => {
     expect(inputOf({ ...A, weightKg: 65, rate: 0.75 }, YEAR).ratePctPerWeek).toBe(0.5); // BMI 21.2: no faster gain pace
     expect(inputOf({ ...A, rate: 0.25 }, YEAR).ratePctPerWeek).toBe(0.25);
-    expect(inputOf({ ...A, rate: 0 }, YEAR).ratePctPerWeek).toBe(0);
+    expect(inputOf({ ...A, rate: 0 }, YEAR).ratePctPerWeek).toBe(0.5); // the old "hold" answer is no pace now
     expect(inputOf({ ...A, goal: 'lose', weightKg: 70, rate: 0.75 }, YEAR).ratePctPerWeek).toBe(0.5); // BMI 22.9: steady
   });
   test('advanced lifters gaining get the lean pace only', () => {
@@ -82,8 +143,10 @@ describe('guardrails', () => {
 
 describe('records', () => {
   test('vector A becomes a valid profile, program, plan and first weigh-in', () => {
-    expect(complete(A)).toBe(true);
-    expect(complete({ ...A, neat: undefined })).toBe(false);
+    expect(complete(A, YEAR)).toBe(true);
+    expect(complete({ ...A, neat: undefined }, YEAR)).toBe(false);
+    expect(complete({ ...A, days: 3, kind: undefined }, YEAR)).toBe(false);
+    expect(complete({ ...A, birthYear: 2010 }, YEAR)).toBe(false); // never a plan for a minor, whatever the route
     const r = toRecords({ ...A, goalWeightKg: 66, even: true }, '2026-11-11', '2026-11-11T03:00:00.000Z');
     for (const [c, data] of Object.entries(r)) expect(() => SCHEMAS[c as keyof typeof SCHEMAS].parse(data), c).not.toThrow();
     expect(r.profile).toMatchObject({ birthYear: 2001, calorieMode: 'even', checkinWeekday: 2, units: 'metric', screening: { at: '2026-11-11T03:00:00.000Z' } });
@@ -111,7 +174,7 @@ describe('plan breakdown', () => {
     expect(kgPerWeek(pA, 'male', 'even')).toBeCloseTo(0.3, 1);
   });
   test('a floor that lifts only rest days slows the change, and the expectation says so', () => {
-    const d: Draft = { ...A, sex: 'female', goal: 'lose', heightCm: 155, weightKg: 55, rate: 0.5, train: { kind: 'custom', days: 3, type: 'strength', minutes: 60, intensity: 'moderate' } };
+    const d: Draft = { ...A, sex: 'female', goal: 'lose', heightCm: 155, weightKg: 55, rate: 0.5, days: 3 };
     const p = plan(inputOf(d, YEAR));
     expect(p.flags).toContain('floor');
     expect(kgPerWeek(p, 'female', 'matched')).toBeLessThan(kgPerWeek(p, 'female', 'even'));

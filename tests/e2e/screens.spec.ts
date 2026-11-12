@@ -136,6 +136,7 @@ for (const theme of ['light', 'dark'] as const) {
         await go('welcome-start');
         await at('step-goal', 'goal');
         await go('choice-lose');
+        await at('step-screening', 'screening');
         await go('screen-medical');
         await at('step-screening', 'screening-ticked');
         await go('continue');
@@ -146,8 +147,8 @@ for (const theme of ['light', 'dark'] as const) {
         await go('continue');
         await at('step-advice', 'advice-eating-disorder');
         await go('back');
+        await go('screen-eatingDisorder');
         await go('screen-none');
-        await go('continue');
         await at('step-sex', 'sex');
         await go('choice-female');
         await at('step-born', 'born');
@@ -157,6 +158,7 @@ for (const theme of ['light', 'dark'] as const) {
         await go('back');
         await wheelType(page, 'wheel-year', '1994');
         await go('continue');
+        await page.getByRole('radio', { name: 'Metric' }).click();
         await at('step-body', 'body-start');
         await wheelType(page, 'wheel-height', '165');
         await wheelType(page, 'wheel-weight', '82');
@@ -167,18 +169,13 @@ for (const theme of ['light', 'dark'] as const) {
         await go('continue');
         await at('step-move', 'move');
         await go('choice-light');
-        await at('step-train', 'train');
-        await go('train-choose');
-        await page.getByTestId('templates-sheet').waitFor();
-        await shot(page, 'onboarding', 'templates');
-        await page.keyboard.press('Escape');
-        await page.getByTestId('templates-sheet').waitFor({ state: 'detached' });
-        await go('continue');
-        await at('step-experience', 'experience');
-        await go('choice-beginner');
-        await at('step-pace', 'pace-lose');
-        await go('choice-0.75');
+        await at('step-days', 'days');
+        await go('days-3');
+        await at('step-kind', 'kind');
+        await go('choice-lifting');
         await at('your-plan', 'plan-lose');
+        await page.getByTestId('plan-pace').getByRole('radio', { name: 'Faster' }).click();
+        await shot(page, 'onboarding', 'plan-lose-faster');
         await page.screenshot({ path: `screenshots/onboarding/plan-lose-full-${theme}-${d.name}.png`, fullPage: true });
         await go('line-goal');
         await page.getByTestId('plan-breakdown').scrollIntoViewIfNeeded();
@@ -190,13 +187,16 @@ for (const theme of ['light', 'dark'] as const) {
 
       test('onboarding gain', async ({ page }) => {
         await openFresh(page);
-        await onboard(page, { goal: 'gain', weight: '48', train: 4 });
+        await onboard(page, { goal: 'gain', weight: '48' });
         await page.getByTestId('back').click();
-        await page.getByTestId('step-pace').waitFor();
-        await shot(page, 'onboarding', 'pace-gain');
-        await page.getByTestId('continue').click();
+        await page.getByTestId('step-experience').waitFor();
+        await shot(page, 'onboarding', 'experience');
+        await page.getByTestId('choice-beginner').click();
         await page.getByTestId('your-plan').waitFor();
         await shot(page, 'onboarding', 'plan-gain-doctor');
+        await page.getByTestId('plan-pace').getByRole('radio', { name: 'Faster' }).click();
+        await page.getByTestId('pace-faster').scrollIntoViewIfNeeded();
+        await shot(page, 'onboarding', 'plan-gain-faster');
         await page.screenshot({ path: `screenshots/onboarding/plan-gain-full-${theme}-${d.name}.png`, fullPage: true });
         await page.getByTestId('tune-goalweight').click();
         await wheelType(page, 'picker-wheel', '50');
@@ -258,6 +258,14 @@ for (const theme of ['light', 'dark'] as const) {
         await page.getByTestId('session-undo').click();
         await page.getByTestId('session-more').click();
         await sheet('session-sheet', 'session-menu');
+      });
+
+      // SCREENS.md section 4, after onboarding (O1): Today's Getting started card on the day the plan was saved
+      test('today first day', async ({ page }) => {
+        await withPrefs(page, { firstDay: TODAY });
+        await open(page);
+        await page.getByTestId('first-day').waitFor();
+        await shot(page, 'today', 'first-day');
       });
 
       // SCREENS.md section 8, Train: no exercises listed, the Session sheet and picker, recommendations with a source,

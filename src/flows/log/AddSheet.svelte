@@ -33,6 +33,8 @@
   // logged supplements are not repeated here: they sit at the top
   const recent = $derived(recentMeals(db.live('meal').filter((r) => r.data.method !== 'supplement')));
   const supplements = $derived(db.live('supplement').sort((a, b) => a.data.name.localeCompare(b.data.name)));
+  // a lifter's entry row asks the question that makes setting one up worth it (O1); it never recommends one (F21)
+  const lifter = $derived(!!db.get('program', 'program')?.sessions.some((x) => x.type === 'strength' || x.type === 'circuit'));
   // a milk's values come from the food table, loaded when a supplement was last mixed with one
   let foods = $state<Food[] | null>(null);
   $effect(() => { if (sheets.add && !foods && supplements.some((r) => r.data.lastMix)) loadFoods().then((f) => (foods = f), () => {}); });
@@ -141,7 +143,7 @@
 
     {#if !supplements.length}
       <div class="mt-4">
-        <Row title={t.supplement.section} caption={t.supplement.entryLine} onclick={() => supplement(null)} testid="supplement-entry">
+        <Row title={t.supplement.section} caption={lifter ? t.supplement.offer : t.supplement.entryLine} onclick={() => supplement(null)} testid="supplement-entry">
           {#snippet leading()}<div class="tile grid size-full place-items-center"><ShakerIcon /></div>{/snippet}
           {#snippet trailing()}<ChevronRight class="text-ink-2 flex-none" size={24} strokeWidth={2} aria-hidden="true" />{/snippet}
         </Row>

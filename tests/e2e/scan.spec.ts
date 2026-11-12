@@ -169,7 +169,7 @@ test('F21 (B1): whey set up by scanning its tub', async ({ page }) => {
 
   await expect(page.getByTestId('supplement-label')).toBeVisible();
   await expect(page.getByTestId('supplement-name')).toHaveValue('100% Whey Gold Standard');
-  await expect(page.getByTestId('supplement-scoop').getByRole('textbox')).toHaveValue('30.4');
+  await expect(page.getByTestId('supplement-serving').getByRole('textbox')).toHaveValue('30.4');
   await expect(page.getByTestId('supplement-kcal').getByRole('textbox')).toHaveValue('120');
   await expect(page.getByTestId('supplement-protein').getByRole('textbox')).toHaveValue('24');
   await expect(page.getByTestId('supplement-why')).toHaveText('From Open Food Facts. Check them against your tub.');
@@ -187,7 +187,7 @@ test('F21 (B1): a mass gainer set up from a photo of its label', async ({ page }
   await expect(page.getByTestId('tub-typical')).toHaveCount(0);
   await photo(page, 'tub-photo', true);
   await expect(page.getByTestId('supplement-label')).toBeVisible();
-  await expect(page.getByTestId('supplement-scoop').getByRole('textbox')).toHaveValue('31');
+  await expect(page.getByTestId('supplement-serving').getByRole('textbox')).toHaveValue('31');
   await expect(page.getByTestId('supplement-kcal').getByRole('textbox')).toHaveValue('120');
   await expect(page.getByTestId('supplement-fat').getByRole('textbox')).toHaveValue('1.5');
   await expect(page.getByTestId('supplement-why')).toHaveText("Read from your tub's label. Check each number.");
@@ -204,7 +204,7 @@ test('F21 (B1): typical values say Typical, with one quiet way to set them from 
   await page.getByTestId('tub-typical').click();
   await expect(page.getByTestId('supplement-kcal').getByRole('textbox')).toHaveValue('106');
   // a typical value follows the scoop and stays typical
-  await type(page, 'supplement-scoop', '32');
+  await type(page, 'supplement-serving', '32');
   await page.getByTestId('supplement-save').click();
   await expect(page.getByTestId('supplement-typical')).toContainText('Typical');
   await page.getByTestId('supplement-add').click();

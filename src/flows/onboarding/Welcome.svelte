@@ -1,5 +1,6 @@
 <!-- SCREENS.md section 3, Welcome: on the brand gradient (the screen's one gradient), the wordmark, the promise in Title
-     with its key phrase in violet, three lines beside violet feature tiles, Get started and the way back in. The gradient layer is 100lvh so its colour reaches under Safari's
+     with its key phrase in violet, three lines beside violet feature tiles, Build your plan with what it asks of you
+     (no account until saved), and the way back in. The gradient layer is 100lvh so its colour reaches under Safari's
      toolbars; the words sit on its light end. The drawn track and tilted chip are decoration in OneFin's manner. -->
 <script lang="ts">
   import Camera from '@lucide/svelte/icons/camera';
@@ -20,9 +21,9 @@
 
   <!-- decoration: the brand track, large, on a glass tile, with a tilted chip as OneFin floats its cards. Left out on a
        short screen (the SE in Safari), where the words and the buttons need the room -->
-  <div class="relative mx-auto mt-8 grid size-36 flex-none place-items-center [@media(max-height:620px)]:hidden" aria-hidden="true">
+  <div class="relative mx-auto mt-8 grid size-36 flex-none place-items-center [@media(max-height:700px)]:mt-2 [@media(max-height:700px)]:size-28 [@media(max-height:620px)]:hidden" aria-hidden="true">
     <div class="glass appear absolute inset-0 rotate-[-8deg] rounded-xl"></div>
-    <svg viewBox="0 0 64 64" fill="none" class="text-on-accent relative size-24">
+    <svg viewBox="0 0 64 64" fill="none" class="text-on-accent relative size-24 [@media(max-height:700px)]:size-20">
       <rect x="9" y="20" width="46" height="24" rx="12" stroke="currentColor" stroke-width="5" />
       <circle cx="42" cy="20" r="7" fill="currentColor" />
     </svg>
@@ -48,6 +49,7 @@
   </div>
   <div class="bg-canvas sticky bottom-0 -mx-4 flex flex-col gap-1 px-4 pt-3 pb-[max(16px,env(safe-area-inset-bottom))]">
     <Button variant="primary" size="lg" full onclick={onstart} data-testid="welcome-start">{t.welcome.start}</Button>
+    <p class="text-caption text-ink-2 text-center">{t.welcome.time}</p>
     <Button variant="plain" size="lg" full onclick={onsignin} data-testid="welcome-signin">{t.welcome.account}</Button>
   </div>
 </section>

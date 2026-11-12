@@ -154,6 +154,12 @@ describe('search', () => {
     expect(searchFoods([food('Khao tom mat', ['ข้าวต้มมัด']), food('Plain rice soup', ['ข้าวต้ม'])], 'ข้าวต้ม').map((f) => f.name)).toEqual(['Plain rice soup', 'Khao tom mat']);
     expect(searchFoods(list, '  ')).toEqual([]);
   });
+  test('a phone that reads Thai (O1) puts Thai dishes first among equal matches, never above a better match', () => {
+    const thai = (name: string, aliases: string[] = []): Food => ({ ...food(name, aliases), tags: ['thai'] });
+    const mixed = [food('Fried rice'), thai('Khao pad sapparot', ['pineapple fried rice']), food('Rice'), thai('Rice soup')];
+    expect(searchFoods(mixed, 'rice').map((f) => f.name)).toEqual(['Rice', 'Rice soup', 'Fried rice', 'Khao pad sapparot']);
+    expect(searchFoods(mixed, 'rice', 30, true).map((f) => f.name)).toEqual(['Rice', 'Rice soup', 'Khao pad sapparot', 'Fried rice']);
+  });
   test('the real table finds everyday foods', () => {
     const top = (q: string) => searchFoods(FOODS as Food[], q)[0]?.name ?? '';
     expect(top('banana')).toMatch(/banana/i);

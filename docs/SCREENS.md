@@ -5,7 +5,7 @@ Each screen lists what it contains from top to bottom, its states, and its words
 ## 1. Map
 
 ~~~
-First run:  Welcome > Onboarding (9 steps) > Your plan > Sign in > Today
+First run:  Welcome > Onboarding (up to 9 questions) > Your plan > Sign in > Today
 Returning:  Welcome > Sign in > Today
 
 Tabs:       Today | Train | Progress           Dock: plus button opens Add
@@ -26,33 +26,44 @@ The first screen in a browser that is signed out. Ontrack runs in the browser ta
 
 **Welcome.**
 - On the brand gradient: the wordmark (D2: the frozen ONTRACK file), then "Eat for the body you are training for." in Title, "you are training for." in violet.
-- Three short lines, each one sentence beside a violet icon tile: a target built from how you train, a photo to log a meal, a weekly correction from your own results.
-- Primary: "Get started". Plain: "I already have an account".
+- Three short lines, each one sentence beside a violet icon tile: "A daily target built from how you train.", "One photo logs a meal.", "Corrected each week from your own weigh-ins."
+- Primary: "Build your plan", with "No account until you save it." in Caption under it (O1: the time claim "About a minute" waits for a measured cold median). Plain: "I already have an account".
 
 ## 4. Onboarding
 
-Full height flow. A thin track at the top shows progress. Back is top left. One question per screen, the question in Title and its caption in Lead, the answers filling the middle of the screen, one primary button "Continue" pinned to the bottom, disabled until answered. Single choice screens advance on tap.
+Redesigned in O1 from `ontrack-design/onboarding/RESEARCH.md` and `COPY.md`: ask only what moves the number or a guardrail, default the rest in the open, build the number in front of the user.
+
+Full height flow. A thin track at the top with "Step n of N", where N counts only the questions this route asks (it can shrink as answers drop a question, never grow). Back is top left on every screen. One question per screen, the question in Title and its caption in Lead, the answers in the middle. Single answers advance on tap: the picked answer fills ink and the screen slides after 240 ms, with no button. Only the birth year and the height and weight screens pin "Continue"; Screening pins it only once something is ticked.
 
 | Step | Question | Control | Notes |
 | --- | --- | --- | --- |
-| 1 | What are you working toward? | Three large choices: Build muscle, Lose fat, Maintain | Each with a one line description |
-| 2 | Before we set any numbers | Checklist: pregnant or breastfeeding, a medical condition or medication that affects diet, a current or past eating disorder. And "None of these" | Follows the PRD guardrails. Any tick leads to a calm advisory screen before continuing or exiting |
-| 3 | Which equation should we use? | Male, Female, Prefer not to say | Caption: "Energy equations differ by sex. This is only used for the calculation" |
-| 4 | What year were you born? | A wheel starting at this year minus 30. Tapping the selected row types it | Under 18 ends here with a kind message |
-| 5 | Height and weight | A units switch, then two wheels side by side: height (cm, or feet and inches) and weight (whole and tenths), starting at 170 cm and 70 kg | Weight becomes the first weigh-in |
-| 6 | Outside of workouts, how much do you move? | Four choices with the step ranges from the science spec | |
-| 7 | How do you train? | Days per week stepper, session type, minutes, intensity. Or "Choose a program" opening Templates. Or "I will set this up later" | Creates the program |
-| 8 | How long have you trained consistently? | Under a year, 1 to 3 years, Over 3 years | Skipped when there is no strength training |
-| 9 | How fast? | The pace options for the goal, each showing its daily calories and weekly change, updating live | Options removed by a guardrail are absent, with one line saying why |
+| 1 | What are you training for? | Three choice cards with lavender icon tiles: Build muscle (Gain steadily while you train), Lose fat (Keep the muscle you have), Maintain (Eat to match your training) | Advances on tap |
+| 2 | Before we set any numbers | Caption "Tick any that apply." Three checkbox rows: pregnant or breastfeeding, a medical condition or medication that affects your diet, a current or past eating disorder. Then "None of these apply", last so the conditions are read first. The disclaimer in Caption | "None of these apply" advances in one tap. A tick shows Continue, which leads to the advice screen: it opens with "Thank you for telling us.", and offers "Track with a maintenance target" (eating disorder: "Leave setup" is the main action) |
+| 3 | Which sex should the equation use? | Male, Female, Prefer not to say ("Uses the midpoint of the two") | Caption "Resting energy differs by sex. Used only for this calculation." |
+| 4 | What year were you born? | A wheel starting at this year minus 25 (owner's decision). Tapping the selected row types it. Continue | Under 18 ends here with a kind message and Leave setup |
+| 5 | Height and weight | Units (set from the phone's region: imperial in the US, Liberia and Myanmar), then two wheels sharing one band, starting at the sex's median: men 175 cm and 67 kg, women 161 cm and 57 kg, prefer not to say 168 cm and 62 kg. Continue | Caption "Your weight becomes your first weigh-in. Only you see it." |
+| 6 | Outside workouts, how much do you move? | Four choice cards with icon tiles and the step ranges | |
+| 7 | How many days a week do you train? | Eight large chips in a 4 by 2 grid, 64 high: Not yet, 1 to 7 | Caption "Lifting, cardio and sport all count." Not yet skips steps 8 and 9 |
+| 8 | What do you train? | Lifting, Cardio, Both (owner's decision) | Caption "Sport counts as cardio." Sets the sessions: lifting an hour, cardio half an hour, Both taking turns with lifting first, all at a moderate effort |
+| 9 | How long have you lifted consistently? | Under a year, 1 to 3 years, Over 3 years | Asked only with a gain goal, lifting or both, and no screening flag: it sets the gain paces and the surplus cap |
 
-**Your plan.**
-- Hero: the training day target in Hero style, "kcal on training days", and beneath it "2,220 on rest days". In even mode, one number.
-- Protein in Display with "g protein a day".
-- A sentence: "Expect about 0.3 kg a week. This is a starting estimate. Ontrack corrects it from your results after two weeks."
-- A card, "How this was calculated", listing resting energy, daily movement, training today, and the goal adjustment, summing to the target. Each line opens its source.
+**Your number so far.** From step 6, the pinned footer holds a card instead of a button: Eyebrow "Your number so far", the value in Heading with "kcal", and under it the latest row with what it added ("Daily movement +315 kcal"), in the breakdown's own words. It shows resting energy on step 6, adds daily movement after it, then a training day's exercise energy once the days and the kind are known. Each value comes from the engine with the goal held at maintain, so it is the same number the breakdown later shows. It never appears before screening is answered and the weight is known, and never shows a number beside an answer. Not violet, not green; announced politely to screen readers.
+
+**Your plan.** Computed before it renders: no loading screen.
+- Any doctor card first (BMI under 16).
+- Hero: the training day target in Hero style, counting up from the last "number so far" over 400 ms, "kcal on training days", and beneath it "2,220 on rest days". In even mode, one number. Protein on a grey stat tile.
+- "Pace" (lose and gain, not for a screening flag): a segmented control of the paces the guardrails allow (Gentle, Steady, Faster, or Lean, Standard, Faster), the default from SCIENCE.md picked. Tapping one recomputes the plan; the hero tweens. Under it: "Expect to gain about 0.3 kg a week. This is a starting estimate. Ontrack corrects it from your results after two weeks." A missing pace has one line saying why (BMI limits; three years of lifting; for gain at BMI 20 or more, "The faster pace is offered below a BMI of 20."). The faster gain pace (F19) adds "A faster gain, with more of it as fat than at the lean pace." and the label "Being checked". Maintain and flagged plans show the sentence alone.
+- "Your training": what the answers set, in the open, and where to change it: "Lifting 4 days a week, 60 minutes each, at a moderate effort. Change it any time in Train." Not yet: "No training yet. Add it any time in Train."
+- "How this was calculated", listing resting energy, daily movement, training today, and the goal adjustment, summing to the target. Each line opens its source and its status (Working assumption, Being checked).
 - "Fine tune": body fat percent and goal weight, each opening a wheel sheet with Clear, and same target every day.
 - Any flag is explained in one line with the attention colour ("We limited the deficit to 25 percent of your maintenance").
-- Primary: "Save my plan".
+- Primary: "Save this plan". Signed out, Caption under it: "Sign in next with Google or an email code. No password needed."
+
+**What the answers change after onboarding.**
+- Today, first days: a "Getting started" card with three rows: Plan saved (ticked), Log a meal (opens Add), Weigh in tomorrow morning (from the next day it opens the weigh-in). It shows on the plan's first two days, on the phone that saved it, until both are done. No streaks.
+- Train: while the program has no exercises listed, a card "Suggested for your week" names the template that fits the days, the kind and the experience ("Upper lower 4 days fits 4 days a week."), with "Use this program" and "Not now".
+- Add: with no supplements yet, a lifter's entry row reads "Have a shake most days? Set up your tub once, then log it in three taps." The setup lists whey and mass gainer first for a gain goal. Ontrack never recommends a supplement.
+- Search: when the phone's languages include Thai, Thai dishes rank first among equal matches, and Describe's example is a Thai meal.
 
 ## 5. Sign in
 
@@ -150,14 +161,14 @@ The common case, the morning shake: plus, the Whey row, Add. Three taps when the
 
 1. **Kind**, from "Add a supplement". Title "Add a supplement". Six rows with a chevron, each one tap: "Whey protein", "Plant protein", "Casein", "Mass gainer", "Creatine" and "Something else", each captioned "Set from your tub's label". Under them, in Caption: "Ontrack logs what you take. It does not recommend supplements or amounts."
 2. **From your tub** (owner, during B1: brands differ a lot, so the setup leads with the user's own tub). Title: the kind's name; back returns to Kind. "Brands differ a lot. Copy your tub's numbers in seconds." Two tiles side by side, as on the Add sheet: "Scan the tub" (the violet featured card, line "Barcode on the tub") and "Photograph the label" (quiet, line "Nutrition panel"). Under them a plain "Use typical values for now" for whey and plant protein (USDA's average), or "Type the numbers" for the others.
-   - Scan the tub: the Scan sheet's camera and typing, with its states. A product found in the user's products or Open Food Facts fills the Label step: the scoop is the serving divided by the scoops in it ("2 scoops (60 g)" gives 30 g), and the values per scoop follow the scoop. Not found or without nutrition: "This tub is not in Open Food Facts yet. Photograph its label instead." with pinned primary "Photograph the label" and a plain "Type the numbers". Offline: "Finding it needs a connection. Type the numbers, or use typical values for now."
-   - Photograph the label: "Reading the label", then the Label step filled: the scoop is the serving divided by the scoops per serving (a mass gainer's "4 scoops (165 g)" gives 41.3 g), the values per scoop likewise. Errors as in the Scan sheet's step 7, with "Try again" and "Type the numbers".
+   - Scan the tub: the Scan sheet's camera and typing, with its states. A product found in the user's products or Open Food Facts fills the Label step with its serving, the values in it, and the scoops in it read from the serving text ("2 scoops (60 g)"). Not found or without nutrition: "This tub is not in Open Food Facts yet. Photograph its label instead." with pinned primary "Photograph the label" and a plain "Type the numbers". Offline: "Finding it needs a connection. Type the numbers, or use typical values for now."
+   - Photograph the label: "Reading the label", then the Label step filled with the serving as printed, a mass gainer's "4 scoops (165 g)" included. Errors as in the Scan sheet's step 7, with "Try again" and "Type the numbers".
 3. **Label.** Title: the kind's name; back returns to From your tub. From top to bottom:
    - "Name", a text field filled with the kind's name ("Something else" starts empty, with the hint "Name on the tub").
-   - "Scoop" in grams on a typed stepper. A preset from the table starts at the table's scoop (whey 30 g, plant 45 g); the others at 0, which means not known.
-   - Eyebrow "In one scoop", then calories, protein, carbs and fat as labelled rows of typed steppers in one column, as in Correct. A preset from the table starts at its values per 100 g scaled to the scoop, and follows the scoop until a value is changed. The others start at 0. Nobody is asked for a value per 100 g.
+   - The label as printed (owner's call after N2, built in O1): "Serving" in grams on a typed stepper, then "Scoops in a serving" in half steps from 1 (mass gainer tubs list several). A preset from the table starts at the table's scoop (whey 30 g, plant 45 g) as one serving of one scoop; the others at 0, which means not known.
+   - Eyebrow "In one serving", then calories, protein, carbs and fat as labelled rows of typed steppers in one column, as in Correct: the "per serving" column copied as printed. A preset from the table starts at its values per 100 g scaled to the serving, and follows the serving until a value is changed. The others start at 0. Nobody is asked for a value per 100 g. Ontrack keeps the scoop and the values in one scoop (the serving divided by its scoops); editing later shows them as a serving of one scoop.
    - The zero calorie case, live, when the calories are 0: "No calories, so Today shows it as taken."
-   - Error, in the attention colour, Save disabled: protein, carbs and fat weigh more than a known scoop, "Protein, carbs and fat add up to more than the scoop. Check the label." An empty name disables Save without a message; the field's hint says what goes there.
+   - Error, in the attention colour, Save disabled: protein, carbs and fat weigh more than a known serving, "Protein, carbs and fat add up to more than the serving. Check the label." An empty name disables Save without a message; the field's hint says what goes there.
    - One line on where the numbers came from: typical values, "Brands differ, so the label on your tub is more accurate than this average from USDA FoodData Central, SR Legacy."; scanned, "From Open Food Facts. Check them against your tub."; read from a photo, "Read from your tub's label. Check each number."; otherwise "Copy the numbers from the label on your tub."
    - "Scoops you take" on a typed stepper in half steps, starting at 1: the user's own amount, the first one logged, so the common case needs no change on the amount step.
    - Pinned: primary "Save supplement". Saving shows the amount step for it. Saved with the typical values untouched, the supplement is Typical until it is set from the tub; any value changed, scanned or read makes it the user's own.
@@ -165,7 +176,7 @@ The common case, the morning shake: plus, the Whey row, Add. Three taps when the
 4. **Amount.** Title: the supplement's name.
    - Calories for the chosen amount in Display with "kcal", and under it "48 g protein, 6 g carbs, 3 g fat", both changing as the amount does.
    - "Scoops" on a typed stepper in half steps, from 0.5 to 10, starting at the last amount used (the scoops the user takes, the first time).
-   - "Mixed with": chips, Water first, then the milks from the food table under short names ("Whole milk", "2% milk", "Skim milk", "Soy milk", "Almond milk"), starting at the last mix. A milk shows "Milk" in grams on a stepper of 50, starting at the last amount or the table's glass (250 g); its calories join the total and its row on Today reads Database. The milk values come from the food table, through the user's remembered numbers (F15) when there are any.
+   - "Mixed with": chips, Water first, then the milks from the food table under short names ("Whole milk", "2% milk", "Skim milk", "Soy milk", "Almond milk"), starting at the last mix. A milk shows "Milk" in millilitres on a stepper of 50 (owner's call after N2), starting at the last amount or a 250 ml glass, and is kept in grams through the milk's own cup in the table (USDA: a cup of whole milk, 236.6 ml, weighs 244 g); its calories join the total and its row on Today reads Database. The milk values come from the food table, through the user's remembered numbers (F15) when there are any.
    - A supplement on typical values says so (B1): the source label "Typical" under the macros, and beside it a quiet plain "Set it from your tub", which opens From your tub; saving from there clears Typical, and the line is gone. The Add sheet's row ends its caption with "Typical" too. Nothing else nudges.
    - A plain "Edit supplement".
    - Pinned: primary "Add 240 kcal". The sheet closes, Today updates, and the toast "Added Whey protein" offers Undo, which also puts back the last amount.

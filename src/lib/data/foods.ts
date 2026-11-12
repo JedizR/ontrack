@@ -37,15 +37,20 @@ function score(text: string, q: string) {
   return s.includes(q) ? 1 : 0;
 }
 
-/** Scored match over name and aliases: a whole match beats prefix beats word start beats substring, shorter names win
- * ties. No library. */
-export function searchFoods(foods: Food[], query: string, limit = 30): Food[] {
+/** The phone reads Thai (a Thai language, or English in Thailand): Thai dishes rank first among equal matches (O1). A
+ * wrong guess only changes the order. */
+export const thaiFirst = () => typeof navigator !== 'undefined' && (navigator.languages ?? [navigator.language]).some((l) => /^th\b|-TH\b/i.test(l));
+
+/** Scored match over name and aliases: a whole match beats prefix beats word start beats substring, then Thai dishes when
+ * `thai`, then shorter names. No library. */
+export function searchFoods(foods: Food[], query: string, limit = 30, thai = false): Food[] {
   const q = norm(query);
   if (!q) return [];
+  const local = (f: Food) => (thai && f.tags.includes('thai') ? 1 : 0);
   return foods
     .map((f) => ({ f, s: Math.max(score(f.name, q), ...f.aliases.map((a) => score(a, q))) }))
     .filter((x) => x.s > 0)
-    .sort((a, b) => b.s - a.s || a.f.name.length - b.f.name.length || a.f.name.localeCompare(b.f.name))
+    .sort((a, b) => b.s - a.s || local(b.f) - local(a.f) || a.f.name.length - b.f.name.length || a.f.name.localeCompare(b.f.name))
     .slice(0, limit)
     .map((x) => x.f);
 }

@@ -37,7 +37,8 @@ const smallTargets = (page: Page) => page.evaluate(() => [...document.querySelec
 
 /** Text cut off inside a box (truncate or overflow hidden). */
 const clipped = (page: Page) => page.evaluate(() => [...document.querySelectorAll<HTMLElement>('main *, header *, nav *, [data-vaul-drawer] *, [data-onboarding] *')]
-  .filter((el) => el.childElementCount === 0 && (el.textContent ?? '').trim() && el.scrollWidth > el.clientWidth + 1 && getComputedStyle(el).overflow !== 'visible')
+  // screen reader only text is a 1 px box on purpose
+  .filter((el) => el.childElementCount === 0 && (el.textContent ?? '').trim() && el.scrollWidth > el.clientWidth + 1 && getComputedStyle(el).overflow !== 'visible' && !el.closest('.sr-only'))
   .map((el) => (el.textContent ?? '').trim().slice(0, 20)));
 
 /** Text spilling out of a button (its box is narrower than its label). */
@@ -142,8 +143,8 @@ async function walkOnboarding(page: Page, dir: string) {
   await go('continue');
   await check('step-advice', 'advice');
   await go('back');
+  await go('screen-medical');
   await go('screen-none');
-  await go('continue');
   await check('step-sex', 'sex');
   await go('choice-female');
   await check('step-born', 'born');
@@ -153,24 +154,20 @@ async function walkOnboarding(page: Page, dir: string) {
   await go('back');
   await wheelType(page, 'wheel-year', '1994');
   await go('continue');
+  await page.getByRole('radio', { name: 'Metric' }).click();
   await wheelType(page, 'wheel-height', '165');
   await wheelType(page, 'wheel-weight', '82');
   await check('step-body', 'body');
   await go('continue');
   await check('step-move', 'move');
   await go('choice-light');
-  await check('step-train', 'train');
-  await go('train-choose');
-  await expect(page.getByTestId('templates-sheet')).toHaveCSS('transform', 'none');
-  await checkPage(page, 'templates', dir);
-  await page.keyboard.press('Escape');
-  await page.getByTestId('templates-sheet').waitFor({ state: 'detached' });
-  await go('continue');
-  await check('step-experience', 'experience');
-  await go('choice-beginner');
-  await check('step-pace', 'pace');
-  await go('choice-0.75');
+  await check('step-days', 'days');
+  await go('days-3');
+  await check('step-kind', 'kind');
+  await go('choice-lifting');
   await check('your-plan', 'plan');
+  await page.getByTestId('plan-pace').getByRole('radio', { name: 'Faster' }).click();
+  await checkPage(page, 'plan-faster', dir);
   // the main action of every step stays on screen
   await expect(page.getByTestId('plan-save')).toBeInViewport({ ratio: 1 });
 }

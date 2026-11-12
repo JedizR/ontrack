@@ -18,7 +18,7 @@
   import { db } from '$lib/db/store.svelte';
   import { deleteMeal, forgetFood, saveMeal, undoToast } from '$lib/actions';
   import { FOOD_SOURCES } from '$lib/data/sources';
-  import { itemFor, loadFoods, searchFoods, type Food } from '$lib/data/foods';
+  import { itemFor, loadFoods, searchFoods, thaiFirst, type Food } from '$lib/data/foods';
   import { recentFoods } from '$lib/model/day';
   import { stampOn } from '$lib/model/dates';
   import { num } from '$lib/model/format';
@@ -41,7 +41,8 @@
   });
 
   const byId = $derived(new Map((foods ?? []).map((f) => [f.id, f])));
-  const results = $derived(foods ? searchFoods(foods, q) : []);
+  const thai = thaiFirst();
+  const results = $derived(foods ? searchFoods(foods, q, undefined, thai) : []);
   const recent = $derived(
     recentFoods(db.live('meal').map((r) => r.data)).flatMap((r) => {
       const food = byId.get(r.foodId);

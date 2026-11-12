@@ -41,6 +41,8 @@ export default defineConfig({
         launchOptions: { args: ['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream', '--use-file-for-fake-video-capture=tests/fixtures/barcodes/scan.y4m'] },
       },
     },
+    // O1's tap and time measure, printed for the pull request; not part of any gate
+    { name: 'measure', testMatch: /measure\.spec\.ts/, use: { ...phone, colorScheme: 'light' } },
     // layout only, no touch input: Chromium, viewports set per describe
     { name: 'stress', testMatch: /stress\.spec\.ts/, use: { locale: 'en-US', timezoneId: 'Asia/Bangkok' } },
   ],

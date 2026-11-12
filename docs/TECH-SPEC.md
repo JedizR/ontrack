@@ -215,7 +215,7 @@ Device only, kept in `localStorage` under `ontrack:prefs` and never synced: them
 - One idb-keyval store per user, named `ontrack-<userId>`. Keys: `r:<collection>:<id>` holds a `Rec`. `outbox` holds the keys changed since the last successful push. `meta` holds `{ schemaVersion, cursor, lastSyncAt }`. `blob:<mealId>` holds a thumbnail. `blobq` holds meal ids waiting to upload.
 - At start the store reads every record into `$state` maps, one per collection. Screens read from these maps. Schema changes are handled by numbered migrations in `src/lib/db/migrations.ts`, as in watermelon. A migration takes the records and the meta. Adding a collection needs one: an older version on another device skips the new collection's records but moves its cursor past them, so the migration sets a cursor back to the epoch (schema 2 for `food` in N1, schema 3 for `supplement` in N2, schema 4 for `product` in B1), which pulls everything once without the first load state.
 - Every mutation goes through `actions.ts`: validate with zod, stamp `updatedAt` with `Date.now()`, write memory, write IndexedDB, add the key to the outbox, wake the sync engine. Actions that delete return an undo function.
-- Onboarding happens before sign-in. Answers live in the prefs draft so they survive the Google redirect. After sign-in and the first pull: if the account already has a profile, the draft is discarded. If not, the draft becomes the profile, program and first plan.
+- Onboarding happens before sign-in. Answers live in the prefs draft so they survive the Google redirect. Since O1 the draft also gives `prefs.firstDay` when it becomes records, for Today's Getting started card. After sign-in and the first pull: if the account already has a profile, the draft is discarded. If not, the draft becomes the profile, program and first plan.
 
 ## 5. Sync protocol
 
@@ -514,6 +514,9 @@ type TrainKind = 'lifting' | 'cardio' | 'both';   // "What do you train?" (O1)
 suggestTemplate(kind, days, experience, goal): string | null
 // src/flows/onboarding/draft.ts
 sessionsFor(kind, days): Session[]   // the week an answer makes: lifting 60 min, cardio 30, both taking turns
+type Draft = { at; goal?; screening?; sex?; birthYear?; heightCm?; weightKg?; units; neat?; days?; kind?; experience?; rate?; bodyFatPct?; goalWeightKg?; even?; saved? }   // O1: days (0 = Not yet) and kind replace train
+upgrade(draft): Draft   // a draft saved before O1, in O1's terms
+soFar(draft, year): { row: 'bmr' | 'movement' | 'training'; value; added } | null   // "Your number so far", on maintenance
 // src/lib/model/progress.ts, the training card (F20)
 type TrainingStats = { planned; done; skipped; strength; cardioMinutes; cardioBand };
 account(r).weeks(end, n)[i].training: TrainingStats;  DayStats.sessions: { session, status? }[];  trainingOf(days)

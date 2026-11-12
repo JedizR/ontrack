@@ -1,5 +1,6 @@
-<!-- Step 5: height and weight on two wheels side by side, in the units picked here. Stored in cm and kg. The wheels start
-     at the answer, or near the median adult; Continue saves what they show. -->
+<!-- Step 5: height and weight on two wheels side by side, in the units picked here (first set from the phone's region).
+     Stored in cm and kg. The wheels start at the answer, or at the median adult of the sex just answered; Continue saves
+     what they show. -->
 <script lang="ts">
   import { untrack } from 'svelte';
   import Step from './Step.svelte';
@@ -20,8 +21,9 @@
 
   const round = (x: number, places: number) => Math.round(x * 10 ** places) / 10 ** places;
   // what the wheels show, in cm and kg; this screen is created fresh on each visit
-  let cm = $state(untrack(() => d.heightCm ?? START.heightCm));
-  let kg = $state(untrack(() => d.weightKg ?? START.weightKg));
+  const start = START.body[untrack(() => d.sex) ?? 'unspecified'];
+  let cm = $state(untrack(() => d.heightCm ?? start.cm));
+  let kg = $state(untrack(() => d.weightKg ?? start.kg));
   let error = $state('');
 
   const metric = $derived(d.units === 'metric');
@@ -39,7 +41,7 @@
 </script>
 
 <Step title={t.body.q} caption={t.body.caption} onback={back} {progress} testid="step-body">
-  <div class="flex flex-col gap-6">
+  <div class="flex flex-col gap-6 [@media(max-height:620px)]:gap-3">
     <Segmented
       label={t.body.units}
       value={d.units}
@@ -48,8 +50,9 @@
     />
     <!-- one full width band behind height and weight, as one picker with two halves -->
     <div class="grid grid-cols-2 gap-3">
-      <span class="text-eyebrow text-ink-2 text-center">{t.body.height}</span>
-      <span class="text-eyebrow text-ink-2 text-center">{t.body.weight}</span>
+      <!-- the units beside the band name the columns too, so a short screen (the SE) drops these for the wheel -->
+      <span class="text-eyebrow text-ink-2 text-center [@media(max-height:620px)]:hidden">{t.body.height}</span>
+      <span class="text-eyebrow text-ink-2 text-center [@media(max-height:620px)]:hidden">{t.body.weight}</span>
       <div class="group relative col-span-2 grid grid-cols-2 gap-3">
         <div class="bg-surface-2 ring-ink absolute inset-x-0 top-[calc(2*var(--wheel-row))] h-[var(--wheel-row)] rounded-sm group-has-[[role=slider]:focus-visible]:ring-2" aria-hidden="true"></div>
         {#if metric}

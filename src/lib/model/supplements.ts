@@ -2,16 +2,29 @@
 // never suggests a supplement or an amount. Every number comes from the tub's label or the food table.
 import { itemFor, type Food } from '$lib/data/foods';
 import { per100From } from './products';
+import { ML_PER_CUP } from './units';
+import type { Goal } from './engine';
 import type { FoodMemory, MealItem, Supplement } from '../../../shared/records';
 
 export type Kind = Supplement['kind'];
 /** The setup's list, in its order: the two the food table has first. */
 export const KINDS: Kind[] = ['whey', 'plant', 'casein', 'gainer', 'creatine', 'other'];
+/** The list for a goal (O1): gaining puts whey and mass gainer first. An order, never a recommendation. */
+export const kindsFor = (goal?: Goal): Kind[] => (goal === 'gain' ? ['whey', 'gainer', 'plant', 'casein', 'creatine', 'other'] : KINDS);
 /** The food table's food a preset starts from, where USDA has one. The others start at 0 and ask for the label. */
 export const PRESET_FOOD: Partial<Record<Kind, string>> = { whey: 'whey-protein', plant: 'soy-protein-powder' };
 /** What a shake can be mixed with besides water, from the food table. */
 export const MILKS = ['milk-whole', 'milk-2', 'milk-skim', 'soy-milk', 'almond-milk'];
 export const MAX_SCOOPS = 10;
+/** Where the milk stepper starts the first time: a glass, in millilitres (an interface default). */
+export const GLASS_ML = 250;
+/** The most milk a remembered mix holds, in grams (the record's limit). */
+export const MAX_MILK_G = 1000;
+/** Grams in a millilitre of a drink, from the food table's own cup of it (USDA weighs a cup of whole milk at 244 g). */
+const gPerMl = (f: Pick<Food, 'portions'>) => (f.portions.find((p) => p.label === '1 cup')?.grams ?? ML_PER_CUP) / ML_PER_CUP;
+/** A drink's grams as the millilitres shown (owner, after N2: milk in ml), and back. */
+export const mlOf = (f: Pick<Food, 'portions'> | undefined, grams: number) => (f ? Math.round(grams / gPerMl(f)) : grams);
+export const gramsOf = (f: Pick<Food, 'portions'> | undefined, ml: number) => (f ? r1(ml * gPerMl(f)) : ml);
 
 const r1 = (n: number) => Math.round(n * 10) / 10;
 
@@ -48,15 +61,17 @@ export function scoopsIn(serving?: string) {
   return n > 0 && n <= 20 ? n : 1;
 }
 /**
- * A tub's label or Open Food Facts entry as the setup's starting point (B1): the scoop is the serving over the scoops in
- * it, and the values per scoop follow the scoop from the values per 100 g (`base`). A label that prints only a serving
- * with no weight gives its values per scoop directly (`own`) and leaves the scoop unknown (0).
+ * A tub's label or Open Food Facts entry as the setup's starting point (B1), in the label's own terms (owner, after N2):
+ * the serving as printed, the scoops in it, and values per 100 g (`base`) that the serving's values follow. A label that
+ * prints a serving with no weight gives that serving's values directly (`own`) and leaves its weight unknown (0).
  */
 export function fromServing(o: { per100?: Macros | null; perServing?: Macros | null; servingG?: number | null; scoops?: number | null }) {
   const scoops = o.scoops && o.scoops > 0 ? o.scoops : 1;
-  const scoopG = o.servingG ? r1(o.servingG / scoops) : 0;
+  const servingG = o.servingG ?? 0;
   const base = o.perServing && o.servingG ? per100From(o.perServing, o.servingG) : (o.per100 ?? undefined);
-  if (base) return { scoopG, base, own: null };
-  const s = o.perServing ?? { kcal: 0, protein: 0, carbs: 0, fat: 0 };
-  return { scoopG, base: undefined, own: { kcal: Math.round(s.kcal / scoops), protein: r1(s.protein / scoops), carbs: r1(s.carbs / scoops), fat: r1(s.fat / scoops) } };
+  return { servingG, scoops, base, own: base ? null : (o.perServing ?? { kcal: 0, protein: 0, carbs: 0, fat: 0 }) };
+}
+/** What a supplement keeps: one scoop, a serving divided by the scoops in it. */
+export function oneScoop(servingG: number, scoops: number, v: Macros) {
+  return { scoopG: r1(servingG / scoops), perScoop: { kcal: Math.round(v.kcal / scoops), protein: r1(v.protein / scoops), carbs: r1(v.carbs / scoops), fat: r1(v.fat / scoops) } };
 }

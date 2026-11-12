@@ -5,20 +5,24 @@ import { prefs } from '$lib/prefs.svelte';
 import { db } from '$lib/db/store.svelte';
 import { sync } from '$lib/sync/engine.svelte';
 import { finishOnboarding } from '$lib/actions';
-import { nowIso, today } from '$lib/model/dates';
-import { complete, toRecords } from './draft';
+import { nowIso, today, yearOf } from '$lib/model/dates';
+import { complete, toRecords, upgrade } from './draft';
 
 export function settle() {
-  const d = prefs.draft;
+  const d = upgrade(prefs.draft);
   if (!d || !db.ready || !sync.pulledNow) return;
   if (db.get('profile', 'profile')) {
     prefs.draft = null;
     return;
   }
-  if (!d.saved || !complete(d)) return;
+  if (!d.saved) return;
+  // a saved draft that cannot become a plan goes back to onboarding rather than leaving the account without one
+  if (!complete(d, yearOf(today()))) return void (prefs.draft = { ...d, saved: undefined });
   try {
     finishOnboarding(toRecords(d, today(), nowIso()));
     prefs.draft = null;
+    // Today's Getting started card, on the phone that saved the plan (O1)
+    prefs.firstDay = today();
   } catch (e) {
     // nothing was written; back to Your plan rather than a Today with no plan
     console.error('the plan could not be saved', e);

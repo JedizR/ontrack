@@ -48,7 +48,8 @@
   <h1 class="text-title mt-6 text-balance">{title}</h1>
   {#if caption}<p class="text-lead text-ink-2 mt-3">{caption}</p>{/if}
 
-  <div class="flex flex-1 flex-col py-8 {top ? '' : 'justify-center'}">
+  <!-- less air on a short screen (the SE in Safari), so a wheel and its pinned Continue both fit -->
+  <div class="flex flex-1 flex-col py-8 [@media(max-height:620px)]:py-4 {top ? '' : 'justify-center'}">
     {@render children()}
   </div>
 

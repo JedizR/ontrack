@@ -27,6 +27,32 @@ Plain words, short sentences, numbers first. Sentence case everywhere in the wor
 | Protein · Carbs · Fat | Three labelled values, separated by space or a hairline |
 | You failed to log yesterday | Nothing logged yesterday |
 
+### Words that ask for a tap (O1)
+
+From the onboarding wording research (`ontrack-design/onboarding/COPY.md`). Apply to every new screen, and to every main action label in `src/lib/i18n/en.ts`.
+
+1. **Buttons name the outcome.** Verb plus object: "Build your plan", "Save this plan", "Add 640 kcal", "Take a photo", "Find the foods". "Continue" only between the steps of one flow, used the same way everywhere.
+2. **Speak to the user as "you", sparingly.** Few possessives, and never "my" and "your" on one screen. Where ownership matters, "this" ("Save this plan" under "Your plan").
+3. **Questions are headlines.** Five to eight words, phrased as the question you want answered. Results and information screens are statements.
+4. **Answers are complete replies.** A tappable answer makes sense on its own, because tapping it acts: "None of these apply", "Not yet", "Lifting".
+5. **Numbers first, with units.** "2,460 kcal on training days", "about 0.3 kg a week". Ranges use "to". No dates for weight change.
+6. **Near health or body questions, one fact.** One short functional line or nothing. Thank people after they share something sensitive ("Thank you for telling us."), never before. No paragraph of reassurance.
+7. **Say what a default is.** Every default shows on screen with where to change it ("Change it any time in Train").
+8. **Time and count claims only when measured.** "About a minute" only once a cold median says so.
+9. **Declines are plain and equal.** "Not now", "Later", "Keep the current target". Never a sentence that blames the person for saying no.
+10. **Neutral about food and bodies.** No good, bad, clean, cheat, burn off, guilt or celebration; no "Congratulations", no exclamation marks, no emoji.
+
+| Tactic | Fine when | Crosses the line when |
+| --- | --- | --- |
+| Stating time or a question count | Measured and true | Shorter than real, or "only" and "just" used to rush |
+| Ownership words | Used consistently | Used to make a decline feel like a loss ("No, I don't want my plan") |
+| A preselected answer | The evidence-based default, visible | It preselects something that costs money or data |
+| Social proof | Sourced and relevant | Unsourced or invented |
+| Progress and head starts | The progress is real (the goal was answered, the plan is saved) | The bar moves faster than the work |
+| Showing work while waiting | The work and the wait are real | A fake loader |
+| Thanking and acknowledging | After a disclosure | Before it, to steer the answer |
+| Urgency | Never | Countdowns, expiring offers, "last chance" |
+
 ## 3. Where each decision comes from
 
 - **OneFin, through the owner's picks,** sets the look: colour, type, components, effects and motion. Flat ink pill actions (the "Withdraw" button), violet as the brand rather than the button, a bold condensed display face in capitals over a quiet geometric sans, big numbers in regular weight with lighter decimals, solid cards with big nested radii, one soft haze per screen, glass only on small chips, the dock and sheet backdrops, springy motion. Its light sheets and its dark sections are Ontrack's two themes. Each pattern is adopted for a reason, in section 6.
