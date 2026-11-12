@@ -437,9 +437,11 @@ for (const theme of ['light', 'dark'] as const) {
         const settled = () => expect(page.getByTestId('scan-sheet')).toHaveCSS('transform', 'none');
         const close = async () => { await page.keyboard.press('Escape'); await expect(page.getByTestId('scan-sheet')).toBeHidden(); };
         const typeIn = async (id: string, v: string) => { const f = page.getByTestId(id).getByRole('textbox'); await f.fill(v); await f.press('Enter'); };
-        // a camera that shows a plain grey scene, so the viewfinder is live and reads nothing; then none at all
+        // a camera that shows a plain grey scene, so the viewfinder is live and reads nothing; then none at all. A reader
+        // that finds nothing keeps the shot off the WebAssembly (camera.spec.ts and the unit tests cover that)
         await page.addInitScript(() => {
-          const w = window as unknown as { cameraError?: string };
+          const w = window as unknown as { cameraError?: string; BarcodeDetector?: unknown };
+          w.BarcodeDetector = class { static async getSupportedFormats() { return ['ean_13', 'ean_8', 'upc_a', 'upc_e']; } async detect() { return []; } };
           Object.defineProperty(navigator, 'mediaDevices', { configurable: true, value: { getUserMedia: async () => {
             if (w.cameraError) throw new DOMException('camera', w.cameraError);
             const c = Object.assign(document.createElement('canvas'), { width: 640, height: 480 });

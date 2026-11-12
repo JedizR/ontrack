@@ -55,7 +55,7 @@
     torch = (track?.getCapabilities?.() as { torch?: boolean } | undefined)?.torch ? false : null;
     if (video) {
       video.srcObject = s;
-      await video.play().catch(() => {});
+      void video.play().catch(() => {}); // not awaited: the reader waits for frames anyway, and a stalled play must not hold it
     }
     const detector = await reader;
     if (me !== run) return;
