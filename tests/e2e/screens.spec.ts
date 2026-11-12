@@ -434,6 +434,7 @@ for (const theme of ['light', 'dark'] as const) {
       // finding, a product from Open Food Facts, a new product, reading the label and its errors, the Label step and its
       // problem, a product read from its label, lookup offline, and the scanned row on Today
       test('scan', async ({ page, context }) => {
+        test.slow(); // seventeen shots and five flows: past the default 30 s on CI's shared runners
         const settled = () => expect(page.getByTestId('scan-sheet')).toHaveCSS('transform', 'none');
         const close = async () => { await page.keyboard.press('Escape'); await expect(page.getByTestId('scan-sheet')).toBeHidden(); };
         const typeIn = async (id: string, v: string) => { const f = page.getByTestId(id).getByRole('textbox'); await f.fill(v); await f.press('Enter'); };
