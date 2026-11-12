@@ -1,8 +1,8 @@
 id,name,aliases,source_id,portions,tags
-rice-white,White rice,rice|steamed rice|cooked rice|khao|khao suay|khao plao|jasmine rice|basmati rice|long grain rice|ข้าวสวย|ข้าวเปล่า|ข้าวหอมมะลิ,168878,1 cup:158|1 plate:250|1 tbsp:10|100 g:100,thai|staple|dense
+rice-white,White rice,rice|steamed rice|cooked rice|khao|khao suay|khao plao|jasmine rice|basmati rice|long grain rice|ข้าวสวย|ข้าวเปล่า|ข้าวหอมมะลิ,owner:A11,1 cup:158|1 plate:250|1 tbsp:10|100 g:100,thai|staple|dense
 rice-white-medium,Medium grain white rice,calrose rice|sushi rice|japanese rice|short grain rice,168880,1 cup:186|1 bowl:150|100 g:100,staple|dense
-rice-brown,Brown rice,khao klong|khao kong|wholegrain rice|brown rice cooked|ข้าวกล้อง,169704,1 cup:202|1 plate:250|100 g:100,thai|staple
-rice-sticky,Sticky rice,glutinous rice|khao niao|khao niew|khao niaw|sweet rice|mochi rice|ข้าวเหนียว,169711,1 cup:174|1 small bag:100|100 g:100,thai|staple|dense
+rice-brown,Brown rice,khao klong|khao kong|wholegrain rice|brown rice cooked|ข้าวกล้อง,owner:A59,1 cup:202|1 plate:250|100 g:100,thai|staple
+rice-sticky,Sticky rice,glutinous rice|khao niao|khao niew|khao niaw|sweet rice|mochi rice|ข้าวเหนียว,owner:A23,1 cup:174|1 small bag:100|100 g:100,thai|staple|dense
 rice-parboiled,Parboiled rice,converted rice|easy cook rice,169708,1 cup:158|100 g:100,staple
 rice-white-dry,Uncooked white rice,raw rice|dry rice|uncooked rice,168877,1/4 cup:46|1 cup:185|100 g:100,staple|dense
 rice-brown-dry,Uncooked brown rice,raw brown rice|dry brown rice,169703,1/4 cup:46|1 cup:185|100 g:100,staple|dense
@@ -40,7 +40,7 @@ tortilla-flour,Flour tortilla,wrap|tortilla|burrito wrap|soft taco,175037,1 tort
 tortilla-corn,Corn tortilla,corn tortillas|taco tortilla,175036,1 tortilla:24|100 g:100,staple
 tortilla-wholewheat,Wholewheat tortilla,whole wheat wrap|wholemeal wrap,174081,1 tortilla:41|100 g:100,staple
 taco-shell,Taco shell,hard taco|taco shells,172800,1 shell:13|100 g:100,staple
-chicken-breast-grilled,Grilled chicken breast,chicken breast|chicken|grilled chicken|gai yang|chicken fillet|skinless chicken breast|ไก่ย่าง,171534,1 breast:196|1 serving:85|100 g:100,thai|protein
+chicken-breast-grilled,Grilled chicken breast,chicken breast|chicken|grilled chicken|chicken fillet|skinless chicken breast|อกไก่ย่าง,171534,1 breast:196|1 serving:85|100 g:100,thai|protein
 chicken-breast-roasted,Roast chicken breast,roasted chicken breast|baked chicken breast|oven chicken,171477,1 small breast:86|1 cup diced:140|100 g:100,protein
 chicken-breast-skin,Chicken breast with skin,roast chicken breast with skin|skin on chicken breast,171075,1 small breast:98|1 cup diced:140|100 g:100,protein
 chicken-breast-poached,Poached chicken breast,boiled chicken breast|stewed chicken|chicken soup meat|khao man gai chicken,171478,1 small breast:95|1 cup:140|100 g:100,protein
@@ -71,8 +71,8 @@ beef-stew,Braised beef chuck,stewing beef|beef stew meat|chuck roast|beef curry 
 beef-jerky,Beef jerky,jerky|dried beef|nua kem|biltong,167536,1 piece:20|1 oz:28|100 g:100,protein|dense
 pork-chop,Pork chop,pork loin chop|pork steak,167827,1 chop:157|100 g:100,protein
 pork-tenderloin,Pork tenderloin,pork fillet|lean pork|moo daeng,168250,1 serving:85|100 g:100,protein
-pork-shoulder,Roast pork shoulder,pulled pork|pork butt|boston butt|pork neck|kor moo yang|คอหมูย่าง,167844,1 serving:85|1 cup:140|100 g:100,thai|protein|dense
-pork-belly,Pork belly,samgyeopsal|moo sam chan|crispy pork|moo krob|streaky pork|หมูสามชั้น|หมูกรอบ,167812,1 serving:85|1 slice:30|100 g:100,thai|protein|dense
+pork-shoulder,Roast pork shoulder,pulled pork|pork butt|boston butt|pork neck|สันคอหมู,167844,1 serving:85|1 cup:140|100 g:100,thai|protein|dense
+pork-belly,Pork belly,samgyeopsal|moo sam chan|streaky pork|หมูสามชั้น,167812,1 serving:85|1 slice:30|100 g:100,thai|protein|dense
 pork-ground,Ground pork,pork mince|minced pork|moo sap|หมูสับ,167903,1 serving:85|100 g:100,thai|protein|dense
 pork-ribs,Pork spare ribs,ribs|spareribs|bbq ribs|baby back ribs|si krong moo|ซี่โครงหมู,167854,1 serving:85|100 g:100,thai|protein|dense
 bacon,Bacon,streaky bacon|bacon rashers|crispy bacon,167914,1 slice:8.1|3 slices:24|100 g:100,protein|dense
@@ -106,7 +106,7 @@ pollock,Pollock,alaska pollock|white fish fillet,173681,1 fillet:60|100 g:100,pr
 sea-bass,Sea bass,barramundi|pla kapong|seabass,173694,1 fillet:101|100 g:100,protein
 catfish,Catfish,pla duk|catfish fillet|ปลาดุก,175166,1 fillet:143|100 g:100,thai|protein
 trout,Trout,rainbow trout,173718,1 fillet:71|100 g:100,protein
-mackerel,Mackerel,pla tu|saba|atlantic mackerel|ปลาทู,175120,1 fillet:88|100 g:100,thai|protein|dense
+mackerel,Mackerel,saba|atlantic mackerel|ปลาซาบะ,175120,1 fillet:88|100 g:100,thai|protein|dense
 sardines,Canned sardines,sardines|sardines in oil|pla krapong,175139,1 can:92|2 sardines:24|100 g:100,protein
 fish-sticks,Fish fingers,fish sticks|breaded fish,174195,1 stick:28|100 g:100,protein
 shrimp,Shrimp,prawns|goong|kung|boiled shrimp|cooked prawns|กุ้ง,171971,1 serving:85|10 large:22|100 g:100,thai|protein
@@ -117,7 +117,7 @@ crab,Crab,crab meat|poo|crab legs|ปู,174205,1 serving:85|1 cup:118|100 g:100
 crab-stick,Crab sticks,imitation crab|surimi|kani,174203,1 stick:17|1 serving:85|100 g:100,protein
 mussels,Mussels,hoy malaeng phu|green mussels|หอยแมลงภู่,174217,1 serving:85|1 cup:150|100 g:100,thai|protein
 scallops,Scallops,scallop|hoy shell,167742,1 serving:85|100 g:100,protein
-egg-boiled,Boiled egg,egg|eggs|hard boiled egg|soft boiled egg|khai tom|kai tom|ไข่ต้ม,173424,1 large:50|1 medium:44|1 cup chopped:136|100 g:100,thai|protein
+egg-boiled,Boiled egg,egg|eggs|hard boiled egg|soft boiled egg|khai tom|kai tom|ไข่ต้ม,owner:H18,1 large:50|1 medium:44|1 cup chopped:136|100 g:100,thai|protein
 egg-fried,Fried egg,khai dao|kai dao|sunny side up|fried eggs|ไข่ดาว,173423,1 large:46|100 g:100,thai|protein
 egg-scrambled,Scrambled eggs,scrambled egg|scramble,172187,1 large egg:61|1 cup:220|100 g:100,protein
 egg-omelette,Omelette,omelet|khai jiao|kai jeow|thai omelette|ไข่เจียว,172185,1 large egg:61|100 g:100,thai|protein
@@ -492,7 +492,7 @@ nachos,Nachos,nachos with cheese|loaded nachos,170291,1 serving:80|100 g:100,
 sub-turkey,Turkey sub,subway|turkey sandwich|sub sandwich|submarine,170706,1 six inch sub:184|100 g:100,protein
 egg-muffin,Egg McMuffin,breakfast muffin|egg muffin|breakfast sandwich,173307,1 sandwich:126|100 g:100,protein
 breakfast-burrito,Breakfast burrito,egg burrito|sausage egg burrito,170787,1 burrito:109|100 g:100,protein
-fried-rice,Fried rice,khao pad|khao phat|nasi goreng|egg fried rice|chinese fried rice|ข้าวผัด,167668,1 plate:300|1 cup:137|100 g:100,thai|staple
+fried-rice,Fried rice,khao pad|khao phat|nasi goreng|egg fried rice|chinese fried rice|ข้าวผัด,inmu:T205,1 plate:300|1 cup:137|100 g:100,thai|staple
 restaurant-rice,Restaurant steamed rice,chinese rice|takeaway rice|khao suay ran,169712,1 cup:132|1 plate:250|100 g:100,staple
 lo-mein,Lo mein,chow mein|stir fried noodles|fried noodles,167677,1 plate:300|1 cup:136|100 g:100,staple
 general-tso,General Tso chicken,general tsos|crispy chicken in sauce,167675,1 plate:250|1 order:535|3 pieces:53|100 g:100,protein
@@ -512,7 +512,7 @@ water-spinach,Morning glory,water spinach|pak boong|phak bung|kangkung|ong choy|
 tomato-soup,Tomato soup,cream of tomato|canned tomato soup,171176,1 cup:248|1 bowl:350|100 g:100,
 wonton-soup,Wonton soup,kiao nam|wanton soup|dumpling soup,171821,1 cup:223|1 bowl:350|100 g:100,
 hot-sour-soup,Hot and sour soup,suan la tang|spicy soup,174808,1 cup:233|1 bowl:350|100 g:100,
-pad-thai,Pad thai,phat thai|pad thai tofu|ผัดไทย|ผัดไทยเต้าหู้,F05060092,1 plate:350|100 g:100,thai|staple
+pad-thai,Pad thai,phat thai|pad thai tofu|ผัดไทย|ผัดไทยเต้าหู้,inmu:T9,1 plate:350|100 g:100,thai|staple
 pad-thai-chicken,Pad thai with chicken,pad thai gai|phat thai kai|ผัดไทยไก่,2708806,1 plate:350|100 g:100,thai|staple
 pad-thai-shrimp,Pad thai with shrimp,pad thai goong|pad thai kung|pad thai seafood|ผัดไทยกุ้ง|ผัดไทยกุ้งสด,2708807,1 plate:350|100 g:100,thai|staple
 pad-thai-meat,Pad thai with pork or beef,pad thai moo|pad thai with meat|ผัดไทยหมู,2708808,1 plate:350|100 g:100,thai|staple
@@ -522,41 +522,41 @@ kra-pao-pork-rice,Pad kra pao pork with rice,khao kra pao moo|khao pad kaprao mo
 kra-pao-pork-rice-egg,Pad kra pao pork with rice and fried egg,khao kra pao moo khai dao|basil pork rice with egg|ข้าวกะเพราหมูไข่ดาว,F05100144,1 plate:375|100 g:100,thai|staple
 kra-pao-beef-rice,Pad kra pao beef with rice,khao kra pao nuea|basil beef rice|ข้าวกะเพราเนื้อ,F05100141,1 plate:340|100 g:100,thai|staple
 kra-pao-beef-rice-egg,Pad kra pao beef with rice and fried egg,khao kra pao nuea khai dao|ข้าวกะเพราเนื้อไข่ดาว,F05100142,1 plate:385|100 g:100,thai|staple
-green-curry-chicken,Green curry with chicken,gaeng keow wan gai|kaeng khiao wan kai|thai green curry|แกงเขียวหวานไก่|แกงเขียวหวาน,F11020053,1 bowl:250|1 ladle:100|100 g:100,thai|protein
+green-curry-chicken,Green curry with chicken,gaeng keow wan gai|kaeng khiao wan kai|thai green curry|แกงเขียวหวานไก่|แกงเขียวหวาน,inmu:T184,1 bowl:250|1 ladle:100|100 g:100,thai|protein
 tom-yum-clear,Clear tom yum with seafood,tom yum talay nam sai|tom yum goong nam sai|ต้มยำทะเลน้ำใส|ต้มยำกุ้งน้ำใส,F03060028,1 bowl:400|100 g:100,thai
-tom-yum-creamy,Creamy tom yum with seafood,tom yum nam khon|tom yum goong|tom yum kung|ต้มยำทะเลน้ำข้น|ต้มยำกุ้งน้ำข้น|ต้มยำกุ้ง,F03060029,1 bowl:400|100 g:100,thai
+tom-yum-creamy,Creamy tom yum with seafood,tom yum nam khon|tom yum talay nam khon|ต้มยำทะเลน้ำข้น|ต้มยำกุ้งน้ำข้น|ต้มยำน้ำข้น,F03060029,1 bowl:400|100 g:100,thai
 tom-yum-noodles,Tom yum noodle soup with seafood,kuay tiew tom yum|guay tiew tom yum talay|ก๋วยเตี๋ยวต้มยำ|ก๋วยเตี๋ยวต้มยำทะเล,F05060130,1 bowl:450|100 g:100,thai|staple
 boat-noodles-beef,Boat noodles with beef,kuay tiew ruea nuea|guay tiew reua|ก๋วยเตี๋ยวเรือเนื้อ|ก๋วยเตี๋ยวเรือ,F05060128,1 small bowl:250|1 bowl:450|100 g:100,thai|staple
 boat-noodles-pork,Boat noodles with pork,kuay tiew ruea moo|ก๋วยเตี๋ยวเรือหมู,F05060129,1 small bowl:250|1 bowl:450|100 g:100,thai|staple
-noodle-soup-beef-balls,Rice noodle soup with beef balls,kuay tiew luk chin nuea|guay tiew nam|noodle soup|ก๋วยเตี๋ยวลูกชิ้น|ก๋วยเตี๋ยวน้ำ,F05060006,1 bowl:450|100 g:100,thai|staple
+noodle-soup-beef-balls,Rice noodle soup with beef balls,kuay tiew luk chin nuea|guay tiew nam|noodle soup|ก๋วยเตี๋ยวลูกชิ้น|ก๋วยเตี๋ยวน้ำ,owner:T123,1 bowl:450|100 g:100,thai|staple
 duck-noodle-soup,Duck egg noodle soup,ba mi pet|kuay tiew pet|duck noodles|บะหมี่เป็ด|ก๋วยเตี๋ยวเป็ด,F05060046,1 bowl:450|100 g:100,thai|staple
 ba-mi-kiao-soup,Wonton egg noodle soup,ba mi kiao nam|bamee kiao|wanton noodle soup|บะหมี่เกี๊ยวน้ำ|บะหมี่เกี๊ยว,F05060135,1 bowl:450|100 g:100,thai|staple
 ba-mi-kiao-dry,Dry wonton egg noodles,ba mi kiao haeng|bamee haeng|wanton noodles dry|บะหมี่เกี๊ยวแห้ง|บะหมี่แห้ง,F05060134,1 bowl:300|100 g:100,thai|staple
-kuay-jap,Kuay jap,kway chap|guay jap|rolled noodle soup|ก๋วยจั๊บ,F05060072,1 bowl:500|100 g:100,thai|staple
+kuay-jap,Kuay jap,kway chap|guay jap|rolled noodle soup|ก๋วยจั๊บ,inmu:T3,1 bowl:500|100 g:100,thai|staple
 rad-na-beef,Rad na with beef,rat na nuea|lad na|ราดหน้าเนื้อ|ราดหน้า,F05060009,1 plate:450|100 g:100,thai|staple
 rad-na-seafood,Rad na with seafood,rat na talay|ราดหน้าทะเล,F05060112,1 plate:450|100 g:100,thai|staple
-khao-man-kai,Khao man kai,khao man gai|hainanese chicken rice|chicken rice|steamed chicken rice|ข้าวมันไก่,F05100133,1 plate:350|100 g:100,thai|staple
-khao-man,Chicken fat rice,khao man|chicken rice without chicken|ข้าวมัน,F05100154,1 plate:220|100 g:100,thai|staple
+khao-man-kai,Khao man kai,khao man gai|hainanese chicken rice|chicken rice|steamed chicken rice|ข้าวมันไก่,inmu:T59,1 plate:350|100 g:100,thai|staple
+khao-man,Chicken fat rice,khao man|chicken rice without chicken|ข้าวมัน,inmu:T397,1 plate:220|100 g:100,thai|staple
 khao-man-kati,Coconut rice,khao man kati|rice cooked with coconut milk|ข้าวมันกะทิ,2709032,1 plate:200|1 cup:160|100 g:100,thai|staple
-khao-mu-daeng,Khao mu daeng,red pork rice|khao moo daeng|char siu rice|char siew rice|ข้าวหมูแดง,F05100013,1 plate:350|100 g:100,thai|staple
-khao-na-pet,Roast duck rice,khao na pet|khao pet yang|ข้าวหน้าเป็ด,F05100113,1 plate:400|100 g:100,thai|staple
+khao-mu-daeng,Khao mu daeng,red pork rice|khao moo daeng|char siu rice|char siew rice|ข้าวหมูแดง,inmu:T64,1 plate:350|100 g:100,thai|staple
+khao-na-pet,Roast duck rice,khao na pet|khao pet yang|ข้าวหน้าเป็ด,inmu:T207,1 plate:400|100 g:100,thai|staple
 khao-pad-kai,Fried rice with chicken,khao pad kai|khao phat kai|ข้าวผัดไก่,2708953,1 plate:300|100 g:100,thai|staple
-khao-pad-moo,Fried rice with pork,khao pad moo|khao phat mu|ข้าวผัดหมู,2708954,1 plate:300|100 g:100,thai|staple
+khao-pad-moo,Fried rice with pork,khao pad moo|khao phat mu|ข้าวผัดหมู,owner:T56,1 plate:300|100 g:100,thai|staple
 khao-pad-nuea,Fried rice with beef,khao pad nuea|ข้าวผัดเนื้อ,2708955,1 plate:300|100 g:100,thai|staple
 khao-pad-kung,Fried rice with shrimp,khao pad goong|khao pad kung|ข้าวผัดกุ้ง,2708956,1 plate:300|100 g:100,thai|staple
 khao-pad-khai,Egg fried rice,khao pad khai|ข้าวผัดไข่,F05100049,1 plate:300|100 g:100,thai|staple
 pineapple-fried-rice,Pineapple fried rice,khao pad sapparot|ข้าวผัดสับปะรด,F05100102,1 plate:350|100 g:100,thai|staple
 olive-fried-rice,Olive fried rice,khao pad nam liap|ข้าวผัดหนำเลี้ยบ,F05100145,1 plate:350|100 g:100,thai|staple
-jok-moo,Rice porridge with pork,jok moo|joke|congee|โจ๊กหมู|โจ๊ก,F05100077,1 bowl:400|100 g:100,thai|staple
+jok-moo,Rice porridge with pork,jok moo|joke|congee|โจ๊กหมู|โจ๊ก,inmu:T68,1 bowl:400|100 g:100,thai|staple
 jok-kai,Rice porridge with chicken,jok kai|chicken congee|โจ๊กไก่,F05100020,1 bowl:400|100 g:100,thai|staple
 khao-tom-pla,Rice soup with fish,khao tom pla|fish porridge|ข้าวต้มปลา,F05100130,1 bowl:450|100 g:100,thai|staple
 khao-tom,Plain rice soup,khao tom kui|khao tom|teochew porridge|ข้าวต้มกุ๊ย|ข้าวต้ม,F05100138,1 bowl:400|100 g:100,thai|staple
-moo-satay,Pork satay,moo satay|mu sate|หมูสะเต๊ะ,F06100037,1 stick:11|10 sticks:110|100 g:100,thai|protein
+moo-satay,Pork satay,moo satay|mu sate|หมูสะเต๊ะ,inmu:T309,1 stick:11|10 sticks:110|100 g:100,thai|protein
 kai-satay,Chicken satay,gai satay|kai sate|ไก่สะเต๊ะ,F11020020,1 stick:10|10 sticks:100|100 g:100,thai|protein
 kai-tod,Fried chicken,gai tod|kai thot|ไก่ทอด,F11020028,1 piece:100|100 g:100,thai|protein
 moo-palo,Braised pork belly,moo palo|pork palo|five spice pork|หมูพะโล้|พะโล้,F06100009,1 ladle:100|1 bowl:250|100 g:100,thai|protein
 kaeng-jued-tofu,Clear soup with tofu and minced pork,kaeng jued|gaeng jued tao hu moo sap|tofu soup|แกงจืดเต้าหู้หมูสับ|แกงจืด,F06100022,1 bowl:300|100 g:100,thai
-kra-pho-pla,Fish maw soup,kra pho pla|krapho pla|กระเพาะปลา,F03020009,1 bowl:300|100 g:100,thai
+kra-pho-pla,Fish maw soup,kra pho pla|krapho pla|กระเพาะปลา,inmu:T2,1 bowl:300|100 g:100,thai
 khai-tun,Steamed egg,khai tun|kai toon|ไข่ตุ๋น,F01050014,1 bowl:150|100 g:100,thai|protein
 khai-yiao-ma,Century egg,khai yiao ma|preserved egg|ไข่เยี่ยวม้า,F01060001,1 egg:65|100 g:100,thai|protein
 luk-chin-tod,Fried fish balls,luk chin pla tod|fish balls|ลูกชิ้นปลาทอด|ลูกชิ้นทอด,F03040010,1 stick:60|100 g:100,thai|protein
@@ -571,3 +571,101 @@ thai-milk-tea,Thai milk tea,cha yen|cha thai|thai iced tea|cha nom yen|ชาเ
 thai-green-milk-tea,Thai green milk tea,cha khiao nom|green tea latte|ชาเขียวนม|ชาเขียวเย็น,D09020077,1 cup:400|1 large cup:500|100 g:100,thai|drink
 kafae-yen,Thai iced coffee,kafae yen|iced kopi|กาแฟเย็น,D09010032,1 cup:400|1 large cup:500|100 g:100,thai|drink
 nam-oi,Sugarcane juice,nam oi|sugar cane juice|น้ำอ้อย,D03040010,1 glass:250|1 bottle:350|100 g:100,thai|drink
+khao-soi-kai,Khao soi with chicken,khao soi|khao soi gai|kao soi|northern curry noodles|ข้าวซอย|ข้าวซอยไก่,inmu:T310,1 bowl:450|100 g:100,thai|staple
+massaman-beef,Massaman curry with beef,massaman|matsaman|gaeng massaman nuea|kaeng matsaman|แกงมัสมั่น|แกงมัสมั่นเนื้อ|มัสมั่นเนื้อ,inmu:T190,1 bowl:250|1 ladle:100|100 g:100,thai|protein
+massaman-chicken,Massaman curry with chicken,gaeng massaman gai|massaman gai|แกงมัสมั่นไก่|มัสมั่นไก่,inmu:T189,1 bowl:250|1 ladle:100|100 g:100,thai|protein
+red-curry-chicken,Red curry with chicken,gaeng phet gai|kaeng phet kai|red curry|แกงเผ็ด|แกงเผ็ดไก่,inmu:T187,1 bowl:250|1 ladle:100|100 g:100,thai|protein
+panang-curry,Panang curry,phanaeng|panang gai|panang moo|panaeng|แกงพะแนง|พะแนง|พะแนงไก่|พะแนงหมู,inmu:T188,1 bowl:200|1 ladle:100|100 g:100,thai|protein
+green-curry-pork,Green curry with pork,gaeng keow wan moo|kaeng khiao wan mu|แกงเขียวหวานหมู,inmu:T285,1 bowl:250|1 ladle:100|100 g:100,thai|protein
+green-curry-fish-balls,Green curry with fish balls,gaeng keow wan luk chin pla|แกงเขียวหวานลูกชิ้นปลา,inmu:T185,1 bowl:250|1 ladle:100|100 g:100,thai
+yellow-curry-chicken,Yellow curry with chicken,gaeng kari gai|kaeng kari kai|yellow curry|แกงกะหรี่|แกงกะหรี่ไก่,inmu:T179,1 bowl:250|1 ladle:100|100 g:100,thai|protein
+kaeng-som,Sour curry with vegetables,gaeng som|kaeng som|sour curry|แกงส้ม|แกงส้มผักรวม,inmu:T191,1 bowl:300|100 g:100,thai
+kaeng-hung-le,Hung le curry,gaeng hang lay|kaeng hung le|hang le|แกงฮังเล|ฮังเล,inmu:T297,1 bowl:250|1 ladle:100|100 g:100,thai|protein
+kaeng-luang-kai,Southern yellow sour soup with chicken,kaeng luang|gaeng lueang|แกงเหลือง|แกงเหลืองไก่,inmu:T192,1 bowl:300|100 g:100,thai
+kaeng-om-nuea,Gaeng om with beef,kaeng om|gaeng oom|แกงอ่อม|แกงอ่อมเนื้อ,inmu:T295,1 bowl:300|100 g:100,thai
+tom-kha-kai,Tom kha kai,tom kha gai|tom kha|coconut chicken soup|ต้มข่า|ต้มข่าไก่,inmu:T211,1 bowl:300|100 g:100,thai
+tom-yum-kung,Tom yum kung,tom yum goong|tom yum kung|tom yam kung|ต้มยำกุ้ง,inmu:T212,1 bowl:400|100 g:100,thai
+tom-yum-kai,Tom yum kai,tom yum gai|tom yam kai|ต้มยำไก่,inmu:T213,1 bowl:400|100 g:100,thai
+som-tam-thai,Som tam,som tam thai|som tum|papaya salad|green papaya salad|ส้มตำ|ส้มตำไทย,inmu:T231,1 plate:200|100 g:100,thai
+som-tam-poo,Som tam with crab and dried shrimp,som tam poo|som tum poo|ส้มตำปู|ส้มตำปูกุ้ง,owner:T102,1 plate:200|100 g:100,thai
+som-tam-lao,Som tam lao,som tam pla ra|som tam isan|tam lao|ส้มตำลาว|ส้มตำปลาร้า|ตำลาว|ส้มตำอีสาน,owner:T103,1 plate:200|100 g:100,thai
+larb-nuea,Larb with beef,laab nuea|larb|laab|lab nua|ลาบ|ลาบเนื้อ,inmu:T101,1 plate:150|100 g:100,thai|protein
+yam-talay,Spicy seafood salad,yum talay|yam ruam mit talay|seafood salad|ยำทะเล|ยำรวมมิตรทะเล,inmu:T227,1 plate:200|100 g:100,thai|protein
+sup-no-mai,Bamboo shoot salad,sup no mai|sup nor mai|ซุปหน่อไม้,owner:T73,1 plate:150|100 g:100,thai
+nam-prik-ong,Nam prik ong,chili tomato pork dip|น้ำพริกอ่อง,inmu:T303,1 tbsp:15|1 bowl:80|100 g:100,thai
+kra-pao-kai,Pad kra pao chicken,pad kaprao gai|pad krapow gai|basil chicken|กะเพราไก่|ผัดกะเพราไก่,inmu:T174,1 serving:130|100 g:100,thai|protein
+kra-pao-kai-rice,Pad kra pao chicken with rice,khao kra pao gai|basil chicken rice|ข้าวกะเพราไก่|ข้าวราดกะเพราไก่,inmu:T54,1 plate:330|100 g:100,thai|staple
+green-curry-rice,Green curry with chicken on rice,khao kaeng khiao wan|khao rad gaeng keow wan|ข้าวแกงเขียวหวาน|ข้าวราดแกงเขียวหวานไก่,inmu:T46,1 plate:350|100 g:100,thai|staple
+massaman-rice,Massaman beef on rice,khao kaeng massaman|ข้าวแกงมัสมั่น|ข้าวราดแกงมัสมั่นเนื้อ,inmu:T43,1 plate:350|100 g:100,thai|staple
+khao-kha-moo,Khao kha moo,khao ka moo|pork leg rice|stewed pork leg rice|ข้าวขาหมู,inmu:T48,1 plate:350|100 g:100,thai|staple
+khao-man-kai-tod,Khao man kai tod,khao man gai tod|fried chicken rice|ข้าวมันไก่ทอด,inmu:T206,1 plate:350|100 g:100,thai|staple
+khao-mok-kai,Khao mok kai,khao mok gai|chicken biryani|thai biryani|ข้าวหมก|ข้าวหมกไก่,inmu:T63,1 plate:350|100 g:100,thai|staple
+khao-mu-tod,Fried pork on rice,khao moo tod|khao mu thot|ข้าวหมูทอด|ข้าวหมูทอดกระเทียม,inmu:T65,1 plate:300|100 g:100,thai|staple
+khao-pad-pak,Vegetable fried rice,khao pad pak|ข้าวผัดผัก,inmu:T204,1 plate:300|100 g:100,thai|staple
+khao-tom-moo,Rice soup with pork,khao tom moo|khao tom mu|ข้าวต้มหมู,inmu:T51,1 bowl:400|100 g:100,thai|staple
+khao-kai-palo,Five spice egg on rice,khao kai palo|khao rad kai palo|ข้าวไข่พะโล้|ข้าวราดไข่พะโล้,inmu:T44,1 plate:350|100 g:100,thai|staple
+khao-yam,Khao yam,southern rice salad|khao yum|ข้าวยำ|ข้าวยำปักษ์ใต้,inmu:T60,1 plate:250|100 g:100,thai|staple
+pad-see-ew,Pad see ew with pork,pad siew|phat si io|pad see ew moo|ผัดซีอิ๊ว|ก๋วยเตี๋ยวผัดซีอิ๊ว|ผัดซีอิ๊วหมู,inmu:T11,1 plate:300|100 g:100,thai|staple
+pad-kee-mao,Pad kee mao,drunken noodles|pad khi mao|ผัดขี้เมา|ก๋วยเตี๋ยวผัดขี้เมา,inmu:T8,1 plate:300|100 g:100,thai|staple
+yen-ta-fo,Yen ta fo,yentafo|pink noodle soup|เย็นตาโฟ,inmu:T10,1 bowl:450|100 g:100,thai|staple
+kuay-tiew-moo-nam,Rice noodle soup with pork,kuay tiew moo|guay tiew moo nam|ก๋วยเตี๋ยวหมู|ก๋วยเตี๋ยวหมูน้ำ,inmu:T127,1 bowl:450|100 g:100,thai|staple
+kuay-tiew-nuea-nam,Rice noodle soup with beef,kuay tiew nuea|guay tiew nuea pueay|beef noodle soup|ก๋วยเตี๋ยวเนื้อ|ก๋วยเตี๋ยวเนื้อเปื่อย,owner:T107,1 bowl:450|100 g:100,thai|staple
+kuay-tiew-moo-haeng,Dry rice noodles with pork,kuay tiew haeng|sen lek haeng|ก๋วยเตี๋ยวแห้ง|เส้นเล็กแห้ง,inmu:T111,1 bowl:250|100 g:100,thai|staple
+ba-mee-moo-daeng-nam,Egg noodle soup with red pork,ba mee moo daeng|bamee nam|บะหมี่หมูแดง|บะหมี่น้ำ,inmu:T92,1 bowl:450|100 g:100,thai|staple
+ba-mee-moo-daeng-haeng,Dry egg noodles with red pork,ba mee haeng moo daeng|บะหมี่แห้งหมูแดง,inmu:T93,1 bowl:250|100 g:100,thai|staple
+kiao-kung-nam,Shrimp wonton soup,kiao kung nam|kiao nam|เกี๊ยวกุ้ง|เกี๊ยวน้ำ,inmu:T177,1 bowl:350|100 g:100,thai
+khanom-jeen-nam-ya,Khanom jeen nam ya,rice noodles with fish curry|kanom jeen|ขนมจีน|ขนมจีนน้ำยา,inmu:T39,1 plate:350|100 g:100,thai|staple
+khanom-jeen-nam-ngiao,Khanom jeen nam ngiao,kanom jeen nam ngeaw|ขนมจีนน้ำเงี้ยว,inmu:T37,1 bowl:400|100 g:100,thai|staple
+khanom-jeen-nam-prik,Khanom jeen nam prik,ขนมจีนน้ำพริก,owner:T38,1 plate:350|100 g:100,thai|staple
+rad-na-moo,Rad na with pork,rat na moo|rad na gai|ราดหน้าหมู|ราดหน้าไก่,owner:T13,1 plate:450|100 g:100,thai|staple
+rad-na-kung,Rad na with shrimp,rat na kung|ราดหน้ากุ้ง,owner:T12,1 plate:450|100 g:100,thai|staple
+mee-krob,Mee krob,crispy rice noodles|หมี่กรอบ,inmu:T131,1 plate:100|100 g:100,thai|dense
+hoi-tod,Hoi tod,mussel omelette|oyster omelette|crispy mussel pancake|หอยทอด,inmu:T133,1 plate:250|100 g:100,thai
+kai-yang,Kai yang,gai yang|thai grilled chicken|ไก่ย่าง,inmu:F111,1 piece:150|1 half chicken:400|100 g:100,thai|protein
+kor-moo-yang,Kor moo yang,grilled pork neck|kho mu yang|คอหมูย่าง,inmu:F97,1 plate:120|100 g:100,thai|protein|dense
+moo-daeng,Moo daeng,red roast pork|char siu|mu daeng|หมูแดง,inmu:F163,1 serving:80|100 g:100,thai|protein|dense
+moo-krob,Moo krob,crispy pork belly|mu krop|หมูกรอบ,inmu:F162,1 serving:80|100 g:100,thai|protein|dense
+moo-dad-diao,Moo dad diao,sun dried pork|mu daet diao|หมูแดดเดียว,inmu:F152,1 plate:100|100 g:100,thai|protein
+sai-ua,Sai ua,northern thai sausage|sai oua|ไส้อั่ว,inmu:F56,1 piece:50|100 g:100,thai|protein|dense
+naem,Naem,nham|fermented pork|แหนม,owner:F54,1 piece:30|100 g:100,thai|protein
+sai-krok-isan,Sai krok isan,isan sausage|sour sausage|sai krok|ไส้กรอกอีสาน,inmu:T14,1 piece:20|5 pieces:100|100 g:100,thai|protein
+moo-yong,Moo yong,pork floss|shredded dried pork|หมูหยอง,inmu:F99,1 tbsp:7|100 g:100,thai|protein|dense
+pla-tu,Pla tu,short mackerel|pla too tod|thai mackerel|ปลาทู|ปลาทูทอด,inmu:G88,1 fish:80|100 g:100,thai|protein
+pla-chon-pao,Grilled snakehead fish,pla chon pao|pla pao|salt grilled fish|ปลาช่อนเผา|ปลาเผา,inmu:G50,1 fish:400|100 g:100,thai|protein
+tod-man-pla,Tod man pla,thai fish cakes|fish cake|ทอดมันปลา|ทอดมัน,inmu:T214,1 piece:25|5 pieces:125|100 g:100,thai|protein
+tod-man-kung,Tod man kung,shrimp cakes|ทอดมันกุ้ง,inmu:T215,1 piece:25|5 pieces:125|100 g:100,thai|protein
+pa-tong-ko,Pa thong ko,patongko|thai doughnut sticks|youtiao|ปาท่องโก๋,inmu:T156,1 piece:25|100 g:100,thai|dense
+khanom-jeep-moo,Pork shumai,kanom jeeb|khanom jip|shumai|ขนมจีบ|ขนมจีบหมู,inmu:T243,1 piece:20|5 pieces:100|100 g:100,thai|protein
+poh-pia-sod,Fresh spring roll,popia sod|po pia sot|ปอเปี๊ยะสด,inmu:T166,1 roll:60|100 g:100,thai
+khanom-krok,Khanom krok,coconut pudding cups|kanom krok|ขนมครก,inmu:T238,1 pair:30|10 pieces:150|100 g:100,thai|dense
+khanom-buang,Khanom buang,thai crispy pancake|kanom bueang|ขนมเบื้อง,inmu:T252,1 piece:15|5 pieces:75|100 g:100,thai|dense
+khanom-tokyo,Khanom tokyo,kanom tokyo|ขนมโตเกียว,inmu:T245,1 piece:40|100 g:100,thai
+murtabak-kai,Murtabak with chicken,mataba|martabak|มะตะบะ|มะตะบะไก่,inmu:T268,1 piece:150|100 g:100,thai|dense
+roti-thai,Thai roti,roti thai|roti sai mai|banana roti|โรตี,owner:S32,1 piece:60|100 g:100,thai|dense
+khanom-pak-kad,Fried radish cake,khanom pak kad|kanom pak gaad|carrot cake|ขนมผักกาด,owner:T41,1 plate:200|100 g:100,thai
+khao-niao-moon,Sweet coconut sticky rice,khao niao mun|khao niew moon|ข้าวเหนียวมูน,inmu:T139,1 serving:100|100 g:100,thai|dense
+kluay-buad-chi,Banana in coconut milk,kluay buat chi|gluay buad chee|กล้วยบวชชี,inmu:T236,1 bowl:150|100 g:100,thai
+bua-loi,Bua loi,rice balls in coconut milk|บัวลอย|ขนมบัวลอย,inmu:T249,1 bowl:150|100 g:100,thai
+thong-yod,Thong yod,golden egg drops|ทองหยอด,inmu:T141,1 piece:7|10 pieces:70|100 g:100,thai|dense
+thong-yip,Thong yip,ทองหยิบ,inmu:T142,1 piece:12|5 pieces:60|100 g:100,thai|dense
+sangkhaya,Thai custard,sangkaya|sang kaya|สังขยา,inmu:T147,1 tbsp:20|1 serving:60|100 g:100,thai
+sangkhaya-fak-thong,Pumpkin custard,sangkhaya fak thong|สังขยาฟักทอง,inmu:T279,1 slice:100|100 g:100,thai
+khanom-chan,Khanom chan,layer cake|kanom chun|ขนมชั้น,inmu:T160,1 piece:30|100 g:100,thai|dense
+lod-chong,Lod chong,cendol|lot chong|ลอดช่อง|ลอดช่องน้ำกะทิ,inmu:T163,1 bowl:250|100 g:100,thai
+khao-tom-mud,Khao tom mat,banana sticky rice parcel|khao tom mud|ข้าวต้มมัด,inmu:T255,1 piece:80|100 g:100,thai|dense
+khao-niao-ping,Grilled sticky rice with banana,khao niao ping|ข้าวเหนียวปิ้ง,inmu:T257,1 piece:60|100 g:100,thai|dense
+luk-chup,Luk chup,mung bean fruit sweets|ลูกชุบ,inmu:T273,1 piece:8|10 pieces:80|100 g:100,thai|dense
+kalamae,Kalamae,thai caramel|กาละแม,inmu:T237,1 piece:20|100 g:100,thai|dense
+wun-kati,Coconut jelly,wun kati|woon kati|วุ้นกะทิ,inmu:T150,1 piece:50|100 g:100,thai
+khanom-tan,Khanom tan,toddy palm cake|ขนมตาล,inmu:T161,1 piece:30|100 g:100,thai|dense
+chao-kuai,Grass jelly,chao guay|chao kuai|เฉาก๊วย,owner:T318,1 cup:250|100 g:100,thai
+tao-huay,Tao huay,soft tofu dessert|tau huay|เต้าฮวย,owner:T319,1 bowl:250|100 g:100,thai
+khanom-mo-kaeng,Khanom mo kaeng,thai custard cake|ขนมหม้อแกง,inmu:T138,1 piece:50|100 g:100,thai|dense
+pad-priew-wan-kai,Sweet and sour chicken,pad priew wan gai|ผัดเปรี้ยวหวานไก่,inmu:T222,1 serving:150|100 g:100,thai
+pad-ped-kai,Red curry stir fry with chicken,pad ped gai|ผัดเผ็ดไก่,inmu:T224,1 serving:130|100 g:100,thai|protein
+pad-prik-king,Pad prik king with chicken,pad prik khing|ผัดพริกขิง|ผัดพริกขิงไก่,inmu:T225,1 serving:130|100 g:100,thai|protein
+khanom-jeen-noodles,Khanom jeen noodles,fermented rice noodles|khanom chin|เส้นขนมจีน,owner:A8,1 serving:150|100 g:100,thai|staple
+rice-black-sticky,Black sticky rice,khao niao dam|ข้าวเหนียวดำ,owner:A32,1 cup:174|1 small bag:100|100 g:100,thai|staple|dense
+nam-krachiap,Roselle drink,nam krachiap|roselle juice|hibiscus drink|น้ำกระเจี๊ยบ,owner:Q11,1 glass:250|1 bottle:350|100 g:100,thai|drink
+nam-kek-huay,Chrysanthemum drink,nam kek huay|chrysanthemum tea|น้ำเก็กฮวย,owner:Q43,1 glass:250|1 bottle:350|100 g:100,thai|drink
+nam-nom-khao-pod,Corn milk,nam nom khao pod|corn milk drink|น้ำนมข้าวโพด|นมข้าวโพด,owner:Q49,1 glass:250|100 g:100,thai|drink
