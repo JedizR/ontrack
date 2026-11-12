@@ -43,6 +43,20 @@ export const profileSchema = z.object({
   onboardedAt: z.string(),
 });
 
+export const sessionSchema = z.object({
+  key: str(1, 20),
+  weekday,
+  name: str(1, 60),
+  type: z.enum(['strength', 'circuit', 'cardio', 'sport', 'mobility', 'walk']),
+  minutes: int(1, 600),
+  intensity: z.enum(['light', 'moderate', 'hard']),
+  exercises: z.optional(
+    z.array(z.object({ exerciseId: str(1, 80), sets: int(1, 20), repsMin: int(1, 100), repsMax: int(1, 100) })).check(z.maxLength(20)),
+  ),
+});
+
+export const programSchema = z.object({ name: str(0, 60), sessions: z.array(sessionSchema).check(z.maxLength(28)) });
+
 export const planSchema = z.object({
   effectiveFrom: date,
   goal: z.enum(['lose', 'maintain', 'gain']),
@@ -59,6 +73,9 @@ export const planSchema = z.object({
   tdeeSource: z.enum(['formula', 'measured']),
   engineVersion: int(1),
   source: z.enum(['onboarding', 'checkin', 'edit']),
+  /** The program's sessions, without exercises, as they were when the plan was made: a past day keeps its sessions
+   * after the program changes. Plans from before M7 have none and use the program. */
+  sessions: z.optional(z.array(z.omit(sessionSchema, { exercises: true })).check(z.maxLength(28))),
 });
 
 export const weightSchema = z.object({ date, kg: num(20, 400) });
@@ -91,20 +108,6 @@ export const savedSchema = z.object({
   uses: int(0),
   lastUsedAt: z.string(),
 });
-
-export const sessionSchema = z.object({
-  key: str(1, 20),
-  weekday,
-  name: str(1, 60),
-  type: z.enum(['strength', 'circuit', 'cardio', 'sport', 'mobility', 'walk']),
-  minutes: int(1, 600),
-  intensity: z.enum(['light', 'moderate', 'hard']),
-  exercises: z.optional(
-    z.array(z.object({ exerciseId: str(1, 80), sets: int(1, 20), repsMin: int(1, 100), repsMax: int(1, 100) })).check(z.maxLength(20)),
-  ),
-});
-
-export const programSchema = z.object({ name: str(0, 60), sessions: z.array(sessionSchema).check(z.maxLength(28)) });
 
 export const sessionLogSchema = z.object({ date, sessionKey: str(1, 20), status: z.enum(['done', 'skipped']) });
 
