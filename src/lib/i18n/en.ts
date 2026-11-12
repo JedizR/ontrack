@@ -384,15 +384,6 @@ export const en = {
   units: {
     ftIn: (ft: string, inches: string) => `${ft} ft ${inches} in`,
   },
-  welcome: {
-    // the words between asterisks read in violet (D2: OneFin's highlighted phrase)
-    promise: 'Eat for the body *you are training for.*',
-    lines: ['A daily target built from how you train.', 'One photo logs a meal.', 'Corrected each week from your own weigh-ins.'],
-    start: 'Build your plan',
-    /** under the primary; "About a minute" only once a cold median is measured (onboarding COPY section 3.1) */
-    time: 'No account until you save it.',
-    account: 'I already have an account',
-  },
   onboarding: {
     label: 'Set up your plan',
     back: 'Back',

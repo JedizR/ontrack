@@ -57,7 +57,6 @@
     radial-gradient(70% 100% at 0% 0%, rgba(196, 214, 255, 0.7) 0%, transparent 70%),
     radial-gradient(60% 90% at 85% 110%, rgba(246, 204, 250, 0.6) 0%, transparent 70%),
     radial-gradient(60% 90% at 5% 110%, rgba(196, 244, 250, 0.6) 0%, transparent 70%), #fbfbff;
-  --grad-brand: linear-gradient(180deg, #6262fe 0%, #9696ff 38%, #f5f5f5 78%);             /* Welcome, after the hero sky */
 
   /* Depth */
   --shadow-card: 0 4px 8px rgba(8, 7, 49, 0.06), 0 14px 14px rgba(8, 7, 49, 0.05);       /* Stats card */
@@ -200,7 +199,6 @@
   --grad-hero: radial-gradient(90% 120% at 100% 0%, rgba(91, 79, 245, 0.45) 0%, transparent 70%),
     radial-gradient(70% 100% at 0% 0%, rgba(56, 110, 220, 0.3) 0%, transparent 70%),
     radial-gradient(60% 90% at 85% 110%, rgba(190, 70, 210, 0.22) 0%, transparent 70%), #1b1b1f;
-  --grad-brand: linear-gradient(180deg, #28119c 0%, #381ac9 30%, #121214 78%);
   --grad-sky: linear-gradient(180deg, #381ac9 0%, #28119c 22%, #17142e 45%, #17142e 68%, #381ac9 100%);
 
   --shadow-card: 0 0 0 1px var(--line);
