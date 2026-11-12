@@ -112,14 +112,14 @@
   {:else if !day}
     <p class="text-ink-2" data-testid="no-plan">{t.today.noPlan}</p>
   {:else}
-    <WeekStrip days={week} today={view.today} selected={view.date} onselect={(d) => (view.date = d)} />
+    <div class="mb-1"><WeekStrip days={week} today={view.today} selected={view.date} onselect={(d) => (view.date = d)} /></div>
     {#if view.past}
       <div><Chip onclick={() => (view.date = view.today)}>{t.today.backToToday}</Chip></div>
     {/if}
 
     <Card hero aria-label={t.today.calories} data-testid="hero">
       <!-- the whole card opens How it is calculated; it holds no other control -->
-      <button type="button" class="block w-full text-left transition-transform duration-[var(--d-press)] active:scale-[0.98]" onclick={() => (sheets.how = true)} data-testid="hero-open">
+      <button type="button" class="block w-full text-left transition-transform duration-[var(--d-press)] active:scale-[0.98]" aria-describedby="hero-how" aria-haspopup="dialog" onclick={() => (sheets.how = true)} data-testid="hero-open">
         <HeroNumber value={Math.round(day.eaten.kcal)} caption={t.after.ofKcal(num(day.target))} side={side.side} sideCaption={side.cap} reached={!side.cap} />
         <div class="mt-4 mb-2"><Track hero value={day.eaten.kcal} target={day.target} zone={day.zone} label="{num(Math.round(day.eaten.kcal))} {t.after.ofKcal(num(day.target))}" /></div>
         <div class="text-caption text-ink-2 flex justify-between gap-4">
@@ -137,8 +137,8 @@
             </div>
           {/each}
         </div>
-        <span class="sr-only">{t.today.how}</span>
       </button>
+      <span id="hero-how" hidden>{t.today.how}</span>
     </Card>
 
     {#if weighCard}

@@ -1,7 +1,7 @@
 // Device and text size matrix: layout checks on every screen.
 //   pnpm exec playwright test --project=stress   -> screenshots/stress/<device>/*.png
 import { devices, expect, test, type Page } from '@playwright/test';
-import { keypadEnter, open, signIn, withPrefs } from './helpers';
+import { MEALS, keypadEnter, open, signIn, withPrefs } from './helpers';
 
 const DEVICES = [
   { name: 'iphone-15-pwa', width: 393, height: 793, mobile: true }, // home screen app: 852 minus the status bar
@@ -196,4 +196,51 @@ for (const d of PHONES) {
       });
     });
   }
+}
+
+/** Today with meals and every logging sheet, with a check at each: the main action is on screen without scrolling. */
+async function walkLogging(page: Page, dir: string) {
+  const sheet = async (id: string, name: string, action?: string) => {
+    await expect(page.getByTestId(id)).toHaveCSS('transform', 'none'); // the sheet has finished sliding up
+    if (action && page.viewportSize()!.height > page.viewportSize()!.width) await expect(page.getByTestId(action)).toBeInViewport({ ratio: 1 });
+    await checkPage(page, name, dir);
+  };
+  const close = async (id: string) => {
+    await page.keyboard.press('Escape');
+    await page.getByTestId(id).waitFor({ state: 'detached' });
+  };
+  await open(page, '/', MEALS);
+  await checkPage(page, 'today-meals', dir);
+  await page.getByTestId('add').click();
+  await sheet('add-sheet', 'add');
+  await page.getByTestId('add-search').click();
+  await page.getByTestId('search-field').fill('chicken');
+  await sheet('search-sheet', 'search');
+  await page.getByTestId('result').first().click();
+  await sheet('search-sheet', 'portion', 'search-add');
+  await close('search-sheet');
+  await page.getByTestId('add').click();
+  await page.getByTestId('add-quick').click();
+  await keypadEnter(page, '350');
+  await sheet('quick-sheet', 'quick', 'quick-add');
+  await close('quick-sheet');
+  await page.getByTestId('meal').first().getByRole('button').click();
+  await sheet('meal-sheet', 'meal', 'meal-save');
+}
+for (const d of DEVICES.filter((x) => x.mobile)) {
+  test.describe(d.name, () => {
+    test.use({ viewport: { width: d.width, height: d.height }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
+    test('logging layout holds', async ({ page }) => {
+      await walkLogging(page, `screenshots/stress/${d.name}/logging`);
+    });
+  });
+}
+for (const d of PHONES) {
+  test.describe(`font xl ${d.name}`, () => {
+    test.use({ viewport: { width: d.width, height: d.height }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
+    test('logging holds at the largest text', async ({ page }) => {
+      await withPrefs(page, { theme: 'light', fontSize: 'xl' });
+      await walkLogging(page, `screenshots/fonts/${d.name}-xl/logging`);
+    });
+  });
 }

@@ -84,7 +84,7 @@
         <button type="button" class="bg-surface-2 active:bg-surface-3 flex min-h-16 min-w-0 flex-col items-start justify-center rounded-sm px-3 py-2 text-left transition-colors duration-[var(--d-press)]" onclick={() => askMacro(m)} data-testid="quick-{m}">
           <span class="text-caption text-ink-2">{t.quick[m]}</span>
           {#if macros[m] === null}
-            <span class="text-callout text-ink-2">{t.quick.optional}</span>
+            <span class="text-body text-ink-2">{t.quick.optional}</span>
           {:else}
             <span class="text-body num font-semibold">{num(macros[m]!, 1)} {t.after.g}</span>
           {/if}

@@ -107,12 +107,12 @@
           </button>
           {#if l.base.grams}
             <div class="mt-2">
-              <Stepper bind:value={() => grams(l), (g) => (l.factor = g / l.base.grams!)} step={10} min={10} max={5000} unit={t.after.g} label={t.meal.grams} />
+              <Stepper bind:value={() => grams(l), (g) => (l.factor = g / l.base.grams!)} step={10} min={10} max={5000} unit={t.after.g} label={t.after.grams} />
             </div>
           {/if}
           {#if opened === i}
             <div class="mt-3 flex flex-col gap-3" data-testid="meal-item-open">
-              <div class="-mx-5 flex gap-2 overflow-x-auto px-5" role="group">
+              <div class="flex flex-wrap gap-x-2" role="group">
                 {#each PORTIONS as [key, factor] (key)}
                   <Chip selected={l.factor === factor} onclick={() => (l.factor = factor)}>{t.meal.portions[key]}</Chip>
                 {/each}

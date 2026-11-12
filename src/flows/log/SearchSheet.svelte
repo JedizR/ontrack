@@ -102,12 +102,11 @@
         <span class="text-callout text-ink-2">{t.search.grams}</span>
         <span class="text-body num font-semibold">{num(picked.grams)} {t.after.g}</span>
       </button>
-      <div><Button variant="plain" size="sm" onclick={() => (picked = null)}>{t.search.back}</Button></div>
+      <div><Button size="sm" onclick={() => (picked = null)}>{t.search.back}</Button></div>
     </div>
   {:else}
-    <label class="sr-only" for="food-search">{t.search.field}</label>
     <input
-      id="food-search"
+      aria-label={t.search.field}
       type="search"
       enterkeyhint="search"
       autocomplete="off"
@@ -115,7 +114,7 @@
       placeholder={t.search.field}
       bind:value={q}
       {@attach (el) => el.focus()}
-      class="bg-surface-2 placeholder:text-ink-3 h-13 w-full rounded-sm px-4 outline-none focus-visible:outline-2 focus-visible:outline-ink"
+      class="bg-surface-2 placeholder:text-ink-3 h-13 w-full appearance-none rounded-sm px-4 [&::-webkit-search-cancel-button]:appearance-none outline-none focus-visible:outline-2 focus-visible:outline-ink"
       data-testid="search-field"
     />
     {#if failed}

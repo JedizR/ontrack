@@ -31,6 +31,8 @@ export const en = {
     over: 'over',
     kcal: 'kcal',
     g: 'g',
+    /** what a stepper counts, inside "Less grams" */
+    grams: 'grams',
     kg: 'kg',
     lb: 'lb',
     cm: 'cm',
@@ -67,7 +69,6 @@ export const en = {
     noPlan: 'Your targets show here once your plan is saved.',
     how: 'How your target is calculated',
     delete: 'Delete',
-    deleteMeal: (title: string) => `Delete ${title}`,
   },
   add: {
     title: 'Add a meal',
@@ -117,11 +118,8 @@ export const en = {
     saveAs: 'Save as a meal',
     delete: 'Delete meal',
     portions: { half: 'Half', same: 'Same', more: 'One and a half', double: 'Double' },
-    grams: 'grams',
-    calories: 'Calories',
     total: (kcal: string, protein: string) => `${kcal} kcal, ${protein} g protein`,
     empty: 'No items left. Add one, or delete the meal.',
-    edit: (name: string) => `Edit ${name}`,
   },
   weigh: {
     title: 'Weigh in',

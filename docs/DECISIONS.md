@@ -2,6 +2,24 @@
 
 Changes to a doc's decision, and choices made on the owner's behalf. Newest first, one line each: what, why.
 
+## M5
+
+- The week strip shows the seven days ending today, each with its own weekday letter, instead of Monday to Sunday. Why: F3 asks for any of the last 7 days; a calendar week reaches only today on a Monday. Same cells, letters, dots and today pill.
+- The Add sheet shows Search and Quick add only. Photo and Describe join in M6. Why: no dead buttons; both need the vision pipeline.
+- The Add sheet logs to the day on screen; on a past day a meal gets the current clock time on that day. Why: F11 says past days can be edited; the time is editable in the Meal sheet.
+- Recent is the last five meals distinct by title and calories; Saved is most used first. Logging a photo meal again records it as `saved`, without a photo. Why: SCREENS.md section 7; no photo was taken.
+- Quick add opens the keypad for calories at once; protein, carbs and fat each open the keypad too; the name is a text field. At most 10,000 kcal and 1,000 g a macro at a time, with a message. Why: F5 asks for the custom keypad; the caps catch typos before the record schema refuses them.
+- The Meal sheet scales each item from what was logged: the stepper moves 10 g, the chips are half, same, one and a half and double of the logged amount, never compounding. Typed (Quick add) items have no grams, so only the chips scale them.
+- Swipe left on a meal past 96 px slides it out and deletes it with an undo toast; a swipe that starts on a meal never changes tab. Why: the row owns its horizontal gesture, like other horizontal scrollers.
+- The training row's menu is a 44 px ellipsis button opening a small sheet with "Skip today"; no long press. Why: a long press has no visible cue and fights scrolling. Done shows a check and Undo; Skipped says the day uses the rest target and offers Undo.
+- Training day or rest day follows the program's sessions on that weekday; the target follows the plan's frozen exercise energy (TECH-SPEC section 3). Skipping every session that day gives the rest target (F8).
+- "240 over" is eaten minus the target; "On track from" shows the band start rounded to the 10 kcal target step (2,337 shows as 2,340, as in the reference).
+- The weigh-in sheet is the keypad itself, titled Weigh in, prefilled with the last weigh-in; a value outside 30 to 300 kg asks again with the reason. The prompt card on Today has a neutral Weigh in button. Why: F6, one sheet with the keypad; "quiet".
+- A meal without a photo shows a neutral tile with the icon of how it was logged (search, hash for Quick add, bookmark for saved). A quick add's source label reads "Quick add". Why: DESIGN.md section 11; Database or Estimate would misstate typed numbers.
+- A past day's header title is "Monday, Nov 9". Why: fits the header at the largest text on the SE.
+- Food list: 512 foods from USDA SR Legacy (April 2018), drafted by Claude. Portion weights come from USDA's portion table where it has a sensible one, else a typical serving. Thai dishes are mostly absent from SR Legacy, so a few Thai words are aliases on the nearest plain food (khao for rice). Oat milk, pad thai, Thai milk tea, udon, dragon fruit and congee are not in SR Legacy and are left out. Why: TECH-SPEC section 9; Thai foods are estimates in v1.
+- The build reads the archive from `data/usda/` and downloads it with `unzip` when missing. Search ignores case and accents.
+
 ## M4
 
 - Which screen opens: no store on the phone shows onboarding; a signed in phone that has never pulled shows Today's first load state; signed in and pulled with no profile shows onboarding again, from Welcome, whose "I already have an account" then switches accounts. While the last user's store opens, the shell shows, never Welcome. Why: sync rule 5, pull before deciding whether to show onboarding.
