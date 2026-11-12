@@ -56,7 +56,9 @@
     if (!Number.isNaN(v)) value = fit(v);
     el.value = String(value);
   }
-  const width = $derived(Math.max(String(Number.isFinite(max) ? max : value).length, 2) + 1);
+  // the field is as wide as its number, so the unit follows it; the label keeps room for the longest
+  const longest = $derived(Math.max(String(Number.isFinite(max) ? max : value).length, 2));
+  let editing = $state(false);
 </script>
 
 {#snippet key(d: 1 | -1)}
@@ -79,7 +81,7 @@
 
 <div class="flex items-center gap-2" data-testid={testid}>
   {@render key(-1)}
-  <label class="active:bg-surface-2 flex h-11 min-w-0 items-baseline justify-center gap-1 rounded-sm px-1 transition-colors duration-[var(--d-press)]">
+  <label class="active:bg-surface-2 flex h-11 items-baseline justify-center gap-1 rounded-sm px-1 transition-colors duration-[var(--d-press)]" style="min-width: calc({longest + 1}ch + {unit ? 2 : 0}em)">
     <input
       type="text"
       inputmode={step % 1 ? 'decimal' : 'numeric'}
@@ -88,12 +90,12 @@
       aria-label={label}
       value={String(value)}
       class="num h-11 bg-transparent text-center font-semibold outline-none focus-visible:underline"
-      style="width: {width}ch; font-size: max(16px, var(--t-heading))"
+      style="width: {(editing ? longest : Math.max(String(value).length, 1)) + 0.5}ch; font-size: max(16px, var(--t-heading))"
       data-vaul-no-drag
-      onfocus={(e) => e.currentTarget.select()}
+      onfocus={(e) => { editing = true; e.currentTarget.select(); }}
       onkeydown={(e) => { if (e.key === 'Enter') e.currentTarget.blur(); }}
       onchange={(e) => typed(e.currentTarget)}
-      onblur={(e) => typed(e.currentTarget)}
+      onblur={(e) => { editing = false; typed(e.currentTarget); }}
     />
     {#if unit}<span class="text-ink-2 text-callout font-semibold" aria-hidden="true">{unit}</span>{/if}
   </label>

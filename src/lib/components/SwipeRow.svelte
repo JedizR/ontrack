@@ -24,15 +24,15 @@
   };
 </script>
 
-<!-- the hairline between swipe rows sits on the wrapper, inset to where the row text starts (gutter, tile, gap) -->
+<!-- the hairline between swipe rows sits on the wrapper, inset to where the row text starts (inset, tile, gap) -->
 <div
-  class="relative -mx-5 overflow-hidden [&+&]:before:bg-line [&+&]:before:absolute [&+&]:before:top-0 [&+&]:before:right-0 [&+&]:before:left-20 [&+&]:before:z-10 [&+&]:before:h-px"
+  class="relative -mx-6 overflow-hidden [&+&]:before:bg-line [&+&]:before:absolute [&+&]:before:top-0 [&+&]:before:right-0 [&+&]:before:left-22 [&+&]:before:z-10 [&+&]:before:h-px"
   data-no-swipe
   data-testid={testid}
   use:swipe={opts}
 >
-  <div class="bg-danger-soft text-danger text-callout absolute inset-0 flex items-center justify-end px-5 font-medium" aria-hidden="true">{t.today.delete}</div>
-  <div class="bg-surface relative px-5" style="transform: translateX({dx}px); transition: {dragging ? 'none' : 'transform 180ms var(--ease-out)'}">
+  <div class="bg-danger text-on-danger text-callout absolute inset-0 flex items-center justify-end px-6 font-semibold" aria-hidden="true">{t.today.delete}</div>
+  <div class="bg-surface relative px-6" style="transform: translateX({dx}px); transition: {dragging ? 'none' : 'transform 180ms var(--ease-out)'}">
     {@render children()}
   </div>
 </div>

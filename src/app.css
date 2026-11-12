@@ -149,6 +149,16 @@
   color: var(--on-accent-soft);
   box-shadow: var(--shadow-tile);
 }
+/* A text field: 56 high on surface-2 at radius 16, a 2 px ink ring on focus. */
+@utility input-field {
+  background: var(--surface-2);
+  border-radius: var(--r-sm);
+  min-height: 56px;
+  padding-inline: 20px;
+  outline: none;
+  &::placeholder { color: var(--ink-3); }
+  &:focus-visible { box-shadow: 0 0 0 2px var(--ink); }
+}
 /* Only the dock and a scrolled header are glass. */
 @utility bar-glass {
   background: var(--bar-bg);

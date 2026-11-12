@@ -1,4 +1,4 @@
-<!-- An on and off control, 44 to tap. On is ink, never lime: lime means on track. -->
+<!-- An on and off control, 44 to tap. On is ink: violet is for the main action and green for a reached target. -->
 <script lang="ts">
   import { haptic } from '$lib/haptics';
 
@@ -14,7 +14,7 @@
   onclick={() => { haptic(); checked = !checked; onchange?.(checked); }}
   data-testid={testid}
 >
-  <span class="relative block h-[30px] w-[50px] rounded-full transition-colors duration-[var(--d-ui)] {checked ? 'bg-ink' : 'bg-surface-3'}">
-    <span class="bg-surface absolute top-[3px] left-[3px] size-6 rounded-full transition-transform duration-[var(--d-ui)] {checked ? 'translate-x-5' : ''}"></span>
+  <span class="relative block h-[30px] w-[50px] rounded-full transition-colors duration-[var(--d-ui)] ease-[var(--spring-default)] {checked ? 'bg-ink' : 'bg-surface-3'}">
+    <span class="bg-surface absolute top-[3px] left-[3px] size-6 rounded-full shadow-card transition-transform duration-[var(--d-ui)] ease-[var(--spring-default)] {checked ? 'translate-x-5' : ''}"></span>
   </span>
 </button>

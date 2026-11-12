@@ -73,38 +73,40 @@
 </script>
 
 {#snippet heading(title: string)}
-  <h2 class="text-heading mt-10 mb-3 first:mt-4">{title}</h2>
+  <h2 class="text-heading mt-10 mb-4 first:mt-4">{title}</h2>
 {/snippet}
 {#snippet note(text: string)}
   <p class="text-caption text-ink-2 mt-4 mb-2">{text}</p>
 {/snippet}
 {#snippet tile(Icon: Component<{ size?: number; strokeWidth?: number }>)}
-  <div class="bg-surface-2 grid size-full place-items-center"><Icon size={24} strokeWidth={1.75} /></div>
+  <div class="bg-surface-2 text-ink-2 grid size-full place-items-center"><Icon size={24} strokeWidth={2} /></div>
 {/snippet}
 
-<div class="bg-canvas relative mx-auto min-h-dvh w-full max-w-[480px] overflow-x-clip">
+<div class="bg-canvas relative mx-auto min-h-svh w-full max-w-[480px] overflow-x-clip">
   <Header title={today ? t.tabs.today : 'Gallery'} />
 
-  <main class="px-5 pb-[calc(env(safe-area-inset-bottom)+var(--dock-h)+40px)]" data-testid="gallery">
+  <main class="px-4 pb-[calc(var(--dock-h)+12px+env(safe-area-inset-bottom)+24px)]" data-testid="gallery">
     {#if today}
       <TodayComposed />
     {:else}
       <section data-section="prefs">
         {@render heading('Theme and text size')}
         <Segmented label={t.prefs.theme} options={THEMES} bind:value={() => prefs.theme, (v) => (prefs.theme = v)} />
-        <div class="mt-3 flex flex-wrap gap-x-2" role="group" aria-label={t.prefs.textSize}>
+        <div class="mt-3 flex flex-wrap gap-2" role="group" aria-label={t.prefs.textSize}>
           {#each SIZES as s (s.value)}
             <Chip selected={prefs.fontSize === s.value} onclick={() => (prefs.fontSize = s.value)}>{s.label}</Chip>
           {/each}
         </div>
-        <a href="/gallery/today" class="bg-surface-2 active:bg-surface-3 text-callout mt-3 inline-flex h-11 items-center rounded-full px-5 font-medium">Today, composed</a>
+        <a href="/gallery/today" class="bg-surface-2 active:bg-surface-3 text-callout mt-3 inline-flex h-12 items-center rounded-sm px-5 font-semibold">Today, composed</a>
       </section>
 
       <section data-section="buttons">
         {@render heading('Buttons')}
-        {@render note('Primary, the main action, 52 high. One per screen')}
+        {@render note('Primary, the violet 3D pill, 56 high. One per screen')}
         <Button variant="primary" size="lg" full onclick={() => toast('Added 720 kcal')}>Add 720 kcal</Button>
-        {@render note('Neutral, plain and danger, 44 high')}
+        {@render note('Secondary, the dark 3D pill, at most one per screen')}
+        <Button variant="secondary" full>Choose a program</Button>
+        {@render note('Neutral, plain and danger, 48 high')}
         <div class="flex flex-wrap gap-2">
           <Button>Search</Button>
           <Button variant="plain">Cancel</Button>
@@ -114,7 +116,7 @@
         <div class="flex flex-wrap gap-2">
           <Button size="sm">Done</Button>
           <Button variant="plain" size="sm">Skip</Button>
-          <Button disabled>Save</Button>
+          <Button variant="primary" disabled>Save</Button>
         </div>
       </section>
 
@@ -122,7 +124,7 @@
         {@render heading('Track')}
         {@render note('Below the zone: ink')}
         <Track hero value={1840} {target} {zone} label="1,840 of 2,460 kcal" />
-        {@render note('In the zone: lime')}
+        {@render note('In the zone: green')}
         <Track hero value={2400} {target} {zone} label="2,400 of 2,460 kcal" />
         {@render note('Past the zone on a lose day: ink again')}
         <Track hero value={2700} {target} zone={[2214, 2583]} label="2,700 of 2,460 kcal" />
@@ -149,8 +151,8 @@
       <section data-section="rows">
         {@render heading('Card and rows')}
         <Card list>
-          <Row title="Push day" caption={t.today.session('Strength', '60', '240')}>
-            {#snippet leading()}{@render tile(TrainIcon)}{/snippet}
+          <Row title="Push day" caption={t.today.session('Strength', '60', '240')} wrap>
+            {#snippet leading()}<div class="tile grid size-full place-items-center"><TrainIcon /></div>{/snippet}
             {#snippet trailing()}<Button size="sm">{t.today.done}</Button>{/snippet}
           </Row>
         </Card>
@@ -175,7 +177,7 @@
 
       <section data-section="chips">
         {@render heading('Chips and stepper')}
-        <div class="flex flex-wrap gap-x-2" role="group" aria-label="Portion">
+        <div class="flex flex-wrap gap-2" role="group" aria-label="Portion">
           {#each PORTIONS as p (p)}
             <Chip selected={portion === p} onclick={() => (portion = p)}>{p}</Chip>
           {/each}
