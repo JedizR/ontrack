@@ -26,6 +26,9 @@ type Harness = {
   cleanup(tag: string): Promise<void>;
   /** the database client behind a backend, to try what the app never does (Supabase only) */
   raw?(b: Backend): SupabaseClient;
+  /** a new access token for the same session. Supabase's CDN keeps serving an object a token already downloaded until
+   * that token expires, whatever the policies say now; a fresh token shows what the database allows */
+  renew?(b: Backend): Promise<void>;
 };
 
 function mockHarness(): Harness {
@@ -76,6 +79,10 @@ function supabaseHarness(): Harness {
       return res.status;
     },
     raw: (b) => clients.get(b)!,
+    async renew(b) {
+      const r = await clients.get(b)!.auth.refreshSession();
+      if (r.error) throw r.error;
+    },
     async cleanup(tag) {
       const { data } = await admin.auth.admin.listUsers({ perPage: 1000 });
       for (const u of data.users.filter((u) => u.email?.includes(tag))) {
@@ -340,8 +347,12 @@ describe.each(harnesses)('sync conformance: $name', (h) => {
 
     // anyone signed in finds the handle, the name and the profile photo, and nothing else
     expect(await z.b.social.search(a.handle)).toEqual([{ id: a.id, handle: a.handle, name: 'Name va', photo: `${a.id}/avatar-a.jpg` }]);
+    // an underscore or a star is no wildcard: v_ would otherwise find va_...
+    expect(await z.b.social.search('v_')).toEqual([]);
+    expect(await z.b.social.search('*')).toEqual([]);
     expect(await bytes(await z.b.social.photo(`${a.id}/avatar-a.jpg`))).toEqual([255, 216, 255, 2]);
     const hidden = async () => {
+      await h.renew?.(z.b);
       expect(await z.b.social.sharedIn(world)).toEqual([]);
       expect(await z.b.social.photo(path)).toBeNull();
       expect(await z.b.social.program(a.id)).toBeNull();
@@ -427,6 +438,7 @@ describe.each(harnesses)('sync conformance: $name', (h) => {
     expect(await z.b.social.photo(`${a.id}/m1.jpg`)).not.toBeNull();
     const { share: _, ...unshared } = shared('m1').data as Record<string, unknown>;
     await a.b.push([{ ...shared('m1'), updatedAt: 3, data: unshared }, { ...shared('m2'), updatedAt: 3, deleted: true }]);
+    await h.renew?.(z.b);
     expect(await z.b.social.sharedIn(world)).toEqual([]);
     expect(await z.b.social.photo(`${a.id}/m1.jpg`)).toBeNull();
 

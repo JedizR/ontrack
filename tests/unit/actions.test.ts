@@ -14,6 +14,11 @@ import { dayView, mealSource, planFor } from '../../src/lib/model/day';
 import type { MealItem, Plan, Product, Session, Supplement } from '../../shared/records';
 
 beforeAll(() => db.open('actions-test'));
+// a profile photo is redrawn on a canvas, which node has not: stand in with a marked JPEG, and refuse an empty file
+vi.mock('../../src/lib/photo', async (actual) => ({
+  ...(await actual<typeof import('../../src/lib/photo')>()),
+  avatarPhoto: async (b: Blob) => (b.size ? new Blob([new Uint8Array([255, 216, 255, 0])], { type: 'image/jpeg' }) : Promise.reject(new Error('not an image'))),
+}));
 
 test('a write that fails its schema never reaches the store', () => {
   expect(() => logWeight('11/12/2026', 80)).toThrow();
@@ -220,7 +225,10 @@ test('social (S1): the profile saves through the store with its handle checked o
     expect(await saveSocial({ handle: '@Nan_Eats', name: ' Nan ', showProgram: true }, photo)).toBe('ok');
     const mine = db.get('social', 'social')!;
     expect(mine).toEqual({ handle: 'nan_eats', name: 'Nan', showProgram: true, photo: expect.stringMatching(/^avatar-[0-9a-f-]{36}$/) });
-    expect(await db.thumb(mine.photo!)).toBeTruthy(); // queued to upload with the thumbnails
+    // redrawn, not the file as picked, and queued to upload with the thumbnails
+    expect([...new Uint8Array(await (await db.thumb(mine.photo!))!.arrayBuffer())]).toEqual([255, 216, 255, 0]);
+    expect(await saveSocial({ handle: 'nan_eats', name: 'Nan', showProgram: true }, new Blob([]))).toBe('bad_request');
+    expect(db.get('social', 'social')?.photo).toBe(mine.photo);
     expect(await findPeople('  ')).toEqual({ ok: true, value: [] });
     expect(await findPeople('@TAKEN')).toMatchObject({ ok: true, value: [{ handle: 'taken_one', name: 'Other', photo: null }] });
 

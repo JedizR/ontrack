@@ -1,7 +1,7 @@
 // The food map's positions (S1, F17): GPS read from a photo's Exif, rounded to about 100 m, pins grouped by zoom.
 import { readFileSync } from 'node:fs';
 import { expect, test } from 'vitest';
-import { clusterPins, photoPosition, roundPosition, type Position } from '../../src/lib/geo';
+import { clusterPins, photoPosition, roundPosition, wrapBox, type Position } from '../../src/lib/geo';
 
 /** A JPEG's start, an APP1 Exif segment whose TIFF block has a GPS directory, and its end. dms: degrees, minutes, seconds. */
 function jpegWithGps(lat: number[], latRef: string, lng: number[], lngRef: string, le: boolean) {
@@ -69,4 +69,14 @@ test('pins group by zoom: close ones under the newest, apart again zoomed in, an
   expect(ids(4)).toEqual([['new', 'near', 'far']]);
   expect(clusterPins([pin('east', -17.7, 179.999), pin('west', -17.7, -179.999)], 10).length).toBe(1);
   expect(clusterPins([], 10)).toEqual([]);
+});
+
+test('a map box comes back inside -180 to 180: panned round the world, wider than it, or across the 180th meridian', () => {
+  const box = (west: number, east: number) => ({ south: 0, north: 20, west, east });
+  expect(wrapBox(box(100, 101))).toEqual(box(100, 101));
+  expect(wrapBox(box(170, 190))).toEqual(box(170, -170));
+  expect(wrapBox(box(-540, -530))).toEqual(box(-180, -170));
+  expect(wrapBox(box(460, 461))).toEqual(box(100, 101));
+  expect(wrapBox(box(-200, 200))).toEqual(box(-180, 180));
+  expect(wrapBox(box(-180, 180))).toEqual(box(-180, 180));
 });

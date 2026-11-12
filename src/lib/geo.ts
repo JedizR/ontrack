@@ -50,6 +50,15 @@ function gps(v: DataView): Position | null | undefined {
   }
 }
 
+/** A map's bounds as the database compares them: longitudes back inside -180 to 180 (a map panned round the world
+ * reports 185 or -540), the whole world when the box is wider than it, and a west edge east of the east edge when it
+ * crosses the 180th meridian. */
+export function wrapBox<B extends { west: number; east: number }>(b: B): B {
+  if (b.east - b.west >= 360) return { ...b, west: -180, east: 180 };
+  const wrap = (x: number) => (Math.abs(x) <= 180 ? x : ((((x + 180) % 360) + 360) % 360) - 180);
+  return { ...b, west: wrap(b.west), east: wrap(b.east) };
+}
+
 /** Pins drawn as one: the lead's photo, with "+N more" where N is `more.length`. */
 export type Cluster<T> = { lead: T; more: T[] };
 

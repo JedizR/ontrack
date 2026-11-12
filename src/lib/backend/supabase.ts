@@ -13,8 +13,6 @@ type MealRow = { owner: string; meal_id: string; lat: number; lng: number; taken
 
 /** Supabase errors come in three shapes (auth, PostgREST, storage); all of them carry a status, a code or a message. */
 function kindOf(e: { status?: number; code?: string; message?: string; name?: string }, status = e.status ?? 0): FailKind {
-  // a constraint the database holds (a unique handle, a profile to befriend, not yourself) refuses the request
-  if (e.code?.startsWith('23')) return 'bad_request';
   if (status === 401 || e.code === 'PGRST301' || e.code === 'PGRST303' || e.code === '42501' || e.name === 'AuthSessionMissingError') return 'auth';
   if (e.code === 'otp_expired') return 'wrong_code';
   if (status === 429 || e.code?.startsWith('over_')) return 'rate_limited';
@@ -135,7 +133,8 @@ export function createSupabaseBackend(sb: SupabaseClient, settingsUrl?: string, 
         return !r.data!.length;
       },
       async search(prefix) {
-        const like = `${prefix.replace(/[\\%_]/g, '\\$&')}%`; // an underscore in a handle is not a wildcard
+        if (!/^[a-z0-9_]*$/.test(prefix)) return []; // no handle has anything else, and PostgREST reads * as a wildcard
+        const like = `${prefix.replace(/_/g, '\\_')}%`; // an underscore in a handle is not a wildcard
         const r = await sb.from('profiles').select(PERSON).like('handle', like).neq('user_id', await userId()).order('handle').limit(SEARCH_MAX);
         check(r);
         return (r.data as PersonRow[]).map(person);
@@ -159,6 +158,8 @@ export function createSupabaseBackend(sb: SupabaseClient, settingsUrl?: string, 
         if (await acceptFrom(id)) return;
         const r = await sb.from('friendships').insert({ requester: await userId(), addressee: id });
         if (r.error?.code === '23505') return; // asked before
+        // no profile on either side, or yourself: the database's constraints refuse it (409 or 400)
+        if (r.error?.code?.startsWith('23')) throw new BackendError('bad_request');
         check(r);
       },
       async accept(id) {

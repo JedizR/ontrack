@@ -29,6 +29,11 @@ Each entry: what is blocked, what Claude tried, the exact steps for you, and wha
 
 Each entry: what to look at (URL or screenshot paths), what to look for, and which milestone it belongs to.
 
+### S1a: who can see what, before friends use it
+
+- **Where:** the table "What others can see" in `docs/DECISIONS.md`, section S1a. No screen yet; S1b builds them.
+- **What to look for:** whether you agree that anyone signed in can find a profile (handle, name, photo) by its handle, that friends see a shared meal's own calories and macros with the place rounded to about 100 m, and that a former friend keeps what they could already reach (a photo they saw stays fetchable with their old sign-in for up to an hour, or longer through a link they made while friends; a Supabase limit). Say "S1 privacy: change ..." to Claude if any of it should differ; otherwise nothing to do.
+
 ### T1b: hybrid training and the training card, with the friends who asked
 
 - **Where:** the pull request's Vercel preview in Safari on the iPhone. Train, Change program, Full body and cardio 3 days (or Upper lower and cardio 5 days); then the Lifting and cardio card at the bottom of Train. Progress, the Training card after Consistency (it fills as you mark sessions done on Today). Screenshots in the pull request (branch `pr-assets`, folder `t1/`); every state in `screenshots/train/hybrid*`, `screenshots/train/templates-hybrid*`, `screenshots/progress/training*` after `pnpm screenshots`.

@@ -9,7 +9,7 @@ import { session } from '$lib/session.svelte';
 import { prefs } from '$lib/prefs.svelte';
 import { BackendError } from '$lib/backend';
 import type { Backend, Box, FailKind } from '$lib/backend/types';
-import { roundPosition, type Position } from '$lib/geo';
+import { roundPosition, wrapBox, type Position } from '$lib/geo';
 import { eeeByWeekday, planFromBaseline, type CheckinResult } from '$lib/model/engine';
 import { planFor } from '$lib/model/day';
 import { addDays, today } from '$lib/model/dates';
@@ -17,7 +17,7 @@ import { foodKey, per100Of, type Food } from '$lib/data/foods';
 import { supplementItems } from '$lib/model/supplements';
 import { productItem } from '$lib/model/products';
 import { fetchOff } from '$lib/data/off';
-import { preparePhoto } from '$lib/photo';
+import { avatarPhoto, preparePhoto } from '$lib/photo';
 import type { AnalyzeRequest, AnalyzeResponse, LabelResponse } from '../../shared/analysis';
 import { foodSchema, ids, productSchema, recSchema, SCHEMAS, socialSchema, type Checkin, type Collection, type DataOf, type Meal, type MealItem, type Plan, type Product, type Profile, type Program, type Saved, type SessionLog, type Supplement, type Weight } from '../../shared/records';
 
@@ -287,7 +287,8 @@ const handleOf = (typed: string) => typed.trim().replace(/^@/, '').toLowerCase()
 /**
  * Your profile for friends (F16): a record like the rest of your data, which the server publishes as it syncs. A new
  * or changed handle is checked with the server first, so it needs the network; the name, the photo and the program
- * switch save offline. `photo`: a new picture (a small square JPEG), null to remove it, left out to keep it.
+ * switch save offline. `photo`: a new picture (made a 256 px square here, dropping its location), null to remove it,
+ * left out to keep it. bad_request: the picture could not be read.
  */
 export async function saveSocial(p: { handle: string; name: string; showProgram: boolean }, photo?: Blob | null): Promise<'ok' | SocialError> {
   const was = db.get('social', ids.social());
@@ -299,8 +300,11 @@ export async function saveSocial(p: { handle: string; name: string; showProgram:
   }
   let name = photo === null ? undefined : was?.photo;
   if (photo) {
+    // anyone signed in can see it, so never the file as picked: that can carry where it was taken
+    const square = await avatarPhoto(photo).catch(() => null);
+    if (!square) return 'bad_request';
     name = `avatar-${uid()}`; // a new name for a new picture, so no phone keeps showing the old one
-    await saveMealThumb(name, photo);
+    await saveMealThumb(name, square);
   }
   write('social', ids.social(), { ...data, ...(name ? { photo: name } : {}) });
   return 'ok';
@@ -317,8 +321,9 @@ export const removeFriend = (userId: string) => online((b) => b.social.remove(us
 export const declineFriend = removeFriend;
 /** A friend's program while they show it (null otherwise). */
 export const friendProgram = (userId: string) => online((b) => b.social.program(userId));
-/** Shared meals inside a map box, yours and your friends', newest first: the pins to group with `clusterPins`. */
-export const mapMeals = (box: Box) => online((b) => b.social.sharedIn(box));
+/** Shared meals inside a map box (the map's bounds as they come), yours and your friends', newest first: the pins to
+ * group with `clusterPins`. */
+export const mapMeals = (box: Box) => online((b) => b.social.sharedIn(wrapBox(box)));
 /** A shared meal's or a profile's photo, fetched each time: a friend's photo is never kept on this phone. */
 export const sharedPhoto = (path: string) => online((b) => b.social.photo(path));
 /**
