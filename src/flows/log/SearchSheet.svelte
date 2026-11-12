@@ -100,7 +100,7 @@
         <p class="text-caption text-ink-2 mt-1" data-testid="portion-source"><SourceLabel source={item?.source === 'yours' ? 'yours' : 'database'} /></p>
       </div>
       {#if item?.source === 'yours'}
-        <Button variant="plain" size="sm" class="-my-2 -ml-3 self-start" onclick={() => picked && forgetFood(picked.food.id)} data-testid="portion-default">{t.meal.useDefault}</Button>
+        <Button variant="plain" size="sm" class="-my-2 -ml-4 self-start" onclick={() => picked && forgetFood(picked.food.id)} data-testid="portion-default">{t.meal.useDefault}</Button>
       {/if}
       <div class="-mx-6 flex gap-2 overflow-x-auto px-6" role="group" aria-label={t.search.portion}>
         {#each picked.food.portions as p (p.label)}
@@ -111,10 +111,11 @@
         <span class="text-body font-semibold">{t.search.grams}</span>
         <Stepper bind:value={picked.grams} step={10} min={1} max={MAX_GRAMS} unit={t.after.g} label={t.after.grams} testid="portion-grams" />
       </div>
-      {#if cite}
+      <!-- the citation is the table's; the user's own numbers are not its -->
+      {#if cite && item?.source !== 'yours'}
         <p class="text-caption text-ink-2" data-testid="portion-cite">
           {t.search.from(cite.name)}
-          {#if cite.terms}<a href={cite.terms} target="_blank" rel="noopener" class="underline">{t.search.terms}</a>{/if}
+          {#if cite.terms}<a href={cite.terms} target="_blank" rel="noopener" class="relative underline after:absolute after:-inset-x-2 after:-inset-y-4">{t.search.terms}</a>{/if}
         </p>
       {/if}
     </div>

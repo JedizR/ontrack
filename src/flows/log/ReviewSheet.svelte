@@ -150,9 +150,9 @@
 <Sheet bind:open={() => sheets.review !== null, (v) => { if (!v) close(); }} title={t.review.title} layer="base" testid="review-sheet" footer={status === 'ready' ? footer : undefined}>
   {#if kind === 'photo'}
     {#if photoUrl}
-      <img src={photoUrl} alt={t.review.photo} class="shadow-card aspect-[4/3] w-full rounded-lg object-cover" data-testid="review-photo" />
+      <img src={photoUrl} alt={t.review.photo} class="shadow-card aspect-[4/3] w-full rounded-md object-cover" data-testid="review-photo" />
     {:else if status === 'loading'}
-      <Skeleton class="aspect-[4/3] w-full rounded-lg" />
+      <Skeleton class="aspect-[4/3] w-full rounded-md" />
     {/if}
   {/if}
 

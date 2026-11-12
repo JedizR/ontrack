@@ -228,6 +228,11 @@ async function walkLogging(page: Page, dir: string) {
   await takePhoto(page, true);
   await expect(page.getByTestId('meal-item').first()).toBeVisible();
   await sheet('review-sheet', 'review', 'review-add');
+  // an item open with Correct: four steppers in rows (N1)
+  await page.getByTestId('meal-item').first().locator('button[aria-expanded]').click();
+  await page.getByTestId('item-correct-open').click();
+  await page.getByTestId('item-correct').scrollIntoViewIfNeeded();
+  await checkPage(page, 'review-correct', dir);
 }
 for (const d of DEVICES.filter((x) => x.mobile)) {
   test.describe(d.name, () => {

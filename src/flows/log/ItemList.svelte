@@ -27,8 +27,9 @@
   let opened = $state<number | null>(null);
   let correcting = $state<number | null>(null);
   type Nutrient = 'kcal' | 'protein' | 'carbs' | 'fat';
-  /** what is corrected, its step, its largest value and its unit */
-  const NUTRIENTS: [Nutrient, number, number, string][] = [['kcal', 10, 10000, t.after.kcal], ['protein', 1, 1000, t.after.g], ['carbs', 1, 1000, t.after.g], ['fat', 1, 1000, t.after.g]];
+  /** what is corrected, its step (half grams: a decimal pad for labels like 2.5 g) and its unit; one largest value keeps
+   * the four steppers the same width */
+  const NUTRIENTS: [Nutrient, number, string][] = [['kcal', 10, t.after.kcal], ['protein', 0.5, t.after.g], ['carbs', 0.5, t.after.g], ['fat', 0.5, t.after.g]];
   const LABEL = { kcal: t.quick.calories, protein: t.quick.protein, carbs: t.quick.carbs, fat: t.quick.fat };
   const items = $derived(lines.map(scaled));
 
@@ -88,11 +89,12 @@
             {/each}
           </div>
           {#if correcting === i}
-            <div class="flex flex-col gap-2" data-testid="item-correct">
-              {#each NUTRIENTS as [key, step, max, unit] (key)}
-                <div class="flex items-center justify-between gap-3">
+            <div class="flex flex-col gap-3" data-testid="item-correct">
+              {#each NUTRIENTS as [key, step, unit] (key)}
+                <!-- at the largest text the stepper drops under its label, still on the right -->
+                <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
                   <span class="text-body font-semibold">{LABEL[key]}</span>
-                  <Stepper bind:value={() => it[key], (v) => correct(i, key, v)} {step} min={0} {max} {unit} label={LABEL[key]} testid="correct-{key}" />
+                  <div class="ml-auto"><Stepper bind:value={() => it[key], (v) => correct(i, key, v)} {step} min={0} max={10000} {unit} label={LABEL[key]} testid="correct-{key}" column /></div>
                 </div>
               {/each}
               <p class="text-caption text-ink-2">{t.meal.remembered}</p>
@@ -106,7 +108,7 @@
             <Button variant="danger" size="sm" onclick={() => { lines.splice(i, 1); opened = null; correcting = null; }} data-testid="item-remove">{t.meal.remove}</Button>
           </div>
           {#if it.source === 'yours' && (l.original || it.foodId)}
-            <Button variant="plain" size="sm" class="-ml-3 self-start" onclick={() => useDefault(i)} data-testid="item-default">{t.meal.useDefault}</Button>
+            <Button variant="plain" size="sm" class="-ml-4 self-start" onclick={() => useDefault(i)} data-testid="item-default">{t.meal.useDefault}</Button>
           {/if}
         </div>
       {/if}
