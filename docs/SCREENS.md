@@ -16,6 +16,7 @@ Sheets:     Add, Review, Search, Describe, Quick add, Meal, Supplement, Weigh in
 ## 2. Shell
 
 - Header, content, dock. The header title is the tab name, or the date when viewing a past day.
+- Signed in, the header carries a round map button beside the avatar on every tab: one tap opens the food map and friends (section 13, S1).
 - Swipe left and right moves between tabs with the watermelon behaviour. Sheets and horizontal scrollers do not trigger it.
 - The dock hides while the keyboard is up and while a sheet is open.
 - On screens wider than 480 px the app is a centred column.
@@ -263,3 +264,54 @@ A sheet with grouped rows, each opening a page inside the sheet.
 - **Storage refused or full:** a blocking message explaining that Ontrack cannot save on this device, with export if anything is in memory.
 - **First load on a new device after sign in:** a skeleton of Today with "Bringing your data over".
 - **Every destructive action:** an undo toast when it can be undone, a confirm sheet when it cannot.
+
+## 13. Friends and the food map
+
+PRD F16 and F17 (S1): friends by request, an optional program on the profile, and meal photos on a map where they were taken. Strava's friends and Instagram's story map in Ontrack's look. Friends see a shared meal's photo, title, its own calories and macros, the place rounded to about 100 m and the time, and the program while its switch is on. Never a weight, a target, a day's total, a streak or a ranking (PRD section 7). Words get the tap without guilt: nothing says "you have no friends" or "don't miss out".
+
+**Where it lives.** A 44 round map button in the header, left of the avatar, on every tab once signed in. One tap opens the food map full screen over the tab and the dock; Back returns to the tab. A violet badge on the button counts friend requests waiting ("2 friend requests" to assistive tech). The dock keeps three tabs and the plus. Why: `docs/DECISIONS.md`, S1b.
+
+**Food map.** The common cases: map button, tap a pin (two taps to a friend's meal); map button, the search field, a handle, Add (four taps to a request).
+- The map fills the screen: MapLibre GL JS with OpenFreeMap's Positron style in light and its Dark style in dark, quiet grey grounds so the photos carry the colour. The attribution sits at the lower right above the panel: "OpenFreeMap © OpenMapTiles Data from OpenStreetMap", MapLibre's own control.
+- Top left, a 48 round glass button with a back chevron, "Back". Top right, two stacked 48 round glass buttons: "Go to where I am" (a crosshair) and "Show all shared meals" (four corners), which fits every pin.
+- Pins: a shared meal is its photo in a rounded square (56, radius 16) in a white frame with the floating shadow and a short point under it at the place, and the person's avatar (24, a violet ring) on its lower left corner. Pins closer than 48 px on screen merge: the newest leads, and a glass chip under it says "+3 more". Your own pins carry your avatar.
+- It opens fitted to every shared meal (newest first, at most 500). With none, a world view over the phone's part of the world (from its time zone), and the panel's line says what will appear.
+- A pin opens the meal photo sheet with its meals.
+- "Go to where I am" reads the phone's position once and moves the map there, with a small ink dot. Nothing is sent or kept. The first time, before the browser asks, a white card under the buttons: "Ontrack reads where you are once, to move the map there. It is not sent or kept." with "Continue" and "Not now". Refused: the card says "Location is off for Ontrack. Allow it in your browser's settings to use this."
+- States, each a white card under the top buttons, the panel still working where it can: no connection, "The map needs a connection. Meals you share go on it when you are back online."; no WebGL, "This browser cannot draw the map. Your friends are still below."; the map or the shared meals did not load, "The map did not load. Check your connection and try again." with "Try again"; the session gone, "Sign in again to see your friends." with "Sign in".
+
+**Friends panel.** A bottom sheet on the map that does not block it: the grabber, then a "Search for friends" field with a search icon. Lowered, it shows only those, plus "2 friend requests" as a plain link when any wait. Tapping the field or the link, or dragging the grabber up, raises it to about three quarters of the screen; dragging it down or tapping the grabber lowers it. Raised, from the top:
+1. **You:** your avatar, name and "@handle", opening Your profile. Before you have a profile, instead: "Set up your profile" in Body 600, "Pick a handle so friends can find you." and a neutral "Set up profile".
+2. **Requests**, when any: a row per person (avatar, name, "@nan_eats wants to be friends"), a neutral "Accept" and a quiet X, "Decline". Accept toasts "You and Nan are friends"; Decline removes the row.
+3. **Friends:** a row per friend (avatar, name, "@handle"), opening the friend sheet. None yet: "Search for a friend's handle to add them. They see the meals you share once they accept."
+4. **Sent**, when any: a row per request (avatar, name, "Request sent") with a plain "Withdraw".
+- Typing searches handles that start with the text, after a short pause; a leading @ and capitals are ignored, at most 20 people, never you. A result shows where you stand on the right: a neutral "Add", "Requested", a neutral "Accept", or "Friends". Add toasts "Request sent to Nan". Add before you have a profile opens Your profile and sends the request once it is saved. No match: "No one has a handle starting with nan."
+- States: loading, three skeleton rows; offline, "Friends need a connection. Meals you share go on the map when you are back online."; failed, "Could not reach your friends." with "Try again". A request refused because the other person removed their profile: toast "That profile is gone".
+
+**Your profile sheet.** Title "Your profile", or "Set up your profile" the first time.
+- The photo: a 96 avatar (the name's first letter on lavender when there is none), and beside it a neutral "Add a photo" ("Change photo") that opens the photo library or camera, and a plain "Remove photo" when there is one. The picture is cut to a square and saved without its location.
+- "Name", a text field, hint "Your first name", 1 to 40 characters.
+- "Handle", a text field with "@" before it, hint "nan_eats", caption "3 to 20 letters, numbers or underscores. Friends find you by it." A changed handle is checked after a pause: "Available", or in the attention colour "That handle is taken. Try another." Other characters: "Use letters, numbers and underscores only." Offline: "Choosing a handle needs a connection. Your name, photo and program switch save offline."
+- A switch row, off unless turned on: "Show my program to friends", caption "Friends see your training days and sessions, never your weight or targets."
+- Caption: "Anyone signed in to Ontrack can find your handle, name and photo. Only friends see what you share."
+- Pinned primary "Save profile", disabled until the name and handle are valid and the handle is free. Toast "Profile saved". A picture that cannot be read: "That picture could not be read. Try another."
+
+**Friend sheet.** Title: the friend's name.
+- A 72 avatar and "@handle".
+- Eyebrow "Program". Shown: the program's name when it has one, then a row per training day, the weekday as the title and "Upper A. Strength, 60 min" as the caption. Not shown: "Nan keeps their program to themselves." Loading: skeleton rows. Offline or failed: "The program needs a connection." or "Could not load the program." with "Try again".
+- At the end a danger "Remove friend", which steps to "Remove Nan?" with "You stop seeing each other's shared meals and program. You can send a request again later." and a pinned danger "Remove friend" (no undo: a new request needs their yes). Toast "Nan removed".
+
+**Meal photo sheet** (a pin). Title: the meal's title, or "Shared meal" when it has none.
+- The photo, full width, 4 by 3, radius 24. Loading, a skeleton; not uploaded yet, a lavender tile with a camera icon and "The photo is on its way".
+- Who and when: a 40 avatar, the name ("You" for yours) and "Today, 12:40", "Yesterday, 12:40" or "Nov 9, 12:40".
+- Its nutrition in neutral words: calories in Display with "kcal", then "32 g protein, 70 g carbs, 18 g fat". Nothing about targets or the day.
+- A pin with several meals: "2 of 4" between previous and next buttons under the photo.
+- Yours: a neutral "Take off the map", at once, toast "Taken off the map".
+
+**Share to map, Review sheet.** For a photo, after the items and Cooked with oil:
+- A row "Share to map" with a switch, off for every photo, and the caption "Friends see the photo and its nutrition where it was taken."
+- On, with a location in the photo: "Placed where the photo was taken, rounded to about 100 m." Without one, the phone's position, read once. The first time, before the browser asks, the caption is the one sentence "This photo has no location, so Ontrack asks for yours once, rounded to about 100 m and never live." with a neutral "Use my location"; after that the switch asks at once. Reading: "Finding where you are". Then "Placed where you are now, rounded to about 100 m."
+- Refused: the switch turns off, and in the attention colour "Location is off for Ontrack. Allow it in your browser's settings to share to the map." Not found: "Could not find where you are." with a neutral "Try again".
+- "Add 720 kcal" logs the meal with its place, waiting for a position still being read. Offline it is saved and goes on the map when it syncs.
+
+**Share to map, Meal sheet.** For a logged meal with a photo, a row "On the map" with a switch under the items. The original photo is not kept, so turning it on uses where the phone is now, read once as above: "Placed where you are now, rounded to about 100 m." It acts at once, without Save changes: toast "Shared to the map" or "Taken off the map".

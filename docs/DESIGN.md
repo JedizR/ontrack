@@ -72,7 +72,7 @@ Two themes, same structure. Light is OneFin's light sheets, dark is its dark sec
 | Text | `--ink`, `--ink-2`, `--ink-3` | Primary, secondary, and tertiary for large or non essential text only |
 | Edges | `--line`, `--line-strong` | Hairlines inside a card, the zone on a track |
 | Action | `--action` with `--on-action`, pressed `--action-press` | The flat ink pill (white on dark): the primary button, the stepper's keys and the dock's plus. `--shadow-action` is its soft drop |
-| Brand | `--accent` (fills), `--accent-ink` (words) and `--progress` (progress fills, lighter in dark to pass 3 to 1 on the empty track) with `--on-accent` | Violet icon tiles, links and highlighted words, progress (tracks, the onboarding bar, the trend line, the week bars), the one featured card on a screen. Pressed `--accent-press` |
+| Brand | `--accent` (fills), `--accent-ink` (words) and `--progress` (progress fills, lighter in dark to pass 3 to 1 on the empty track) with `--on-accent` | Violet icon tiles, links and highlighted words, progress (tracks, the onboarding bar, the trend line, the week bars), the one featured card on a screen, count badges (friend requests on the map button) and the avatar ring on map pins (S1b). Pressed `--accent-press` |
 | Lavender | `--accent-soft` with `--on-accent-soft` | Icon tiles and the hero haze. A surface, never a state |
 | Glass | `--glass-bg`, `--glass-edge`, `--shadow-glass`, `--glass-solid`; the dock's `--bar-bg`, `--bar-solid` | Section 6. Small chips over colour, the dock, sheet backdrops |
 | Reached | `--success` | Fills a track that is inside its zone |
