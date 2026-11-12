@@ -242,7 +242,7 @@ Owner checks: hand the phone to someone who has never seen Ontrack and time them
 
 ## L1 Landing page
 
-Read: `docs/PRD.md` F18, `docs/DESIGN.md`, `docs/SCREENS.md` (Welcome), and in `/Users/admin/destination/ontrack-design/onefin/`: `site/SITE-EXTRACT.md` (the "Landing sections" chapter) and `site/motion/MOTION.md`.
+Read: `docs/PRD.md` F18, `docs/DESIGN.md`, `docs/SCREENS.md` (Welcome), and in `/Users/admin/destination/ontrack-design/onefin/`: first `owner-picks/OWNER-PICKS.md` and its screenshots (the owner's curated style, including the landing-only patterns: tilted sticker eyebrows, condensed headlines, inline pills, floating icon tiles, dark sections with a violet glow, the footer), then `site/SITE-EXTRACT.md` (the "Landing sections" chapter) and `site/motion/MOTION.md` for layout and motion. Where they disagree, the picks win.
 
 Build the landing page for signed-out visitors (no session and no onboarding draft) in the OneFin style, with scroll animations from MOTION.md. Its headline, sections and both buttons are worded for click-through using the voice guide in `docs/DESIGN.md` and the landing proposals in `/Users/admin/destination/ontrack-design/onboarding/COPY.md`. It replaces Welcome. "Get started" opens onboarding, "Sign in" opens the sign-in sheet. Phone frames show real screenshots of the app. No OneFin raster or video artwork ships; decoration is CSS or SVG. A lazy chunk, reduced motion respected, no install wording. Update `docs/SCREENS.md` and `docs/PRD.md`.
 
