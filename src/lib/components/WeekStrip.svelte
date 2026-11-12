@@ -41,12 +41,12 @@
     >
       <!-- the pill is inset 2 px a side, so neighbouring pills keep a 4 px gap while each button fills its cell -->
       <span
-        class="text-caption mx-0.5 grid justify-items-center gap-1 rounded-md py-2 transition-colors duration-[var(--d-press)]
-          {isToday ? 'bg-ink text-canvas' : picked ? 'bg-surface-2 text-ink-2' : 'text-ink-2 group-enabled:group-active:bg-surface-2'}"
+        class="text-caption mx-0.5 grid h-16 content-center justify-items-center gap-0.5 rounded-md transition-colors duration-[var(--d-ui)] ease-[var(--spring-default)]
+          {isToday ? 'bg-ink text-canvas' : picked ? 'bg-surface shadow-card text-ink-2' : 'text-ink-2 group-enabled:group-active:bg-surface-2'}"
       >
         {t.week.letters[weekdayOf(d.date)]}
         <b class="text-body num font-semibold {isToday ? 'text-canvas' : 'text-ink'}">{local(d.date).getDate()}</b>
-        <i class="size-1.25 rounded-full {d.onTrack ? (isToday ? 'bg-lime' : 'bg-lime-ink') : ''}"></i>
+        <i class="size-1.25 rounded-full {d.onTrack ? (isToday ? 'bg-success' : 'bg-success-ink') : ''}"></i>
       </span>
     </button>
   {/each}

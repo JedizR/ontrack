@@ -1,5 +1,5 @@
 // The day Today shows. A past day stays picked until Back to today; the calendar day follows the clock, since the
-// installed app can stay open past midnight.
+// tab can stay open past midnight.
 import { today } from '$lib/model/dates';
 
 class View {

@@ -1,5 +1,6 @@
-<!-- DESIGN.md section 7, Button. The button is always at least 44 high to tap; the pill inside carries the look,
-     so the compact size can be 36 high on screen. Labels are verbs: Add, Save, Done. -->
+<!-- DESIGN.md section 7, Button. One height per role: lg 56 for the main action, md 48 for second actions, sm 36 on
+     screen (44 to tap) for inline actions. primary is OneFin's violet 3D pill, secondary its dark pill; neutral, plain
+     and danger are flat. The button is always at least 44 high to tap; the face inside carries the look. Labels are verbs. -->
 <script lang="ts">
   import type { Snippet } from 'svelte';
   import type { HTMLButtonAttributes } from 'svelte/elements';
@@ -13,21 +14,26 @@
     children,
     ...rest
   }: HTMLButtonAttributes & {
-    variant?: 'primary' | 'neutral' | 'plain' | 'danger';
-    /** lg 52 for a screen's main action, md 44, sm 36 */
+    variant?: 'primary' | 'secondary' | 'neutral' | 'plain' | 'danger';
+    /** lg 56 for a screen's or sheet's main action, md 48, sm 36 */
     size?: 'lg' | 'md' | 'sm';
     full?: boolean;
     children: Snippet;
   } = $props();
 
   const LOOK = {
-    primary: 'bg-lime text-on-lime group-active:bg-lime-press',
-    neutral: 'bg-surface-2 text-ink group-active:bg-surface-3',
-    plain: 'text-ink group-active:bg-surface-2',
-    danger: 'bg-surface-2 text-danger group-active:bg-surface-3',
+    primary: 'pill-accent group-active:pill-accent-down',
+    secondary: 'pill-ink group-active:pill-ink-down',
+    neutral: 'bg-surface-2 text-ink group-active:bg-surface-3 group-active:scale-[0.97]',
+    plain: 'text-ink group-active:bg-surface-2 group-active:scale-[0.97]',
+    danger: 'text-danger group-active:bg-danger-soft group-active:scale-[0.97]',
   };
   // a minimum height, so a full width label at the largest text can wrap to a second line instead of spilling out
-  const SIZE = { lg: 'min-h-13 px-6 py-2 text-body font-semibold', md: 'min-h-11 px-5 py-2 text-callout font-medium', sm: 'min-h-9 px-4 py-1 text-callout font-medium' };
+  const SIZE = {
+    lg: 'min-h-14 px-6 py-2 text-body font-semibold rounded-control',
+    md: 'min-h-12 px-5 py-2 text-callout font-semibold rounded-sm',
+    sm: 'min-h-9 px-4 py-1 text-callout font-semibold rounded-sm',
+  };
 </script>
 
 <button
@@ -36,7 +42,7 @@
   {...rest}
 >
   <span
-    class="inline-flex items-center justify-center gap-2 rounded-full transition-[transform,background-color] duration-[var(--d-press)] group-active:scale-[0.97] {full ? 'w-full text-center text-balance' : 'whitespace-nowrap'} {LOOK[variant]} {SIZE[size]}"
+    class="inline-flex items-center justify-center gap-2 transition-[transform,box-shadow,background-color] duration-[var(--d-press)] {full ? 'w-full text-center text-balance' : 'whitespace-nowrap'} {LOOK[variant]} {SIZE[size]}"
   >
     {@render children()}
   </span>

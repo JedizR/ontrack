@@ -1,6 +1,6 @@
 // The shell: header, three tabs, the dock. Runs in the light and dark projects (WebKit, 390 by 844).
 import { test, expect } from '@playwright/test';
-import { open, swipeAt, withPrefs } from './helpers';
+import { open, swipeAt, wheelType, withPrefs } from './helpers';
 
 const title = (page: import('@playwright/test').Page) => page.getByRole('heading', { level: 1 });
 
@@ -61,17 +61,37 @@ test('the app sits in a 480 px column on wide screens', async ({ page }) => {
 });
 
 // M1: the component gallery (dev and previews only)
-test('the keypad adds amounts up and returns the total', { tag: '@smoke' }, async ({ page }) => {
+test('a wheel takes keys and typing, and the wheel sheet saves its value', { tag: '@smoke' }, async ({ page }) => {
   await open(page, '/gallery');
-  await page.getByRole('button', { name: 'Open the keypad' }).click();
-  const save = page.getByTestId('keypad-save');
-  await expect(save).toBeDisabled();
-  for (const k of ['2', '5', '0', '+', '1', '8', '0']) await page.locator(`[data-key="${k}"]`).click();
-  await expect(page.getByTestId('keypad-expr')).toHaveText('250 + 180');
-  await expect(save).toHaveText('Add 430 kcal');
-  await save.click();
-  await expect(page.getByTestId('keypad')).toHaveCount(0);
-  await expect(page.getByText('Added 430 kcal')).toBeVisible();
+  const height = page.getByTestId('wheel-height').getByRole('slider');
+  await expect(height).toHaveAttribute('aria-valuenow', '170');
+  await expect(height).toHaveAttribute('aria-valuetext', '170 cm');
+  await height.focus();
+  for (let i = 0; i < 3; i++) await page.keyboard.press('ArrowUp');
+  await expect(height).toHaveAttribute('aria-valuenow', '173');
+  await page.keyboard.press('End');
+  await expect(height).toHaveAttribute('aria-valuenow', '250');
+  await page.keyboard.press('Home');
+  await expect(height).toHaveAttribute('aria-valuenow', '100');
+  await wheelType(page, 'wheel-height', '182');
+  await expect(height).toHaveAttribute('aria-valuenow', '182');
+  await wheelType(page, 'wheel-height', '400'); // kept inside the range
+  await expect(height).toHaveAttribute('aria-valuenow', '250');
+
+  // a decimal wheel: whole and tenths columns, one field for the whole value
+  const weight = page.getByTestId('wheel-weight').getByRole('slider');
+  await wheelType(page, 'wheel-weight', '82,4');
+  await expect(weight.first()).toHaveAttribute('aria-valuenow', '82');
+  await expect(weight.nth(1)).toHaveAttribute('aria-valuenow', '4');
+  await expect(weight.nth(1)).toHaveAttribute('aria-valuetext', '82.4 kg');
+
+  await page.getByRole('button', { name: 'Open the wheel sheet' }).click();
+  await expect(page.getByTestId('picker-save')).toHaveText('Save 82.4 kg');
+  await wheelType(page, 'picker-wheel', '83.1');
+  await expect(page.getByTestId('picker-save')).toHaveText('Save 83.1 kg');
+  await page.getByTestId('picker-save').click();
+  await expect(page.getByTestId('picker')).toHaveCount(0);
+  await expect(page.getByText('Weigh-in saved, 83.1 kg')).toBeVisible();
 });
 
 test('a sheet opens with its main action and closes', async ({ page }) => {
@@ -84,7 +104,7 @@ test('a sheet opens with its main action and closes', async ({ page }) => {
   await expect(sheet).toHaveCount(0);
 });
 
-test('the track turns lime in its zone and the counterpart follows', async ({ page }) => {
+test('the track turns green in its zone and the counterpart follows', async ({ page }) => {
   await open(page, '/gallery');
   const hero = page.locator('[data-section="hero"]');
   const track = hero.getByRole('progressbar');
@@ -109,15 +129,28 @@ test('holding the stepper repeats, an undo toast undoes, the sync mark explains 
   await page.mouse.down();
   await page.waitForTimeout(900);
   await page.mouse.up();
-  const grams = Number((await page.locator('output').textContent())!.replace(/\D/g, ''));
-  expect(grams).toBeGreaterThan(200); // one press is 190; holding repeats
+  const field = page.getByRole('textbox', { name: 'grams' });
+  expect(Number(await field.inputValue())).toBeGreaterThan(200); // one press is 190; holding repeats
+  // the number can be typed; it is kept, not rounded to the step, and the buttons go on from it
+  await field.fill('125');
+  await field.press('Enter');
+  await expect(field).toHaveValue('125');
+  await more.click();
+  await expect(field).toHaveValue('135');
+  // a whole number counter: a comma groups thousands, a fraction rounds
+  await field.fill('1,250');
+  await field.press('Enter');
+  await expect(field).toHaveValue('1250');
+  await field.fill('12.6');
+  await field.press('Enter');
+  await expect(field).toHaveValue('13');
 
   await page.getByRole('button', { name: 'Show an undo toast' }).click();
   await page.getByRole('button', { name: 'Undo', exact: true }).click();
   await expect(page.getByText('Meal restored')).toBeVisible();
 
   await page.getByRole('button', { name: /^Offline/ }).click();
-  await expect(page.getByText('Offline. Changes stay on this phone until you reconnect')).toBeVisible();
+  await expect(page.getByText('Offline. Changes stay in this browser until you reconnect')).toBeVisible();
 });
 
 test('the theme and text size change from the gallery and are remembered', async ({ page }) => {

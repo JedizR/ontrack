@@ -41,6 +41,8 @@ export const en = {
     percent: '%',
     kcalTraining: 'kcal on training days',
     kcalDay: 'kcal a day',
+    sessionsWeek: (n: string) => (n === '1' ? 'session a week' : 'sessions a week'),
+    minutesWeek: 'minutes a week',
     proteinDay: 'g protein a day',
   },
   today: {
@@ -58,6 +60,9 @@ export const en = {
     session: (kind: string, min: string, kcal: string) => `${kind}, ${min} min. Adds ${kcal} kcal`,
     done: 'Done',
     doneLine: (kind: string, min: string) => `${kind}, ${min} min. Done`,
+    /** the session's name is its type, so the line does not repeat it */
+    sessionShort: (min: string, kcal: string) => `${min} min. Adds ${kcal} kcal`,
+    doneShort: (min: string) => `${min} min. Done`,
     skippedLine: 'Skipped. The day uses your rest target',
     more: (name: string) => `More for ${name}`,
     skip: 'Skip today',
@@ -167,6 +172,7 @@ export const en = {
     promptNone: 'Your weekly check-in reads from your weigh-ins.',
     action: 'Weigh in',
     saved: (w: string) => `Weigh-in saved, ${w}`,
+    save: (w: string) => `Save ${w}`,
   },
   week: {
     label: 'This week',
@@ -181,19 +187,20 @@ export const en = {
   },
   sync: {
     syncing: 'Backing up your changes',
-    offline: 'Offline. Changes stay on this phone until you reconnect',
-    attention: 'Not backed up yet. Your data is safe on this phone',
+    offline: 'Offline. Changes stay in this browser until you reconnect',
+    attention: 'Not backed up yet. Your data is safe in this browser',
   },
   signin: {
     save: 'Save your plan',
     welcomeBack: 'Welcome back',
-    lead: 'Your data stays on this phone and backs up to your account.',
+    lead: 'Your data is kept in this browser and backed up to your account.',
     google: 'Continue with Google',
     or: 'Or',
     email: 'Email',
     sendCode: 'Send code',
     sending: 'Sending',
     codeSent: (email: string) => `Enter the 6 digit code we sent to ${email}.`,
+    codeWhy: 'We email you a 6 digit code. Type it here, even if you open the email on another device.',
     code: 'Code',
     checking: 'Checking the code',
     sendAgain: 'Send again',
@@ -215,7 +222,7 @@ export const en = {
     waiting: (n: string) => `${n} changes waiting to back up`,
     signOut: 'Sign out',
     signingOut: 'Signing out',
-    unsent: (n: string) => `${n} changes are not backed up yet. Signing out deletes them from this phone.`,
+    unsent: (n: string) => `${n} changes are not backed up yet. Signing out deletes them from this browser.`,
     signOutAnyway: 'Sign out anyway',
     delete: 'Delete account',
     deleteLead: 'This deletes your account and everything in it, on every device. It cannot be undone.',
@@ -226,25 +233,12 @@ export const en = {
   },
   session: {
     expired: 'Sign in again to keep backing up',
-    expiredLead: 'Your data is safe on this phone.',
-    wrongAccount: (email: string) => `The changes on this phone belong to ${email}. Sign in with that account to back them up.`,
+    expiredLead: 'Your data is safe in this browser.',
+    wrongAccount: (email: string) => `The changes in this browser belong to ${email}. Sign in with that account to back them up.`,
     bringing: 'Bringing your data over',
   },
   units: {
     ftIn: (ft: string, inches: string) => `${ft} ft ${inches} in`,
-  },
-  install: {
-    title: 'Add Ontrack to your home screen',
-    why: 'It opens full screen and keeps your data on this phone.',
-    steps: [
-      'Tap the menu button beside the address bar',
-      'Tap Share',
-      'Tap View More',
-      'Tap Add to Home Screen, then Add',
-      'Open Ontrack from your home screen',
-    ],
-    note: 'The home screen app keeps its own data, separate from Safari, so set up your plan there.',
-    browser: 'Continue in the browser',
   },
   welcome: {
     promise: 'Eat for the body you are training for.',
@@ -299,7 +293,7 @@ export const en = {
     invalid: (from: string, to: string) => `Enter a year from ${from} to ${to}.`,
   },
   young: {
-    title: 'Ontrack is for adults',
+    title: 'This plan is for adults',
     body: (age: string) => `Ontrack sets calorie targets for people ${age} and over, because younger bodies are still growing and need a different approach. A doctor or a school nurse can help you plan meals around training.`,
   },
   body: {
@@ -314,7 +308,6 @@ export const en = {
     imperial: 'Imperial',
     heightRange: (from: string, to: string) => `Enter a height from ${from} to ${to}.`,
     weightRange: (from: string, to: string) => `Enter a weight from ${from} to ${to}.`,
-    tap: 'Tap to enter',
   },
   move: {
     q: 'Outside of workouts, how much do you move?',
@@ -459,10 +452,10 @@ export const en = {
     assumption: 'Working assumption',
     tune: 'Fine tune',
     bodyFat: 'Body fat',
-    bodyFatHint: 'Leave at 0 to clear it',
+    bodyFatHint: 'If you know it, resting energy comes from your lean mass.',
     bodyFatRange: (from: string, to: string) => `Enter ${from} to ${to} percent.`,
     goalWeight: 'Goal weight',
-    goalWeightHint: 'Leave at 0 to clear it',
+    goalWeightHint: 'Optional. Your target does not depend on it.',
     goalWeightLow: (min: string) => `A goal weight below ${min} is not offered. It would put your BMI under the healthy range.`,
     even: 'Same target every day',
     noneYet: 'None yet',
@@ -483,13 +476,13 @@ export const en = {
     mealSaved: 'Saved to your meals',
     changesSaved: 'Changes saved',
   },
-  keypad: {
-    keys: 'Keypad',
-    back: 'Delete last digit',
-    clear: 'Clear',
-    clearShort: 'C',
-    plus: 'Add another amount',
+  wheel: {
+    /** the tenths column of a decimal wheel, read after its label */
+    tenths: (label: string) => `${label}, tenths`,
+  },
+  picker: {
     save: 'Save',
+    clear: 'Clear',
   },
   stepper: {
     less: (what: string) => `Less ${what}`,

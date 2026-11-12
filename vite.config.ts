@@ -1,5 +1,5 @@
 /// <reference types="vitest/config" />
-import { defineConfig } from 'vite';
+import { defineConfig, type Plugin } from 'vite';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
@@ -11,12 +11,23 @@ import { devApi } from './dev/api-middleware.ts';
 const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8'));
 
 // Light canvas from design/tokens.css. The dark variant is set at runtime through the theme-color meta tag.
-const CANVAS = '#f5f5f7';
+const CANVAS = '#f5f5f5';
+
+// preload the two faces in a build, so the first paint is already Geist and Roboto Condensed (DESIGN.md section 5)
+const preloadFonts = (): Plugin => ({
+  name: 'preload-fonts',
+  transformIndexHtml: {
+    order: 'post',
+    handler: (_html, ctx) =>
+      Object.keys(ctx.bundle ?? {}).filter((f) => f.endsWith('.woff2')).map((f) => ({ tag: 'link', attrs: { rel: 'preload', as: 'font', type: 'font/woff2', href: `/${f}`, crossorigin: '' }, injectTo: 'head' as const })),
+  },
+});
 
 export default defineConfig({
   plugins: [
     tailwindcss(),
     svelte(),
+    preloadFonts(),
     mockBackend(),
     devApi(),
     VitePWA({

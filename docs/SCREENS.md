@@ -1,11 +1,11 @@
 # Ontrack: screens and flows
 
-Each screen lists what it contains from top to bottom, its states, and its words. Layout values come from `docs/DESIGN.md`. `design/reference-today.html` is the worked example of how a spec here becomes a screen. Strings shown are the seed for `src/lib/i18n/en.ts`.
+Each screen lists what it contains from top to bottom, its states, and its words. Layout values come from `docs/DESIGN.md`. `/gallery/today` is the worked example of how a spec here becomes a screen. Strings shown are the seed for `src/lib/i18n/en.ts`.
 
 ## 1. Map
 
 ~~~
-First run:  Install guide (Safari on iPhone only) > Welcome > Onboarding (9 steps) > Your plan > Sign in > Today
+First run:  Welcome > Onboarding (9 steps) > Your plan > Sign in > Today
 Returning:  Welcome > Sign in > Today
 
 Tabs:       Today | Train | Progress           Dock: plus button opens Add
@@ -20,29 +20,26 @@ Sheets:     Add, Review, Search, Describe, Quick add, Meal, Weigh in, How it is 
 - The dock hides while the keyboard is up and while a sheet is open.
 - On screens wider than 480 px the app is a centred column.
 
-## 3. Install guide and welcome
+## 3. Welcome
 
-**Install guide** (Safari on iPhone, not yet installed). Shown first, on every visit until done.
-- The app icon tile, "Add Ontrack to your home screen", one sentence on why ("It opens full screen and keeps your data on this phone").
-- Numbered steps with the real Safari glyphs, matching the current iOS menu. Port the step list from watermelon and translate it.
-- One quiet button: "Continue in the browser".
+The first screen in a browser that is signed out. Ontrack runs in the browser tab; nothing mentions installing. (L1's landing page replaces Welcome for visitors later.)
 
 **Welcome.**
-- The mark and wordmark. "Eat for the body you are training for." in Title.
-- Three short lines, each one sentence: a target built from how you train, a photo to log a meal, a weekly correction from your own results.
+- On the brand gradient: the mark and wordmark, then "Eat for the body you are training for." in Title.
+- Three short lines, each one sentence beside a lavender icon tile: a target built from how you train, a photo to log a meal, a weekly correction from your own results.
 - Primary: "Get started". Plain: "I already have an account".
 
 ## 4. Onboarding
 
-Full height flow. A thin track at the top shows progress. Back is top left. One question per screen, answer controls in the lower half within thumb reach, one primary button "Continue" pinned to the bottom, disabled until answered. Single choice screens advance on tap.
+Full height flow. A thin track at the top shows progress. Back is top left. One question per screen, the question in Title and its caption in Lead, the answers filling the middle of the screen, one primary button "Continue" pinned to the bottom, disabled until answered. Single choice screens advance on tap.
 
 | Step | Question | Control | Notes |
 | --- | --- | --- | --- |
 | 1 | What are you working toward? | Three large choices: Build muscle, Lose fat, Maintain | Each with a one line description |
 | 2 | Before we set any numbers | Checklist: pregnant or breastfeeding, a medical condition or medication that affects diet, a current or past eating disorder. And "None of these" | Follows the PRD guardrails. Any tick leads to a calm advisory screen before continuing or exiting |
 | 3 | Which equation should we use? | Male, Female, Prefer not to say | Caption: "Energy equations differ by sex. This is only used for the calculation" |
-| 4 | What year were you born? | Keypad, four digits | Under 18 ends here with a kind message |
-| 5 | Height and weight | Two fields opening the keypad. A units switch | Weight becomes the first weigh-in |
+| 4 | What year were you born? | A wheel starting at this year minus 30. Tapping the selected row types it | Under 18 ends here with a kind message |
+| 5 | Height and weight | A units switch, then two wheels side by side: height (cm, or feet and inches) and weight (whole and tenths), starting at 170 cm and 70 kg | Weight becomes the first weigh-in |
 | 6 | Outside of workouts, how much do you move? | Four choices with the step ranges from the science spec | |
 | 7 | How do you train? | Days per week stepper, session type, minutes, intensity. Or "Choose a program" opening Templates. Or "I will set this up later" | Creates the program |
 | 8 | How long have you trained consistently? | Under a year, 1 to 3 years, Over 3 years | Skipped when there is no strength training |
@@ -53,7 +50,7 @@ Full height flow. A thin track at the top shows progress. Back is top left. One 
 - Protein in Display with "g protein a day".
 - A sentence: "Expect about 0.3 kg a week. This is a starting estimate. Ontrack corrects it from your results after two weeks."
 - A card, "How this was calculated", listing resting energy, daily movement, training today, and the goal adjustment, summing to the target. Each line opens its source.
-- "Fine tune": body fat percent, goal weight, same target every day.
+- "Fine tune": body fat percent and goal weight, each opening a wheel sheet with Clear, and same target every day.
 - Any flag is explained in one line with the attention colour ("We limited the deficit to 25 percent of your maintenance").
 - Primary: "Save my plan".
 
@@ -68,12 +65,12 @@ Sheet over the plan, or over Welcome for returning users.
 
 ## 6. Today
 
-Matches `design/reference-today.html`.
+Matches `/gallery/today`.
 
 1. Header: "Today", sync mark, avatar opening Settings.
 2. Week strip. Tapping a day shows that day. Viewing a past day changes the title to its date and adds a "Back to today" chip.
 3. Hero card: calories eaten in Hero style, "of 2,460 kcal", and on the right the counterpart. Under it the track, then "Training day" or "Rest day" on the left and "On track from 2,340" on the right. Then protein, carbs and fat with small tracks. Tapping the card opens How it is calculated.
-4. Cards that appear when relevant, at most one at a time, in this priority: weekly check-in ready, easy adds (gain mode in the evening), weigh-in prompt, install or update notice.
+4. Cards that appear when relevant, at most one at a time, in this priority: weekly check-in ready, easy adds (gain mode in the evening), weigh-in prompt, update notice.
 5. Training card: session name, "Strength, 60 min. Adds 240 kcal", and a "Done" button. After Done: a check mark and "Undo". A long press or the row's menu offers "Skip today". On a rest day: "Rest day" with no button. With no program: "Add your training to sharpen your target".
 6. "Meals" heading with the count, then the list, newest first. Each row opens the Meal sheet. Swipe left to delete, with an undo toast.
 7. At the end of the list after 20:00, a plain button: "Finish day".
@@ -85,7 +82,7 @@ States: first day (hero at zero, a row saying "Log your first meal with the plus
 ## 7. Add flow
 
 **Add sheet** from the plus button.
-- Four tiles in a two by two grid: "Photo" (lime, the largest emphasis), "Search", "Describe", "Quick add".
+- Four tiles in a two by two grid: "Photo" (the violet primary, the largest emphasis), "Search", "Describe", "Quick add".
 - "Recent": the last five distinct meals as rows with a trailing plus that logs them again at once, with an undo toast.
 - "Saved": saved meals in the same form.
 
@@ -100,18 +97,18 @@ After capture: the Review sheet opens immediately with the photo at the top and 
 - Pinned at the bottom: totals for calories and protein, a "Save meal" toggle, and the primary button "Add 720 kcal".
 - Errors replace the skeleton with a message and two buttons: "Try again" and "Add by hand". Not food: "We could not find food in that photo". Limit: "You have used today's 40 photo analyses. Search and quick add still work". Offline: "Photo analysis needs a connection".
 
-**Search.** A field with focus, results as rows with kcal per default portion. Tapping a result opens a portion step: the food name, portion chips from the table, a grams field with the keypad, live calories, "Add". With an empty field, show Recent foods.
+**Search.** A field with focus, results as rows with kcal per default portion. Tapping a result opens a portion step, with a back chevron to the results: calories in Display, portion chips from the table, grams on a stepper of 10 whose number can be typed, "Add". With an empty field, show Recent foods.
 
 **Describe.** A text area: "What did you eat?" with the hint "Two eggs, toast with butter and a latte". "Analyse" leads to the same Review sheet without a photo.
 
-**Quick add.** The keypad with calories in Display. Optional protein, carbs and fat as three small fields, optional name. "Add".
+**Quick add.** Calories typed on the number pad, in Display, focused on open. Optional protein, carbs and fat as three small fields on the decimal pad, optional name. "Add".
 
 **Meal sheet** for a logged meal: the Review layout in edit mode, with the time editable, "Save changes", "Save as a meal", "Delete".
 
 ## 8. Train
 
 1. Header: "Train".
-2. Summary card: "4 sessions, 240 minutes a week", "Adds 137 kcal a day on average", and the program name. A plain button "Change program" opens Templates.
+2. Summary card: "4 sessions, 240 minutes a week", "Adds 137 kcal a day on average", and the program name. A small neutral button "Change program" opens Templates.
 3. The week, Monday to Sunday: each day is a row with its sessions (name, type, minutes) or "Rest". Today is marked. Tapping a day opens the Session sheet. A session row can be dragged to another day by its handle.
 4. "Analysis" heading, then:
    - Muscle balance card: one row per muscle with a small track where the zone is 10 to 20 sets, and the number of sets. Rows under 10 come first.
@@ -129,13 +126,13 @@ After capture: the Review sheet opens immediately with the photo at the top and 
 2. Weight card: current trend weight in Display with "trend" as its caption, the chart (weigh-ins as dots, the trend as a line, the target rate as a faint band), and beneath it "0.3 percent a week. Target 0.5". A neutral button "Log weight".
 3. Maintenance card, once measured: "2,120 kcal" in Display, "Measured from your last 3 weeks", and the formula estimate beside it for comparison.
 4. Intake card: bars for weekly average calories with the target as a line, and average protein beneath.
-5. Consistency card: the last four weeks as rows of seven dots, filled in `--lime-ink` for on track days, with a count per week.
+5. Consistency card: the last four weeks as rows of seven dots, filled in `--success-ink` for on track days, with a count per week.
 6. "Check-ins" list: date, the change made or kept, opening the stored check-in.
 7. "History": opens a month list where any day opens in the Today view.
 
 Empty states say what is needed: "Weigh in on 8 days across two weeks to see your trend and get your first check-in".
 
-**Weigh in sheet.** The keypad, the weight in Display with its unit, yesterday's value as a caption, the date (today by default, changeable), "Save".
+**Weigh in sheet.** A wheel in the user's unit (whole and tenths) starting at the last weigh-in, the hint "One a day. A new one replaces it.", "Save 82.4 kg".
 
 ## 10. Check-in
 

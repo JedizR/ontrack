@@ -1,9 +1,11 @@
-<!-- Large single choice answers: a title, an optional line, an optional number on the right. Picked is ink filled. -->
+<!-- Large single choice answers: an optional icon tile, a title, an optional line, an optional number on the right.
+     Cards at radius 24 with the soft card shadow; the picked one is ink filled, as OneFin's selected option is black. -->
 <script lang="ts" generics="T extends string | number">
+  import type { Component } from 'svelte';
   import { haptic } from '$lib/haptics';
 
   let { options, value, label, onpick }: {
-    options: { value: T; title: string; line?: string; figure?: string }[];
+    options: { value: T; title: string; line?: string; figure?: string; icon?: Component<{ size?: number; strokeWidth?: number }> }[];
     value: T | undefined;
     label: string;
     onpick: (v: T) => void;
@@ -17,10 +19,14 @@
       type="button"
       role="radio"
       aria-checked={on}
-      class="flex min-h-16 w-full items-center gap-4 rounded-md px-5 py-4 text-left transition-[transform,background-color] duration-[var(--d-press)] active:scale-[0.98] {on ? 'bg-ink text-canvas' : 'bg-surface text-ink active:bg-surface-2'}"
+      class="shadow-card flex min-h-18 w-full items-center gap-4 rounded-md px-5 py-4 text-left transition-[transform,background-color,color] duration-[var(--d-ui)] ease-[var(--spring-default)] active:scale-[0.98] {on ? 'bg-ink text-canvas' : 'bg-surface text-ink active:bg-surface-2'}"
       onclick={() => { haptic(); onpick(o.value); }}
       data-testid="choice-{o.value}"
     >
+      {#if o.icon}
+        {@const Icon = o.icon}
+        <span class="tile grid size-10 flex-none place-items-center rounded-sm" aria-hidden="true"><Icon size={22} strokeWidth={2} /></span>
+      {/if}
       <span class="min-w-0 flex-1">
         <span class="text-body block font-semibold">{o.title}</span>
         {#if o.line}<span class="text-callout block {on ? 'text-canvas' : 'text-ink-2'}">{o.line}</span>{/if}

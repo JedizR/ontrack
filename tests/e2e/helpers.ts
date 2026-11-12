@@ -31,21 +31,16 @@ export async function takePhoto(page: Page, notice = false) {
 /** The dev server compiles the lazy onboarding chunk on first request, which is slow with every worker asking at once. */
 const FIRST_PAINT = 15_000;
 
-/** Open the app signed out, on a fresh phone: the install guide in Safari on iPhone, Welcome elsewhere. */
+/** Wait for Welcome, the first screen of a signed out browser. */
+export const toWelcome = (page: Page) => expect(page.getByTestId('welcome')).toBeVisible({ timeout: FIRST_PAINT });
+
+/** Open the app signed out, in a fresh browser: Welcome. */
 export async function openFresh(page: Page, s = space('fresh')) {
   await page.clock.setFixedTime(new Date(`${TODAY}T10:00:00+07:00`));
   await useSpace(page, s);
   await page.goto('/');
-  await expect(page.getByTestId('install').or(page.getByTestId('welcome'))).toBeVisible({ timeout: FIRST_PAINT });
+  await toWelcome(page);
   return s;
-}
-
-/** Past Safari's install guide, if it shows, to Welcome. */
-export async function toWelcome(page: Page) {
-  const install = page.getByTestId('install-continue');
-  await expect(install.or(page.getByTestId('welcome'))).toBeVisible({ timeout: FIRST_PAINT });
-  if (await install.isVisible()) await install.click();
-  await expect(page.getByTestId('welcome')).toBeVisible();
 }
 
 /** Seed per-device prefs (theme, text size, last tab) before the app loads, over what the app saved itself. */
@@ -87,10 +82,8 @@ export async function signIn(page: Page, email = EMAIL, { shell = true } = {}) {
   const sheet = page.getByTestId('signin-sheet');
   if (!(await sheet.isVisible())) {
     const avatar = page.getByTestId('avatar');
-    const install = page.getByTestId('install-continue');
     const welcome = page.getByTestId('welcome-signin');
-    await expect(avatar.or(install).or(welcome)).toBeVisible({ timeout: FIRST_PAINT });
-    if (await install.isVisible()) await install.click();
+    await expect(avatar.or(welcome)).toBeVisible({ timeout: FIRST_PAINT });
     await (await avatar.isVisible() ? avatar : welcome).click();
   }
   await page.getByTestId('signin-email').fill(email);
@@ -144,18 +137,29 @@ export async function seedAccount(page: Page, o: { space?: string; email?: strin
   return s;
 }
 
-/** Type digits on the open keypad and save. Onboarding may open the keypad again for the next value at once. */
-export async function keypadEnter(page: Page, digits: string) {
-  const pad = page.getByTestId('keypad');
-  const title = pad.locator('[data-slot="drawer-title"]');
-  await expect(pad).toBeVisible();
-  const asked = await title.innerText();
-  await pad.getByRole('button', { name: 'Clear' }).click();
-  for (const k of digits) await page.locator(`[data-key="${k}"]`).click();
-  await page.getByTestId('keypad-save').click();
-  // the sheet may detach between the two reads: a title that is gone counts as closed instead of waiting for it
-  await expect.poll(async () => !(await pad.isVisible()) || (await title.innerText({ timeout: 200 }).catch(() => '')) !== asked).toBe(true);
+/**
+ * Type a value into a wheel: Enter on its first column opens the field (as tapping the band does), then type and Enter.
+ * The keyboard path, because Playwright scrolls a tapped row into view first, which moves the wheel under the tap.
+ */
+export async function wheelType(page: Page, testid: string, value: string) {
+  const wheel = page.getByTestId(testid);
+  await wheel.getByRole('slider').first().press('Enter');
+  const field = wheel.getByRole('textbox');
+  await field.fill(value);
+  await field.press('Enter');
+  await expect(field).toHaveCount(0);
 }
+
+/** The wheel sheet: type a value and save it. */
+export async function pickerSave(page: Page, value: string) {
+  await expect(page.getByTestId('picker')).toBeVisible();
+  await wheelType(page, 'picker-wheel', value);
+  await page.getByTestId('picker-save').click();
+  await expect(page.getByTestId('picker')).toBeHidden();
+}
+
+/** A native field, filled. */
+export const fieldFill = (page: Page, testid: string, value: string) => page.getByTestId(testid).fill(value);
 
 export type Answers = {
   goal: 'gain' | 'lose' | 'maintain';
@@ -175,11 +179,9 @@ export type Answers = {
   pace?: number;
 };
 
-/** From Welcome (or the install guide) to Your plan. Defaults are vector A of docs/SCIENCE.md. */
+/** From Welcome to Your plan. Defaults are vector A of docs/SCIENCE.md. */
 export async function onboard(page: Page, a: Answers) {
-  const install = page.getByTestId('install-continue');
-  await expect(install.or(page.getByTestId('welcome-start'))).toBeVisible({ timeout: FIRST_PAINT });
-  if (await install.isVisible()) await install.click();
+  await expect(page.getByTestId('welcome-start')).toBeVisible({ timeout: FIRST_PAINT });
   await page.getByTestId('welcome-start').click();
   await page.getByTestId(`choice-${a.goal}`).click();
 
@@ -190,20 +192,18 @@ export async function onboard(page: Page, a: Answers) {
   if (a.screening?.length) await page.getByTestId('advice-continue').click();
 
   await page.getByTestId(`choice-${a.sex ?? 'male'}`).click();
-  await keypadEnter(page, a.year ?? '2001'); // the keypad opens by itself, and a valid year moves on
+  await wheelType(page, 'wheel-year', a.year ?? '2001');
+  await page.getByTestId('continue').click();
   await expect(page.getByTestId('step-body')).toBeVisible();
   if (a.units === 'imperial') {
-    await page.keyboard.press('Escape'); // the height keypad opened in metric
-    await expect(page.getByTestId('keypad')).toBeHidden();
     await page.getByRole('radio', { name: 'Imperial' }).click();
     const [ft, inches] = (a.height ?? '5 9').split(' ');
-    await page.getByTestId('field-height').click();
-    await keypadEnter(page, ft);
-    await keypadEnter(page, inches);
-    await keypadEnter(page, a.weight ?? '132'); // weight follows height while it is empty
+    await wheelType(page, 'wheel-height-ft', ft);
+    await wheelType(page, 'wheel-height-in', inches);
+    await wheelType(page, 'wheel-weight', a.weight ?? '132');
   } else {
-    await keypadEnter(page, a.height ?? '175');
-    await keypadEnter(page, a.weight ?? '60');
+    await wheelType(page, 'wheel-height', a.height ?? '175');
+    await wheelType(page, 'wheel-weight', a.weight ?? '60');
   }
   await page.getByTestId('continue').click();
   await page.getByTestId(`choice-${a.neat ?? 'seated'}`).click();

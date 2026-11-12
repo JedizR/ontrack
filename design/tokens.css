@@ -1,57 +1,90 @@
-/* Ontrack design tokens. The source of truth for colour, type, space, shape and motion.
+/* Ontrack design tokens: the OneFin identity (docs/DESIGN.md). The source of truth for colour, type, space, shape and
+   motion. Values come from /Users/admin/destination/ontrack-design/onefin/IDENTITY.md and SITE-EXTRACT.md; "derived"
+   marks a value OneFin does not have. Contrast is checked by tests/unit/contrast.test.ts.
    The theme is set on <html data-theme="light|dark"> before first paint. */
 
 :root {
   color-scheme: light;
 
-  /* Brand */
-  --lime: #d1fe17;
-  --lime-press: #bde60d;
-  --on-lime: #131517;
-  --lime-ink: #4a6a00;      /* the meaning of lime as text or icon on light surfaces */
-  --lime-soft: #edfab4;     /* quiet surface behind a reached state */
+  /* Action: violet fills the one primary action and the dock's plus. Nothing else is violet. */
+  --accent: #381ac9;            /* Violet/01 */
+  --accent-press: #28119c;      /* Violet/05 */
+  --accent-2: #6262fe;          /* Violet/02, the top of the button face */
+  --accent-rim: #6d55e2;        /* the top of the button rim */
+  --on-accent: #ffffff;
+  --accent-soft: #bebeff;       /* Violet/04: icon tiles and the hero gradient. A surface, never a state */
+  --on-accent-soft: #121214;
+
+  /* Reached: green marks progress that reached its target. Nothing else is green. */
+  --success: #19dba8;           /* the "+20,8%" chip: fills only */
+  --success-ink: #006644;       /* "On track" words and dots. #198669 fails 4.5 to 1 on the hero's lavender (derived) */
+  --success-soft: #daf9f1;      /* derived: 16 percent of the fill on white */
 
   /* Neutrals */
-  --canvas: #f5f5f7;
+  --canvas: #f5f5f5;            /* Neutral/09 */
   --surface: #ffffff;
-  --surface-2: #ededf0;
-  --surface-3: #e2e2e6;
-  --ink: #131517;
-  --ink-2: #5b6068;
-  --ink-3: #8a8f97;
-  --line: rgba(19, 21, 23, 0.08);
-  --line-strong: rgba(19, 21, 23, 0.18);
-  --surround: #e9e9ec;      /* around the 480 px column on wide screens */
+  --surface-2: #efefef;         /* Neutral/08 */
+  --surface-3: #d9d9d9;         /* Neutral/07 */
+  --surface-ink: #282828;       /* the dark 3D pill face */
+  --surface-ink-2: #060606;     /* the bottom of its rim */
+  --ink: #121214;               /* Neutral/01 */
+  --ink-2: #525252;             /* Neutral/05 */
+  --ink-3: #8f8f8f;             /* Neutral/06: large or non essential text only */
+  --line: rgba(18, 18, 20, 0.08);         /* derived: OneFin draws almost no lines */
+  --line-strong: rgba(18, 18, 20, 0.16);  /* derived */
+  --track-bg: rgba(18, 18, 20, 0.08);     /* the empty part of a track, on a card or the hero gradient */
+  --surround: #efefef;          /* around the 480 px column on wide screens */
 
-  /* Meaning */
+  /* Meaning. OneFin has no warning colour; its danger red is too light for small text, so Ontrack keeps its own */
   --attention: #b45309;
   --attention-soft: #fdf0d5;
   --danger: #d92d20;
   --danger-soft: #fde9e7;
-  --toast-bg: #1c1c1e;
-  --toast-ink: #f5f5f7;
-  --scrim: rgba(19, 21, 23, 0.32);  /* behind an open sheet */
+  --on-danger: #ffffff;
+  --toast-bg: #1b1b1f;          /* Neutral/02 */
+  --toast-ink: #ffffff;
+  --scrim: rgba(0, 0, 0, 0.2);  /* OneFin dims with blur, not darkness */
+  --blur-scrim: blur(24px);
 
-  /* Depth: floating elements only */
-  --shadow-float: 0 10px 30px rgba(19, 21, 23, 0.12), 0 0 0 1px var(--line);
-  --bar-bg: color-mix(in srgb, var(--surface) 78%, transparent);
-  --blur-bar: saturate(180%) blur(20px);
+  /* Gradients */
+  --grad-accent: linear-gradient(180deg, var(--accent-2) 0%, var(--accent) 100%);        /* primary face */
+  --grad-accent-rim: linear-gradient(180deg, var(--accent-rim) 0%, var(--accent-press) 100%);
+  --grad-ink: linear-gradient(180deg, var(--surface-ink) 0%, var(--surface-ink) 100%);
+  --grad-ink-rim: linear-gradient(180deg, var(--surface-ink) 0%, var(--surface-ink-2) 100%);
+  --grad-hero: linear-gradient(160deg, #bebeff 0%, #ffffff 70%);                         /* derived from the lilac stage */
+  --grad-brand: linear-gradient(180deg, #6262fe 0%, #9696ff 38%, #f5f5f5 78%);             /* Welcome, after the hero sky */
 
-  /* Type */
-  --font-ui: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans Thai", sans-serif;
-  --font-num: ui-rounded, "SF Pro Rounded", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  /* Depth */
+  --shadow-card: 0 4px 8px rgba(8, 7, 49, 0.06), 0 14px 14px rgba(8, 7, 49, 0.05);       /* Stats card */
+  --shadow-float: 0 4px 8px rgba(8, 7, 49, 0.06), 0 14px 14px rgba(8, 7, 49, 0.05), 0 0 0 1px var(--line);
+  /* the 3D pill: inner light at the top, a darker lip at the bottom, then the drop under it */
+  --shadow-3d-accent: inset 0 1px 1px #ffffff, inset 0 -2px 2px #28109b, inset 0 0 8px rgba(203, 196, 234, 0.5),
+    0 1px 2px rgba(40, 16, 162, 0.37), 0 3px 3px rgba(40, 16, 162, 0.32), 0 8px 5px rgba(40, 16, 162, 0.19), 0 13px 5px rgba(40, 16, 162, 0.06);
+  --shadow-3d-accent-down: inset 0 1px 1px #ffffff, inset 0 -1px 1px #28109b, inset 0 0 16px rgba(203, 196, 234, 0.6),
+    0 1px 2px rgba(40, 16, 162, 0.37), 0 3px 3px rgba(40, 16, 162, 0.32);
+  --shadow-3d-ink: inset 0 1px 1px rgba(255, 255, 255, 0.8), inset 0 -2px 2px #000000,
+    0 1px 2px rgba(0, 0, 0, 0.37), 0 3px 3px rgba(0, 0, 0, 0.32), 0 7px 4px rgba(0, 0, 0, 0.19), 0 12px 5px rgba(0, 0, 0, 0.06);
+  --shadow-3d-ink-down: inset 0 1px 1px rgba(255, 255, 255, 0.8), inset 0 -1px 1px #000000, inset 0 0 8px rgba(255, 255, 255, 0.25),
+    0 1px 2px rgba(0, 0, 0, 0.37), 0 3px 3px rgba(0, 0, 0, 0.32);
+  --shadow-tile: inset 0 0 8px rgba(71, 71, 71, 0.1);   /* icon tile glow, about the tile size over 6 */
+  --bar-bg: rgba(255, 255, 255, 0.8);                   /* derived: OneFin's only bar is dark glass */
+  --blur-bar: blur(24px);
+
+  /* Type: Roboto Condensed 900 in capitals for display, Geist for everything else */
+  --font-ui: "Geist Variable", Geist, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans Thai", sans-serif;
+  --font-display: "Roboto Condensed", "Arial Narrow", system-ui, -apple-system, "Noto Sans Thai", sans-serif;
   --fs: 1;                                       /* text size setting: 1, 1.15 or 1.3 */
-  --fs-display: calc(1 + (var(--fs) - 1) / 2);   /* big numerals scale half as much */
+  --fs-display: calc(1 + (var(--fs) - 1) / 2);   /* display sizes scale half as much */
 
   --t-hero: calc(64px * var(--fs-display));
-  --t-display: calc(40px * var(--fs-display));
-  --t-title: calc(28px * var(--fs));
-  --t-heading: calc(20px * var(--fs));
-  --t-body: calc(17px * var(--fs));
-  --t-callout: calc(15px * var(--fs));
-  --t-caption: calc(13px * var(--fs));
-  --t-micro: calc(11px * var(--fs));
-  --t-key: calc(24px * var(--fs-display));      /* keypad numerals, DESIGN.md section 7 */
+  --t-display: calc(48px * var(--fs-display));
+  --t-title: calc(36px * var(--fs-display));
+  --t-heading: calc(24px * var(--fs-display));
+  --t-lead: calc(18px * var(--fs));
+  --t-body: calc(16px * var(--fs));
+  --t-callout: calc(14px * var(--fs));
+  --t-eyebrow: calc(14px * var(--fs));
+  --t-caption: calc(12px * var(--fs));
 
   /* Space, 4 px grid */
   --s-1: 4px;
@@ -63,53 +96,73 @@
   --s-8: 32px;
   --s-10: 40px;
   --s-12: 48px;
-  --gutter: 20px;
+  --s-16: 64px;
+  --gutter: 16px;               /* the page's side margin */
+  --inset: 24px;                /* inside cards and sheets */
 
-  /* Shape */
-  --r-xs: 8px;
-  --r-sm: 12px;
-  --r-md: 16px;
-  --r-lg: 24px;
-  --r-xl: 32px;
+  /* Shape. Nested corners step down by the gap between them */
+  --r-xs: 8px;                  /* chips inside text, checkboxes */
+  --r-sm: 16px;                 /* inputs, thumbnails, small buttons, tab cells, the wheel band */
+  --r-control: 20px;            /* the large button face, the segmented track */
+  --r-md: 24px;                 /* choice cards, tiles, rows that lift */
+  --r-lg: 32px;                 /* cards */
+  --r-sheet: 40px;              /* the top of sheets */
+  --r-xl: 48px;                 /* the hero card */
   --r-full: 999px;
 
   /* Sizes */
   --tap: 44px;
-  --header-h: 52px;
+  --header-h: 56px;
   --dock-h: 64px;
+  --wheel-row: round(calc(44px * var(--fs-display)), 1px);   /* whole pixels: the snap points and the maths agree */
 
-  /* Motion */
+  /* Motion. Springs from MOTION.md as CSS easings; use each with its settle time */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-sheet: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-framer: cubic-bezier(0.44, 0, 0.56, 1);
+  --spring-default: linear(0, 0.0266, 0.0996, 0.1834, 0.2767, 0.3882, 0.4807, 0.5671, 0.6577, 0.7256, 0.7844, 0.8418, 0.8821, 0.915, 0.9453, 0.9652, 0.9804, 0.9934, 1.0011, 1.0064, 1.0098, 1.0119, 1.0125, 1.0124, 1.0117, 1.0107, 1.0096, 1.0082, 1.007, 1.0059, 1.0047, 1.0038, 1.003, 1.0022, 1.0017, 1.0012, 1.0008, 1.0005, 1.0003, 1.0001, 1);
+  --spring-appear: linear(0, 0.0241, 0.0825, 0.1565, 0.2472, 0.3423, 0.4365, 0.5203, 0.6033, 0.6779, 0.7434, 0.7965, 0.8449, 0.8851, 0.918, 0.9427, 0.9638, 0.9799, 0.992, 1.0002, 1.0064, 1.0105, 1.0128, 1.0139, 1.0141, 1.0136, 1.0127, 1.0117, 1.0104, 1.009, 1.0077, 1.0065, 1.0054, 1.0044, 1.0035, 1.0027, 1.0021, 1.0015, 1.0011, 1.0007, 1);
   --d-press: 120ms;
-  --d-ui: 220ms;
+  --d-ui: 420ms;                /* with --spring-default */
   --d-move: 420ms;
+  --d-appear: 600ms;            /* with --spring-appear, cut short: it has settled to the eye by then */
 }
 
 :root[data-theme="dark"] {
   color-scheme: dark;
 
-  --lime-press: #e0ff5a;
-  --lime-ink: #d1fe17;
-  --lime-soft: #262f0b;
+  /* OneFin's dark sections: ground Neutral/01, cards Neutral/02, inner Neutral/03, raised Neutral/04 */
+  --accent-soft: rgba(170, 157, 236, 0.1);    /* the active row tint on dark */
+  --on-accent-soft: #bebeff;
+  --success-ink: #19dba8;
+  --success-soft: #1b3a35;                     /* derived */
 
-  --canvas: #0c0c0e;
-  --surface: #17171a;
-  --surface-2: #212125;
-  --surface-3: #2b2b30;
-  --ink: #f5f5f7;
-  --ink-2: #a3a7ae;
-  --ink-3: #777b83;
-  --line: rgba(255, 255, 255, 0.08);
-  --line-strong: rgba(255, 255, 255, 0.2);
-  --surround: #050506;
+  --canvas: #121214;
+  --surface: #1b1b1f;
+  --surface-2: #212124;
+  --surface-3: #292929;
+  --surface-ink: #3a3a3e;                      /* derived: the dark pill lifted off a dark card */
+  --surface-ink-2: #1b1b1f;
+  --ink: #ffffff;
+  --ink-2: rgba(255, 255, 255, 0.8);           /* White/80% */
+  --ink-3: rgba(255, 255, 255, 0.6);           /* White/60% */
+  --line: rgba(255, 255, 255, 0.05);           /* White/5% */
+  --line-strong: rgba(255, 255, 255, 0.2);     /* White/20% */
+  --track-bg: rgba(255, 255, 255, 0.08);
+  --surround: #0c0c0c;
 
   --attention: #ffb648;
   --attention-soft: #33240c;
   --danger: #ff6b61;
   --danger-soft: #3a1512;
-  --toast-bg: #2b2b30;
-  --scrim: rgba(0, 0, 0, 0.6);
+  --on-danger: #121214;
+  --toast-bg: #292929;                         /* Neutral/04 */
+  --scrim: rgba(0, 0, 0, 0.4);
 
-  --shadow-float: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--line);
+  --grad-hero: linear-gradient(160deg, rgba(56, 26, 201, 0.45) 0%, #1b1b1f 70%);
+  --grad-brand: linear-gradient(180deg, #28119c 0%, #381ac9 30%, #121214 78%);
+
+  --shadow-card: 0 0 0 1px var(--line);
+  --shadow-float: 0 1px 50px rgba(0, 0, 0, 0.25), 0 0 0 1px var(--line);   /* Carousel Feature Card */
+  --bar-bg: rgba(27, 27, 31, 0.72);
 }

@@ -7,14 +7,15 @@
   import Hash from '@lucide/svelte/icons/hash';
   import Search from '@lucide/svelte/icons/search';
   import { prefs, applyTheme, applyFontSize, type FontSize, type Tab, type Theme } from '$lib/prefs.svelte';
-  import { keypad } from '$lib/keypad.svelte';
+  import { picker } from '$lib/picker.svelte';
   import { undoToast } from '$lib/actions';
   import { num } from '$lib/model/format';
   import { t } from '$lib/i18n';
   import Header from '$lib/components/Header.svelte';
   import Dock from '$lib/components/Dock.svelte';
   import Toasts from '$lib/components/Toasts.svelte';
-  import KeypadSheet from '$lib/components/KeypadSheet.svelte';
+  import WheelSheet from '$lib/components/WheelSheet.svelte';
+  import Wheel from '$lib/components/Wheel.svelte';
   import Sheet from '$lib/components/Sheet.svelte';
   import Button from '$lib/components/Button.svelte';
   import Card from '$lib/components/Card.svelte';
@@ -63,51 +64,49 @@
   let picked = $state('2026-11-10');
   let sheetOpen = $state(false);
 
-  async function quickAdd() {
-    const kcal = await keypad.ask({
-      title: 'Quick add',
-      unit: 'kcal',
-      hint: 'Calories',
-      chips: [100, 250, 500].map((v) => ({ label: num(v), value: v })),
-      saveLabel: (v) => `Add ${num(v)} kcal`,
-    });
-    if (kcal !== null) toast(`Added ${num(kcal)} kcal`);
+  let height = $state(170);
+  let weight = $state(70);
+  async function weighIn() {
+    const kg = await picker.ask({ title: t.weigh.title, value: 82.4, min: 30, max: 300, decimals: 1, unit: t.after.kg, hint: t.weigh.hint, saveLabel: (v) => t.weigh.save(`${num(v, 1)} ${t.after.kg}`) });
+    if (kg !== null) toast(t.weigh.saved(`${num(kg, 1)} ${t.after.kg}`));
   }
 </script>
 
 {#snippet heading(title: string)}
-  <h2 class="text-heading mt-10 mb-3 first:mt-4">{title}</h2>
+  <h2 class="text-heading mt-10 mb-4 first:mt-4">{title}</h2>
 {/snippet}
 {#snippet note(text: string)}
   <p class="text-caption text-ink-2 mt-4 mb-2">{text}</p>
 {/snippet}
 {#snippet tile(Icon: Component<{ size?: number; strokeWidth?: number }>)}
-  <div class="bg-surface-2 grid size-full place-items-center"><Icon size={24} strokeWidth={1.75} /></div>
+  <div class="bg-surface-2 text-ink-2 grid size-full place-items-center"><Icon size={24} strokeWidth={2} /></div>
 {/snippet}
 
-<div class="bg-canvas relative mx-auto min-h-dvh w-full max-w-[480px] overflow-x-clip">
+<div class="bg-canvas relative mx-auto min-h-svh w-full max-w-[480px] overflow-x-clip">
   <Header title={today ? t.tabs.today : 'Gallery'} />
 
-  <main class="px-5 pb-[calc(env(safe-area-inset-bottom)+var(--dock-h)+40px)]" data-testid="gallery">
+  <main class="px-4 pb-[calc(var(--dock-h)+12px+env(safe-area-inset-bottom)+24px)]" data-testid="gallery">
     {#if today}
       <TodayComposed />
     {:else}
       <section data-section="prefs">
         {@render heading('Theme and text size')}
         <Segmented label={t.prefs.theme} options={THEMES} bind:value={() => prefs.theme, (v) => (prefs.theme = v)} />
-        <div class="mt-3 flex flex-wrap gap-x-2" role="group" aria-label={t.prefs.textSize}>
+        <div class="mt-3 flex flex-wrap gap-2" role="group" aria-label={t.prefs.textSize}>
           {#each SIZES as s (s.value)}
             <Chip selected={prefs.fontSize === s.value} onclick={() => (prefs.fontSize = s.value)}>{s.label}</Chip>
           {/each}
         </div>
-        <a href="/gallery/today" class="bg-surface-2 active:bg-surface-3 text-callout mt-3 inline-flex h-11 items-center rounded-full px-5 font-medium">Today, composed</a>
+        <a href="/gallery/today" class="bg-surface-2 active:bg-surface-3 text-callout mt-3 inline-flex h-12 items-center rounded-sm px-5 font-semibold">Today, composed</a>
       </section>
 
       <section data-section="buttons">
         {@render heading('Buttons')}
-        {@render note('Primary, the main action, 52 high. One per screen')}
+        {@render note('Primary, the violet 3D pill, 56 high. One per screen')}
         <Button variant="primary" size="lg" full onclick={() => toast('Added 720 kcal')}>Add 720 kcal</Button>
-        {@render note('Neutral, plain and danger, 44 high')}
+        {@render note('Secondary, the dark 3D pill, at most one per screen')}
+        <Button variant="secondary" full>Choose a program</Button>
+        {@render note('Neutral, plain and danger, 48 high')}
         <div class="flex flex-wrap gap-2">
           <Button>Search</Button>
           <Button variant="plain">Cancel</Button>
@@ -117,7 +116,7 @@
         <div class="flex flex-wrap gap-2">
           <Button size="sm">Done</Button>
           <Button variant="plain" size="sm">Skip</Button>
-          <Button disabled>Save</Button>
+          <Button variant="primary" size="sm" disabled>Save</Button>
         </div>
       </section>
 
@@ -125,7 +124,7 @@
         {@render heading('Track')}
         {@render note('Below the zone: ink')}
         <Track hero value={1840} {target} {zone} label="1,840 of 2,460 kcal" />
-        {@render note('In the zone: lime')}
+        {@render note('In the zone: green')}
         <Track hero value={2400} {target} {zone} label="2,400 of 2,460 kcal" />
         {@render note('Past the zone on a lose day: ink again')}
         <Track hero value={2700} {target} zone={[2214, 2583]} label="2,700 of 2,460 kcal" />
@@ -152,8 +151,8 @@
       <section data-section="rows">
         {@render heading('Card and rows')}
         <Card list>
-          <Row title="Push day" caption={t.today.session('Strength', '60', '240')}>
-            {#snippet leading()}{@render tile(TrainIcon)}{/snippet}
+          <Row title="Push day" caption={t.today.session('Strength', '60', '240')} wrap>
+            {#snippet leading()}<div class="tile grid size-full place-items-center"><TrainIcon /></div>{/snippet}
             {#snippet trailing()}<Button size="sm">{t.today.done}</Button>{/snippet}
           </Row>
         </Card>
@@ -178,7 +177,7 @@
 
       <section data-section="chips">
         {@render heading('Chips and stepper')}
-        <div class="flex flex-wrap gap-x-2" role="group" aria-label="Portion">
+        <div class="flex flex-wrap gap-2" role="group" aria-label="Portion">
           {#each PORTIONS as p (p)}
             <Chip selected={portion === p} onclick={() => (portion = p)}>{p}</Chip>
           {/each}
@@ -187,10 +186,21 @@
       </section>
 
       <section data-section="sheets">
-        {@render heading('Sheet and keypad')}
+        {@render heading('Sheets')}
         <div class="flex flex-wrap gap-2">
           <Button onclick={() => (sheetOpen = true)}>Open a sheet</Button>
-          <Button onclick={quickAdd}>Open the keypad</Button>
+          <Button onclick={weighIn}>Open the wheel sheet</Button>
+        </div>
+      </section>
+
+      <section data-section="wheel">
+        {@render heading('Wheels')}
+        {@render note('A bounded value: tap the band to type it')}
+        <!-- side by side, the two share one band, as on onboarding's height and weight -->
+        <div class="group relative grid grid-cols-2 gap-3">
+          <div class="bg-surface-2 ring-ink absolute inset-x-0 top-[calc(2*var(--wheel-row))] h-[var(--wheel-row)] rounded-sm group-has-[[role=slider]:focus-visible]:ring-2" aria-hidden="true"></div>
+          <Wheel bind:value={height} min={100} max={250} unit={t.after.cm} band={false} label={t.body.height} testid="wheel-height" />
+          <Wheel bind:value={weight} min={30} max={300} decimals={1} unit={t.after.kg} band={false} label={t.body.weight} testid="wheel-weight" />
         </div>
       </section>
 
@@ -249,4 +259,4 @@
   {/snippet}
 </Sheet>
 <Toasts />
-<KeypadSheet />
+<WheelSheet />

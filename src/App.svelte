@@ -15,7 +15,7 @@
   import { logOpen, sheets } from '$lib/sheets.svelte';
   import { view } from '$lib/view.svelte';
   import { dayTitle } from '$lib/model/dates';
-  import { keypad } from '$lib/keypad.svelte';
+  import { picker } from '$lib/picker.svelte';
   import { db } from '$lib/db/store.svelte';
   import type { SyncState } from '$lib/components/SyncMark.svelte';
 
@@ -30,15 +30,15 @@
   }
   $effect(() => { void loadTab(prefs.tab); });
 
-  // the sign in, account and keypad sheets (and the drawer code under them) load after the first paint, like the tabs
+  // the sign in, account and wheel sheets (and the drawer code under them) load after the first paint, like the tabs
   let SignIn = $state<Component<{ open: boolean; title?: string }> | null>(null);
   let Account = $state<Component<{ open: boolean }> | null>(null);
-  let Keypad = $state<Component | null>(null);
+  let Wheel = $state<Component | null>(null);
   async function loadSheets() {
-    const [s, a, k] = await Promise.all([import('./flows/signin/SignInSheet.svelte'), import('./settings/AccountSheet.svelte'), import('$lib/components/KeypadSheet.svelte')]);
-    [SignIn, Account, Keypad] = [s.default, a.default, k.default];
+    const [s, a, k] = await Promise.all([import('./flows/signin/SignInSheet.svelte'), import('./settings/AccountSheet.svelte'), import('$lib/components/WheelSheet.svelte')]);
+    [SignIn, Account, Wheel] = [s.default, a.default, k.default];
   }
-  $effect(() => { if ((sheets.signin || sheets.account || keypad.open) && !SignIn) void loadSheets(); });
+  $effect(() => { if ((sheets.signin || sheets.account || picker.open) && !SignIn) void loadSheets(); });
   // the logging sheets: Add, Search, Quick add, Meal, How it is calculated and the session menu
   let Log = $state<Component | null>(null);
   const loadLog = async () => { Log ??= (await import('./flows/log/LogSheets.svelte')).default; };
@@ -86,7 +86,7 @@
     applyFontSize();
     void session.boot();
     const preload = setTimeout(() => { void loadTab(1); void loadTab(2); loadSheets().catch(() => undefined); loadLog().catch(() => undefined); }, 800); // a failed preload retries on first open
-    // the installed app can stay open past midnight: Today follows the calendar when it comes back
+    // a tab can stay open past midnight: Today follows the calendar when it comes back
     const tick = () => { if (document.visibilityState === 'visible') view.tick(); };
     document.addEventListener('visibilitychange', tick);
     const clock = setInterval(tick, 60_000);
@@ -107,7 +107,8 @@
 {#if onboarding}
   {#if Onboarding}<Onboarding />{/if}
 {:else}
-<div class="bg-canvas relative mx-auto flex min-h-dvh w-full max-w-[480px] flex-col overflow-x-clip">
+<!-- svh: the height with Safari's toolbars showing, so nothing reflows when they collapse -->
+<div class="bg-canvas relative mx-auto flex min-h-svh w-full max-w-[480px] flex-col overflow-x-clip">
   <Header
     title={prefs.tab === 0 && view.past ? dayTitle(view.date) : TITLES[prefs.tab]}
     sync={MARK[sync.status]}
@@ -116,7 +117,8 @@
   />
 
   <!-- flex-1: the whole area between header and dock takes swipes, not just the content -->
-  <main class="flex-1 px-5 pb-[calc(env(safe-area-inset-bottom)+var(--dock-h)+40px)]" use:swipe={swipeOpts}>
+  <!-- the content ends clear of the dock, which floats 12 above the safe area -->
+  <main class="flex-1 px-4 pb-[calc(var(--dock-h)+12px+env(safe-area-inset-bottom)+24px)]" use:swipe={swipeOpts}>
     <div style="transform: translateX({dragX}px); transition: {dragging ? 'none' : 'transform 240ms var(--ease-out)'}">
       {#key prefs.tab}
         <div in:fly={{ x: 40 * dir, duration: dur(220), opacity: 0.2 }}>
@@ -139,5 +141,5 @@
 {#if SignIn}<SignIn bind:open={sheets.signin} title={onboarding && prefs.draft?.at === 'plan' ? t.signin.save : t.signin.welcomeBack} />{/if}
 {#if Account}<Account bind:open={sheets.account} />{/if}
 {#if Log}<Log />{/if}
-{#if Keypad}<Keypad />{/if}
+{#if Wheel}<Wheel />{/if}
 <Toasts />

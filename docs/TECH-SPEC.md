@@ -157,7 +157,7 @@ export type Day = { date: string; closed?: true };            // id: `day:${date
 
 Derived and never stored: day totals, the day's target, on track status, trend weight, weekly averages. They are functions in `src/lib/model/`.
 
-Device only, kept in `localStorage` under `ontrack:prefs` and never synced: theme, text size, last tab, dismissed cards, install guide state, the id of the last signed in user, and the onboarding draft.
+Device only, kept in `localStorage` under `ontrack:prefs` and never synced: theme, text size, last tab, dismissed cards, the id of the last signed in user, and the onboarding draft.
 
 ## 4. On the device
 
@@ -375,7 +375,7 @@ Resolution, in `server/vision/resolve.ts`:
 - Otherwise `per100` comes from `est_per_100g` and `source` is `estimate`. Clamp kcal to 0 through 900 and each macro to 0 through 100. If kcal differs from `4p + 4c + 9f` by more than 25 percent, recompute kcal from the macros.
 - Item totals are `per100` times grams over 100, rounded to whole kcal and one decimal for macros.
 
-On the device before upload: draw the capture to a canvas at 1024 px on the longest edge, export JPEG at quality 0.8, which also strips location data. Make the 320 px thumbnail at quality 0.7 from the same canvas. Capture uses `<input type="file" accept="image/*" capture="environment">`, the reliable path in standalone mode.
+On the device before upload: draw the capture to a canvas at 1024 px on the longest edge, export JPEG at quality 0.8, which also strips location data. Make the 320 px thumbnail at quality 0.7 from the same canvas. Capture uses `<input type="file" accept="image/*" capture="environment">`, the reliable path on iPhone.
 
 ## 9. Food table
 
@@ -420,7 +420,7 @@ Every muscle has at least four exercises where it is primary. A unit test checks
 
 ## 12. PWA
 
-Port watermelon's vite-plugin-pwa setup. Manifest: name and short name Ontrack, `display: standalone`, start URL and scope `/`, background and theme colour from the canvas token with a dark variant through `theme-color` meta tags, icons generated from `design/brand/app-icon.svg` by `pnpm icons`. Register with a prompt: when a new worker is waiting, show the update toast. Navigation falls back to `index.html`. `/api/` is never cached. `scripts/check-pwa.mjs` verifies installability and an offline reload.
+Port watermelon's vite-plugin-pwa setup. Manifest: name and short name Ontrack, `display: standalone`, start URL and scope `/`, background and theme colour from the canvas token with a dark variant through `theme-color` meta tags, icons generated from `design/brand/app-icon.svg` by `pnpm icons`. Register with a prompt: when a new worker is waiting, show the update toast. Navigation falls back to `index.html`. `/api/` is never cached. `scripts/check-pwa.mjs` verifies the manifest, the service worker and an offline reload. Nothing in the interface asks anyone to install the app (D1).
 
 ## 13. Tests
 
@@ -432,7 +432,7 @@ Port watermelon's vite-plugin-pwa setup. Manifest: name and short name Ontrack, 
 | Unit | `tests/unit/resolve.test.ts`, `foods.test.ts`, `data.test.ts` | Vision resolution and clamps, food search ranking, library and template validity |
 | End to end | `tests/e2e/*.spec.ts`, WebKit at 390 by 844, light and dark | One spec per feature F1 to F13 against the mock backend, including offline log then reconnect |
 | Screens | `tests/e2e/screens.spec.ts`, project `screens` | Every screen and sheet in its main states, written to `screenshots/` |
-| Stress | project `stress` | Eight device sizes and three text sizes: no overflow, no clipped text, tap targets, keypad fits |
+| Stress | project `stress` | Phone sizes in Safari with its toolbars and three text sizes: no overflow, no clipped text, tap targets, sheet actions on screen |
 | Production | project `prod`, run by hand | Sign in with the test account, one write, verify in the database, delete |
 
 `pnpm verify` runs check, unit tests, build, and the end to end specs tagged `@smoke`.

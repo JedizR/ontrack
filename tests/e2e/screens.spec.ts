@@ -1,14 +1,15 @@
 // Visual review: every screen in its main states -> screenshots/<screen>/<state>-<theme>-<device>.png
 //   pnpm screenshots -- --grep "shell"
 import { expect, test, type Page } from '@playwright/test';
-import { EMAIL, MEALS, TODAY, keypadEnter, onboard, open, openFresh, seedAccount, signIn, takePhoto, toWelcome, vision, withPrefs } from './helpers';
+import { EMAIL, MEALS, TODAY, fieldFill, onboard, open, openFresh, seedAccount, signIn, takePhoto, vision, wheelType, withPrefs } from './helpers';
 
-const SECTIONS = ['prefs', 'buttons', 'track', 'hero', 'rows', 'chips', 'sheets', 'week', 'feedback', 'states'];
+const SECTIONS = ['prefs', 'buttons', 'track', 'hero', 'rows', 'chips', 'sheets', 'wheel', 'week', 'feedback', 'states'];
 
+// Safari with its toolbars showing on a 390 by 844 phone, the SE and the Pro Max
 const DEVICES = [
-  { name: '390', width: 390, height: 844 },
-  { name: 'se', width: 375, height: 667 },
-  { name: 'promax', width: 430, height: 932 },
+  { name: '390', width: 390, height: 664 },
+  { name: 'se', width: 375, height: 548 },
+  { name: 'promax', width: 430, height: 739 },
 ];
 
 for (const theme of ['light', 'dark'] as const) {
@@ -62,13 +63,14 @@ for (const theme of ['light', 'dark'] as const) {
         await page.keyboard.press('Escape');
         await page.getByTestId('sample-sheet').waitFor({ state: 'detached' });
 
-        await page.getByRole('button', { name: 'Open the keypad' }).click();
-        await page.getByTestId('keypad').waitFor();
-        await shot(page, 'gallery', 'keypad-empty');
-        for (const k of ['2', '5', '0', '+', '1', '8', '0']) await page.locator(`[data-key="${k}"]`).click();
-        await shot(page, 'gallery', 'keypad-sum');
-        await page.getByTestId('keypad-save').click();
-        await page.getByTestId('keypad').waitFor({ state: 'detached' });
+        await page.getByRole('button', { name: 'Open the wheel sheet' }).click();
+        await expect(page.getByTestId('picker')).toHaveCSS('transform', 'none');
+        await shot(page, 'gallery', 'wheel-sheet');
+        await page.getByTestId('picker-wheel').locator('[data-selected]').first().click();
+        await shot(page, 'gallery', 'wheel-typing');
+        await page.keyboard.press('Escape');
+        await page.getByTestId('picker-save').click();
+        await page.getByTestId('picker').waitFor({ state: 'detached' });
 
         await at('feedback');
         await page.getByRole('button', { name: 'Show an undo toast' }).click();
@@ -79,7 +81,6 @@ for (const theme of ['light', 'dark'] as const) {
       test('signin', async ({ page }) => {
         const s = await seedAccount(page, { signedIn: false });
         await openFresh(page, s);
-        await toWelcome(page);
         await page.getByTestId('welcome-signin').click();
         await page.getByTestId('signin-send').waitFor();
         await shot(page, 'signin', 'email');
@@ -120,13 +121,11 @@ for (const theme of ['light', 'dark'] as const) {
         await shot(page, 'today', 'bringing');
       });
 
-      // SCREENS.md sections 3 and 4: the install guide, Welcome, every question and its guardrail screens, Your plan
+      // SCREENS.md sections 3 and 4: Welcome, every question and its guardrail screens, Your plan
       test('onboarding', async ({ page }) => {
         const go = (id: string) => page.getByTestId(id).click();
         const at = async (id: string, state: string) => { await page.getByTestId(id).waitFor(); await shot(page, 'onboarding', state); };
         await openFresh(page);
-        await at('install', 'install');
-        await go('install-continue');
         await at('welcome', 'welcome');
         await go('welcome-start');
         await at('step-goal', 'goal');
@@ -145,22 +144,20 @@ for (const theme of ['light', 'dark'] as const) {
         await go('continue');
         await at('step-sex', 'sex');
         await go('choice-female');
-        await page.getByTestId('keypad').waitFor();
-        await shot(page, 'onboarding', 'born-keypad');
-        await keypadEnter(page, '2012');
+        await at('step-born', 'born');
+        await wheelType(page, 'wheel-year', '2012');
+        await go('continue');
         await at('step-young', 'young');
         await go('back');
-        await go('field-year');
-        await keypadEnter(page, '1994');
-        await page.getByTestId('keypad').waitFor();
-        await shot(page, 'onboarding', 'body-keypad');
-        await page.keyboard.press('Escape');
-        await page.getByTestId('keypad').waitFor({ state: 'detached' });
-        await at('step-body', 'body-empty');
-        await go('field-height');
-        await keypadEnter(page, '165');
-        await keypadEnter(page, '82');
+        await wheelType(page, 'wheel-year', '1994');
+        await go('continue');
+        await at('step-body', 'body-start');
+        await wheelType(page, 'wheel-height', '165');
+        await wheelType(page, 'wheel-weight', '82');
         await at('step-body', 'body-filled');
+        await page.getByRole('radio', { name: 'Imperial' }).click();
+        await at('step-body', 'body-imperial');
+        await page.getByRole('radio', { name: 'Metric' }).click();
         await go('continue');
         await at('step-move', 'move');
         await go('choice-light');
@@ -196,13 +193,13 @@ for (const theme of ['light', 'dark'] as const) {
         await shot(page, 'onboarding', 'plan-gain-doctor');
         await page.screenshot({ path: `screenshots/onboarding/plan-gain-full-${theme}-${d.name}.png`, fullPage: true });
         await page.getByTestId('tune-goalweight').click();
-        await keypadEnter(page, '50');
-        await page.getByTestId('tune-error').scrollIntoViewIfNeeded();
+        await wheelType(page, 'picker-wheel', '50');
         await shot(page, 'onboarding', 'plan-goal-weight-refused');
       });
 
       // SCREENS.md sections 6 and 7: Today empty, typical and on a past day, then every logging sheet
       test('today', async ({ page }) => {
+        test.slow(); // every logging sheet in turn: past 30 s on CI
         const sheet = async (id: string, state: string) => {
           await expect(page.getByTestId(id)).toHaveCSS('transform', 'none');
           await shot(page, 'today', state);
@@ -212,6 +209,10 @@ for (const theme of ['light', 'dark'] as const) {
         await page.evaluate(() => scrollTo(0, document.body.scrollHeight));
         await shot(page, 'today', 'typical-end');
         await page.evaluate(() => scrollTo(0, 0));
+        await page.getByTestId('weigh-open').click();
+        await sheet('picker', 'weigh');
+        await page.keyboard.press('Escape');
+        await page.getByTestId('picker').waitFor({ state: 'detached' });
         await page.getByTestId('session-done').click();
         await page.getByTestId('week').getByRole('button', { name: /November 10/ }).click();
         await shot(page, 'today', 'past-day');
@@ -235,9 +236,8 @@ for (const theme of ['light', 'dark'] as const) {
 
         await page.getByTestId('add').click();
         await page.getByTestId('add-quick').click();
-        await keypadEnter(page, '350');
-        await page.getByTestId('quick-fat').click();
-        await keypadEnter(page, '12');
+        await fieldFill(page, 'quick-kcal', '350');
+        await fieldFill(page, 'quick-fat', '12');
         await sheet('quick-sheet', 'quick');
         await page.keyboard.press('Escape');
         await page.getByTestId('quick-sheet').waitFor({ state: 'detached' });
@@ -348,21 +348,19 @@ for (const theme of ['light', 'dark'] as const) {
         await shot(page, 'photo', 'describe');
       });
 
-      // Today composed from the real components, next to the static reference mock
+      // Today composed from the real components
       test('today composed', async ({ page }) => {
         await open(page, '/gallery/today');
         await shot(page, 'today', 'composed');
-        await page.goto(`/design/reference-today.html#${theme}`);
-        await shot(page, 'today', 'reference');
       });
     });
   }
 }
 
-// the largest text size on the smallest phone: the composed Today, the keypad, and every gallery section
+// the largest text size on the smallest phone: the composed Today, the wheel sheet, and every gallery section
 for (const theme of ['light', 'dark'] as const) {
   test.describe(`${theme} se xl`, () => {
-    test.use({ colorScheme: theme, viewport: { width: 375, height: 667 } });
+    test.use({ colorScheme: theme, viewport: { width: 375, height: 548 } });
     test('largest text', async ({ page }) => {
       await withPrefs(page, { theme: 'system', fontSize: 'xl' });
       await open(page, '/gallery/today');
@@ -373,9 +371,9 @@ for (const theme of ['light', 'dark'] as const) {
         await page.locator(`[data-section="${s}"]`).evaluate((el) => scrollTo(0, el.getBoundingClientRect().top + scrollY - 52));
         if (theme === 'light') await page.screenshot({ path: `screenshots/xl/${s}-${theme}-se.png` });
       }
-      await page.getByRole('button', { name: 'Open the keypad' }).click();
+      await page.getByRole('button', { name: 'Open the wheel sheet' }).click();
       await page.waitForTimeout(600);
-      await page.screenshot({ path: `screenshots/xl/keypad-${theme}-se.png` });
+      await page.screenshot({ path: `screenshots/xl/wheel-sheet-${theme}-se.png` });
     });
   });
 }

@@ -1,4 +1,4 @@
-// Sample data for the gallery: the content of design/reference-today.html. Not app logic; the engine (M2) owns real targets.
+// Sample data for the gallery: Today's sample content. Not app logic; the engine (M2) owns real targets.
 import meal1 from './thumbs/meal-1.svg';
 import meal2 from './thumbs/meal-2.svg';
 import meal3 from './thumbs/meal-3.svg';

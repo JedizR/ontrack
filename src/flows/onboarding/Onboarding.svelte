@@ -1,12 +1,9 @@
-<!-- SCREENS.md sections 3 and 4: the install guide (Safari on iPhone), welcome, the nine questions with their guardrail
-     screens, and Your plan. Answers live in the prefs draft, so a reload or the Google redirect lands on the same screen.
+<!-- SCREENS.md sections 3 and 4: Welcome, the nine questions with their guardrail screens, and Your plan. Answers live in the prefs draft, so a reload or the Google redirect lands on the same screen.
      Signed out, Save my plan opens sign in; signed in, it writes the plan at once. -->
 <script lang="ts">
   import { fly } from 'svelte/transition';
   import Step from './Step.svelte';
   import Choices from './Choices.svelte';
-  import Field from './Field.svelte';
-  import Install from './Install.svelte';
   import Welcome from './Welcome.svelte';
   import Body from './Body.svelte';
   import Training from './Training.svelte';
@@ -14,24 +11,23 @@
   import YourPlan from './YourPlan.svelte';
   import Button from '$lib/components/Button.svelte';
   import Check from '@lucide/svelte/icons/check';
+  import TrendingUp from '@lucide/svelte/icons/trending-up';
+  import TrendingDown from '@lucide/svelte/icons/trending-down';
+  import Equal from '@lucide/svelte/icons/equal';
   import { prefs } from '$lib/prefs.svelte';
   import { db } from '$lib/db/store.svelte';
   import { sheets } from '$lib/sheets.svelte';
-  import { keypad } from '$lib/keypad.svelte';
+  import Wheel from '$lib/components/Wheel.svelte';
   import { C, V, type Experience, type Goal, type Neat, type Sex } from '$lib/model/engine';
   import { today, yearOf } from '$lib/model/dates';
   import { num } from '$lib/model/format';
-  import { isIOS, isStandalone } from '$lib/platform';
   import { dur, haptic } from '$lib/haptics';
   import { t } from '$lib/i18n';
-  import { LIMITS, fresh, progress, step, type Draft, type Screen, type Screening } from './draft';
+  import { LIMITS, START, fresh, progress, step, type Draft, type Screen, type Screening } from './draft';
   import { settle } from './settle';
 
   const year = yearOf(today());
   const d = $derived(prefs.draft ?? fresh());
-  // Safari on iPhone: the home screen app has its own storage, so the guide comes first on every visit until set up
-  // (not once Save my plan was tapped: that visit is coming back from sign in)
-  let install = $state(isIOS() && !isStandalone() && !db.ready && !prefs.draft?.saved);
   let dir = $state<1 | -1>(1);
 
   function set(patch: Partial<Draft>) {
@@ -66,10 +62,10 @@
   }
 
   // ----- the single choice questions -----
-  const GOALS: { value: Goal; title: string; line: string }[] = [
-    { value: 'gain', title: t.goal.gain, line: t.goal.gainLine },
-    { value: 'lose', title: t.goal.lose, line: t.goal.loseLine },
-    { value: 'maintain', title: t.goal.maintain, line: t.goal.maintainLine },
+  const GOALS = [
+    { value: 'gain' as Goal, title: t.goal.gain, line: t.goal.gainLine, icon: TrendingUp },
+    { value: 'lose' as Goal, title: t.goal.lose, line: t.goal.loseLine, icon: TrendingDown },
+    { value: 'maintain' as Goal, title: t.goal.maintain, line: t.goal.maintainLine, icon: Equal },
   ];
   const SEXES: { value: Sex; title: string }[] = [
     { value: 'male', title: t.sex.male },
@@ -108,18 +104,9 @@
     if (none) ticks = { ...NONE };
   }
 
-  // ----- birth year -----
+  // ----- birth year: a wheel from the answer, or from a 30 year old; Continue saves it -----
+  let born = $state(prefs.draft?.birthYear ?? year - START.ageYears);
   let yearError = $state('');
-  async function askYear() {
-    yearError = '';
-    const v = await keypad.ask({ title: t.born.q, unit: '', value: d.birthYear ?? null });
-    if (v === null) return;
-    const from = year - LIMITS.oldestAge;
-    if (!Number.isInteger(v) || v < from || v > year) return void (yearError = t.born.invalid(String(from), String(year)));
-    next({ birthYear: v });
-  }
-  // a first visit opens the keypad at once
-  $effect(() => { if (!install && d.at === 'born' && !d.birthYear) void askYear(); });
 </script>
 
 {#snippet cta(disabled: boolean, onclick: () => void)}
@@ -127,18 +114,15 @@
 {/snippet}
 
 {#snippet checkbox(label: string, on: boolean, onclick: () => void, testid: string)}
-  <button type="button" role="checkbox" aria-checked={on} class="bg-surface active:bg-surface-2 flex min-h-16 w-full items-center gap-4 rounded-md px-5 py-4 text-left transition-[transform,background-color] duration-[var(--d-press)] active:scale-[0.98]" {onclick} data-testid={testid}>
-    <span class="grid size-6 flex-none place-items-center rounded-xs transition-colors {on ? 'bg-ink text-canvas' : 'ring-line-strong ring-2 ring-inset'}" aria-hidden="true">
+  <button type="button" role="checkbox" aria-checked={on} class="bg-surface shadow-card active:bg-surface-2 flex min-h-18 w-full items-center gap-4 rounded-md px-5 py-4 text-left transition-[transform,background-color] duration-[var(--d-press)] active:scale-[0.98]" {onclick} data-testid={testid}>
+    <span class="grid size-6 flex-none place-items-center rounded-xs transition-colors duration-[var(--d-ui)] ease-[var(--spring-default)] {on ? 'bg-ink text-canvas' : 'ring-ink-3 ring-2 ring-inset'}" aria-hidden="true">
       {#if on}<Check size={18} strokeWidth={2.5} />{/if}
     </span>
     <span class="text-body flex-1">{label}</span>
   </button>
 {/snippet}
 
-<div class="bg-canvas relative mx-auto min-h-dvh w-full max-w-[480px] overflow-x-clip" data-onboarding data-testid="onboarding">
-  {#if install}
-    <Install oncontinue={() => (install = false)} />
-  {:else}
+<div class="bg-canvas relative mx-auto min-h-svh w-full max-w-[480px] overflow-x-clip" data-onboarding data-testid="onboarding">
     {#key d.at}
       <div in:fly={{ x: 32 * dir, duration: dur(240) }}>
         {#if d.at === 'welcome'}
@@ -154,15 +138,15 @@
             <div class="flex flex-col gap-3" role="group" aria-label={t.screening.q}>
               {#each ITEMS as k (k)}{@render checkbox(t.screening[k], ticks[k], () => tick(k), `screen-${k}`)}{/each}
               {@render checkbox(t.screening.none, none, tickNone, 'screen-none')}
-              <p class="text-callout text-ink-2 mt-2">{t.screening.disclaimer}</p>
+              <p class="text-caption text-ink-2 mt-2">{t.screening.disclaimer}</p>
             </div>
             {#snippet footer()}{@render cta(!answered, () => next({ screening: { ...ticks } }))}{/snippet}
           </Step>
         {:else if d.at === 'advice'}
           {@const ed = !!d.screening?.eatingDisorder}
           <Step title={ed ? t.advice.edTitle : t.advice.title} onback={back} top testid="step-advice">
-            <p class="text-body">{ed ? t.advice.edBody : t.advice.body}</p>
-            <p class="text-body mt-4">{ed ? t.advice.edOffer : t.advice.offer}</p>
+            <p class="text-lead">{ed ? t.advice.edBody : t.advice.body}</p>
+            <p class="text-lead mt-4">{ed ? t.advice.edOffer : t.advice.offer}</p>
             {#snippet footer()}
               <!-- with an eating disorder, leaving is the advised path, so it is the main action -->
               {#if ed}
@@ -182,20 +166,28 @@
         {:else if d.at === 'born'}
           <Step title={t.born.q} onback={back} progress={prog} testid="step-born">
             <div class="flex flex-col gap-3">
-              <Field label={t.born.field} value={d.birthYear ? String(d.birthYear) : null} onclick={askYear} testid="field-year" />
-              <p class="text-callout text-attention min-h-5" role="alert">{yearError}</p>
+              <Wheel
+                bind:value={born}
+                min={year - LIMITS.oldestAge}
+                max={year}
+                label={t.born.field}
+                testid="wheel-year"
+                onchange={() => (yearError = '')}
+                onclamp={() => (yearError = t.born.invalid(String(year - LIMITS.oldestAge), String(year)))}
+              />
+              <p class="text-callout text-attention min-h-[1lh]" role="alert">{yearError}</p>
             </div>
-            {#snippet footer()}{@render cta(!d.birthYear, () => next())}{/snippet}
+            {#snippet footer()}{@render cta(false, () => next({ birthYear: born }))}{/snippet}
           </Step>
         {:else if d.at === 'young'}
           <Step title={t.young.title} onback={back} top testid="step-young">
-            <p class="text-body">{t.young.body(num(V.minAge))}</p>
+            <p class="text-lead">{t.young.body(num(V.minAge))}</p>
             {#snippet footer()}
-              <Button size="lg" full onclick={leave} data-testid="young-leave">{t.onboarding.leave}</Button>
+              <Button variant="secondary" size="lg" full onclick={leave} data-testid="young-leave">{t.onboarding.leave}</Button>
             {/snippet}
           </Step>
         {:else if d.at === 'body'}
-          <Body {d} {set} next={() => next()} {back} progress={prog} />
+          <Body {d} {set} {next} {back} progress={prog} />
         {:else if d.at === 'move'}
           <Step title={t.move.q} onback={back} progress={prog} testid="step-move">
             <Choices label={t.move.q} options={NEATS} value={d.neat} onpick={(neat) => next({ neat })} />
@@ -215,5 +207,4 @@
         {/if}
       </div>
     {/key}
-  {/if}
 </div>

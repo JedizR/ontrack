@@ -1,13 +1,14 @@
 // Device and text size matrix: layout checks on every screen.
 //   pnpm exec playwright test --project=stress   -> screenshots/stress/<device>/*.png
 import { devices, expect, test, type Page } from '@playwright/test';
-import { MEALS, keypadEnter, open, signIn, takePhoto, withPrefs } from './helpers';
+import { MEALS, fieldFill, open, signIn, takePhoto, wheelType, withPrefs } from './helpers';
 
 const DEVICES = [
-  { name: 'iphone-15-pwa', width: 393, height: 793, mobile: true }, // home screen app: 852 minus the status bar
-  { name: 'iphone-15-safari', width: 393, height: 659, mobile: true }, // Safari with its toolbars
-  { name: 'iphone-15-pro-max', width: 430, height: 873, mobile: true },
-  { name: 'iphone-se', width: 375, height: 647, mobile: true },
+  // phones in Safari with its toolbars showing: what a browser tab gets
+  { name: 'iphone-15-safari', width: 393, height: 659, mobile: true },
+  { name: 'iphone-15-pro-max', width: 430, height: 739, mobile: true },
+  { name: 'iphone-se', width: 375, height: 548, mobile: true }, // an assumption until the owner's SE reports its own
+
   { name: 'android-small', width: 360, height: 740, mobile: true },
   { name: 'landscape-phone', width: 852, height: 393, mobile: true },
   { name: 'ipad', width: 768, height: 1024, mobile: true },
@@ -68,15 +69,15 @@ async function checkAll(page: Page, dir: string) {
     await open(page, path);
     await checkPage(page, name, dir);
   }
-  // the keypad is the tallest sheet: its keys and its main action fit without scrolling
+  // the wheel sheet: its whole wheel and its main action fit without scrolling
   await open(page, '/gallery');
-  await page.getByRole('button', { name: 'Open the keypad' }).click();
-  await expect(page.getByTestId('keypad')).toHaveCSS('transform', 'none'); // the sheet has finished sliding up
-  await expect(page.getByTestId('keypad-save')).toBeInViewport({ ratio: 1 });
-  // portrait only: in landscape (not supported, the manifest locks portrait) the keys scroll under the pinned action
-  if (page.viewportSize()!.height > page.viewportSize()!.width) await expect(page.locator('[data-key="00"]')).toBeInViewport({ ratio: 1 });
-  expect(await smallTargets(page), 'keypad: tap targets under 44 px').toEqual([]);
-  await page.screenshot({ path: `${dir}/keypad.png` });
+  await page.getByRole('button', { name: 'Open the wheel sheet' }).click();
+  await expect(page.getByTestId('picker')).toHaveCSS('transform', 'none'); // the sheet has finished sliding up
+  await expect(page.getByTestId('picker-save')).toBeInViewport({ ratio: 1 });
+  // portrait only: in landscape (not supported, the manifest locks portrait) the wheel scrolls under the pinned action
+  if (page.viewportSize()!.height > page.viewportSize()!.width) await expect(page.getByTestId('picker-wheel')).toBeInViewport({ ratio: 1 });
+  expect(await smallTargets(page), 'wheel sheet: tap targets under 44 px').toEqual([]);
+  await page.screenshot({ path: `${dir}/wheel-sheet.png` });
 
   // the sign in and account sheets: their main action is on screen without scrolling. Signed out, sign in opens from
   // Welcome; the account in this test's space already has a plan, so signing in lands on Today
@@ -108,9 +109,9 @@ for (const d of DEVICES) {
 }
 
 const PHONES = [
-  { name: 'iphone-15-pwa', width: 393, height: 793 },
-  { name: 'iphone-se', width: 375, height: 647 },
-  { name: 'iphone-15-pro-max', width: 430, height: 873 },
+  { name: 'iphone-15-safari', width: 393, height: 659 },
+  { name: 'iphone-se', width: 375, height: 548 },
+  { name: 'iphone-15-pro-max', width: 430, height: 739 },
 ];
 for (const d of PHONES) {
   for (const fs of ['m', 'l', 'xl'] as const) {
@@ -132,8 +133,6 @@ async function walkOnboarding(page: Page, dir: string) {
   const check = async (id: string, name: string) => { await page.getByTestId(id).waitFor(); await page.waitForTimeout(300); await checkPage(page, name, dir); };
   await page.clock.setFixedTime(new Date('2026-11-11T10:00:00+07:00'));
   await page.goto('/');
-  await check('install', 'install');
-  await go('install-continue');
   await check('welcome', 'welcome');
   await go('welcome-start');
   await check('step-goal', 'goal');
@@ -147,16 +146,15 @@ async function walkOnboarding(page: Page, dir: string) {
   await go('continue');
   await check('step-sex', 'sex');
   await go('choice-female');
-  await keypadEnter(page, '2012');
+  await check('step-born', 'born');
+  await wheelType(page, 'wheel-year', '2012');
+  await go('continue');
   await check('step-young', 'young');
   await go('back');
-  await go('field-year');
-  await keypadEnter(page, '1994');
-  await page.keyboard.press('Escape');
-  await page.getByTestId('keypad').waitFor({ state: 'detached' });
-  await go('field-height');
-  await keypadEnter(page, '165');
-  await keypadEnter(page, '82');
+  await wheelType(page, 'wheel-year', '1994');
+  await go('continue');
+  await wheelType(page, 'wheel-height', '165');
+  await wheelType(page, 'wheel-weight', '82');
   await check('step-body', 'body');
   await go('continue');
   await check('step-move', 'move');
@@ -221,7 +219,7 @@ async function walkLogging(page: Page, dir: string) {
   await close('search-sheet');
   await page.getByTestId('add').click();
   await page.getByTestId('add-quick').click();
-  await keypadEnter(page, '350');
+  await fieldFill(page, 'quick-kcal', '350');
   await sheet('quick-sheet', 'quick', 'quick-add');
   await close('quick-sheet');
   await page.getByTestId('meal').first().getByRole('button').click();

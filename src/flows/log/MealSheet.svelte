@@ -65,7 +65,7 @@
 
 {#snippet footer()}
   <div class="flex items-center gap-4">
-    <p class="text-callout text-ink-2 min-w-0 flex-1 num" data-testid="meal-total">{t.meal.total(num(Math.round(sum.kcal)), num(Math.round(sum.protein)))}</p>
+    <p class="text-body num min-w-0 flex-1 font-semibold" data-testid="meal-total">{t.meal.total(num(Math.round(sum.kcal)), num(Math.round(sum.protein)))}</p>
     <Button variant="primary" size="lg" disabled={!items.length} onclick={save} data-testid="meal-save">{t.meal.save}</Button>
   </div>
 {/snippet}
@@ -76,11 +76,11 @@
     <div class="grid grid-cols-[1fr_auto] gap-3">
       <div class="flex min-w-0 flex-col gap-2">
         <label for="meal-title" class="text-caption text-ink-2">{t.meal.name}</label>
-        <input id="meal-title" type="text" maxlength="120" enterkeyhint="done" bind:value={title} placeholder={items[0]?.name ?? ''} class="bg-surface-2 placeholder:text-ink-3 h-13 w-full min-w-0 rounded-sm px-4 outline-none focus-visible:outline-2 focus-visible:outline-ink" data-testid="meal-title" />
+        <input id="meal-title" type="text" maxlength="120" enterkeyhint="done" bind:value={title} placeholder={items[0]?.name ?? ''} class="input-field w-full min-w-0" data-testid="meal-title" />
       </div>
       <div class="flex flex-col gap-2">
         <label for="meal-time" class="text-caption text-ink-2">{t.meal.time}</label>
-        <input id="meal-time" type="time" bind:value={time} class="bg-surface-2 num h-13 rounded-sm px-4 outline-none focus-visible:outline-2 focus-visible:outline-ink" data-testid="meal-time" />
+        <input id="meal-time" type="time" bind:value={time} class="input-field num" data-testid="meal-time" />
       </div>
     </div>
 

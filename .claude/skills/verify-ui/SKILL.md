@@ -7,10 +7,10 @@ description: Check Ontrack UI work against the design rubric using screenshots. 
 Screenshots are expensive to keep in context, so the looking happens in a subagent.
 
 1. Make sure the screen has a case in `tests/e2e/screens.spec.ts` covering its main states (empty, typical, full, error).
-2. Run `pnpm screenshots -- --grep "<screen name>"`. Output lands in `screenshots/<screen>/<state>-<theme>-<device>.png` for light and dark at 390 by 844, plus iPhone SE and Pro Max sizes.
-3. Run the layout checks: `pnpm exec playwright test --project=stress --grep "<screen name>"`. Fix any overflow, clipped text or tap target under 44 px before going on.
-4. Start the `design-critic` subagent. Give it the screenshot folder, the screen's section in `docs/SCREENS.md`, and nothing else. It returns rubric failures only.
+2. Run `pnpm screenshots -- --grep "<screen name>"`. Output lands in `screenshots/<screen>/<state>-<theme>-<device>.png` for light and dark at the browser viewports: `390` (390 by 664, Safari on a 390 by 844 phone with its toolbars), `se` (375 by 548) and `promax` (430 by 739). `screenshots/xl/` holds the SE at the largest text.
+3. Run the layout checks: `pnpm exec playwright test --project=stress --grep "<screen name>"`. They cover every device at the three text sizes. Fix any overflow, clipped text or tap target under 44 px before going on.
+4. Start the `design-critic` subagent. Give it the screenshot folder, the screen's section in `docs/SCREENS.md`, the matching OneFin reference images (`onefin/site/pages/<page>/mobile-vp-*.png`, `onefin/site/components/<Name>/mobile-*.png`, `onefin/framer/screens/*.png` under `/Users/admin/destination/ontrack-design/`), and nothing else. It returns rubric failures only.
 5. Fix each failure. Re-run steps 2 to 4. Stop after three rounds and report what remains.
 6. Open one light and one dark screenshot yourself as a final sanity check, then report: what you checked, the screenshot paths, and anything left for the owner's eye.
 
-Do not treat a clean critic report as proof of quality on its own. It checks rules. The owner checks taste on a real iPhone at the milestone gate.
+Do not treat a clean critic report as proof of quality on its own. It checks rules. The owner checks taste on a real iPhone in Safari at the milestone gate.

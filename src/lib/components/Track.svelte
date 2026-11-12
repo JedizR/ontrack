@@ -1,5 +1,5 @@
 <!-- DESIGN.md section 7, Track: the signature. The scale runs 0 to 110 percent of the target. The on track zone is a darker
-     segment; the fill is ink, lime inside the zone, ink again past it. Reaching the zone plays one light haptic. -->
+     segment; the fill is ink, green inside the zone, ink again past it. Reaching the zone plays one light haptic. -->
 <script lang="ts">
   import { haptic } from '$lib/haptics';
 
@@ -32,7 +32,7 @@
 </script>
 
 <div
-  class="bg-surface-2 relative overflow-hidden rounded-full {hero ? 'h-3.5' : 'h-1.5'}"
+  class="bg-track relative overflow-hidden rounded-full {hero ? 'h-3.5' : 'h-1.5'}"
   role="progressbar"
   aria-valuemin={0}
   aria-valuemax={Math.round(max)}
@@ -45,7 +45,7 @@
     <div class="bg-line-strong absolute inset-y-0" style="left: {pct(zone[0])}%; right: {100 - pct(zone[1])}%"></div>
   {/if}
   <div
-    class="absolute inset-y-0 left-0 rounded-full transition-[width,background-color] duration-[var(--d-move)] ease-[var(--ease-out)] {reached ? 'bg-lime' : 'bg-ink'}"
+    class="absolute inset-y-0 left-0 rounded-full transition-[width,background-color] duration-[var(--d-move)] ease-[var(--ease-out)] {reached ? 'bg-success' : 'bg-ink'}"
     style="width: {pct(value)}%"
   ></div>
 </div>

@@ -103,7 +103,7 @@ test('another account cannot take over a phone that holds unsent changes', async
   await page.getByTestId('session-signin').click();
   await expect(page.getByTestId('signin-sheet')).toBeVisible();
   await signIn(page, 'someone.else@example.com').catch(() => undefined); // refused: the avatar stays on Sign in
-  await expect(page.getByTestId('session-expired')).toContainText('The changes on this phone belong to me@example.com');
+  await expect(page.getByTestId('session-expired')).toContainText('The changes in this browser belong to me@example.com');
   expect(await weight(page, '2026-11-07')).toEqual({ date: '2026-11-07', kg: 77 });
 
   await page.getByTestId('session-signin').click();
@@ -129,7 +129,10 @@ test('signing out sends what is waiting, then deletes the data from the phone', 
 
   await expect.poll(() => pending(page)).toBe(0);
   await page.getByTestId('avatar').click();
+  // sign out reloads the page; Welcome can show for a moment before it does
+  const reloaded = page.waitForEvent('load');
   await page.getByTestId('account-signout').click();
+  await reloaded;
   await toWelcome(page);
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('ot-ui')!).lastUser)).toBeNull();
   const left = await page.evaluate(

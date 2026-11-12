@@ -1,6 +1,6 @@
 # Ontrack
 
-A calorie and training tracker for iPhone, installed from Safari with Add to Home Screen. A local first Svelte 5 app on Vite, with Supabase for sign in and sync and Vercel for hosting.
+A calorie and training tracker for the phone's browser: Safari on iPhone first, Chrome on Android too. A local first Svelte 5 app on Vite, with Supabase for sign in and sync and Vercel for hosting.
 
 ## Run it
 

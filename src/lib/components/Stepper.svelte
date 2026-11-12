@@ -1,8 +1,9 @@
-<!-- DESIGN.md section 7, Stepper: minus and plus as 44 px circles around a rounded number. Holding repeats. -->
+<!-- DESIGN.md section 7, Stepper: minus and plus as 44 px circles around a number that can also be typed. Holding repeats.
+     A typed number is kept inside min and max but not rounded to the step (125 g stays 125); the buttons go on from it. -->
 <script lang="ts">
   import Minus from '@lucide/svelte/icons/minus';
   import Plus from '@lucide/svelte/icons/plus';
-  import { num } from '$lib/model/format';
+  import { parse, parseWhole } from '$lib/wheel';
   import { t } from '$lib/i18n';
 
   let {
@@ -12,11 +13,22 @@
     max = Infinity,
     unit = '',
     label,
-  }: { value: number; step?: number; min?: number; max?: number; unit?: string; /** what is counted, "grams" */ label: string } = $props();
+    testid,
+  }: {
+    value: number;
+    step?: number;
+    min?: number;
+    max?: number;
+    unit?: string;
+    /** what is counted, "grams" */
+    label: string;
+    testid?: string;
+  } = $props();
 
+  const fit = (v: number) => Math.min(max, Math.max(min, v));
   /** one step, kept inside min and max; false when already at the edge */
   function nudge(d: 1 | -1) {
-    const next = Math.min(max, Math.max(min, Math.round((value + d * step) * 100) / 100));
+    const next = fit(Math.round((value + d * step) * 100) / 100);
     if (next === value) return false;
     value = next;
     return true;
@@ -38,6 +50,17 @@
     else nudge(d);
   }
   $effect(() => stop);
+
+  // a whole number counter (days, sets, minutes) keeps whole numbers; grams keep what was typed
+  const whole = $derived(step % 1 === 0 && min % 1 === 0);
+  function typed(el: HTMLInputElement) {
+    const v = whole ? Math.round(parseWhole(el.value)) : parse(el.value);
+    if (!Number.isNaN(v)) value = fit(v);
+    el.value = String(value);
+  }
+  // the field is as wide as its number, so the unit follows it; the label keeps room for the longest
+  const longest = $derived(Math.max(String(Number.isFinite(max) ? max : value).length, 2));
+  let editing = $state(false);
 </script>
 
 {#snippet key(d: 1 | -1)}
@@ -54,12 +77,29 @@
     oncontextmenu={(e) => e.preventDefault()}
     onclick={() => tap(d)}
   >
-    <Icon size={24} strokeWidth={1.75} />
+    <Icon size={24} strokeWidth={2} />
   </button>
 {/snippet}
 
-<div class="flex items-center gap-3">
+<div class="flex items-center gap-2" data-testid={testid}>
   {@render key(-1)}
-  <output class="text-heading num min-w-16 text-center" aria-live="polite">{num(value)}{unit ? ` ${unit}` : ''}</output>
+  <label class="active:bg-surface-2 flex h-11 items-baseline justify-center gap-1 rounded-sm px-1 transition-colors duration-[var(--d-press)]" style="min-width: calc({longest + 1}ch + {unit ? 2 : 0}em)">
+    <input
+      type="text"
+      inputmode={step % 1 ? 'decimal' : 'numeric'}
+      enterkeyhint="done"
+      autocomplete="off"
+      aria-label={label}
+      value={String(value)}
+      class="num h-11 min-w-11 bg-transparent text-center font-semibold outline-none focus-visible:underline"
+      style="width: {(editing ? longest : Math.max(String(value).length, 1)) + 0.5}ch; font-size: max(16px, var(--t-heading))"
+      data-vaul-no-drag
+      onfocus={(e) => { editing = true; e.currentTarget.select(); }}
+      onkeydown={(e) => { if (e.key === 'Enter') e.currentTarget.blur(); }}
+      onchange={(e) => typed(e.currentTarget)}
+      onblur={(e) => { editing = false; typed(e.currentTarget); }}
+    />
+    {#if unit}<span class="text-ink-2 text-callout font-semibold" aria-hidden="true">{unit}</span>{/if}
+  </label>
   {@render key(1)}
 </div>

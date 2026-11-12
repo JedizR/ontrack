@@ -33,9 +33,9 @@ Precedence when sources disagree: what you say in chat, then your Figma screens,
 
 | Slot | Default |
 | --- | --- |
-| Lime | `#D1FE17`, the Higgsfield reference value. Change `--lime` in `design/tokens.css` |
+| Accent | OneFin violet `#381AC9`, the owner's choice in D1. Change `--accent` in `design/tokens.css` |
 | Logo | `design/brand/mark.svg` and `design/brand/app-icon.svg`. Replace the files to use your own |
-| Home screen name | Ontrack |
+| Short name (tab and manifest) | Ontrack |
 
 ## 4. Product switches
 
