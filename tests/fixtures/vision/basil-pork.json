@@ -1,0 +1,9 @@
+{
+  "is_food": true,
+  "title": "Basil pork with rice and fried egg",
+  "items": [
+    { "name": "White rice", "grams": 220, "portion_note": "One plate", "food_id": "rice-white", "est_per_100g": { "kcal": 130, "protein_g": 2.7, "carbs_g": 28, "fat_g": 0.3 }, "confidence": "high", "hidden_fat": false },
+    { "name": "Stir fried pork with holy basil", "grams": 150, "portion_note": "About a cup", "food_id": null, "est_per_100g": { "kcal": 210, "protein_g": 17, "carbs_g": 5, "fat_g": 13 }, "confidence": "medium", "hidden_fat": true },
+    { "name": "Fried egg", "grams": 50, "portion_note": "One egg", "food_id": "egg-fried", "est_per_100g": { "kcal": 196, "protein_g": 13.6, "carbs_g": 0.8, "fat_g": 14.8 }, "confidence": "high", "hidden_fat": true }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "is_food": true,
+  "title": "Oats with banana and milk",
+  "items": [
+    { "name": "Rolled oats", "grams": 60, "portion_note": "Dry weight, about two thirds of a cup", "food_id": "oats", "est_per_100g": { "kcal": 379, "protein_g": 13, "carbs_g": 68, "fat_g": 6.5 }, "confidence": "medium", "hidden_fat": false },
+    { "name": "Banana", "grams": 118, "portion_note": "One medium", "food_id": "banana", "est_per_100g": { "kcal": 89, "protein_g": 1.1, "carbs_g": 23, "fat_g": 0.3 }, "confidence": "high", "hidden_fat": false },
+    { "name": "Whole milk", "grams": 200, "portion_note": "About a cup", "food_id": "milk-whole", "est_per_100g": { "kcal": 61, "protein_g": 3.2, "carbs_g": 4.8, "fat_g": 3.3 }, "confidence": "medium", "hidden_fat": false }
+  ]
+}
