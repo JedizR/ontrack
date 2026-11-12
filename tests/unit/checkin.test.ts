@@ -111,3 +111,23 @@ describe('rules', () => {
     expect(checkinDue(20, 2, 3)).toBe(false);
   });
 });
+
+describe('the faster gain pace (vector H): the check-in measures against its band', () => {
+  const planH = plan({ ...A, ratePctPerWeek: 0.75 });
+  // too few complete days, so the rate alone steers, against the effective 0.614 percent a week the cap allows
+  const at = (pctPerWeek: number): CheckinInput => ({ ...window({ complete: 0, intake: 0, kgPerDay: ((pctPerWeek / 100) * 60) / 7 }), plan: planH });
+  test('gaining at the capped rate is on track', () => {
+    const r = checkin(at(0.614));
+    expect(r.stats.ratePctPerWeek).toBeCloseTo(0.614, 6);
+    expect(r.proposal.reason).toBe('on_track');
+  });
+  test('gaining at the standard pace raises the target, and the new plan keeps the faster pace', () => {
+    const r = checkin(at(0.5));
+    expect(r.proposal.reason).toBe('raise');
+    expect(r.plan!.ratePctPerWeek).toBe(0.75);
+    expect(r.plan!.flags).toEqual(['surplusCap']);
+  });
+  test('gaining faster than the band lowers it', () => {
+    expect(checkin(at(0.9)).proposal.reason).toBe('lower');
+  });
+});

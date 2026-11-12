@@ -4,11 +4,11 @@ import {
   defaultPace, guardrails, paceOptions, plan, V,
   type Experience, type Goal, type Intensity, type Neat, type PlanInput, type SessionType, type Sex,
 } from '$lib/model/engine';
-import { TEMPLATES } from '$lib/data/templates';
+import { TEMPLATES, type TrainKind } from '$lib/data/templates';
 import { weekdayOf, yearOf } from '$lib/model/dates';
 import { kgToLb, type Units } from '$lib/model/units';
 import { t } from '$lib/i18n';
-import type { Plan, Profile, Program, Weight } from '../../../shared/records';
+import type { Plan, Profile, Program, Session, Weight } from '../../../shared/records';
 
 export type Train =
   | { kind: 'custom'; days: number; type: SessionType; minutes: number; intensity: Intensity }
@@ -94,6 +94,16 @@ export const complete = (d: Draft) =>
 /** Sessions for n days a week, spread out, Monday 0. */
 const SPREAD = [[], [0], [0, 3], [0, 2, 4], [0, 1, 3, 4], [0, 1, 2, 3, 4], [0, 1, 2, 3, 4, 5], [0, 1, 2, 3, 4, 5, 6]];
 
+/** Session defaults for "What do you train?": interface defaults from the onboarding research, not science. */
+const KIND_DEFAULTS = { strength: { minutes: 60, intensity: 'moderate' }, cardio: { minutes: 30, intensity: 'moderate' } } as const;
+/** The week an answer to "What do you train?" and n days make (O1): lifting or cardio each day, or both taking turns, lifting first. */
+export function sessionsFor(kind: TrainKind, days: number): Session[] {
+  return (SPREAD[days] ?? []).map((weekday, i) => {
+    const type = kind === 'cardio' || (kind === 'both' && i % 2 === 1) ? 'cardio' : 'strength';
+    return { key: `d${weekday}`, weekday, name: t.train.types[type], type, ...KIND_DEFAULTS[type] };
+  });
+}
+
 export function programOf(d: Draft): Program {
   const tr = d.train;
   if (tr?.kind === 'template') {
@@ -139,7 +149,8 @@ export type Why = 'noLose' | 'gentleOnly' | 'noFaster' | 'leanOnly';
 export function paceChoices(d: Draft, year: number) {
   const base = inputOf(d, year);
   const { bmi } = guardrails(base);
-  const offered = paceOptions(base.goal, bmi, base.experience);
+  // shortcut: the faster gain pace (F19) stays off this screen until T1b gives it its words and provisional label
+  const offered = paceOptions(base.goal, bmi, base.experience).filter((o) => base.goal !== 'gain' || o.name !== 'faster');
   const why: Why | null =
     d.goal === 'lose' && base.goal !== 'lose' ? 'noLose'
     : d.goal === 'lose' && bmi < V.gentleOnlyBmi ? 'gentleOnly'

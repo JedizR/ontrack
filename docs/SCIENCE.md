@@ -57,14 +57,16 @@ Intensity bands (S5, S13): light 1.6 to 2.9 METs, moderate 3.0 to 5.9, vigorous 
 | --- | --- | --- |
 | `lose` | gentle 0.25, steady 0.5, faster 0.75 (offered only at BMI 25 or more) | steady |
 | `maintain` | 0 | |
-| `gain` | lean 0.25, standard 0.5 (advanced lifters: lean only) | standard for beginners and for BMI under 18.5, otherwise lean |
+| `gain` | lean 0.25, standard 0.5, faster 0.75 (offered only under BMI 20, provisional) (advanced lifters: lean only) | standard for beginners and for BMI under 18.5, otherwise lean. Faster is never the default |
 
 Sources for the bands: S7 for gaining, S9 for losing.
+
+**The faster gain pace (T1, PRD F19).** No source recommends gaining faster than 0.5 percent a week, for lean people or anyone (S7, read again in T1; a search for a rate for underweight adults without an eating disorder found none, see `docs/DECISIONS.md` under T1a). So the pace is **provisional** and the app labels it so. Its rate, 0.75, is the middle of the 0.7 to 0.8 percent a week that the large surplus group of a trial aimed for (S20). That trial and another (S20) found the extra gain was mostly fat, which is what the pace's words say. Who may choose it: BMI under 20 (an assumption: thin people put 60 to 70 percent of an overfeeding gain into lean tissue against 30 to 40 percent in obese people, S21, but no source gives a cut), and not advanced lifters (larger surpluses suit novices, S7). The 20 percent surplus cap below still applies and binds first for most lean, seated people (vector H); the protein target and the strength recommendation of PRD F10 are unchanged.
 
 - `lose`: `delta = -min(wanted, 0.25 * tdeeAvg)`. Flag `deficitCap` if the cap applied.
 - `gain`: `delta = +min(wanted, 0.20 * tdeeAvg)`, or `0.10 * tdeeAvg` for advanced lifters (S7). Flag `surplusCap` if the cap applied.
 - `maintain`: `delta = 0`.
-- The rate is never faster than the paces offered at the current BMI (section 12), so a plan recomputed at a new weight keeps the guardrails. A lose goal under BMI 18.5 gets no deficit.
+- The rate is never faster than the paces offered at the current BMI (section 12), so a plan recomputed at a new weight keeps the guardrails. A lose goal under BMI 18.5 gets no deficit. A faster gain plan recomputed at BMI 20 or more, at a check-in, runs at the standard pace.
 
 ## 7. Daily targets
 
@@ -124,12 +126,19 @@ Computed from the program. One set counts 1 for each primary muscle and 0.5 for 
 | Aerobic minutes per week | 150 to 300 moderate. Counts cardio, walk and sport sessions at 3 METs or more; sessions at 6 METs or more count double | Informational. With a gain goal and over 150 minutes: the app notes that the target already includes it | S13 |
 | Rest days | At least 1 day with no hard session | Add a rest day | Assumption |
 | Session length | Over 120 minutes | Informational | Assumption |
+| Lifting and cardio on one day, order | A day with a strength or circuit session and a cardio session | Lift first, then cardio. Leg strength grew more; muscle size, aerobic fitness and body fat were the same either way | S22 |
+| Lifting and cardio on one day, gap | The same days | Leave 6 hours or more between them, or use separate days | S23, S24 |
+| Lifting and cardio on one day, leg days | Such a day whose lifting trains quads, hamstrings or glutes as a primary muscle | Cycling rather than running | S25 |
+
+The last three are arrangement points, not recommendations: the analysis returns them only when a day has both (walks and sport do not count as cardio here), each with the weekdays it applies to. Overall, lifting and cardio together do not hold back muscle size or maximal strength; explosive strength gains are smaller within one session and not when 3 hours or more apart (S24). S24 found that independent of cycling or running, for explosive strength; S25 found running, not cycling, held back leg size and strength. The two disagree on the mode, so the more conservative advice, cycling on leg days, stands.
+
+**Training on Progress (PRD F20).** For each seven-day block, from the day's sessions as Today shows them and their marks: sessions planned, done and skipped; strength or circuit sessions done, against 2 a week (S13); and moderate-equivalent minutes of cardio, walk and sport sessions done, counted as in the aerobic row above, against 150 to 300 (S13). A session without a mark is not done. Days before the account's first day plan nothing.
 
 When a program has no exercises listed, only the session level checks run and the Train tab invites the user to add exercises for the muscle analysis.
 
 ## 12. Guardrail thresholds
 
-Age under 18 blocks use. BMI under 18.5 removes the lose goal (S15). BMI 18.5 to 20 limits lose to gentle. A goal weight below BMI 18.5 is refused. BMI under 16 shows the doctor card. Any screening answer sets the `maintainOnly` flag or ends onboarding, as the PRD describes.
+Age under 18 blocks use. BMI under 18.5 removes the lose goal (S15). BMI 18.5 to 20 limits lose to gentle. BMI 20 or more, or advanced lifting, removes the faster gain pace. A goal weight below BMI 18.5 is refused. BMI under 16 shows the doctor card. Any screening answer sets the `maintainOnly` flag or ends onboarding, as the PRD describes.
 
 ## 13. Test vectors
 
@@ -160,6 +169,15 @@ Mean target 2357.14, intake is 97.6 percent of it, so not an adherence case. tde
 
 **G. Check-in, adherence.** Same as F with mean intake 2050. Intake is 87 percent of target. Reason `adherence`, change 0.
 
+**H. Faster gain pace, the cap binds.** Vector A at 0.75. BMI 19.59 and a beginner, so the pace is offered. Wanted 495, cap 405.13, delta +405.13. Flags `surplusCap`. Effective rate 0.614 percent a week.
+Matched: training days 2530, rest days 2290. Even: 2430.
+Protein 108 g. Fat 68 g. Carbs: training 372 g, rest 312 g, even 347 g.
+Check-in by rate alone (fewer than 10 complete days): gaining 0.614 percent a week is `on_track`; 0.5 is `raise`, and the new plan keeps 0.75; 0.9 is `lower`.
+
+**I. Faster gain pace, the rate binds.** Vector A at 0.75 with `physical` movement. Baseline 2518. tdeeAvg 2655.142857. Wanted 495, cap 531.03, delta +495. Flags none. Effective rate 0.75.
+Matched: training days 3250, rest days 3010. Even: 3150.
+Protein 108 g. Fat 88 g. Carbs: training 507 g, rest 447 g, even 482 g.
+
 ## 14. Sources (verdicts in `docs/SOURCES.md`)
 
 | Id | Claim used | Citation to check |
@@ -183,6 +201,12 @@ Mean target 2357.14, intake is 97.6 percent of it, so not an adherence case. tde
 | S17 | Smoothing factor 0.1 | Convention. Assumption |
 | S18 | Accuracy of predictive equations | Frankenfield D, Roth-Yousey L, Compher C. J Am Diet Assoc. 2005;105(5):775-789 |
 | S19 | 4, 4 and 9 kcal per gram | FAO. Food energy: methods of analysis and conversion factors. Food and Nutrition Paper 77, 2003 |
+| S20 | Faster gain pace 0.75 (provisional); a faster gain is mostly fat | Helms ER, et al. Sports Med Open. 2023;9:102. Also Garthe I, et al. Eur J Sport Sci. 2013;13(3):295-303 |
+| S21 | Thin people gain more lean tissue | Forbes GB. Ann N Y Acad Sci. 2000;904:359-365. Also Hall KD. Br J Nutr. 2007;97(6):1059-1063 |
+| S22 | Lift before cardio | Eddens L, van Someren K, Howatson G. Sports Med. 2018;48(1):177-188. Also Murlasits Z, et al. J Sports Sci. 2018;36(11):1212-1219 |
+| S23 | 6 hours between lifting and cardio, or separate days | Robineau J, et al. J Strength Cond Res. 2016;30(3):672-683. Also Sale DG, et al. Med Sci Sports Exerc. 1990;22(3):348-356 |
+| S24 | Interference within one session | Schumann M, et al. Sports Med. 2022;52(3):601-612 |
+| S25 | Cycling rather than running on leg days | Wilson JM, et al. J Strength Cond Res. 2012;26(8):2293-2307 |
 
 ## 15. What the app says about certainty
 

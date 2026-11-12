@@ -150,6 +150,49 @@ test('vector E, unspecified sex', () => {
   expect(bmr({ sex: 'unspecified', age: 30, heightCm: 170, weightKg: 70 })).toBe(1534.5);
 });
 
+describe('vector H, hardgainer at the faster gain pace (F19): the surplus cap binds', () => {
+  const p = plan({ ...A, ratePctPerWeek: 0.75 });
+  test('offered at BMI 19.59 to a beginner, and capped at 20 percent of maintenance', () => {
+    expect(paceOptions('gain', bmi(60, 175), 'beginner').map((o) => o.name)).toEqual(['lean', 'standard', 'faster']);
+    expect(p.ratePctPerWeek).toBe(0.75);
+    expect(p.delta).toBeCloseTo(405.128571, 6); // wanted 495, cap 405.13
+    expect(p.flags).toEqual(['surplusCap']);
+    expect(effectiveRate(p, 'male')).toBeCloseTo(0.614, 3);
+  });
+  test('targets and macros', () => {
+    for (const d of [0, 2, 4, 5]) expect(day(p, 'male', d)).toBe(2530);
+    for (const d of [1, 3, 6]) expect(day(p, 'male', d)).toBe(2290);
+    expect(day(p, 'male', 0, 'even')).toBe(2430);
+    expect(p.proteinG).toBe(108); // the protein floor is the gain goal's, whatever the pace
+    expect(p.fatG).toBe(68);
+    expect(dayMacros(p, 2530).carbsG).toBe(372);
+    expect(dayMacros(p, 2290).carbsG).toBe(312);
+    expect(dayMacros(p, 2430).carbsG).toBe(347);
+  });
+});
+
+describe('vector I, the faster pace with a physical job: the rate binds, under the cap', () => {
+  const p = plan({ ...A, neat: 'physical', ratePctPerWeek: 0.75 });
+  test('energy', () => {
+    expect(p.baseline).toBeCloseTo(2518, 9);
+    expect(tdeeAvg(p)).toBeCloseTo(2655.142857, 6);
+    expect(p.delta).toBeCloseTo(495, 9); // under the cap of 531.03
+    expect(0.2 * tdeeAvg(p)).toBeCloseTo(531.03, 2);
+    expect(p.flags).toEqual([]);
+    expect(effectiveRate(p, 'male')).toBeCloseTo(0.75, 9);
+  });
+  test('targets and macros', () => {
+    expect(day(p, 'male', 0)).toBe(3250);
+    expect(day(p, 'male', 1)).toBe(3010);
+    expect(day(p, 'male', 0, 'even')).toBe(3150);
+    expect(p.proteinG).toBe(108);
+    expect(p.fatG).toBe(88);
+    expect(dayMacros(p, 3250).carbsG).toBe(507);
+    expect(dayMacros(p, 3010).carbsG).toBe(447);
+    expect(dayMacros(p, 3150).carbsG).toBe(482);
+  });
+});
+
 describe('details', () => {
   test('body fat outside 5 to 60 uses Mifflin-St Jeor', () => {
     const base = { sex: 'male' as const, age: 40, heightCm: 180, weightKg: 95 };
@@ -211,6 +254,11 @@ describe('guardrails and paces', () => {
   });
   test('gain paces and defaults', () => {
     expect(paceOptions('gain', 22, 'advanced').map((o) => o.name)).toEqual(['lean']);
+    expect(paceOptions('gain', 22, 'beginner').map((o) => o.name)).toEqual(['lean', 'standard']);
+    expect(paceOptions('gain', 20, 'intermediate').map((o) => o.name)).toEqual(['lean', 'standard']);
+    expect(paceOptions('gain', 19.9, 'intermediate').map((o) => o.name)).toEqual(['lean', 'standard', 'faster']);
+    expect(paceOptions('gain', 17, 'advanced').map((o) => o.name)).toEqual(['lean']);
+    expect(defaultPace('gain', 17, 'beginner')?.name).toBe('standard'); // faster is chosen, never a default
     expect(defaultPace('gain', 22, 'beginner')?.name).toBe('standard');
     expect(defaultPace('gain', 22, 'intermediate')?.name).toBe('lean');
     expect(defaultPace('gain', 18, 'intermediate')?.name).toBe('standard');
@@ -224,6 +272,9 @@ describe('guardrails and paces', () => {
     expect(under.delta).toBe(0);
     expect(Object.is(effectiveRate(under, 'female'), 0)).toBe(true); // not -0
     expect(plan({ ...B, ratePctPerWeek: -0.75 }).delta).toBe(0); // a negative rate never turns a lose goal into a surplus
+    // the faster gain pace stops at BMI 20 and for advanced lifters
+    expect(plan({ ...A, weightKg: 61.25, ratePctPerWeek: 0.75 }).ratePctPerWeek).toBe(0.5); // BMI 20.0
+    expect(plan({ ...A, experience: 'advanced', ratePctPerWeek: 0.75 }).ratePctPerWeek).toBe(0.25);
   });
 });
 

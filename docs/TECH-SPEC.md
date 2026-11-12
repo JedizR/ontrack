@@ -460,7 +460,26 @@ type Muscle = 'chest' | 'back' | 'shoulders' | 'biceps' | 'triceps' | 'quads' | 
 type Exercise = { id: string; name: string; primary: Muscle[]; secondary: Muscle[]; equipment: 'barbell' | 'dumbbell' | 'machine' | 'cable' | 'bodyweight' | 'other' };
 ~~~
 
-Every muscle has at least four exercises where it is primary. A unit test checks the schema, unique ids and coverage. `templates.ts` holds the four programs named in the PRD, each built from library ids, each landing inside the bands in `docs/SCIENCE.md` section 11 when analysed. A test asserts that.
+Every muscle has at least four exercises where it is primary. A unit test checks the schema, unique ids and coverage. `templates.ts` holds the four programs named in the PRD and two that mix strength and cardio (T1, F20: `full-body-cardio-3`, `upper-lower-cardio-5`), each built from library ids, each landing inside the bands in `docs/SCIENCE.md` section 11 when analysed. A test asserts that.
+
+Engine contract added in T1 (`docs/SCIENCE.md` sections 6 and 11):
+
+~~~ts
+// plan.ts: a third gain pace under BMI 20, never for advanced lifters, never the default
+paceOptions('gain', bmi, experience): Pace[]   // lean 0.25, standard 0.5, faster 0.75 (C.gainPaceFaster, provisional)
+// program.ts
+type HybridPoint = { kind: 'liftFirst' | 'spaceOut' | 'legDayCardio'; weekdays: number[]; value?: number; source: SourceId };
+analyseProgram(...).hybrid: HybridPoint[]   // only when a day has lifting and cardio; spaceOut's value is hours
+aerobicMinutes(sessions): number; aerobicBand(minutes): 'below' | 'inRange' | 'above'; STRENGTH: Set<SessionType>
+// templates.ts
+type TrainKind = 'lifting' | 'cardio' | 'both';   // "What do you train?" (O1)
+suggestTemplate(kind, days, experience, goal): string | null
+// src/flows/onboarding/draft.ts
+sessionsFor(kind, days): Session[]   // the week an answer makes: lifting 60 min, cardio 30, both taking turns
+// src/lib/model/progress.ts, the training card (F20)
+type TrainingStats = { planned; done; skipped; strength; cardioMinutes; cardioBand };
+account(r).weeks(end, n)[i].training: TrainingStats;  DayStats.sessions: { session, status? }[];  trainingOf(days)
+~~~
 
 ## 11. Client notes
 

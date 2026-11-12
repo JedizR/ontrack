@@ -3,10 +3,11 @@
 
 export const ENGINE_VERSION = 1;
 
-/** S1 to S19 are papers and guides in docs/SOURCES.md. OT is an Ontrack engineering choice, documented there too. */
+/** S1 to S25 are papers and guides in docs/SOURCES.md. OT is an Ontrack engineering choice, documented there too. */
 export type SourceId =
   | 'S1' | 'S2' | 'S3' | 'S4' | 'S5' | 'S6' | 'S7' | 'S8' | 'S9' | 'S10'
-  | 'S11' | 'S12' | 'S13' | 'S14' | 'S15' | 'S16' | 'S17' | 'S18' | 'S19' | 'OT';
+  | 'S11' | 'S12' | 'S13' | 'S14' | 'S15' | 'S16' | 'S17' | 'S18' | 'S19'
+  | 'S20' | 'S21' | 'S22' | 'S23' | 'S24' | 'S25' | 'OT';
 /** verified: read in the source. assumption: a choice, labelled "Working assumption" in the app. provisional: not yet checked. */
 export type Status = 'verified' | 'assumption' | 'provisional';
 export type Constant = { value: number | Readonly<Record<string, number>>; unit: string; source: SourceId; status: Status; note?: string };
@@ -43,6 +44,11 @@ export const C = {
     'The 3,500 kcal per pound rule; it overstates the energy of weight change for leaner people. The check-in absorbs the error'),
   losePace: k({ gentle: 0.25, steady: 0.5, faster: 0.75 }, 'percent of body weight per week', 'S9', 'verified', 'Source band 0.5 to 1; gentle is below it'),
   gainPace: k({ lean: 0.25, standard: 0.5 }, 'percent of body weight per week', 'S7', 'verified', 'Advanced lifters: 0.25'),
+  // The faster gain pace (T1, PRD F19). No source recommends more than 0.5 a week for anyone (S7), so it is provisional
+  gainPaceFaster: k(0.75, 'percent of body weight per week', 'S20', 'provisional',
+    'Middle of the 0.7 to 0.8 a week the large surplus group aimed for in S20 (trained lifters), whose extra gain was mostly fat. The surplus cap still applies'),
+  fasterGainMaxBmi: k(20, 'kg/m2', 'OT', 'assumption',
+    'Offered below this BMI, never to advanced lifters. Thin people put 60 to 70 percent of an overfeeding gain into lean tissue (S21); no source gives a BMI cut'),
   fasterPaceMinBmi: k(25, 'kg/m2', 'S15', 'verified', 'Overweight threshold'),
   deficitCap: k(0.25, 'share of maintenance', 'OT', 'assumption'),
   surplusCap: k(0.2, 'share of maintenance', 'S7', 'verified', 'Top of the 10 to 20 percent band for novice and intermediate lifters'),
@@ -105,6 +111,9 @@ export const C = {
   vigorousFactor: k(2, 'moderate minutes per vigorous minute', 'S13', 'verified', 'Implied by the paired 150 to 300 and 75 to 150 minute ranges'),
   restDays: k(1, 'days per week with no hard session', 'OT', 'assumption'),
   longSession: k(120, 'minutes', 'OT', 'assumption'),
+  // Lifting and cardio in one week (T1, PRD F20)
+  hybridGapHours: k(6, 'hours between lifting and cardio on the same day', 'S23', 'verified',
+    'Less than 6 h apart dulled strength gains; 24 h did not. A gap of 3 h or more spared explosive strength in S24'),
 
   // Guardrails, section 12
   minAge: k(18, 'years', 'OT', 'assumption', 'Product rule, PRD section 7'),

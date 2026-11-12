@@ -50,7 +50,10 @@ export function paceOptions(goal: Goal, bmiValue: number, experience: Experience
   if (goal === 'maintain') return [];
   if (goal === 'gain') {
     const lean: Pace = { name: 'lean', rate: V.gainPace.lean };
-    return experience === 'advanced' ? [lean] : [lean, { name: 'standard', rate: V.gainPace.standard }];
+    if (experience === 'advanced') return [lean];
+    const paces: Pace[] = [lean, { name: 'standard', rate: V.gainPace.standard }];
+    // the faster pace (F19) only for lean people; the surplus cap still applies to it
+    return bmiValue < V.fasterGainMaxBmi ? [...paces, { name: 'faster', rate: V.gainPaceFaster }] : paces;
   }
   if (bmiValue < V.underweightBmi) return [];
   const p = V.losePace;
@@ -63,7 +66,7 @@ export function paceOptions(goal: Goal, bmiValue: number, experience: Experience
   return bmiValue >= V.fasterPaceMinBmi ? all : all.slice(0, -1);
 }
 
-/** Steady for losing; standard for gaining beginners and underweight people, lean otherwise. */
+/** Steady for losing; standard for gaining beginners and underweight people, lean otherwise. Faster is never the default. */
 export function defaultPace(goal: Goal, bmiValue: number, experience: Experience): Pace | undefined {
   const options = paceOptions(goal, bmiValue, experience);
   const want = goal === 'lose' ? 'steady' : experience === 'beginner' || bmiValue < V.underweightBmi ? 'standard' : 'lean';

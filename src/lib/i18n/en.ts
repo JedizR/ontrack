@@ -406,6 +406,8 @@ export const en = {
       'upper-lower-4': 'A year or more of lifting and four free days.',
       'push-pull-legs-6': 'Experienced lifters with time to train most days.',
       'minimal-2': 'A busy week. Two full body sessions cover the basics.',
+      'full-body-cardio-3': 'Lifting and cardio on three days. A short ride after each session.',
+      'upper-lower-cardio-5': 'A year or more of lifting. Runs after the upper days and a long easy ride.',
     } as Record<string, string>,
     // the Train tab (SCREENS.md section 8)
     summary: (n: string, min: string) => `${n} ${n === '1' ? 'session' : 'sessions'}, ${min} minutes a week`,

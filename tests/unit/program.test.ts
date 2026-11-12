@@ -6,6 +6,8 @@ const library: Library = {
   row: { primary: ['back'], secondary: ['biceps'] },
   bench: { primary: ['chest'], secondary: ['triceps', 'shoulders'] },
   curl: { primary: ['biceps'], secondary: [] },
+  squat: { primary: ['quads', 'glutes'], secondary: ['hamstrings'] },
+  calf: { primary: ['calves'], secondary: [] },
 };
 const lift = (weekday: number, exercises: ProgramSession['exercises'], intensity: ProgramSession['intensity'] = 'moderate'): ProgramSession => ({
   weekday,
@@ -96,5 +98,28 @@ describe('session checks', () => {
   test('sessions over 120 minutes get a note', () => {
     expect(run([{ ...lift(0, undefined), minutes: 150 }, lift(2, undefined)]).notes).toEqual([{ kind: 'longSession', value: 150, source: 'OT' }]);
     expect(run([{ ...lift(0, undefined), minutes: 120 }, lift(2, undefined)]).notes).toEqual([]);
+  });
+});
+
+describe('lifting and cardio in one week (F20)', () => {
+  const cardio = (weekday: number): ProgramSession => ({ weekday, type: 'cardio', minutes: 30, intensity: 'moderate' });
+  test('a day with both: lift first and leave 6 hours, naming the days', () => {
+    const a = run([lift(0, [{ exerciseId: 'row', sets: 3 }]), cardio(0), lift(2, undefined), cardio(2), cardio(4)]);
+    expect(a.hybrid).toEqual([
+      { kind: 'liftFirst', weekdays: [0, 2], source: 'S22' },
+      { kind: 'spaceOut', weekdays: [0, 2], value: 6, source: 'S23' },
+    ]);
+  });
+  test('cardio on a day that trains legs directly: cycle rather than run', () => {
+    const a = run([lift(1, [{ exerciseId: 'squat', sets: 4 }]), cardio(1), lift(3, [{ exerciseId: 'calf', sets: 4 }]), cardio(3)]);
+    expect(a.hybrid.find((p) => p.kind === 'legDayCardio')).toEqual({ kind: 'legDayCardio', weekdays: [1], source: 'S25' });
+  });
+  test('lifting and cardio on separate days, a walk beside a lift, or no lifting: nothing to arrange', () => {
+    expect(run([lift(0, undefined), cardio(1)]).hybrid).toEqual([]);
+    expect(run([lift(0, undefined), { weekday: 0, type: 'walk', minutes: 30, intensity: 'moderate' }]).hybrid).toEqual([]);
+    expect(run([cardio(0), cardio(2)]).hybrid).toEqual([]);
+  });
+  test('circuit counts as lifting', () => {
+    expect(run([{ ...lift(0, undefined), type: 'circuit' }, cardio(0)]).hybrid.map((p) => p.kind)).toEqual(['liftFirst', 'spaceOut']);
   });
 });
