@@ -152,18 +152,20 @@
 
     <Card list aria-label={t.today.training} data-testid="training">
       {#each day.sessions as { session: s, status } (s.key)}
-        <Row title={s.name} caption={status === 'done' ? t.today.doneLine(kindOf(s), num(s.minutes)) : status === 'skipped' ? t.today.skippedLine : t.today.session(kindOf(s), num(s.minutes), num(Math.round(sessionKcal(s, day.plan.weightKg))))} testid="session-{s.key}">
+        <Row title={s.name} caption={status === 'done' ? t.today.doneLine(kindOf(s), num(s.minutes)) : status === 'skipped' ? t.today.skippedLine : t.today.session(kindOf(s), num(s.minutes), num(Math.round(sessionKcal(s, day.plan.weightKg))))} testid="session-{s.key}" wrap>
           {#snippet leading()}<div class="bg-surface-2 grid size-full place-items-center"><TrainIcon /></div>{/snippet}
           {#snippet trailing()}
-            {#if status}
-              {#if status === 'done'}<Check size={24} strokeWidth={1.75} aria-hidden="true" />{/if}
-              <Button variant="plain" size="sm" onclick={() => clearSessionLog(view.date, s.key)} data-testid="session-undo">{t.today.undo}</Button>
-            {:else}
-              <Button size="sm" onclick={() => logSession({ date: view.date, sessionKey: s.key, status: 'done' })} data-testid="session-done">{t.today.done}</Button>
-              <button type="button" class="text-ink-2 active:bg-surface-2 -mr-3 grid size-11 flex-none place-items-center rounded-full transition-colors duration-[var(--d-press)]" aria-label={t.today.more(s.name)} onclick={() => (sheets.session = { date: view.date, key: s.key, name: s.name })} data-testid="session-more">
-                <Ellipsis size={24} strokeWidth={1.75} />
-              </button>
-            {/if}
+            <div class="flex flex-none items-center gap-1">
+              {#if status}
+                {#if status === 'done'}<Check size={24} strokeWidth={1.75} aria-hidden="true" />{/if}
+                <Button variant="plain" size="sm" onclick={() => clearSessionLog(view.date, s.key)} data-testid="session-undo">{t.today.undo}</Button>
+              {:else}
+                <Button size="sm" onclick={() => logSession({ date: view.date, sessionKey: s.key, status: 'done' })} data-testid="session-done">{t.today.done}</Button>
+                <button type="button" class="text-ink-2 active:bg-surface-2 -mr-3 grid size-11 flex-none place-items-center rounded-full transition-colors duration-[var(--d-press)]" aria-label={t.today.more(s.name)} onclick={() => (sheets.session = { date: view.date, key: s.key, name: s.name })} data-testid="session-more">
+                  <Ellipsis size={24} strokeWidth={1.75} />
+                </button>
+              {/if}
+            </div>
           {/snippet}
         </Row>
       {:else}
