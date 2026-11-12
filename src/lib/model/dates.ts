@@ -23,6 +23,9 @@ export const daysBetween = (a: string, b: string) => Math.round((local(b).getTim
 /** The seven days ending on `date`, oldest first. */
 export const lastWeek = (date: string) => [6, 5, 4, 3, 2, 1, 0].map((n) => addDays(date, -n));
 
+/** The phone's calendar day of a timestamp, to say when a friend's meal was shared ("Today, 12:40"). Display only:
+ * a day's records are still bucketed by the date captured at write time. */
+export const localDayOf = (iso: string) => isoDate(new Date(iso));
 /** "08:10": the local clock time of an ISO timestamp, 24 hour. */
 export function timeOf(iso: string) {
   const d = new Date(iso);

@@ -50,6 +50,21 @@ function gps(v: DataView): Position | null | undefined {
   }
 }
 
+/**
+ * The phone's position, read once and never watched (F17: never live, never a track). `denied` when the user or the
+ * browser refuses, `unavailable` when no fix came in time or there is no location service.
+ */
+export function currentPosition(): Promise<Position | 'denied' | 'unavailable'> {
+  if (typeof navigator === 'undefined' || !navigator.geolocation) return Promise.resolve('unavailable');
+  return new Promise((ok) =>
+    navigator.geolocation.getCurrentPosition(
+      (p) => ok({ lat: p.coords.latitude, lng: p.coords.longitude }),
+      (e) => ok(e.code === 1 ? 'denied' : 'unavailable'), // 1 is PERMISSION_DENIED
+      { enableHighAccuracy: false, timeout: 15_000, maximumAge: 60_000 },
+    ),
+  );
+}
+
 /** A map's bounds as the database compares them: longitudes back inside -180 to 180 (a map panned round the world
  * reports 185 or -540), the whole world when the box is wider than it, and a west edge east of the east edge when it
  * crosses the 180th meridian. */

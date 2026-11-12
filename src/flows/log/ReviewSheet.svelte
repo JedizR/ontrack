@@ -21,6 +21,7 @@
   import { toast } from 'svelte-sonner';
   import { t } from '$lib/i18n';
   import ItemList from './ItemList.svelte';
+  import ShareToMap from './ShareToMap.svelte';
   import { lineOf, lineWithMine, scaled, type Line } from './items';
   import type { AnalysisItem, AnalyzeRequest } from '../../../shared/analysis';
   import type { Meal, MealItem } from '../../../shared/records';
@@ -39,6 +40,9 @@
   let oil = $state<keyof typeof OIL>('none');
   let oilFood = $state<Food | null>(null);
   let keep = $state(false);
+  let share = $state(false);
+  let shareRow = $state<ShareToMap | null>(null);
+  let original = $state.raw<Blob | null>(null); // the photo as taken: its location, if any, is read only when sharing
   let limit = $state(0);
   let thumb: Blob | null = null;
   let ai: Meal['ai'];
@@ -56,7 +60,8 @@
     ai = undefined;
     title = '';
     lines = [];
-    hidden = keep = false;
+    hidden = keep = share = false;
+    original = null;
     oil = 'none';
   }
 
@@ -73,6 +78,7 @@
       if (!p) return void (status = 'bad_request');
       photoUrl = URL.createObjectURL(p.photo);
       thumb = p.thumb;
+      original = r.file;
       request = { kind: 'photo', image: p.image, localDate: view.today, locale: 'en' };
     }
     const res = await analyzeMeal(request);
@@ -126,8 +132,10 @@
     const name = title.trim() || items[0].name;
     const meal: Meal = { date: view.date, at: stampOn(view.date), title: title.trim(), method: kind, items, ...(ai ? { ai } : {}) };
     saving = true;
+    // a position still being read goes with the meal (F17)
+    const place = share && shareRow ? (await shareRow.settled(), shareRow.position()) : null;
     // the sheet closes only once the meal is written, so a refused meal is never lost
-    const undo = await logReviewed(meal, kind === 'photo' ? thumb : null).catch(() => null);
+    const undo = await logReviewed(meal, kind === 'photo' ? thumb : null, place ?? undefined).catch(() => null);
     saving = false;
     if (!undo) return void toast(t.review.notSaved);
     rememberFoods(lines.filter((l) => l.corrected).map(scaled));
@@ -186,6 +194,9 @@
         </div>
       {/if}
     </ItemList>
+    {#if kind === 'photo'}
+      <ShareToMap bind:this={shareRow} bind:checked={share} file={original} title={t.social.share} line={t.social.shareLine} testid="review-share" />
+    {/if}
   {:else}
     <div class="mt-4" role="alert" data-testid="review-error">
       <p class="text-body">{message}</p>

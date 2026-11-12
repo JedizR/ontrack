@@ -7,7 +7,8 @@
   import Button from '$lib/components/Button.svelte';
   import { sheets } from '$lib/sheets.svelte';
   import { db } from '$lib/db/store.svelte';
-  import { deleteMeal, rememberFoods, saveAsMeal, saveMeal, undoToast } from '$lib/actions';
+  import { deleteMeal, rememberFoods, saveAsMeal, saveMeal, shareMeal, undoToast, unshareMeal } from '$lib/actions';
+  import type { Position } from '$lib/geo';
   import { totals } from '$lib/model/day';
   import { atTime, timeOf } from '$lib/model/dates';
   import { num } from '$lib/model/format';
@@ -15,6 +16,7 @@
   import { t } from '$lib/i18n';
   import ItemList from './ItemList.svelte';
   import Thumb from './Thumb.svelte';
+  import ShareToMap from './ShareToMap.svelte';
   import { lineOf, scaled, type Line } from './items';
   import type { Meal } from '../../../shared/records';
 
@@ -56,6 +58,19 @@
     saveAsMeal(edited, edited.title || items[0].name);
     toast(t.toast.mealSaved);
   }
+  // on the map or off it at once, not on Save changes; the sheet's copy follows so Save changes keeps it (S1b)
+  function place(p: Position | null) {
+    if (!id || !meal) return;
+    if (p) {
+      if (!shareMeal(id, p)) return;
+      meal.share = db.get('meal', id)?.share;
+      toast(t.social.shared);
+    } else {
+      unshareMeal(id);
+      delete meal.share;
+      toast(t.social.unshared);
+    }
+  }
   function remove() {
     if (!id) return;
     const undo = deleteMeal(id);
@@ -86,6 +101,10 @@
     </div>
 
     <ItemList bind:lines empty={t.meal.empty} />
+
+    {#if meal.thumb}
+      {#key id}<ShareToMap checked={!!meal.share} title={t.social.onMap} line={t.social.loggedLine} onplace={place} testid="meal-share" />{/key}
+    {/if}
 
     <div class="border-line mt-4 flex flex-wrap gap-2 border-t pt-4">
       <Button disabled={!items.length} onclick={keep} data-testid="meal-keep">{t.meal.saveAs}</Button>

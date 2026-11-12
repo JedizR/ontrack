@@ -17,6 +17,7 @@
   import { dayTitle } from '$lib/model/dates';
   import { picker } from '$lib/picker.svelte';
   import { db } from '$lib/db/store.svelte';
+  import { refreshFriends, waiting } from '$lib/friends.svelte';
   import type { SyncState } from '$lib/components/SyncMark.svelte';
 
   const TITLES = [t.tabs.today, t.tabs.train, t.tabs.progress];
@@ -48,6 +49,13 @@
   const loadCheckin = async () => { Checkin ??= (await import('./flows/checkin/CheckinSheet.svelte')).default; };
   $effect(() => { if (sheets.checkin && !Checkin) void loadCheckin(); });
   const add = () => (db.ready ? (sheets.add = true) : (sheets.signin = true));
+  // the food map and friends (S1b): a full screen layer over the shell, its own chunk; MapLibre loads inside it
+  let FoodMap = $state<Component | null>(null);
+  const loadMap = async () => { FoodMap ??= (await import('./flows/social/FoodMap.svelte')).default; };
+  $effect(() => { if (sheets.friends && !FoodMap) loadMap().catch(() => { sheets.friends = false; toast(t.social.mapOffline); }); });
+  // the badge: requests waiting, asked once the account has a profile for friends, and again whenever the tab returns
+  const social = $derived(db.ready && !!db.get('social', 'social'));
+  $effect(() => { if (social && session.user) void refreshFriends(); });
 
   // First run, and a signed in account with no profile yet, go through onboarding (SCREENS.md section 1). A phone that
   // is signed in but has never pulled shows Today's first load state: the account may already have a plan.
@@ -99,7 +107,9 @@
     const preload = setTimeout(() => { void loadTab(1); void loadTab(2); loadSheets().catch(() => undefined); loadLog().catch(() => undefined); }, 800); // a failed preload retries on first open
     // a tab can stay open past midnight: Today follows the calendar when it comes back
     const tick = () => { if (document.visibilityState === 'visible') view.tick(); };
+    const back = () => { if (document.visibilityState === 'visible' && social && session.user && !sheets.friends) void refreshFriends(); };
     document.addEventListener('visibilitychange', tick);
+    document.addEventListener('visibilitychange', back);
     const clock = setInterval(tick, 60_000);
 
     if (import.meta.env.PROD) {
@@ -111,7 +121,7 @@
         });
       });
     }
-    return () => { clearTimeout(preload); clearInterval(clock); document.removeEventListener('visibilitychange', tick); };
+    return () => { clearTimeout(preload); clearInterval(clock); document.removeEventListener('visibilitychange', tick); document.removeEventListener('visibilitychange', back); };
   });
 </script>
 
@@ -127,6 +137,8 @@
     sync={MARK[sync.status]}
     signedIn={!!session.user}
     onaccount={() => (session.user ? (sheets.account = true) : (sheets.signin = true))}
+    onfriends={session.user && db.ready ? () => (sheets.friends = true) : undefined}
+    requests={waiting()}
   />
 
   <!-- flex-1: the whole area between header and dock takes swipes, not just the content -->
@@ -156,4 +168,5 @@
 {#if Log}<Log />{/if}
 {#if Wheel}<Wheel />{/if}
 {#if Checkin}<Checkin />{/if}
+{#if FoodMap && sheets.friends}<FoodMap />{/if}
 <Toasts />
