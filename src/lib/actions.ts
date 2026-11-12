@@ -9,6 +9,9 @@ import { session } from '$lib/session.svelte';
 import { prefs } from '$lib/prefs.svelte';
 import { BackendError } from '$lib/backend';
 import type { FailKind } from '$lib/backend/types';
+import { eeeByWeekday, planFromBaseline } from '$lib/model/engine';
+import { planFor } from '$lib/model/day';
+import { addDays, today } from '$lib/model/dates';
 import type { AnalyzeRequest, AnalyzeResponse } from '../../shared/analysis';
 import { ids, recSchema, SCHEMAS, type Checkin, type Collection, type DataOf, type Meal, type Plan, type Profile, type Program, type Saved, type SessionLog, type Weight } from '../../shared/records';
 
@@ -57,6 +60,42 @@ export function logSaved(id: string, date: string, at: string) {
 }
 /** Keep a meal to log again from Saved. */
 export const saveAsMeal = (m: Meal, title: string) => saveSaved({ title, items: m.items, uses: 0, lastUsedAt: m.at });
+const kept = (p: Program) => p.sessions.map(({ exercises: _, ...s }) => s);
+/**
+ * A changed program, with a plan from tomorrow whose exercise energy follows it: today and every day before keep their
+ * targets and sessions (BUILD-PLAN M7). Plans from before plans kept their sessions get the old program's first.
+ * Returns the undo: the old program back, the new plan gone.
+ */
+export function changeProgram(p: Program) {
+  recSchema.parse({ collection: 'program', id: ids.program(), updatedAt: 0, data: SCHEMAS.program.parse(p) }); // before any write
+  const was = JSON.parse(JSON.stringify(db.get('program', 'program') ?? { name: '', sessions: [] })) as Program; // a plain copy, for undo
+  const profile = db.get('profile', 'profile');
+  const plans = db.live('plan');
+  const current = planFor(plans, addDays(today(), 1));
+  let id: string | null = null;
+  if (profile && current) {
+    for (const r of [...plans].sort((a, b) => a.updatedAt - b.updatedAt)) if (!r.data.sessions) write('plan', r.id, { ...r.data, sessions: kept(was) });
+    const numbers = planFromBaseline({
+      sex: profile.sex,
+      heightCm: profile.heightCm,
+      experience: profile.experience,
+      weightKg: current.weightKg,
+      goal: current.goal,
+      ratePctPerWeek: current.ratePctPerWeek,
+      maintainOnly: current.flags.includes('maintainOnly'),
+      bmr: current.bmr,
+      baseline: current.baseline,
+      eeeByWeekday: eeeByWeekday(p.sessions, current.weightKg),
+    });
+    const { goalWeightKg, tdeeSource } = current;
+    id = savePlan({ ...numbers, effectiveFrom: addDays(today(), 1), ...(goalWeightKg ? { goalWeightKg } : {}), tdeeSource, source: 'edit', sessions: kept(p) });
+  }
+  saveProgram(p);
+  return () => {
+    saveProgram(was);
+    if (id) remove('plan', id);
+  };
+}
 export const logSession = (l: SessionLog) => write('slog', ids.slog(l.date, l.sessionKey), l);
 export const clearSessionLog = (date: string, key: string) => remove('slog', ids.slog(date, key));
 export const saveCheckin = (c: Checkin) => write('checkin', ids.checkin(c.date), c);

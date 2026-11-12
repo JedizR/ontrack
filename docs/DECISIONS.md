@@ -2,6 +2,22 @@
 
 Changes to a doc's decision, and choices made on the owner's behalf. Newest first, one line each: what, why.
 
+## M7
+
+- A plan keeps the program's sessions (without exercises) as `sessions`, and a day's training card, skip and rest target read the plan's sessions, falling back to the program for plans made before M7. Why: the gate says a program change leaves past days as they were; with only the program, a past day would show the new week's sessions and lose a skip. The first program change writes the old sessions into plans that have none.
+- Every program change (Save in the Session sheet, a drag, Delete session, a template) writes the program at once and a new plan from tomorrow (`changeProgram` in `actions.ts`), with the current plan's baseline, weight, goal and pace and the new exercise energy, through `planFromBaseline` as a check-in does. Today keeps its own plan and its own sessions until midnight; the Train summary says "Your targets follow this program from tomorrow." while a plan is waiting. Undo restores the program and deletes that plan. A Save that changes nothing writes nothing.
+- The Session sheet edits a copy and saves with a pinned Save (Add session for a new one), instead of saving on every tap. Why: each save makes a plan record. It also has Day chips: the accessible way to move a session, and the way to add a second session on a day. The drag handle without a drag (a keyboard or VoiceOver activation) opens the sheet.
+- The week is one row per session, each with a weekday tile (today's in ink, as in the week strip), and one "Rest" row per empty day that opens a new session on that day; "Add a session" under the week adds one on today's weekday.
+- Intensity in the Session sheet is three chips with the selected level's line under them, not a segmented control, as in onboarding (M4): "Moderate" clips in a segment at the largest text on the SE with CI's fonts. The design critic flagged it; kept.
+- Intensity lines use the talk test: Light "Easy. You could talk in full sentences.", Moderate "Steady. You can talk in short sentences.", Hard "Hard. Only a few words at a time."
+- Templates are sections divided by hairlines inside the sheet, not cards. Why: a card on a sheet is the same surface, and DESIGN.md bans cards in cards. Each shows the muscle balance it produces as "10 of 10 muscles at 10 to 20 sets a week", computed with `analyseProgram`.
+- A new exercise starts at 3 sets of 8 to 12 reps. Sets 1 to 20, reps 1 to 100, minutes 5 to 600 in fives, as the record schema allows.
+- Recommendations are one sentence each (SCREENS.md), so the PRD's example becomes "Back gets 6 sets a week, so add 4 to reach the range linked with better growth." "Why" opens the citation under the row; an Ontrack assumption (more than 20 sets, rest days) says "Working assumption". With none: "No changes to suggest." The engine's notes (cardio already in the target, a session over 120 minutes) show under the cardio row.
+- Muscle tracks run to 22 sets with the zone at 10 to 20 (the Track scale is 110 percent of its target, here 20); a muscle in range is lime, as a reached target. Rows under 10 sets come first.
+- The "Your week" and "Analysis" headings keep Today's 4 px inset (the Meals heading). The design critic flagged the inset; kept for one look across tabs until the design refresh.
+- The template confirm is titled "Use this program?" with the program's name in the body. Why: the name in the title was cut off at the largest text with CI's fonts.
+- Toasts say "Program saved" and "Session deleted" with Undo; the longer line about tomorrow lives on the summary card. Why: toasts are one line.
+
 ## M6
 
 - Gemini model `gemini-3.6-flash` with thinking at minimal, as the tech spec asks; set in `GEMINI_MODEL` on Vercel, in `.env.example` and as the `dev:live` default, never in code. Why: `gemini-3.8-flash`, the newest Flash, answered 503 or hung on every call during the evaluation and refuses minimal thinking. Calls go through `models.generateContent` with `responseJsonSchema` built from the zod schema. `VISION_PROVIDER=gemini` on Vercel.

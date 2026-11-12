@@ -254,6 +254,48 @@ for (const theme of ['light', 'dark'] as const) {
         await sheet('session-sheet', 'session-menu');
       });
 
+      // SCREENS.md section 8, Train: no exercises listed, the Session sheet and picker, recommendations with a source,
+      // Templates and the confirm, a template's analysis, and no program at all
+      test('train', async ({ page }) => {
+        const settled = (id: string) => expect(page.getByTestId(id)).toHaveCSS('transform', 'none');
+        const top = (id: string) => page.getByTestId(id).evaluate((el) => scrollTo(0, el.getBoundingClientRect().top + scrollY - 60));
+        await open(page);
+        await page.getByTestId('tab-1').click();
+        await shot(page, 'train', 'no-exercises');
+        await page.getByTestId('train-session').first().click();
+        await settled('train-session-sheet');
+        await shot(page, 'train', 'session');
+        await page.getByTestId('exercise-add').click();
+        await settled('exercise-picker');
+        await shot(page, 'train', 'picker');
+        await page.getByTestId('exercise-option').filter({ hasText: 'Bench press' }).first().click();
+        await page.getByTestId('exercise-picker').waitFor({ state: 'detached' });
+        await page.getByTestId('session-exercise').scrollIntoViewIfNeeded();
+        await shot(page, 'train', 'session-exercise');
+        await page.getByTestId('session-save').click();
+        await page.getByTestId('train-session-sheet').waitFor({ state: 'detached' });
+        await top('train-recs');
+        await page.getByTestId('rec-why').first().click();
+        await shot(page, 'train', 'recommendations');
+
+        await page.evaluate(() => scrollTo(0, 0));
+        await page.getByTestId('train-change').click();
+        await settled('templates-sheet');
+        await shot(page, 'train', 'templates');
+        await page.getByTestId('template-upper-lower-4').getByTestId('template-use').click();
+        await settled('template-confirm-sheet');
+        await shot(page, 'train', 'template-confirm');
+        await page.getByTestId('template-confirm').click();
+        await page.getByTestId('templates-sheet').waitFor({ state: 'detached' });
+        await shot(page, 'train', 'typical');
+        await top('train-balance');
+        await shot(page, 'train', 'analysis');
+
+        await page.evaluate(() => (window as unknown as { ontrack: { actions: { saveProgram(p: object): void } } }).ontrack.actions.saveProgram({ name: '', sessions: [] }));
+        await page.evaluate(() => scrollTo(0, 0));
+        await shot(page, 'train', 'empty');
+      });
+
       // SCREENS.md section 7, photo logging: the first photo notice, the review loading and loaded, the oil control,
       // the logged meal with its thumbnail, two errors, and Describe
       test('photo', async ({ page }) => {

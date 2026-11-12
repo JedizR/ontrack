@@ -67,11 +67,11 @@ export type DayInput = { plan: Plan; sex: Sex; mode: CalorieMode; date: string; 
 /**
  * Everything Today shows for a day: the target (training or rest, skipped or not), its band, the macros, what was eaten
  * and the status. Matched mode uses the plan's frozen exercise energy for the weekday; skipping every session that
- * day returns it to the rest target (F8).
+ * day returns it to the rest target (F8). The sessions are the plan's own when it keeps them, else the program's.
  */
 export function dayView({ plan, sex, mode, date, sessions, logs, meals }: DayInput) {
   const weekday = weekdayOf(date);
-  const today = sessions.filter((s) => s.weekday === weekday);
+  const today = (plan.sessions ?? sessions).filter((s) => s.weekday === weekday);
   const status = (key: string) => logs.find((l) => l.date === date && l.sessionKey === key)?.status;
   const skipped = today.length > 0 && today.every((s) => status(s.key) === 'skipped');
   const eee = mode === 'even' ? evenEee(plan) : skipped ? 0 : plan.eeeByWeekday[weekday];

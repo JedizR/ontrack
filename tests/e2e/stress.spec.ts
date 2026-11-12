@@ -248,3 +248,43 @@ for (const d of PHONES) {
     });
   });
 }
+
+/** Train with a template's analysis, then the Session sheet with an exercise open, the picker, Templates and the confirm. */
+async function walkTraining(page: Page, dir: string) {
+  const sheet = async (id: string, name: string, action?: string) => {
+    await expect(page.getByTestId(id)).toHaveCSS('transform', 'none'); // the sheet has finished sliding up
+    if (action && page.viewportSize()!.height > page.viewportSize()!.width) await expect(page.getByTestId(action)).toBeInViewport({ ratio: 1 });
+    await checkPage(page, name, dir);
+  };
+  await open(page);
+  await page.getByTestId('tab-1').click();
+  await page.getByTestId('train-change').click();
+  await sheet('templates-sheet', 'templates');
+  await page.getByTestId('template-upper-lower-4').getByTestId('template-use').click();
+  await sheet('template-confirm-sheet', 'template-confirm', 'template-confirm');
+  await page.getByTestId('template-confirm').click();
+  await page.getByTestId('templates-sheet').waitFor({ state: 'detached' });
+  await checkPage(page, 'train-analysis', dir);
+  await page.getByTestId('train-session').first().click();
+  await page.getByTestId('session-exercise').first().getByRole('button').first().click();
+  await sheet('train-session-sheet', 'session', 'session-save');
+  await page.getByTestId('exercise-add').click();
+  await sheet('exercise-picker', 'picker');
+}
+for (const d of DEVICES.filter((x) => x.mobile)) {
+  test.describe(d.name, () => {
+    test.use({ viewport: { width: d.width, height: d.height }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
+    test('training layout holds', async ({ page }) => {
+      await walkTraining(page, `screenshots/stress/${d.name}/training`);
+    });
+  });
+}
+for (const d of PHONES) {
+  test.describe(`font xl ${d.name}`, () => {
+    test.use({ viewport: { width: d.width, height: d.height }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
+    test('training holds at the largest text', async ({ page }) => {
+      await withPrefs(page, { theme: 'light', fontSize: 'xl' });
+      await walkTraining(page, `screenshots/fonts/${d.name}-xl/training`);
+    });
+  });
+}

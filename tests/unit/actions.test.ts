@@ -1,8 +1,10 @@
 // Actions validate before they write, stamp through the store, and hand back an undo for deletes.
 import 'fake-indexeddb/auto';
-import { beforeAll, expect, test } from 'vitest';
+import { beforeAll, expect, test, vi } from 'vitest';
 import { db } from '../../src/lib/db/store.svelte';
-import { deleteMeal, logAgain, logSaved, logWeight, saveMeal, saveSaved } from '../../src/lib/actions';
+import { changeProgram, deleteMeal, logAgain, logSaved, logWeight, saveMeal, savePlan, saveProfile, saveProgram, saveSaved } from '../../src/lib/actions';
+import { dayView, planFor } from '../../src/lib/model/day';
+import type { Plan, Session } from '../../shared/records';
 
 beforeAll(() => db.open('actions-test'));
 
@@ -39,4 +41,29 @@ test('a meal logs again with a fresh day and time; a saved meal counts a use, an
   undo();
   expect(db.get('meal', meal.id)).toBeUndefined();
   expect(db.get('saved', sid)).toEqual({ title: 'Breakfast', items, uses: 2, lastUsedAt: '2026-11-01T01:00:00.000Z' });
+});
+
+test('a program change starts a plan tomorrow; today and the days before keep their targets and sessions, and undo takes it back', () => {
+  vi.useFakeTimers({ toFake: ['Date'] });
+  vi.setSystemTime(new Date(2026, 10, 11, 10)); // Wednesday 11 November, local
+  const sessions: Session[] = [0, 2, 4, 5].map((weekday, i) => ({ key: `s${i}`, weekday, name: 'Strength', type: 'strength', minutes: 60, intensity: 'moderate' }));
+  const plan: Plan = { effectiveFrom: '2026-11-01', goal: 'gain', ratePctPerWeek: 0.5, weightKg: 60, bmr: 1573.75, baseline: 1888.5, eeeByWeekday: [240, 0, 240, 0, 240, 240, 0], delta: 330, proteinG: 108, fatG: 66, flags: [], tdeeSource: 'formula', engineVersion: 1, source: 'onboarding' };
+  saveProfile({ sex: 'male', birthYear: 2001, heightCm: 175, neat: 'seated', experience: 'beginner', units: 'metric', calorieMode: 'matched', checkinWeekday: 2, screening: { pregnant: false, medical: false, eatingDisorder: false, at: '' }, onboardedAt: '' });
+  saveProgram({ name: '', sessions });
+  savePlan(plan);
+  const view = (date: string) => dayView({ plan: planFor(db.live('plan'), date)!, sex: 'male', mode: 'matched', date, sessions: db.get('program', 'program')!.sessions, logs: [], meals: [] });
+  const before = ['2026-11-09', '2026-11-10', '2026-11-11'].map(view);
+
+  // strength moves from Monday to Tuesday, from tomorrow
+  const undo = changeProgram({ name: 'Mine', sessions: sessions.map((s) => (s.weekday === 0 ? { ...s, weekday: 1 } : s)) });
+  expect(['2026-11-09', '2026-11-10', '2026-11-11'].map(view)).toEqual(before);
+  const next = planFor(db.live('plan'), '2026-11-12')!;
+  expect(next).toMatchObject({ effectiveFrom: '2026-11-12', source: 'edit', eeeByWeekday: [0, 240, 240, 0, 240, 240, 0] });
+  expect(view('2026-11-16').training).toBe(false); // the next Monday rests
+  expect(view('2026-11-17').target).toBe(before[0].target); // and Tuesday trains
+
+  undo();
+  expect(db.get('program', 'program')).toEqual({ name: '', sessions });
+  expect(planFor(db.live('plan'), '2026-11-12')?.source).toBe('onboarding');
+  vi.useRealTimers();
 });

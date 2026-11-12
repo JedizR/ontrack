@@ -101,6 +101,7 @@ export type Plan = {                  // id: uuid. The plan for a date is the ne
   tdeeSource: 'formula' | 'measured';
   engineVersion: number;
   source: 'onboarding' | 'checkin' | 'edit';
+  sessions?: Omit<Session, 'exercises'>[];  // the program's sessions when the plan was made, so a past day keeps its own
 };
 
 export type Weight = { date: string; kg: number };            // id: `weight:${date}`
