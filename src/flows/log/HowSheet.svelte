@@ -23,6 +23,6 @@
 <Sheet bind:open={sheets.how} title={t.plan.how} layer="base" testid="how-sheet">
   {#if plan && profile && day}
     <p class="text-callout text-ink-2">{profile.calorieMode === 'even' ? t.plan.howEven : day.training ? t.plan.howTraining : t.plan.howRest}</p>
-    <div class="mt-2"><Breakdown parts={targetParts(plan, profile.sex, day.eee)} goal={plan.goal} {bodyFat} /></div>
+    <div class="mt-2"><Breakdown parts={targetParts(plan, profile.sex, day.eee)} goal={plan.goal} rate={plan.ratePctPerWeek} {bodyFat} /></div>
   {/if}
 </Sheet>

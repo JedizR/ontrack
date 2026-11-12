@@ -1,5 +1,6 @@
 <!-- SCREENS.md section 3, Welcome: on the brand gradient (the screen's one gradient), the wordmark, the promise in Title
-     with its key phrase in violet, three lines beside violet feature tiles, Get started and the way back in. The gradient layer is 100lvh so its colour reaches under Safari's
+     with its key phrase in violet, three lines beside violet feature tiles, Build your plan with what it asks of you
+     (no account until saved), and the way back in. The gradient layer is 100lvh so its colour reaches under Safari's
      toolbars; the words sit on its light end. The drawn track and tilted chip are decoration in OneFin's manner. -->
 <script lang="ts">
   import Camera from '@lucide/svelte/icons/camera';
@@ -48,6 +49,7 @@
   </div>
   <div class="bg-canvas sticky bottom-0 -mx-4 flex flex-col gap-1 px-4 pt-3 pb-[max(16px,env(safe-area-inset-bottom))]">
     <Button variant="primary" size="lg" full onclick={onstart} data-testid="welcome-start">{t.welcome.start}</Button>
+    <p class="text-caption text-ink-2 text-center">{t.welcome.time}</p>
     <Button variant="plain" size="lg" full onclick={onsignin} data-testid="welcome-signin">{t.welcome.account}</Button>
   </div>
 </section>

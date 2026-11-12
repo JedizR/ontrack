@@ -1,19 +1,28 @@
-<!-- SCREENS.md section 4, Your plan: the targets, the expected change, how the target was calculated (each line opens
-     its source), fine tuning, any guardrail in one line, and Save my plan. -->
+<!-- SCREENS.md section 4, Your plan (O1): the target counting up from the last "number so far", protein, the pace as a
+     live control with what to expect, the training the answers set and where to change it, how the target was
+     calculated (each line opens its source), fine tuning, any guardrail in one line, and Save this plan. Computed before
+     it renders: no loading screen. -->
 <script lang="ts">
+  import { untrack } from 'svelte';
+  import { Tween } from 'svelte/motion';
+  import { cubicOut } from 'svelte/easing';
   import Step from './Step.svelte';
   import Card from '$lib/components/Card.svelte';
   import Row from '$lib/components/Row.svelte';
   import Button from '$lib/components/Button.svelte';
   import Switch from '$lib/components/Switch.svelte';
+  import Segmented from '$lib/components/Segmented.svelte';
   import { U, V, floorFor, guardrails, plan } from '$lib/model/engine';
   import { evenEee, kgPerWeek, targetParts, targetWith, trainingDayEee } from '$lib/model/day';
   import { kgToLb, lbToKg, weightText } from '$lib/model/units';
   import { num } from '$lib/model/format';
   import { picker } from '$lib/picker.svelte';
+  import { db } from '$lib/db/store.svelte';
+  import { dur } from '$lib/haptics';
   import Breakdown from '../plan/Breakdown.svelte';
+  import { shown } from './SoFar.svelte';
   import { t } from '$lib/i18n';
-  import { LIMITS, START, goalWeightOf, inputOf, minGoalWeightKg, weightWheel, type Draft } from './draft';
+  import { LIMITS, START, goalWeightOf, inputOf, minGoalWeightKg, paceChoices, programOf, weightWheel, type Draft } from './draft';
 
   let { d, year, set, back, onsave }: {
     d: Draft;
@@ -36,6 +45,33 @@
   const expect = $derived(
     n.goal === 'maintain' || Math.round(kg * 10) === 0 ? t.plan.expectHold : (n.goal === 'lose' ? t.plan.expectLose : t.plan.expectGain)(weightText(kg, d.units)),
   );
+
+  // the payoff: the hero counts up from the number the user watched grow (400 ms), then follows each pace tapped
+  const hero = new Tween(untrack(() => shown.last || parts.total), { duration: dur(400), easing: cubicOut });
+  $effect(() => { hero.target = parts.total; });
+
+  // the pace, live (replaces the Pace screen): only the paces the guardrails allow, with why one is missing
+  const c = $derived(paceChoices(d, year));
+  const faster = $derived(n.goal === 'gain' && n.ratePctPerWeek >= V.gainPaceFaster);
+  const WHY = {
+    noLose: t.pace.noLose(num(V.underweightBmi)),
+    gentleOnly: t.pace.gentleOnly(num(V.gentleOnlyBmi)),
+    noFaster: t.pace.noFaster(num(V.fasterPaceMinBmi)),
+    leanOnly: t.pace.leanOnly,
+    noFasterGain: t.pace.noFasterGain(num(V.fasterGainMaxBmi)),
+  };
+
+  // the training the answers set, in the open (SCREENS.md section 4)
+  const sessions = $derived(programOf(d).sessions);
+  const training = $derived.by(() => {
+    const lift = sessions.filter((s) => s.type === 'strength');
+    const cardio = sessions.filter((s) => s.type === 'cardio');
+    if (!sessions.length) return t.plan.noTraining;
+    const line = !cardio.length ? t.plan.lifting(num(lift.length), num(lift[0].minutes))
+      : !lift.length ? t.plan.cardio(num(cardio.length), num(cardio[0].minutes))
+      : t.plan.both(num(lift.length), num(cardio.length));
+    return `${line} ${t.plan.change}`;
+  });
 
   const pct = (share: number) => num(share * U.percent);
   const flags = $derived(
@@ -61,11 +97,11 @@
   }
   async function askGoalWeight() {
     const metric = d.units === 'metric';
-    const shown = (kg: number) => round(metric ? kg : kgToLb(kg), 1);
+    const shownKg = (kg: number) => round(metric ? kg : kgToLb(kg), 1);
     // from the lowest goal weight offered (BMI 18.5) to the field's top
     const { min, max } = weightWheel(d.units, minGoalWeightKg(d));
     const goal = goalWeightOf(d);
-    const start = Math.min(max, Math.max(min, shown(goal ?? d.weightKg ?? START.weightKg)));
+    const start = Math.min(max, Math.max(min, shownKg(goal ?? d.weightKg ?? START.weightKg)));
     const v = await picker.ask({
       title: t.plan.goalWeight, value: start, min, max, decimals: 1, unit: metric ? t.after.kg : t.after.lb,
       hint: t.plan.goalWeightHint, clearable: !!goal,
@@ -89,21 +125,37 @@
     <!-- the screen's hero: the target on the haze panel, protein on a grey stat tile beneath, as the "Withdraw" card -->
     <Card hero data-testid="plan-hero">
       <div class="haze rounded-sheet p-4">
-        <p class="text-hero" data-testid="plan-kcal">{num(parts.total)}</p>
+        <p class="text-hero" aria-hidden="true">{num(Math.round(hero.current))}</p>
+        <p class="sr-only" data-testid="plan-kcal">{num(parts.total)}</p>
         <p class="text-caption text-ink-2 mt-1">{matched ? t.after.kcalTraining : t.after.kcalDay}</p>
         {#if matched}<p class="text-lead num mt-3" data-testid="plan-rest">{t.plan.onRest(num(rest))}</p>{/if}
       </div>
-      <div class="bg-surface-2 mt-2 rounded-lg p-4">
+      <div class="bg-surface-2 appear mt-2 rounded-lg p-4" style="--i: 2">
         <p class="text-display" data-testid="plan-protein">{num(n.proteinG)}</p>
         <p class="text-caption text-ink-2 mt-1">{t.after.proteinDay}</p>
       </div>
     </Card>
 
-    <p class="text-lead mt-2" data-testid="plan-expect">{expect} {t.plan.estimate}</p>
+    {#if c.options.length}
+      <h2 class="text-heading mt-4">{t.pace.q}</h2>
+      <div data-testid="plan-pace">
+        <Segmented label={t.pace.q} value={c.picked} options={c.options.map((o) => ({ value: o.rate, label: t.pace[o.name] }))} onchange={(rate) => set({ rate })} />
+      </div>
+    {/if}
+    <div class="flex flex-col gap-2">
+      <p class="text-lead" data-testid="plan-expect">{expect} {t.plan.estimate}</p>
+      {#if faster}
+        <p class="text-callout" data-testid="pace-faster">{t.pace.fasterGain} <span class="text-ink-2">{t.plan.provisional}</span></p>
+      {/if}
+      {#if c.why}<p class="text-callout text-ink-2" data-testid="pace-why">{WHY[c.why]}</p>{/if}
+    </div>
+
+    <h2 class="text-heading mt-4">{t.plan.yourTraining}</h2>
+    <p class="text-body -mt-2" data-testid="plan-training">{training}</p>
 
     <h2 class="text-heading mt-4">{t.plan.how}</h2>
     <p class="text-callout text-ink-2 -mt-2">{matched ? t.plan.howTraining : t.plan.howEven}</p>
-    <Card list data-testid="plan-breakdown"><Breakdown {parts} goal={n.goal} {bodyFat} /></Card>
+    <Card list data-testid="plan-breakdown"><Breakdown {parts} goal={n.goal} rate={n.ratePctPerWeek} {bodyFat} /></Card>
 
     <h2 class="text-heading mt-4">{t.plan.tune}</h2>
     <Card list>
@@ -117,5 +169,6 @@
   </div>
   {#snippet footer()}
     <Button variant="primary" size="lg" full onclick={onsave} data-testid="plan-save">{t.plan.save}</Button>
+    {#if !db.ready}<p class="text-caption text-ink-2 pb-1 text-center" data-testid="plan-save-line">{t.plan.saveLine}</p>{/if}
   {/snippet}
 </Step>

@@ -7,6 +7,15 @@ const KG_PER_LB = 0.45359237;
 const CM_PER_IN = 2.54;
 const IN_PER_FT = 12;
 
+/** The units a phone's region uses: the three countries that weigh in pounds, metric everywhere else (O1: inferred, the
+ * height and weight screen can change it). */
+export function regionUnits(): Units {
+  const tag = typeof navigator === 'undefined' ? '' : navigator.language;
+  return /-(US|LR|MM)\b/i.test(tag) ? 'imperial' : 'metric';
+}
+/** A US cup, the volume the food table weighs its "1 cup" portion at: millilitres to grams for a drink (O1). */
+export const ML_PER_CUP = 236.6;
+
 export const kgToLb = (kg: number) => kg / KG_PER_LB;
 export const lbToKg = (lb: number) => lb * KG_PER_LB;
 export const ftInToCm = (ft: number, inches: number) => (ft * IN_PER_FT + inches) * CM_PER_IN;

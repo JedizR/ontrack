@@ -5,7 +5,9 @@
      edits the entry: Save changes and Delete. Ontrack never suggests a supplement or an amount.
      B1 (owner): setting up leads with the user's own tub, From your tub: scan its barcode or photograph its label, which
      fill the Label step from the serving and the scoops in it; typical values come second, and a supplement still on them
-     says Typical, with one quiet way to set it from the tub. -->
+     says Typical, with one quiet way to set it from the tub.
+     O1 (owner, after N2): the Label step follows the label: the serving as printed, the scoops in it and the values per
+     serving; Ontrack keeps one scoop. Milk is set in millilitres and kept in grams through the milk's cup in the table. -->
 <script lang="ts">
   import { untrack } from 'svelte';
   import { toast } from 'svelte-sonner';
@@ -27,9 +29,9 @@
   import { deleteMeal, findProduct, logSupplement, readLabel, removeSupplement, saveSupplement, undoToast, type Found, type LabelResult } from '$lib/actions';
   import { loadFoods, type Food } from '$lib/data/foods';
   import { FOOD_SOURCES } from '$lib/data/sources';
-  import { KINDS, MAX_SCOOPS, MILKS, PRESET_FOOD, fromServing, noCalories, perScoopOf, scoopOf, scoopsIn, supplementItems, type Kind } from '$lib/model/supplements';
+  import { GLASS_ML, MAX_SCOOPS, MILKS, PRESET_FOOD, fromServing, kindsFor, mlOf, gramsOf, noCalories, oneScoop, perScoopOf, scoopOf, scoopsIn, supplementItems, type Kind } from '$lib/model/supplements';
   import { per100From } from '$lib/model/products';
-  import { totals } from '$lib/model/day';
+  import { planFor, totals } from '$lib/model/day';
   import { stampOn, today } from '$lib/model/dates';
   import { num } from '$lib/model/format';
   import { haptic } from '$lib/haptics';
@@ -63,16 +65,17 @@
   let ask = 0;
   let id = $state<string | null>(null);
   let mealId = $state<string | undefined>();
-  // the label step
+  // the label step, in the label's terms: a serving, the scoops in it, the values in it
   let kind = $state<Kind>('whey');
   let name = $state('');
-  let scoopG = $state(0);
+  let servingG = $state(0);
+  let per = $state(1);
   let preset = $state<Food | undefined>();
   /** values per 100 g from the tub (scanned or read) that the values per scoop follow, like a preset's */
   let base = $state<Values | undefined>();
   /** where the Label step's numbers came from, for its line on why */
   let origin = $state<'typical' | 'off' | 'label' | 'typed'>('typed');
-  /** the user's values; null while a preset's follow the scoop */
+  /** the user's values for a serving; null while a preset's follow the serving */
   let own = $state<Values | null>(null);
   /** the scoops the user takes, the first amount logged */
   let usual = $state(1);
@@ -98,13 +101,17 @@
   const milks = $derived(MILKS.flatMap((m) => byId.get(m) ?? []));
 
   const s = $derived(id ? db.get('supplement', id) : undefined);
-  const values = $derived(own ?? perScoopOf(preset ?? (base && { per100: base }), scoopG));
+  const values = $derived(own ?? perScoopOf(preset ?? (base && { per100: base }), servingG));
+  /** what the supplement keeps: one scoop */
+  const kept = $derived(oneScoop(servingG, per, values));
   /** still the table's typical values, untouched (B1) */
-  const typical = $derived(origin === 'typical' && own === null && !!(preset || base));
-  const heavy = $derived(scoopG > 0 && values.protein + values.carbs + values.fat > scoopG);
+  const typical = $derived(origin === 'typical' && own === null && per === 1 && !!(preset || base));
+  const heavy = $derived(servingG > 0 && values.protein + values.carbs + values.fat > servingG);
   const named = $derived(name.trim().length > 0);
   /** a scanned or read serving can give a scoop or values the record cannot hold; Save waits for them to be fixed */
-  const savable = $derived(named && !heavy && supplementSchema.safeParse({ name: name.trim(), kind, scoopG, perScoop: values, lastScoops: usual }).success);
+  const savable = $derived(named && !heavy && supplementSchema.safeParse({ name: name.trim(), kind, ...kept, lastScoops: usual }).success);
+  // gain puts whey and mass gainer first (O1); the list never recommends one
+  const kinds = $derived(kindsFor(planFor(db.live('plan'), today())?.goal));
 
   const zero = $derived(!!s && noCalories(s));
   const milk = $derived(mix && !zero ? byId.get(mix) : undefined);
@@ -151,8 +158,9 @@
     step = 'source';
   }
   /** The Label step with these numbers; `from` says where they came from. */
-  function toLabel(o: { scoopG: number; base?: Values; own: Values | null; preset?: Food }, from: typeof origin) {
-    scoopG = o.scoopG;
+  function toLabel(o: { servingG: number; scoops?: number; base?: Values; own: Values | null; preset?: Food }, from: typeof origin) {
+    servingG = o.servingG;
+    per = o.scoops ?? 1;
     base = o.base;
     own = o.own;
     preset = o.preset;
@@ -165,10 +173,10 @@
     const list = foods ?? (await load());
     if (sheets.supplement !== opened) return; // closed or opened elsewhere while the table loaded
     const food = list.find((f) => f.id === PRESET_FOOD[kind]);
-    toLabel({ scoopG: scoopOf(food), own: null, preset: food }, 'typical');
+    toLabel({ servingG: scoopOf(food), own: null, preset: food }, 'typical');
   }
   /** Typed from the label: empty when setting up, the current numbers when setting an existing one from its tub. */
-  const typeIt = () => toLabel(s ? { scoopG: s.scoopG, own: { ...s.perScoop } } : { scoopG: 0, own: null }, 'typed');
+  const typeIt = () => toLabel(s ? { servingG: s.scoopG, own: { ...s.perScoop } } : { servingG: 0, own: null }, 'typed');
 
   function scanTub() {
     scans++;
@@ -214,7 +222,8 @@
     usual = s.lastScoops;
     // typical values keep following the scoop, so they stay typical until one is changed
     const follow = s.typical && s.scoopG > 0;
-    toLabel(follow ? { scoopG: s.scoopG, own: null, base: per100From(s.perScoop, s.scoopG) } : { scoopG: s.scoopG, own: { ...s.perScoop } }, s.typical ? 'typical' : 'typed');
+    // kept as one scoop, so it shows as a serving of one scoop
+    toLabel(follow ? { servingG: s.scoopG, own: null, base: per100From(s.perScoop, s.scoopG) } : { servingG: s.scoopG, own: { ...s.perScoop } }, s.typical ? 'typical' : 'typed');
     labelBack = 'amount';
   }
   /** Set an existing supplement from its tub: the From your tub step, then back to its amount. */
@@ -231,7 +240,7 @@
   function save() {
     if (!savable) return;
     const lastMix = s?.lastMix;
-    const data: Supplement = { name: name.trim(), kind, scoopG, perScoop: { ...values }, lastScoops: usual, ...(lastMix ? { lastMix: { foodId: lastMix.foodId, grams: lastMix.grams } } : {}), ...(typical ? { typical: true as const } : {}) };
+    const data: Supplement = { name: name.trim(), kind, scoopG: kept.scoopG, perScoop: { ...kept.perScoop }, lastScoops: usual, ...(lastMix ? { lastMix: { foodId: lastMix.foodId, grams: lastMix.grams } } : {}), ...(typical ? { typical: true as const } : {}) };
     const isNew = !id;
     id = saveSupplement(data, id ?? undefined);
     if (isNew) toAmount(data);
@@ -250,7 +259,7 @@
 
   function choose(f: Food) {
     mix = f.id;
-    if (!milkG) milkG = s?.lastMix?.grams ?? f.portions[0].grams;
+    if (!milkG) milkG = s?.lastMix?.grams ?? gramsOf(f, GLASS_ML);
   }
   function add() {
     if (!s || !id || !ready) return;
@@ -312,7 +321,7 @@
 >
   {#if step === 'kind'}
     <div data-testid="supplement-kinds">
-      {#each KINDS as k (k)}
+      {#each kinds as k (k)}
         <Row title={t.supplement.kinds[k]} caption={t.supplement.fromTub} onclick={() => pick(k)} testid="kind-{k}">
           {#snippet trailing()}<ChevronRight class="text-ink-2 flex-none" size={24} strokeWidth={2} aria-hidden="true" />{/snippet}
         </Row>
@@ -372,11 +381,15 @@
       </div>
       <!-- at the largest text a stepper drops under its label, still on the right -->
       <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
-        <span class="text-body font-semibold">{t.supplement.scoop}</span>
-        <div class="ml-auto"><Stepper bind:value={scoopG} min={0} max={1000} unit={t.after.g} label={t.after.grams} testid="supplement-scoop" column /></div>
+        <span class="text-body font-semibold">{t.supplement.serving}</span>
+        <div class="ml-auto"><Stepper bind:value={servingG} min={0} max={1000} unit={t.after.g} label={t.after.grams} testid="supplement-serving" column /></div>
+      </div>
+      <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+        <span class="text-body font-semibold">{t.supplement.scoopsPer}</span>
+        <div class="ml-auto"><Stepper bind:value={per} step={0.5} min={0.5} max={MAX_SCOOPS} label={t.supplement.scoopsPer} testid="supplement-per" column /></div>
       </div>
       <div class="flex flex-col gap-3">
-        <h3 class="text-eyebrow text-ink-2">{t.supplement.perScoop}</h3>
+        <h3 class="text-eyebrow text-ink-2">{t.supplement.perServing}</h3>
         {#each NUTRIENTS as [key, by, unit, label] (key)}
           <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
             <span class="text-body font-semibold">{label}</span>
@@ -436,7 +449,7 @@
         {#if milk}
           <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
             <span class="text-body font-semibold">{t.supplement.milk}</span>
-            <div class="ml-auto"><Stepper bind:value={milkG} step={50} min={50} max={1000} unit={t.after.g} label={t.after.grams} testid="supplement-milk" column /></div>
+            <div class="ml-auto"><Stepper bind:value={() => mlOf(milk, milkG), (ml) => (milkG = gramsOf(milk, ml))} step={50} min={50} max={1000} unit={t.after.ml} label={t.after.millilitres} testid="supplement-milk" column /></div>
           </div>
         {/if}
       {/if}

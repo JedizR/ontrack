@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, test } from 'vitest';
 import { parseOff } from '../../src/lib/data/off';
 import { labelProblem, per100From, portionsOf, productItem, scaleTo, startOf } from '../../src/lib/model/products';
-import { fromServing, scoopsIn, supplementItems } from '../../src/lib/model/supplements';
+import { fromServing, oneScoop, scoopsIn, supplementItems } from '../../src/lib/model/supplements';
 import { analyze } from '../../server/handlers/analyze';
 import { fixture, mockProvider } from '../../server/vision/mock';
 import { LABEL_JSON_SCHEMA, labelOutput, toLabel } from '../../server/vision/label';
@@ -113,21 +113,25 @@ describe('a supplement from its tub (B1)', () => {
     expect(scoopsIn('1 portion (30.4 g)')).toBe(1);
     expect(scoopsIn(undefined)).toBe(1);
   });
-  test('a one scoop serving: the scoop is the serving and its values follow it', () => {
+  test('a one scoop serving: the serving as printed, and its values follow it', () => {
     const r = fromServing({ perServing: whey, servingG: 31, scoops: 1 });
-    expect(r.scoopG).toBe(31);
+    expect(r).toMatchObject({ servingG: 31, scoops: 1, own: null });
     expect(scaleTo(r.base!, 31)).toEqual(whey);
+    expect(oneScoop(31, 1, whey)).toEqual({ scoopG: 31, perScoop: whey });
   });
-  test("a mass gainer's 4 scoops (165 g) give 41.3 g a scoop and a quarter of the values", () => {
-    const r = fromServing({ perServing: { kcal: 650, protein: 50, carbs: 100, fat: 6 }, servingG: 165, scoops: 4 });
-    expect(r.scoopG).toBe(41.3);
-    expect(scaleTo(r.base!, 41.25)).toEqual({ kcal: 163, protein: 12.5, carbs: 25, fat: 1.5 });
+  test("a mass gainer's 4 scoops (165 g): the label as printed, kept as 41.3 g a scoop and a quarter of the values", () => {
+    const gainer = { kcal: 650, protein: 50, carbs: 100, fat: 6 };
+    const r = fromServing({ perServing: gainer, servingG: 165, scoops: 4 });
+    expect(r).toMatchObject({ servingG: 165, scoops: 4 });
+    expect(scaleTo(r.base!, 165)).toEqual(gainer);
+    expect(oneScoop(165, 4, gainer)).toEqual({ scoopG: 41.3, perScoop: { kcal: 163, protein: 12.5, carbs: 25, fat: 1.5 } });
   });
   test('Open Food Facts values per 100 g with its serving', () => {
-    expect(fromServing({ per100: { kcal: 395, protein: 79, carbs: 9.9, fat: 4.9 }, servingG: 30.4, scoops: 1 })).toMatchObject({ scoopG: 30.4, own: null });
+    expect(fromServing({ per100: { kcal: 395, protein: 79, carbs: 9.9, fat: 4.9 }, servingG: 30.4, scoops: 1 })).toMatchObject({ servingG: 30.4, own: null });
   });
-  test('a serving with no weight: the values per scoop, the scoop unknown', () => {
-    expect(fromServing({ perServing: { kcal: 240, protein: 48, carbs: 6, fat: 3 }, servingG: null, scoops: 2 })).toEqual({ scoopG: 0, base: undefined, own: { kcal: 120, protein: 24, carbs: 3, fat: 1.5 } });
+  test("a serving with no weight: the serving's values, its weight unknown", () => {
+    expect(fromServing({ perServing: { kcal: 240, protein: 48, carbs: 6, fat: 3 }, servingG: null, scoops: 2 })).toEqual({ servingG: 0, scoops: 2, base: undefined, own: { kcal: 240, protein: 48, carbs: 6, fat: 3 } });
+    expect(oneScoop(0, 2, { kcal: 240, protein: 48, carbs: 6, fat: 3 })).toEqual({ scoopG: 0, perScoop: { kcal: 120, protein: 24, carbs: 3, fat: 1.5 } });
   });
   test('a supplement on typical values logs as Typical, its own label as Yours', () => {
     const s = { name: 'Whey protein', kind: 'whey' as const, scoopG: 30, perScoop: { kcal: 106, protein: 24, carbs: 2, fat: 0.6 }, lastScoops: 1 };

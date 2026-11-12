@@ -45,7 +45,7 @@ IDs are stable. Tests and commits refer to them.
 
 ### F2 Onboarding and plan
 - Engaging and as little effort as possible, while still personalizing the app (owner's rule, redesigned in O1 from research). Ask only what changes the plan or the app; default, infer or defer the rest. At most nine screens, one question each, large controls, visible progress, back always available. Completable in under 90 seconds, with the tap and time targets set by the O1 research.
-- Collects: goal, sex used for the equation, birth year, height, weight, daily movement outside workouts, training (days, type, length), experience, pace. Optional: body fat, goal weight.
+- Collects: goal, sex used for the equation, birth year, height, weight, daily movement outside workouts, training days, what you train (lifting, cardio or both), and lifting experience for a gain goal (O1). Session length and effort are defaults shown on Your plan and changed in Train; the pace is chosen on Your plan, starting at the default. Units come from the phone's region. Optional: body fat, goal weight.
 - Ends on "Your plan": calories for training and rest days, protein, the expected rate of change, and a "how this was calculated" breakdown that sums exactly to the target.
 - The screening step in section 7 runs before any target is shown.
 

@@ -375,6 +375,9 @@ export async function signOut(force = false): Promise<'ok' | 'unsent'> {
     // the session is gone either way; a fresh start shows the signed out app
     prefs.lastUser = null;
     prefs.lastEmail = null;
+    // the account's first days and its dismissed suggestion (O1) are not the next account's
+    prefs.firstDay = null;
+    prefs.suggestOff = false;
     location.reload();
   }
   return 'ok';

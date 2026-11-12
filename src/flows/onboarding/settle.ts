@@ -6,10 +6,10 @@ import { db } from '$lib/db/store.svelte';
 import { sync } from '$lib/sync/engine.svelte';
 import { finishOnboarding } from '$lib/actions';
 import { nowIso, today } from '$lib/model/dates';
-import { complete, toRecords } from './draft';
+import { complete, toRecords, upgrade } from './draft';
 
 export function settle() {
-  const d = prefs.draft;
+  const d = upgrade(prefs.draft);
   if (!d || !db.ready || !sync.pulledNow) return;
   if (db.get('profile', 'profile')) {
     prefs.draft = null;
@@ -19,6 +19,8 @@ export function settle() {
   try {
     finishOnboarding(toRecords(d, today(), nowIso()));
     prefs.draft = null;
+    // Today's Getting started card, on the phone that saved the plan (O1)
+    prefs.firstDay = today();
   } catch (e) {
     // nothing was written; back to Your plan rather than a Today with no plan
     console.error('the plan could not be saved', e);
