@@ -3,6 +3,7 @@
      toolbars; the words sit on its light end. The drawn track and tilted chip are decoration in OneFin's manner. -->
 <script lang="ts">
   import Camera from '@lucide/svelte/icons/camera';
+  import Check from '@lucide/svelte/icons/check';
   import TrendingUp from '@lucide/svelte/icons/trending-up';
   import TrainIcon from '$lib/components/TrainIcon.svelte';
   import Wordmark from '$lib/components/Wordmark.svelte';
@@ -25,8 +26,9 @@
       <rect x="9" y="20" width="46" height="24" rx="12" stroke="currentColor" stroke-width="5" />
       <circle cx="42" cy="20" r="7" fill="currentColor" />
     </svg>
-    <span class="appear bg-surface text-ink shadow-card text-eyebrow absolute -right-10 bottom-2 flex rotate-[9deg] items-center gap-1.5 rounded-xs px-2 py-1.5" style="--i: 2">
-      <i class="bg-success size-2 rounded-full"></i>{t.today.onTrack}
+    <!-- the invoice card's frosted "Paid" pill: glass, a green check tile, a small tilt -->
+    <span class="glass appear text-callout text-ink absolute -right-12 bottom-1 flex rotate-[9deg] items-center gap-2 rounded-full py-1 pr-3 pl-1 font-semibold" style="--i: 2">
+      <i class="bg-success text-ink grid size-6 place-items-center rounded-full"><Check size={14} strokeWidth={3} /></i>{t.today.onTrack}
     </span>
   </div>
 

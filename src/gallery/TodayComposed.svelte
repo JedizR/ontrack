@@ -39,7 +39,7 @@
       {#each MACROS as m (m.label)}
         <div class="bg-surface-2 flex min-w-0 flex-col rounded-md px-4 pt-3 pb-4">
           <div class="text-caption text-ink-2">{m.label}</div>
-          <div class="text-body num font-semibold">{m.value}{' '}<span class="text-caption text-ink-2 font-medium whitespace-nowrap">{t.after.ofGrams(num(m.target))}</span></div>
+          <div class="text-body num font-semibold">{m.value}{' '}<span class="text-caption text-ink-2 block font-medium whitespace-nowrap">{t.after.ofGrams(num(m.target))}</span></div>
           <div class="mt-auto pt-2"><Track value={m.value} target={m.target} zone={m.zone} label="{m.label} {m.value} {t.after.ofGrams(num(m.target))}" /></div>
         </div>
       {/each}

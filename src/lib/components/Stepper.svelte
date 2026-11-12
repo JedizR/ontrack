@@ -95,7 +95,7 @@
       autocomplete="off"
       aria-label={label}
       value={String(value)}
-      class="num h-11 min-w-11 bg-transparent {column ? 'text-right' : 'text-center'} font-semibold outline-none focus-visible:underline"
+      class="num h-11 min-w-11 bg-transparent {column || unit ? 'text-right' : 'text-center'} font-semibold outline-none focus-visible:underline"
       style="width: {(editing || column ? longest : Math.max(String(value).length, 1)) + 0.5}ch; font-size: max(16px, var(--t-heading))"
       data-vaul-no-drag
       onfocus={(e) => { editing = true; e.currentTarget.select(); }}

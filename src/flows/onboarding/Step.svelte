@@ -32,7 +32,7 @@
   <div class="flex h-[var(--header-h)] flex-none items-center gap-3">
     {#if onback}
       <button type="button" class="group -ml-1 grid size-11 flex-none place-items-center" aria-label={t.onboarding.back} onclick={onback} data-testid="back">
-        <span class="bg-surface text-ink shadow-card group-active:bg-surface-2 grid size-11 place-items-center rounded-sm transition-[background-color,transform] duration-[var(--d-press)] group-active:scale-[0.97]">
+        <span class="text-ink group-active:bg-surface-2 grid size-11 place-items-center rounded-sm transition-[background-color,transform] duration-[var(--d-press)] group-active:scale-[0.97]">
           <ChevronLeft size={22} strokeWidth={2.25} />
         </span>
       </button>

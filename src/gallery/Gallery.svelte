@@ -122,11 +122,11 @@
 
       <section data-section="track">
         {@render heading('Track')}
-        {@render note('Below the zone: ink')}
+        {@render note('Below the zone: violet')}
         <Track hero value={1840} {target} {zone} label="1,840 of 2,460 kcal" />
         {@render note('In the zone: green')}
         <Track hero value={2400} {target} {zone} label="2,400 of 2,460 kcal" />
-        {@render note('Past the zone on a lose day: ink again')}
+        {@render note('Past the zone on a lose day: violet again')}
         <Track hero value={2700} {target} zone={[2214, 2583]} label="2,700 of 2,460 kcal" />
         {@render note('Small, protein below and in its zone, then carbs with no zone')}
         <div class="grid grid-cols-3 gap-4">

@@ -142,8 +142,8 @@
     <div class="flex flex-col gap-4" data-testid="bringing" aria-busy="true">
       <p class="text-callout text-ink-2">{t.session.bringing}</p>
       <Skeleton class="h-16 rounded-md" />
-      <Skeleton class="h-64 rounded-xl" />
-      <Skeleton class="h-24 rounded-lg" />
+      <Skeleton class="h-76 rounded-xl" />
+      <Skeleton class="h-19 rounded-lg" />
       <Skeleton class="h-40 rounded-lg" />
     </div>
   {:else if !day}
@@ -172,7 +172,7 @@
             <!-- the track sits at the bottom of each tile, so the three stay level when a value wraps at large text -->
             <div class="bg-surface-2 flex min-w-0 flex-col rounded-md px-4 pt-3 pb-4" data-testid="macro-{m.key}">
               <div class="text-caption text-ink-2">{m.label}</div>
-              <div class="text-body num font-semibold">{num(Math.round(m.value))}{' '}<span class="text-caption text-ink-2 font-medium whitespace-nowrap">{t.after.ofGrams(num(m.target))}</span></div>
+              <div class="text-body num font-semibold">{num(Math.round(m.value))}{' '}<span class="text-caption text-ink-2 block font-medium whitespace-nowrap">{t.after.ofGrams(num(m.target))}</span></div>
               <div class="mt-auto pt-2"><Track value={m.value} target={m.target} zone={m.zone} label="{m.label} {num(Math.round(m.value))} {t.after.ofGrams(num(m.target))}" /></div>
             </div>
           {/each}

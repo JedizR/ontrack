@@ -177,7 +177,7 @@ The `design-critic` subagent checks screenshots against these, side by side with
 4. Type scale: every text matches a style in section 5. Display styles are condensed capitals; numbers are tabular.
 5. Alignment: content aligns to the 16 px gutter outside cards and the 24 px inset inside them. Numbers in a list align on the right edge.
 6. Spacing: gaps come from the 4 px grid, and equal things have equal gaps.
-7. Depth: cards are solid and carry only `--shadow-card` (light) or a hairline ring (dark); only the dock, toasts and dragged rows float; buttons are flat, with at most `--shadow-action`. At most one gradient on the screen, on its hero; glass only where section 6 allows it.
+7. Depth: cards are solid and carry only `--shadow-card` (light) or a hairline ring (dark); only the dock, toasts and dragged rows float. No button has a gradient, bevel or glow: the ink pill's only depth is `--shadow-action`, and tappable cards (choices) and the selected segment keep a card's `--shadow-card`. At most one gradient on the screen, on its hero; glass only where section 6 allows it.
 8. Nothing from the banned list.
 9. Copy: sentence case in the words, no banned punctuation or words, numbers formatted with grouping and units.
 10. Touch: every control is at least 44 px and has a visible pressed state in the interaction screenshots. One button height per role (56, 48, 36 in 44).
