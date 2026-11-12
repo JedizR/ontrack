@@ -18,7 +18,7 @@ Each entry: what is blocked, what Claude tried, the exact steps for you, and wha
 
 ### N1: a Thai food composition table Ontrack may use (optional now)
 
-- **Update, 12 November 2026:** the owner decided Ontrack is a class proof of concept that will not launch publicly, so N3 takes Thai values from Thai pages and the owner's finds instead. The email below is needed only if Ontrack is ever made public.
+- **Update, 12 November 2026:** the owner decided Ontrack is a class proof of concept that will not launch publicly, so N3 takes Thai values from Thai pages and the owner's finds instead. N3 now reads 115 foods from the INMU database itself (the owner's extract and INMU's own pages; `docs/DECISIONS.md`, N3). The email below is needed only if Ontrack is ever made public.
 
 - **Blocked:** nutrition from a Thai source. N1 ships 138 Thai foods from SG FoodID (Singapore) and USDA FNDDS, but dishes those tables lack stay model estimates: khao soi, massaman, red and panang curry, beef green curry, tom kha, som tam, larb, nam tok, kai yang, moo ping, pad see ew, khao kha moo and most Thai desserts (`docs/EVAL-NOTES.md`, N1).
 - **Tried:** the three Thai sources and their terms (`docs/DECISIONS.md`, N1). The INMU Thai Food Composition Database (online version 3, August 2025, 313 dishes) lets non-commercial users use the data, but asks that reproducing or distributing it be applied for by email, and it has no downloadable file. The Department of Health's 2018 table is a scanned PDF whose website forbids distribution without permission. The ASEAN database has 29 Thai dishes under INMU's terms. Asking permission means sending email, which Claude may not do.
@@ -28,6 +28,14 @@ Each entry: what is blocked, what Claude tried, the exact steps for you, and wha
 ## Needs your eyes
 
 Each entry: what to look at (URL or screenshot paths), what to look for, and which milestone it belongs to.
+
+### N3: Thai nutrient facts you find, and five dishes you eat often
+
+- **Where:** the pull request's Vercel preview in Safari on the iPhone, or `pnpm dev` on the Mac (code 123456). Search a Thai dish in English or Thai script (ข้าวซอย, มัสมั่น, ส้มตำ, ขาหมู, ไก่ย่าง); the portion step names the Thai Food Composition Database and links to the dish's page on INMU's site.
+- **Judge five dishes you eat often:** do the calories for your usual plate look right? The values are INMU's per 100 g; the plate and bowl weights are Claude's guesses (a plate about 300 to 350 g, a noodle soup 450 g, a curry bowl 250 g). Say if your plate is far off, or correct it once with Correct and Ontrack remembers it.
+- **Send Thai nutrient facts you find** for dishes still missing: larb moo, nam tok, moo ping, hor mok, pad pak boong, kai jeow, kaeng jued and the drinks (`docs/EVAL-NOTES.md`, N3). A page link or a photo of the table is enough; Claude puts it in `data/thai/owner/` with where it came from, and the build reads it.
+- **Decide:** whether white rice should stay on INMU's cooked rice (136 kcal in 100 g, total carbohydrate) rather than USDA's (130); whether sticky rice at INMU's 232 kcal in 100 g (USDA had 97, a much wetter rice) matches the bag you buy.
+- **Decided for you:** the N3 list in `docs/DECISIONS.md`, notably using INMU's values for this class project, the owner's file first and INMU's pages for the rest, and the rows left out.
 
 ### B1: scan ten packaged foods, and set your whey from the tub
 
