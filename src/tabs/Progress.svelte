@@ -3,6 +3,7 @@
      (this week's first when it is ready), and History. -->
 <script lang="ts">
   import { t } from '$lib/i18n';
+  import Figure from '$lib/components/Figure.svelte';
   import Card from '$lib/components/Card.svelte';
   import Button from '$lib/components/Button.svelte';
   import Row from '$lib/components/Row.svelte';
@@ -79,20 +80,26 @@
   {:else}
     <Segmented bind:value={range} options={RANGES} label={t.progress.range} />
 
-    <Card aria-label={t.progress.weight} data-testid="progress-weight">
-      <p class="text-eyebrow text-ink-2">{t.progress.weight}</p>
-      <!-- a trend needs two weigh-ins in view; with fewer, the card is its empty state -->
-      {#if trendNow != null && points.length > 1}
-        <p class="text-display mt-2" data-testid="progress-trend">{num(inUnit(trendNow), 1)}</p>
-        <p class="text-caption text-ink-2 mt-1">{metric ? t.after.kg : t.after.lb} {t.after.trend}</p>
-        <div class="mt-4">
+    <!-- the screen's hero (OneFin's stats cards): the trend and its rate on the one haze panel, the chart on solid white -->
+    <Card hero aria-label={t.progress.weight} data-testid="progress-weight">
+      <div class="haze rounded-sheet p-4">
+        <p class="text-eyebrow text-ink-2">{t.progress.weight}</p>
+        <!-- a trend needs two weigh-ins in view; with fewer, the card is its empty state -->
+        {#if trendNow != null && points.length > 1}
+          <!-- always one decimal: a trend of 60.0 is a measurement, and the lighter tenth keeps 72.4 from reading as 724 -->
+          <p class="text-display mt-2" data-testid="progress-trend"><Figure text={inUnit(trendNow).toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} /></p>
+          <p class="text-caption text-ink-2 mt-1">{metric ? t.after.kg : t.after.lb} {t.after.trend}</p>
+        {/if}
+        <p class="mt-3 {rate != null ? 'text-callout' : 'text-body text-ink-2'}" data-testid="progress-rate">
+          {rate != null ? t.progress.rate(num(rate, 1), num(targetRate, 1)) : t.progress.needWeighIns(num(V.minWeighIns), num(V.minSpanDays / U.daysPerWeek))}
+        </p>
+      </div>
+      <div class="px-4 pt-4 pb-2">
+        {#if trendNow != null && points.length > 1}
           <TrendChart {points} {span} {band} from={shortDate(from)} to={shortDate(today)} label={t.progress.chart(shortDate(from), shortDate(today), num(inUnit(trendNow), 1))} />
-        </div>
-      {/if}
-      <p class="mt-3 {rate != null ? 'text-callout' : 'text-body text-ink-2'}" data-testid="progress-rate">
-        {rate != null ? t.progress.rate(num(rate, 1), num(targetRate, 1)) : t.progress.needWeighIns(num(V.minWeighIns), num(V.minSpanDays / U.daysPerWeek))}
-      </p>
-      <Button class="mt-4" onclick={() => weighIn(today)} data-testid="progress-log-weight">{t.progress.logWeight}</Button>
+        {/if}
+        <Button class="mt-4 first:mt-0" onclick={() => weighIn(today)} data-testid="progress-log-weight">{t.progress.logWeight}</Button>
+      </div>
     </Card>
 
     {#if measured != null}

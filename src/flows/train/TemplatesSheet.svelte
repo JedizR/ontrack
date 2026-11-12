@@ -28,7 +28,7 @@
 <Sheet bind:open title={t.train.templates} layer="base" testid="templates-sheet">
   <div class="flex flex-col gap-3">
   {#each TEMPLATES as tpl (tpl.id)}
-    <div class="bg-surface-2 rounded-lg p-5" data-testid="template-{tpl.id}">
+    <div class="bg-surface-2 rounded-lg p-6" data-testid="template-{tpl.id}">
       <h3 class="text-body font-semibold">{tpl.name}</h3>
       <p class="text-caption text-ink-2">{t.train.perWeek(num(tpl.daysPerWeek))}</p>
       <p class="text-caption text-ink-2">{t.train.suits[tpl.id]}</p>

@@ -1,4 +1,4 @@
-<!-- An on and off control, 44 to tap. On is ink: violet is for the main action and green for a reached target. -->
+<!-- An on and off control, 44 to tap. On is ink, as OneFin's selected option is black: violet is the brand and green a reached target. -->
 <script lang="ts">
   import { haptic } from '$lib/haptics';
 

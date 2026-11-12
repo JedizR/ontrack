@@ -24,7 +24,12 @@
 /* Theme names differ from token names on purpose: a theme variable with the same name as its token would be circular. */
 @theme inline {
   --color-transparent: transparent;
+  --color-action: var(--action);
+  --color-action-press: var(--action-press);
+  --color-on-action: var(--on-action);
   --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-progress: var(--progress);
   --color-accent-press: var(--accent-press);
   --color-on-accent: var(--on-accent);
   --color-accent-soft: var(--accent-soft);
@@ -58,9 +63,9 @@
   /* DESIGN.md section 5: size / line, weight, tracking. The four display styles and the eyebrow take the condensed
      face below; capitals come only from CSS, never from the words */
   --text-hero: var(--t-hero);
-  --text-hero--line-height: 0.9;
-  --text-hero--font-weight: 900;
-  --text-hero--letter-spacing: -0.05em;
+  --text-hero--line-height: 1;
+  --text-hero--font-weight: 500;
+  --text-hero--letter-spacing: -0.04em;
   --text-display: var(--t-display);
   --text-display--line-height: 0.9;
   --text-display--font-weight: 900;
@@ -101,11 +106,13 @@
 
 /* The condensed display face. In the components layer, so `num` (a utility) can put a number back in Geist. */
 @layer components {
-  .text-hero, .text-display, .text-title, .text-heading, .text-eyebrow {
+  .text-display, .text-title, .text-heading, .text-eyebrow {
     font-family: var(--font-display);
     font-variant-numeric: tabular-nums;
   }
   .text-title, .text-heading, .text-eyebrow { text-transform: uppercase; }
+  /* D2: the one big number in a card is Geist 500, not bold, as OneFin's "$ 4,025.08" and "2M+" */
+  .text-hero { font-family: var(--font-ui); font-variant-numeric: tabular-nums; }
 }
 
 /* Geist with tabular figures, for numbers in rows, steppers and wheels. */
@@ -121,33 +128,18 @@
 @utility shadow-float {
   box-shadow: var(--shadow-float);
 }
-/* The 3D pill (OneFin Button): a rim drawn as a 2 px gradient border around a gradient face, with inset light and a
-   stacked drop. Pressed, it sinks: the drop shortens and the face moves down 1 px. */
-@utility pill-accent {
-  border: 2px solid transparent;
-  background: var(--grad-accent) padding-box, var(--grad-accent-rim) border-box;
-  color: var(--on-accent);
-  box-shadow: var(--shadow-3d-accent);
+/* The action (OneFin's "Withdraw"): a flat ink fill, white on dark, a soft drop and nothing else. */
+@utility shadow-pill {
+  box-shadow: var(--shadow-action);
 }
-@utility pill-accent-down {
-  box-shadow: var(--shadow-3d-accent-down);
-  transform: translateY(1px) scale(0.98);
-}
-@utility pill-ink {
-  border: 2px solid transparent;
-  background: var(--grad-ink) padding-box, var(--grad-ink-rim) border-box;
-  color: var(--on-accent);
-  box-shadow: var(--shadow-3d-ink);
-}
-@utility pill-ink-down {
-  box-shadow: var(--shadow-3d-ink-down);
-  transform: translateY(1px) scale(0.98);
-}
-/* An icon tile: lavender with the soft inner glow of OneFin's violet tiles. */
+/* An icon tile: flat lavender with an ink glyph. Violet tiles (bg-accent) and white ones are plain classes. */
 @utility tile {
   background: var(--accent-soft);
   color: var(--on-accent-soft);
-  box-shadow: var(--shadow-tile);
+}
+/* The hero's one gradient region: the aurora haze. One per screen, never on a button, row or text. */
+@utility haze {
+  background: var(--grad-hero);
 }
 /* A text field: 56 high on surface-2 at radius 16, a 2 px ink ring on focus. */
 @utility input-field {
@@ -159,11 +151,23 @@
   &::placeholder { color: var(--ink-3); }
   &:focus-visible { box-shadow: 0 0 0 2px var(--ink); }
 }
-/* Only the dock and a scrolled header are glass. */
-@utility bar-glass {
+/* Glass (DESIGN.md section 6): a small chip over colour or a picture. Blur, a translucent fill, a 1 px white edge and a
+   soft drop; without blur the solid fill stands in. */
+@utility glass {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-edge);
+  box-shadow: var(--shadow-glass);
+  -webkit-backdrop-filter: var(--blur-glass);
+  backdrop-filter: var(--blur-glass);
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { background: var(--glass-solid); }
+}
+/* The dock: glass with more fill, since rows scroll under it. */
+@utility glass-bar {
   background: var(--bar-bg);
+  border: 1px solid var(--glass-edge);
   -webkit-backdrop-filter: var(--blur-bar);
   backdrop-filter: var(--blur-bar);
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { background: var(--bar-solid); }
 }
 /* Fade in and up once, on the first paint of a session (Today's cards). Reduced motion shows the end state. */
 @utility appear {

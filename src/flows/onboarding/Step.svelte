@@ -32,14 +32,14 @@
   <div class="flex h-[var(--header-h)] flex-none items-center gap-3">
     {#if onback}
       <button type="button" class="group -ml-1 grid size-11 flex-none place-items-center" aria-label={t.onboarding.back} onclick={onback} data-testid="back">
-        <span class="bg-surface text-ink group-active:bg-surface-2 grid size-11 place-items-center rounded-full transition-[background-color,transform] duration-[var(--d-press)] group-active:scale-[0.97]">
+        <span class="text-ink group-active:bg-surface-2 grid size-11 place-items-center rounded-sm transition-[background-color,transform] duration-[var(--d-press)] group-active:scale-[0.97]">
           <ChevronLeft size={22} strokeWidth={2.25} />
         </span>
       </button>
     {/if}
     {#if progress}
       <div class="bg-track h-1 flex-1 overflow-hidden rounded-full" role="progressbar" aria-valuemin={1} aria-valuemax={progress.total} aria-valuenow={progress.n} aria-label={t.onboarding.progress(String(progress.n), String(progress.total))}>
-        <div class="bg-ink h-full rounded-full transition-[width] duration-[var(--d-move)] ease-[var(--ease-out)]" style="width: {(progress.n / progress.total) * 100}%"></div>
+        <div class="bg-progress h-full rounded-full transition-[width] duration-[var(--d-move)] ease-[var(--ease-out)]" style="width: {(progress.n / progress.total) * 100}%"></div>
       </div>
       <span class="text-caption text-ink-2 num flex-none" aria-hidden="true" data-testid="step-count">{t.onboarding.progress(String(progress.n), String(progress.total))}</span>
     {/if}

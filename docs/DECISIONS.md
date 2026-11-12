@@ -2,6 +2,41 @@
 
 Changes to a doc's decision, and choices made on the owner's behalf. Newest first, one line each: what, why.
 
+## D2
+
+Visual refinement, from the owner's sixteen picks (`ontrack-design/onefin/owner-picks/`). The owner decided the ink pill and violet as the brand; the rest was decided on the owner's behalf, with the reasons in `docs/DESIGN.md` section 6:
+
+Audit of every gradient, 3D effect, glow and blur D1 left, with the verdict:
+
+| Effect (D1) | Where | Verdict | Why |
+| --- | --- | --- | --- |
+| `pill-accent`: violet gradient face, gradient rim, inner light, stacked violet drop | Primary buttons, the dock's plus, the Add sheet's Photo, Scan the tub | Changed: flat `--action` ink pill with `--shadow-action`; Photo and Scan the tub become solid violet featured cards | The owner: no 3D effect on buttons, "use this clean one" (15) |
+| `pill-ink`: dark gradient face and rim, inner light | `secondary` buttons (Today's sign in again, Choose a program, Leave) | Changed: the variant is gone. Sign in again and Leave are the screen's one action, so primary; Choose a program is a grey `neutral` pill under Continue | Primary is now the dark pill, so a second dark pill would compete with it |
+| `--grad-hero`: lavender to white at 160 degrees over the whole hero card | Today, Your plan | Changed: an aurora haze (03, 14) on one panel inside a white card (16); Progress's weight card joins as that screen's hero | The numbers below the panel sit on solid white or grey; one colour field per screen |
+| `--grad-brand`: violet to canvas | Welcome | Kept | It is Welcome's one gradient and its hero |
+| `--shadow-tile`: inner glow on lavender tiles | Every icon tile | Changed: flat | Tiles sit inside buttons, and no button may glow |
+| `bar-glass` on the scrolled header | Header | Changed: opaque canvas with a hairline | Glass is for small chips, the dock and sheet backdrops only |
+| `bar-glass` on the dock | Dock | Kept, as `glass-bar` with a 1 px white edge and a solid fallback | Pick 13's nav pill; rows scroll under it |
+| Blurred scrim | Sheet backdrop | Kept | A sheet backdrop is one of the three places glass belongs; without blur the scrim alone still dims |
+| Glass tile with an inset light | Welcome's decoration | Changed: the `glass` utility | Same recipe everywhere |
+| Mask gradient fading the wheel's edges | Wheel | Kept | A mask, not a fill: it fades rows, nothing is coloured |
+| Violet glow and 3D plus | Dock | Changed: ink circle, white on dark | Pick: the plus joins the action family; an ink circle by default |
+
+Other choices:
+- **White pill on dark**, `--action` #ffffff with an ink label, as "Contact us" on OneFin's dark nav. One token pair, so every primary and the plus flip together. A disabled primary turns grey (`--surface-3`) instead of fading, as OneFin's disabled arrow does.
+- **Violet in dark is #5b4ff5** for fills (white on it 5.4 to 1) and **#a9a9ff for words** (`--accent-ink`, 8 to 1 on the dark surface). Light keeps Violet/01 #381ac9 for both.
+- **Progress is violet** (tracks, the onboarding bar, the trend line, the week bars) until it reaches its zone, then green, as OneFin's ring and bars are violet. Its own token, `--progress`, is #7b72ff in dark: the fill violet #5b4ff5 is only 2.5 to 1 against the empty track there (`contrast.test.ts` now checks 3 to 1). Selected chips, segments, choices and today's week cell stay ink, as OneFin's selected option is black.
+- **The Hero number is Geist 500 at 56**, not Roboto Condensed 900 at 64: the picks' big numbers in cards are regular weight (07, 14, 15). Display figures (plan protein, portions, Progress, Train) stay condensed, as OneFin's prices. The hero's counterpart is Geist 600 at Heading size so the two numbers match.
+- **Icon buttons are rounded squares** (radius 16). Only the stepper's keys are ink, since they act on a value and show a bound by turning grey; close, back, more and again stay quiet so a sheet does not fill with black squares. The avatar stays round.
+- **`plain` buttons are violet links** (`--accent-ink`), as "View all Articles" (02). Danger stays red.
+- **Featured card, not ink, for Photo and Scan the tub:** a full width ink slab would outweigh the pinned primary; one violet card is the brand's featured item (02), at most one per screen.
+- **Lighter decimals use `--ink-2`**, not `--ink-3`, which fails 3 to 1 on the haze. `Figure` applies it to the weight trend and the check-in rate; the wheels keep their own whole and tenths columns.
+- **The camera's light stays a solid dark chip**, not glass: over a live picture a theme-dependent glass fill could drop its glyph to 2.5 to 1.
+- **The promise's key phrase is marked in the string** (`*you are training for.*`), one key, so a translation can move it.
+- **The wordmark on Welcome is the frozen ONTRACK file**, drawn from `design/brand/wordmark.svg` itself (`?raw`), so it cannot drift from the frozen bytes. DESIGN.md section 1's "never in capitals" referred to the old live text wordmark and is rewritten.
+- **The haze's stops stay at or under lavender 75 percent** so `contrast.test.ts`'s existing check (ink, ink-2 and success-ink at 4.5 to 1) still covers every word on it.
+- **The gate test** (`tests/e2e/app.spec.ts`, light and dark, `@smoke`): every button and the face that fills it has no background image, no text shadow, no inset shadow and no glow (a blurred layer that does not fall below the button, or a coloured or light one). It proves itself on three probes (D1's gradient, bevel and a violet glow) and a flat ink probe.
+
 ## N3
 
 Thai nutrition from Thai sources, 12 November 2026. The owner's calls: Ontrack is a class proof of concept that will not launch publicly, the interface stays English, and Thai script is for search aliases only. Decided on his behalf:

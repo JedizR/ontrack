@@ -96,7 +96,7 @@
 </script>
 
 {#snippet again(label: string, onclick: () => void)}
-  <button type="button" class="bg-surface-2 active:bg-surface-3 grid size-11 flex-none place-items-center rounded-full transition-[transform,background-color] duration-[var(--d-press)] active:scale-[0.97]" aria-label={label} {onclick} data-testid="again">
+  <button type="button" class="bg-surface-2 active:bg-surface-3 grid size-11 flex-none place-items-center rounded-sm transition-[transform,background-color] duration-[var(--d-press)] active:scale-[0.97]" aria-label={label} {onclick} data-testid="again">
     <Plus size={22} strokeWidth={2.25} />
   </button>
 {/snippet}
@@ -123,13 +123,14 @@
       </div>
       <Button variant="plain" size="sm" class="-ml-4 mb-6" onclick={() => supplement(null)} data-testid="supplement-new">{t.supplement.setup}</Button>
     {/if}
-    <!-- Photo is the sheet's main action: the violet 3D face, full width. The others are quiet tiles, Scan first (B1) -->
+    <!-- Photo is the sheet's featured way: one solid violet card, as OneFin's featured blog card, flat. The others are grey
+         cards holding white icon tiles with a lavender edge (the integrations tiles), Scan first (B1) -->
     <div class="grid grid-cols-2 gap-3">
       {#each WAYS as w (w.key)}
         {@const Icon = w.icon}
         {@const main = w.key === 'photo'}
-        <button type="button" class="{main ? 'pill-accent active:pill-accent-down col-span-2 min-h-20 flex-row items-center' : 'bg-surface-2 active:bg-surface-3 min-h-26 flex-col items-start justify-between active:scale-[0.97]'} flex gap-3 rounded-md p-4 text-left transition-[transform,background-color,box-shadow] duration-[var(--d-press)]" onclick={() => go(w.key)} data-testid="add-{w.key}">
-          <span class="{main ? 'bg-on-accent/20' : 'tile'} grid size-10 place-items-center rounded-sm"><Icon size={22} strokeWidth={2} /></span>
+        <button type="button" class="{main ? 'bg-accent text-on-accent active:bg-accent-press col-span-2 min-h-20 flex-row items-center' : 'bg-surface-2 active:bg-surface-3 min-h-26 flex-col items-start justify-between'} flex gap-3 rounded-md p-4 text-left transition-[transform,background-color] duration-[var(--d-press)] active:scale-[0.97]" onclick={() => go(w.key)} data-testid="add-{w.key}">
+          <span class="{main ? 'bg-on-accent/20' : 'bg-surface text-accent-ink ring-accent-soft ring-1'} grid size-10 place-items-center rounded-sm"><Icon size={22} strokeWidth={2} /></span>
           <span>
             <span class="text-body block font-semibold">{w.label}</span>
             <span class="text-caption {main ? '' : 'text-ink-2'} block">{w.line}</span>

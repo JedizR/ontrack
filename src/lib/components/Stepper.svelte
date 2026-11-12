@@ -1,4 +1,4 @@
-<!-- DESIGN.md section 7, Stepper: minus and plus as 44 px circles around a number that can also be typed. Holding repeats.
+<!-- DESIGN.md section 7, Stepper: minus and plus as 44 px ink rounded squares (grey at a bound) around a number that can also be typed. Holding repeats.
      A typed number is kept inside min and max but not rounded to the step (125 g stays 125); the buttons go on from it. -->
 <script lang="ts">
   import Minus from '@lucide/svelte/icons/minus';
@@ -71,7 +71,7 @@
   {@const Icon = d === 1 ? Plus : Minus}
   <button
     type="button"
-    class="bg-surface-2 active:bg-surface-3 grid size-11 flex-none place-items-center rounded-full transition-[transform,background-color] duration-[var(--d-press)] select-none active:scale-[0.97] disabled:opacity-40"
+    class="bg-action text-on-action active:bg-action-press disabled:bg-surface-2 disabled:text-ink-3 grid size-11 flex-none place-items-center rounded-sm transition-[transform,background-color] duration-[var(--d-press)] select-none active:scale-[0.97]"
     aria-label={d === 1 ? t.stepper.more(label) : t.stepper.less(label)}
     disabled={d === 1 ? value >= max : value <= min}
     onpointerdown={(e) => { if (e.button === 0) hold(d); }}
@@ -95,7 +95,7 @@
       autocomplete="off"
       aria-label={label}
       value={String(value)}
-      class="num h-11 min-w-11 bg-transparent {column ? 'text-right' : 'text-center'} font-semibold outline-none focus-visible:underline"
+      class="num h-11 min-w-11 bg-transparent {column || unit ? 'text-right' : 'text-center'} font-semibold outline-none focus-visible:underline"
       style="width: {(editing || column ? longest : Math.max(String(value).length, 1)) + 0.5}ch; font-size: max(16px, var(--t-heading))"
       data-vaul-no-drag
       onfocus={(e) => { editing = true; e.currentTarget.select(); }}

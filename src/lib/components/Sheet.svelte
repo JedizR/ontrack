@@ -38,7 +38,7 @@
   let scrolled = $state(false);
   // the content is rebuilt on every open, scrolled to the top
   $effect(() => { if (open) scrolled = false; });
-  const icon = 'active:bg-surface-2 grid size-11 flex-none place-items-center rounded-full transition-colors duration-[var(--d-press)]';
+  const icon = 'active:bg-surface-2 grid size-11 flex-none place-items-center rounded-sm transition-colors duration-[var(--d-press)]';
 </script>
 
 <!-- repositionInputs off: on iOS it offsets the sheet by the keyboard height while iOS also pans the viewport -->

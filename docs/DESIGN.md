@@ -1,16 +1,16 @@
 # Ontrack: brand and design
 
-`design/tokens.css` holds the values. This file explains the intent, so that new screens come out right without being specified one by one. Since D1 the look is the identity of OneFin, the Framer template "OneFin - Finance SaaS" that the owner chose (https://creative-hands-463340.framer.app/). Its values are extracted in `/Users/admin/destination/ontrack-design/onefin/IDENTITY.md` (authoritative for visual values), `onefin/site/SITE-EXTRACT.md` and `onefin/site/motion/MOTION.md`. Ontrack keeps its own name, mark and app icon. No OneFin logo, wordmark or template artwork (3D renders, phone mockups, app screen images, videos) ships in Ontrack.
+`design/tokens.css` holds the values. This file explains the intent, so that new screens come out right without being specified one by one. Since D1 the look is the identity of OneFin, the Framer template "OneFin - Finance SaaS" that the owner chose (https://creative-hands-463340.framer.app/). Since D2 the primary source is the owner's sixteen picks in `/Users/admin/destination/ontrack-design/onefin/owner-picks/`, read one by one in `OWNER-PICKS.md` there: "the most direct answer to what design to adopt from OneFin". The wider extraction (`onefin/IDENTITY.md`, `onefin/site/SITE-EXTRACT.md`, `onefin/site/motion/MOTION.md`) is background; where it disagrees, the picks win. Ontrack keeps its own name, mark and app icon. No OneFin logo, wordmark, photo, person or template artwork (3D renders, phone mockups, app screen images, videos) ships in Ontrack; decoration is CSS or SVG.
 
 ## 1. Brand
 
-- **Name.** Ontrack. One word, capital O only. Never OnTrack, On Track or ONTRACK, and never set in a capitalised style.
+- **Name.** Ontrack. One word, capital O only, in every sentence. Never OnTrack or On Track. The wordmark's capitals are a drawing, not a spelling.
 - **Idea.** A track is a path with a pace. Ontrack shows where you are on yours and whether you are keeping it. The brand is the track itself: a rounded loop with one bright marker on it.
 - **Promise.** Eat for the body you are training for.
 - **Personality.** A calm coach who is good with numbers. Precise, warm, brief. Not a cheerleader and not a nag.
 - **Mark.** `design/brand/mark.svg`: a stadium shaped track with a marker sitting on its top edge. One colour, inherits `currentColor`.
 - **App icon.** `design/brand/app-icon.svg`: the mark in white on a violet tile (`--accent`). The tile is the logo wherever the logo sits on a coloured or photographic background, because it brings its own contrast.
-- **Wordmark.** The word Ontrack in Geist, weight 600, set to the right of the mark. It is live text, not an image, and never in capitals.
+- **Wordmark.** `design/brand/wordmark.svg`: ONTRACK in Roboto Condensed Black capitals with the mark as its O (owner, 12 November 2026), filled outlines in `currentColor`, frozen with the mark and icon (`design/brand/ICON.md`). `Wordmark.svelte` draws the file itself. Use it only where the name is spelled out: Welcome, and the landing page (L1).
 - **In the product,** the track shape returns as the progress bar. That echo is the branding. The logo itself appears only on Welcome and Settings.
 
 ## 2. Voice
@@ -29,10 +29,10 @@ Plain words, short sentences, numbers first. Sentence case everywhere in the wor
 
 ## 3. Where each decision comes from
 
-- **OneFin** sets the look: colour, type, components, effects and motion. Violet actions, a bold condensed display face in capitals over a quiet geometric sans, 3D pill buttons with a gradient rim and face, soft cards with big radii, lavender stages and gradients, glass bars, springy motion. Its light sheets and its dark sections are Ontrack's two themes.
+- **OneFin, through the owner's picks,** sets the look: colour, type, components, effects and motion. Flat ink pill actions (the "Withdraw" button), violet as the brand rather than the button, a bold condensed display face in capitals over a quiet geometric sans, big numbers in regular weight with lighter decimals, solid cards with big nested radii, one soft haze per screen, glass only on small chips, the dock and sheet backdrops, springy motion. Its light sheets and its dark sections are Ontrack's two themes. Each pattern is adopted for a reason, in section 6.
 - **The Meal AI kit** gives calorie app structure only: one question per screen with Continue pinned, a mid screen wheel with a full width band, height and weight side by side, the plan reveal, weight update as one big value. Not its looks, rings, colours or emoji.
 - **Apple's HIG (2025 to 2026)** sets behaviour: 44 pt targets, one or two prominent buttons told apart by style, pickers for ordered lists, the number pad matched to the content, sheets with a visible close, no glass in the content layer.
-- **Ontrack's own:** the track bar, and colour used as a state. If something is violet it is the thing to do next. If something is green, a target has been reached.
+- **Ontrack's own:** the track bar, and colour used as a state. Ink is the thing to do next. Violet is Ontrack. Green means a target has been reached.
 
 ## 4. Colour
 
@@ -45,18 +45,20 @@ Two themes, same structure. Light is OneFin's light sheets, dark is its dark sec
 | Controls | `--surface-2`, `--surface-3` | Neutral buttons, inputs, chips, the wheel band, pressed states |
 | Text | `--ink`, `--ink-2`, `--ink-3` | Primary, secondary, and tertiary for large or non essential text only |
 | Edges | `--line`, `--line-strong` | Hairlines inside a card, the zone on a track |
-| Action | `--accent` with `--on-accent`, through `--grad-accent` | The primary button and the dock's plus. Pressed `--accent-press` |
-| Lavender | `--accent-soft` with `--on-accent-soft` | Icon tiles and the hero gradient. A surface, never a state |
+| Action | `--action` with `--on-action`, pressed `--action-press` | The flat ink pill (white on dark): the primary button, the stepper's keys and the dock's plus. `--shadow-action` is its soft drop |
+| Brand | `--accent` (fills), `--accent-ink` (words) and `--progress` (progress fills, lighter in dark to pass 3 to 1 on the empty track) with `--on-accent` | Violet icon tiles, links and highlighted words, progress (tracks, the onboarding bar, the trend line, the week bars), the one featured card on a screen. Pressed `--accent-press` |
+| Lavender | `--accent-soft` with `--on-accent-soft` | Icon tiles and the hero haze. A surface, never a state |
+| Glass | `--glass-bg`, `--glass-edge`, `--shadow-glass`, `--glass-solid`; the dock's `--bar-bg`, `--bar-solid` | Section 6. Small chips over colour, the dock, sheet backdrops |
 | Reached | `--success` | Fills a track that is inside its zone |
 | Reached as text | `--success-ink` | "On track" words and the week strip's dot. Darker than OneFin's chip text, so it passes on the hero's lavender |
 | Heads up | `--attention`, `--attention-soft` | Missing data, a cap or floor applied |
 | Destructive | `--danger`, `--danger-soft` | Delete and errors only. Never for food or weight |
 
 Rules:
-1. **Violet means act, green means reached.** At most one violet primary button on a screen or sheet, plus the dock's plus. Nothing else is violet or green.
+1. **Ink means act, violet is the brand, green means reached.** At most one ink primary pill on a screen or sheet, plus the dock's plus. Violet only in the brand uses above, with at most one solid violet featured card on a screen. Green only for a reached target.
 2. Selected chips, segments and choice cards are ink, as OneFin's selected option is black. Switches are ink when on.
-3. Progress is ink until it reaches its zone, then green. Over the zone it returns to ink.
-4. Gradients only where section 6 names them: the button faces, the hero card, Welcome. No other gradient.
+3. Progress is violet until it reaches its zone, then green. Over the zone it returns to violet.
+4. At most one gradient per screen, on its hero: the haze panel (Today, Your plan, Progress) or the brand gradient (Welcome). Never on a button, a row, a chip or text.
 5. Macros are not colour coded. They are told apart by label and position.
 6. Green on a light surface is a fill, never small text: words use `--success-ink`.
 
@@ -66,7 +68,7 @@ Two faces, self hosted from their OFL packages and precached: Roboto Condensed 9
 
 | Style | Token | Face, size / line, tracking | Use |
 | --- | --- | --- | --- |
-| Hero | `--t-hero` | Roboto Condensed 900, 64 / 58, -0.05em | The one number a screen is about |
+| Hero | `--t-hero` | Geist 500, 56 / 56, -0.04em | The one number a screen is about, in its hero card, as OneFin's "$ 4,025.08" |
 | Display | `--t-display` | Roboto Condensed 900, 48 / 43, -0.05em | Plan, portion and quick add figures |
 | Title | `--t-title` | Roboto Condensed 900, 36 / 36, -0.05em, capitals | Screen titles, onboarding questions |
 | Heading | `--t-heading` | Roboto Condensed 900, 24 / 24, -0.03em, capitals | Section and sheet titles, the hero's counterpart |
@@ -76,20 +78,41 @@ Two faces, self hosted from their OFL packages and precached: Roboto Condensed 9
 | Callout | `--t-callout` | Geist 400 to 600, 14 / 21, -0.01em | Buttons below `lg`, secondary rows, chips |
 | Caption | `--t-caption` | Geist 500, 12 / 18 | Captions under numbers, metadata, tab labels |
 
-- Capitals come only from `text-transform` on Title, Heading and Eyebrow. Strings in `en.ts` stay in sentence case. The wordmark is never in capitals.
+- Capitals come only from `text-transform` on Title, Heading and Eyebrow. Strings in `en.ts` stay in sentence case. The ONTRACK wordmark is a drawing (section 1), not text.
 - Body sizes scale with the text size setting through `--fs`. Hero, Display, Title and Heading scale half as much (`--fs-display`).
-- Every number that can change uses tabular figures. Numbers in rows, steppers and wheels are Geist (`num`); Hero and Display numbers are the condensed face.
+- Every number that can change uses tabular figures. Numbers in rows, steppers and wheels are Geist (`num`); the Hero number and its counterpart are Geist 500 and 600, not black (the picks' big numbers); Display numbers are the condensed face, as OneFin's prices.
+- Decimals read lighter: `Figure` sets the part after the point in `--ink-2` (the weight trend, the check-in rate), as OneFin's ".08". Not `--ink-3`, which fails on the haze.
 - Nothing below 12 px. Inputs are never below 16 px.
 
 ## 6. Space, shape, depth
 
 - **Grid.** 4 px. Page gutter 16 (`--gutter`). Inside cards and sheets 24 (`--inset`). Gap between cards 16. Gap between a label and its value 4. Row height at least 56.
-- **Radii.** OneFin's large, concentric corners: 8 for checkboxes, 16 for inputs, thumbnails, chips, small buttons and the wheel band, 20 for the large button and the segmented track, 24 for choice cards and tiles, 32 for cards, 40 for the top of sheets, 48 for the hero card. Full for icon buttons, tracks and the dock. A nested corner is the outer one minus the gap.
-- **Depth.** In light mode cards carry `--shadow-card`, OneFin's soft stats card shadow, and never a border with it. In dark mode cards have no shadow and a 1 px `--line` ring. Things that float (the dock, toasts, a dragged row) have `--shadow-float`.
-- **Gradients.** `--grad-accent` is the primary face, `--grad-hero` the hero card, `--grad-brand` Welcome. Nothing else.
-- **Glass.** Only the dock and the scrolled header are translucent and blurred. Sheets are opaque: no glass in the content layer.
+- **Radii.** OneFin's large, concentric corners: 8 for checkboxes, 16 for inputs, thumbnails, chips, small buttons, icon buttons and the wheel band, 20 for the large button and the segmented track, 24 for choice cards, tiles and stat tiles, 32 for cards, 40 for the top of sheets and the hero's haze panel, 48 for the hero card. Full for tracks, the dock, the dock's plus, the avatar and pill chips. A nested corner is the outer one minus the gap.
+- **Depth.** In light mode cards carry `--shadow-card`, OneFin's soft stats card shadow, and never a border with it. In dark mode cards have no shadow and a 1 px `--line` ring. Things that float (the dock, toasts, a dragged row) have `--shadow-float`. The ink pill and the dock's plus carry `--shadow-action`, a soft drop below them. No button has an inner light, a bevel, a rim, a gradient or a glow (`tests/e2e/app.spec.ts` sweeps every button for them).
+- **Content cards stay solid,** white or the dark surface, so their numbers stay readable. Nothing that carries a number you need to read is glass.
+- **Gradients.** At most one per screen, on its hero. `--grad-hero` is the aurora haze of OneFin's Premium and stats cards (lavender, blue, pink and cyan over white; violet, blue and magenta in dark), filling the hero's haze panel through the `haze` utility. `--grad-brand` is Welcome's ground. No stop of the haze is stronger than lavender at 75 percent, so ink, `--ink-2` and `--success-ink` words pass on it. Nothing else has a gradient.
+- **Glass.** As OneFin's "Paid" pill and "Direct pay" chip: backdrop blur, a translucent fill, a 1 px translucent white edge and a soft drop (`glass`; `glass-bar` for the dock, with more fill since rows scroll under it). Without blur (`@supports not`) the solid `--glass-solid` or `--bar-solid` stands in. Allowed only on: small chips and pills over a coloured or gradient surface or a picture (the hero's day chip, Welcome's decoration), sheet backdrops (the blurred scrim), and the dock. The header is opaque.
 - **Width.** Content sits in a column of at most 480 px, centred on `--surround` on wider screens.
-- **One card, one job.** No cards inside cards. Use a hairline to divide a card.
+- **One card, one job.** Nest only as OneFin nests: the hero card is a white shell holding its haze panel and grey stat tiles, radii stepping down. Otherwise divide a card with a hairline.
+
+### What D2 took from the owner's picks, and why
+
+| Pattern (pick) | Where | Why it helps there |
+| --- | --- | --- |
+| Flat ink pill, white on dark (15 "Withdraw", 04, 13 "Contact us") | Every primary button, the dock's plus | The owner's call: no 3D effect on buttons, "use this clean one". Ink reads as the action on every surface, including the violet and haze ones, and leaves violet free to mean Ontrack |
+| Grey pill (04 tags, 11) | Second actions (`neutral`) | Quiet next to the ink pill; one shape family, told apart by fill |
+| Square icon buttons, ink, grey when disabled (11) | Stepper keys; close, back, more and again as rounded squares | A stepper at its bound now shows it by turning grey instead of fading. Rounded squares tie the icon buttons to the icon tiles |
+| White card with a big number, grey stat tiles (15) | Today's hero, Your plan, Progress's weight card | The number is what the screen is about; the macros become three equal tiles that read as a set and stay level at large text |
+| One gradient region in a white card (16 invoice header) | The hero's haze panel | One soft colour field marks the hero without tinting the numbers below it; the frame keeps it a card, not a banner |
+| Aurora haze (03 Premium, 14 stats) | The haze itself | Softer than D1's flat lavender wash, with enough white that every word on it passes 4.5 to 1 |
+| Frosted chip with a white edge (16 "Paid", 01) | The hero's Training day or Rest day chip, Welcome's tile and "On track" pill | Glass shows only where something sits over colour or a picture, which is where it reads as glass |
+| Violet as the brand (02, 06, 12, 13) | Feature tiles on Welcome, links (`plain`), the promise's key phrase, tracks and charts, the Add sheet's Photo card | Violet now says "this is Ontrack" and marks progress, so the ink action is never confused with it |
+| One solid featured card (02 "Investing for beginners") | Photo on the Add sheet, Scan the tub in the supplement setup | The one way the screen suggests first, without a second button colour |
+| White icon tiles with a lavender edge (05) | The Add sheet's other ways, Photograph the label | Lifts the method icons off the grey cards as shortcuts, with no glow inside a button |
+| Regular weight big numbers, lighter decimals (14, 15) | The Hero number; `Figure` on weights and rates | Geist figures read faster than condensed black at a glance; the lighter decimals keep 72.4 from reading as 724 |
+| Wordmark (owner's own, after 09) | Welcome | The name is spelled out there, so the frozen ONTRACK wordmark replaces the mark beside live text |
+
+Not taken, on purpose: the ring progress (07), since the track is Ontrack's signature and reads in one glance; tilted stickers, floating tiles, testimonial colours and dark gradient footers (08 to 10, 12), which belong to the landing page (L1); grain on glass (14), which costs legibility on a phone.
 
 ## 7. Components
 
@@ -97,23 +120,27 @@ Start from the components in `src/lib/components/` and their gallery at `/galler
 
 | Component | Specification |
 | --- | --- |
-| Button | One height system. `lg` 56 for the screen's or sheet's main action, pinned at the bottom; `md` 48 for second actions in content; `sm` 36 on screen and 44 to tap, for inline actions in rows and cards; icon buttons are 44 circles. Variants: `primary`, OneFin's violet 3D pill (`--grad-accent` face inside a 2 px rim, inset light, a stacked violet drop), radius 20 at `lg` and 16 below; `secondary`, the dark 3D pill, at most one per screen; `neutral`, a flat `--surface-2` pill; `plain`, text only; `danger`, flat with a `--danger` label. Pressed: the pill sinks 1 px and scales to 0.98 in 120 ms. Disabled: 40 percent opacity. Labels are verbs in Geist 600 |
-| Card | `--surface`, radius 32, padding 24, `--shadow-card` in light, a hairline ring in dark. The hero card is radius 48 on `--grad-hero` |
+| Button | One height system. `lg` 56 for the screen's or sheet's main action, pinned at the bottom; `md` 48 for second actions in content; `sm` 36 on screen and 44 to tap, for inline actions in rows and cards. Variants: `primary`, OneFin's flat "Withdraw" pill: `--action` fill (ink, white on dark), `--on-action` label, `--shadow-action`, radius 20 at `lg` and 16 below, one per screen; `neutral`, the grey `--surface-2` pill for second actions; `plain`, a violet text link in `--accent-ink`; `danger`, flat with a `--danger` label. Pressed: the fill steps (`--action-press`, `--surface-3`) and the face scales to 0.97 in 120 ms. Disabled: the primary turns grey (`--surface-3`, `--ink-2` label, no drop); the others fade to 40 percent. No gradient, bevel or glow. Labels are verbs in Geist 600 |
+| Icon button | A 44 rounded square (radius 16). Action keys (the stepper's minus and plus) are ink with an `--on-action` glyph and turn `--surface-2` with an `--ink-3` glyph when disabled. Close, back, more and again are quiet: a glyph on nothing (or `--surface-2` for again), `--surface-2` when pressed. The camera's light is a solid dark square, since glass over a live picture would change with the theme. The avatar stays a circle |
+| Card | `--surface`, radius 32, padding 24, `--shadow-card` in light, a hairline ring in dark. The hero card (`hero`) is a white shell at radius 48 with 8 inside, holding the screen's haze panel (`haze`, radius 40, 16 inside) and, below it, grey stat tiles; text still sits 24 from the card's edge |
+| Stat tile | Inside the hero card: `--surface-2`, radius 24 (32 when wide), 16 inside. A Caption label, a value in Body 600 tabular with its unit in Caption, and a 6 high track at the bottom so a row of tiles stays level. Today's macros, Your plan's protein |
+| Glass chip | A pill on the haze or a picture: the `glass` utility, Caption 600 in ink, 2 by 10 inside. The hero's day kind |
+| Featured card | At most one per screen: a solid `--accent` card at radius 24 with an `--on-accent` label and a translucent white icon tile. The Add sheet's Photo, the supplement setup's Scan the tub. Pressed `--accent-press` and 0.97 |
 | Row | A 48 px tile or thumbnail at radius 16, title in Body 600, one line of caption, trailing number in Body 600 tabular. At least 64 high in lists. Divided by hairlines inset to the text |
-| Icon tile | 48 square (40 in choice cards) at radius 16, `--accent-soft` with an ink glyph (lavender glyph in dark), OneFin's soft inner glow |
+| Icon tile | 48 square (40 in choice cards and ways) at radius 16, in three tones as in OneFin's pricing: lavender (`tile`: `--accent-soft` with an ink glyph, lavender in dark) for rows and choices; violet (`bg-accent` with an `--on-accent` glyph) for feature icons, as on Welcome; white with a 1 px lavender edge and a violet glyph for shortcuts on grey, as the Add sheet's ways. Flat: no inner glow |
 | Chip | 44 high, radius 16, Callout 600, `--surface-2`. Selected: ink fill with canvas text |
 | Segmented control | A radius 20 track on `--surface-2` with 4 px padding, segments 44 high at radius 16; the selected segment is `--surface` with `--shadow-card`. At most four options |
 | Switch | 50 by 30, ink when on, `--surface-3` when off |
-| Track | The signature. A full radius bar, 14 high in the hero and 6 elsewhere, on `--track-bg`. The scale runs from 0 to 110 percent of the target. The on track zone is a slightly darker segment from its lower bound to the end. Fill is ink, and turns `--success` inside the zone. Width animates over 420 ms |
-| Hero number | Hero style, a caption beneath ("of 2,460 kcal") and the counterpart on the right in Heading ("620 to go", or "On track" in `--success-ink`). Digits tween when the value changes |
+| Track | The signature. A full radius bar, 14 high in the hero and 6 elsewhere, on `--track-bg`. The scale runs from 0 to 110 percent of the target. The on track zone is a slightly darker segment from its lower bound to the end. Fill is `--progress` violet, and turns `--success` inside the zone. Width animates over 420 ms |
+| Hero number | Hero style (Geist 500), a caption beneath ("of 2,460 kcal") and the counterpart on the right in Geist 600 at Heading size ("620 to go", or "On track" in `--success-ink`). Digits tween when the value changes |
 | Wheel | For bounded values: birth year, height, weight, goal weight, body fat. Five rows of `--wheel-row` (44 at default text), the selected row on a full width `--surface-2` band at radius 16; wheels set side by side (height and weight) share one band. Rows in Geist 600 at Heading size, tabular; the selected row ink, the rest `--ink-3`, the edges faded with a mask. The unit sits once, beside the band, in `--ink-2`. Native scroll snap does the momentum. A decimal value has a whole and a tenths column. Tapping the selected row, or Enter, swaps in a 16 px or larger text field for typing. Each column is a slider for assistive tech |
 | Wheel sheet | A sheet with the title, a hint caption, the wheel, an optional plain Clear, and the pinned primary Save. Weigh in, goal weight and body fat use it |
-| Stepper | Minus and plus as 44 circles on `--surface-2` around a number in Geist 600 at Heading size, which can be typed. Holding repeats. For small counts near a start: days, minutes, sets, reps, grams |
+| Stepper | Minus and plus as 44 ink rounded squares (grey when at a bound) around a number in Geist 600 at Heading size, which can be typed. Holding repeats. For small counts near a start: days, minutes, sets, reps, grams |
 | Number field | Exact, wide range values (Quick add): a native field with the number pad (`inputmode`), not `type="number"` |
 | Input | 56 high, radius 16, `--surface-2`, label in Caption above. Focus draws a 2 px ink ring |
-| Sheet | vaul Drawer. Top radius 40, grabber 36 by 5, title in Heading beside a 44 close button, a back chevron on the left when the sheet has a step. Content scrolls under a hairline; the main action is pinned to the bottom above the safe area. Opens to content height, at most 92 percent of the visible height |
-| Dock | A floating glass pill with three tabs and, to its right, the 64 violet 3D plus, both 64 high, 12 above the safe area. Selected tab in ink with its label, others in `--ink-2` |
-| Header | 56 high, opaque canvas, the title in Title on the left, sync mark and avatar on the right. A hairline appears once content scrolls under it |
+| Sheet | vaul Drawer. Top radius 40, grabber 36 by 5, title in Heading beside a 44 close button (a quiet rounded square), a back chevron on the left when the sheet has a step. The backdrop is the blurred `--scrim`. Content scrolls under a hairline; the main action is pinned to the bottom above the safe area. Opens to content height, at most 92 percent of the visible height |
+| Dock | A floating glass pill (`glass-bar`, a white edge, `--shadow-float`) with three tabs and, to its right, the 64 ink plus circle (white on dark) with `--shadow-action`, both 64 high, 12 above the safe area. Selected tab in ink with its label, others in `--ink-2` |
+| Header | 56 high, opaque canvas (no glass), the title in Title on the left, sync mark and avatar on the right. A hairline appears once content scrolls under it |
 | Week strip | Seven equal cells 64 high: weekday letter in Caption, the date in Body 600 tabular, a 5 px dot in `--success-ink` when that day was on track (`--success` on today's ink pill). Today is an ink pill at radius 24 |
 | Toast | Top centre inside the column, 16 from the edges, `--toast-bg` in both themes, radius 20, one line, optional Undo. One at a time |
 | Source label | Caption text: Database, Estimate, Yours (the user's remembered numbers, N1) or Quick add. Estimate carries a small outlined circle before it. No colour |
@@ -125,16 +152,16 @@ Start from the components in `src/lib/components/` and their gallery at `/galler
 
 These are what make an app look machine made. None of them ship.
 
-1. Neon outlines, glows behind text, mesh backgrounds, and any gradient section 6 does not name.
+1. Neon outlines, glows behind text, mesh backgrounds, and any gradient section 6 does not name. A gradient, bevel, inner light, rim or glow on any button.
 2. Emoji or sparkle icons standing in for icons. Any "AI" badge or sparkle next to the photo feature.
 3. A dashboard of small stat cards with icons in tinted circles.
 4. Rings and doughnuts for calories or macros. Rainbow macro colours.
-5. Borders on cards, or a border and a shadow together. Shadows only as `--shadow-card`, `--shadow-float` and the 3D pill.
-6. One radius used everywhere. Cards inside cards.
+5. Borders on cards, or a border and a shadow together (a glass chip's white edge is its glass, not a border). Shadows only as `--shadow-card`, `--shadow-float`, `--shadow-action` and `--shadow-glass`.
+6. One radius used everywhere. Cards inside cards, other than the hero's haze panel and stat tiles. Glass on a content card.
 7. Centred body text, centred forms, marketing copy inside the app.
 8. Wide letter spacing. Capitals typed into the words. Mixed title case and sentence case.
 9. A serif or editorial look, cream backgrounds, drop caps.
-10. Stock illustrations, mascots, confetti, streak flames, badges, and OneFin's own artwork or logo.
+10. Stock illustrations, mascots, confetti, streak flames, achievement badges, and OneFin's own artwork, photos, people or logo.
 11. Red or green used to judge food or weight.
 12. Em dashes, en dashes, middle dots, exclamation marks, and the words unlock, supercharge, journey, crush, smart.
 13. A spinner as the only loading state. A modal dialog where a sheet or inline message would do.
@@ -142,15 +169,15 @@ These are what make an app look machine made. None of them ship.
 
 ## 9. Rubric
 
-The `design-critic` subagent checks screenshots against these, side by side with the OneFin reference it is given. Each is pass or fail.
+The `design-critic` subagent checks screenshots against these, side by side with the owner's picks it is given (15, the "Withdraw" card, and 16, the invoice card, at least). Each is pass or fail.
 
 1. Tokens only: every colour, radius and type size on screen exists in `design/tokens.css`.
-2. Violet budget: at most one violet primary button plus the dock's plus. Any green is a reached target.
+2. Colour roles: at most one ink primary pill on a screen or sheet, plus the dock's plus. Violet only in section 4's brand uses, with at most one solid violet featured card. Any green is a reached target.
 3. One focus: the screen has one clearly largest element, and it is the thing the screen is about.
 4. Type scale: every text matches a style in section 5. Display styles are condensed capitals; numbers are tabular.
 5. Alignment: content aligns to the 16 px gutter outside cards and the 24 px inset inside them. Numbers in a list align on the right edge.
 6. Spacing: gaps come from the 4 px grid, and equal things have equal gaps.
-7. Depth: cards carry only `--shadow-card` (light) or a hairline ring (dark); only the dock, toasts and dragged rows float; buttons are the 3D pill or flat.
+7. Depth: cards are solid and carry only `--shadow-card` (light) or a hairline ring (dark); only the dock, toasts and dragged rows float. No button has a gradient, bevel or glow: the ink pill's only depth is `--shadow-action`, and tappable cards (choices), the selected segment and the week strip's picked day keep a card's `--shadow-card`, without which they vanish on the canvas. At most one gradient on the screen, on its hero; glass only where section 6 allows it.
 8. Nothing from the banned list.
 9. Copy: sentence case in the words, no banned punctuation or words, numbers formatted with grouping and units.
 10. Touch: every control is at least 44 px and has a visible pressed state in the interaction screenshots. One button height per role (56, 48, 36 in 44).
@@ -158,13 +185,13 @@ The `design-critic` subagent checks screenshots against these, side by side with
 12. Fit: no clipping or overflow on the SE in Safari (375 by 548) or at the largest text size. The main action is reachable without scrolling on a sheet.
 13. States: empty, loading and error states exist for the screen and follow sections 7 and 2.
 14. The spec: the screen contains what its section of `docs/SCREENS.md` lists, in that order.
-15. Identity: placed beside its OneFin reference, the screen reads as the same family: the condensed capitals, the violet pill, the soft big-radius cards, the lavender stage.
+15. Identity: placed beside the owner's picks, the screen reads as the same family: condensed capitals for titles, the flat ink pill, solid white cards with big nested radii, grey stat tiles, the haze on the hero only, small glass chips, violet as the brand.
 
 ## 10. Motion and feedback
 
 Fixed values from MOTION.md. With reduced motion set, every one becomes an instant change; opacity fades of 150 ms or less may stay.
 
-- Presses respond within 100 ms: the pill sinks 1 px and scales to 0.98, other controls scale to 0.97 with a colour step, over 120 ms.
+- Presses respond within 100 ms: buttons, icon buttons and cards scale to 0.97 with a fill step (the ink pill to `--action-press`), over 120 ms.
 - State changes (chips, segments, switches, toasts) use OneFin's default spring, 0.4 s with a little bounce (`--spring-default`, 420 ms).
 - Sheets use the vaul spring. Tabs slide from the side they came from; swiping between tabs follows the finger.
 - Values that change tween: numbers count over 400 ms, tracks grow over 420 ms with `--ease-out`.
@@ -175,8 +202,8 @@ Fixed values from MOTION.md. With reduced motion set, every one becomes an insta
 ## 11. Icons and imagery
 
 - Lucide icons at 24 px, stroke 2, in `currentColor`. Tab icons: a track for Today, a barbell for Train, a rising line for Progress.
-- Icon tiles are lavender with an ink glyph (section 7), OneFin's tile treatment in Ontrack's colours.
-- Imagery is the user's own meal photos, the brand gradients and decoration drawn in CSS or SVG in OneFin's manner (gradient pills, tilted chips). No stock art and none of OneFin's 3D renders, mockups or screen images.
+- Icon tiles come in three tones, lavender, violet and white (section 7), OneFin's tile treatment in Ontrack's colours.
+- Imagery is the user's own meal photos, the haze and Welcome's gradient, and decoration drawn in CSS or SVG in OneFin's manner (glass tiles, tilted chips). No stock art and none of OneFin's 3D renders, mockups, photos or screen images.
 - A meal without a photo gets a neutral tile with an icon for how it was logged.
 
 ## 12. Accessibility

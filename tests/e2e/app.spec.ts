@@ -1,6 +1,6 @@
 // The shell: header, three tabs, the dock. Runs in the light and dark projects (WebKit, 390 by 844).
 import { test, expect } from '@playwright/test';
-import { open, swipeAt, wheelType, withPrefs } from './helpers';
+import { MEALS, open, openFresh, swipeAt, wheelType, withPrefs } from './helpers';
 
 const title = (page: import('@playwright/test').Page) => page.getByRole('heading', { level: 1 });
 
@@ -160,4 +160,88 @@ test('the theme and text size change from the gallery and are remembered', async
   await page.reload();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   await expect(page.locator('html')).toHaveAttribute('data-fs', 'xl');
+});
+
+// D2's gate: every button is flat. No gradient, no bevel and no glow on a button, the face that fills it (Button's inner
+// span) or their ::before and ::after; a soft drop that falls below the button, or a hairline ring, is all the depth a
+// button may have. Smaller things inside a button are content, not its face: that is how Today's hero card, a button
+// holding the screen's one haze panel, passes (DESIGN.md section 6).
+const unflat = (page: import('@playwright/test').Page) => page.evaluate(() => {
+  const layers = (v: string) => (v === 'none' ? [] : v.split(/,(?![^(]*\))/));
+  const glow = (layer: string) => {
+    if (/inset/.test(layer)) return true; // a bevel or inner light
+    const colour = layer.match(/rgba?\(([^)]+)\)/)?.[1];
+    if (!colour) return true; // a colour this check cannot read is not taken on trust
+    const [r, g, b, a = 1] = colour.split(',').map(Number);
+    const [, y = 0, blur = 0] = (layer.replace(/rgba?\([^)]+\)/, '').match(/-?[\d.]+px/g) ?? []).map(parseFloat);
+    // a halo with no drop, or a coloured or light shadow, is a glow
+    return a > 0 && blur > 0 && (y <= 0 || Math.max(r, g, b) - Math.min(r, g, b) > 100 || (r + g + b) / 3 > 128);
+  };
+  const bad: string[] = [];
+  let checked = 0;
+  for (const btn of document.querySelectorAll<HTMLElement>('button, [role="button"]')) {
+    const box = btn.getBoundingClientRect();
+    if (!box.width || !box.height) continue;
+    checked++;
+    const faces = [btn, ...[...btn.querySelectorAll<HTMLElement>('*')].filter((e) => {
+      const r = e.getBoundingClientRect();
+      return Math.abs(r.width - box.width) < 2 && r.height >= box.height - 10;
+    })];
+    for (const f of faces) for (const pseudo of [null, '::before', '::after']) {
+      const cs = getComputedStyle(f, pseudo);
+      if (pseudo && cs.content === 'none') continue;
+      if (cs.backgroundImage !== 'none' || cs.textShadow !== 'none' || layers(cs.boxShadow).some(glow))
+        bad.push(`${btn.getAttribute('aria-label') ?? btn.textContent?.trim().slice(0, 30)}${pseudo ?? ''}: ${cs.backgroundImage} ${cs.boxShadow}`);
+    }
+  }
+  return { checked, bad };
+});
+
+test('no gradient, bevel or glow on any button in the gallery, on Today and in the Add sheet', { tag: '@smoke' }, async ({ page }) => {
+  await open(page, '/gallery');
+  await expect(page.locator('[data-section="buttons"]')).toBeVisible();
+  // the check itself catches D1's 3D pill, a violet glow and a bevel drawn in a pseudo-element, and lets a soft drop through
+  await page.evaluate(() => {
+    const add = (style: string, label: string, before = '') => {
+      const b = document.createElement('button');
+      b.setAttribute('aria-label', label);
+      b.style.cssText = `width: 80px; height: 44px; ${style}`;
+      if (before) {
+        b.className = label.replace(/ /g, '-');
+        document.head.append(Object.assign(document.createElement('style'), { textContent: `.${b.className}::before { content: ''; ${before} }` }));
+      }
+      document.body.append(b);
+    };
+    add('background: linear-gradient(#6262fe, #381ac9)', 'probe gradient');
+    add('box-shadow: inset 0 1px 1px #fff, 0 3px 3px rgba(40, 16, 162, 0.32)', 'probe bevel');
+    add('box-shadow: 0 0 24px rgba(98, 98, 254, 0.6)', 'probe glow');
+    add('', 'probe rim', 'position: absolute; inset: 0; background: linear-gradient(#fff, transparent)');
+    add('background: #121214; box-shadow: 0 6px 14px rgba(18, 18, 20, 0.12)', 'probe flat');
+  });
+  const probes = (await unflat(page)).bad.filter((b) => b.startsWith('probe')).map((b) => b.split(': ')[0]);
+  expect(probes).toEqual(['probe gradient', 'probe bevel', 'probe glow', 'probe rim::before']);
+  await page.reload();
+  await expect(page.locator('[data-section="buttons"]')).toBeVisible();
+  const gallery = await unflat(page);
+  expect(gallery.bad).toEqual([]);
+  expect(gallery.checked).toBeGreaterThan(30);
+
+  await open(page, '/', MEALS);
+  await expect(page.getByTestId('hero')).toBeVisible();
+  await expect(page.getByTestId('meal').first()).toBeVisible();
+  const today = await unflat(page);
+  expect(today.bad).toEqual([]);
+  expect(today.checked).toBeGreaterThan(10);
+  await page.getByTestId('add').click();
+  await expect(page.getByTestId('add-photo')).toBeVisible();
+  const add = await unflat(page);
+  expect(add.bad).toEqual([]);
+  expect(add.checked).toBeGreaterThan(today.checked);
+});
+
+test('no gradient, bevel or glow on any button on Welcome', async ({ page }) => {
+  await openFresh(page);
+  const welcome = await unflat(page);
+  expect(welcome.bad).toEqual([]);
+  expect(welcome.checked).toBeGreaterThanOrEqual(2);
 });

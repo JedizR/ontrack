@@ -1,5 +1,6 @@
-<!-- DESIGN.md section 7, Hero number: the one number a screen is about in the condensed Hero face, its caption beneath,
-     the counterpart on the right in Heading. Digits count to a new value over 400 ms. -->
+<!-- DESIGN.md section 7, Hero number: the one number a screen is about in the Hero style (Geist 500, medium, not bold, as
+     OneFin's "$ 4,025.08"), its caption beneath, the counterpart on the right in Geist 600 at Heading size. Digits count
+     to a new value over 400 ms. -->
 <script lang="ts">
   import { Tween } from 'svelte/motion';
   import { cubicOut } from 'svelte/easing';
@@ -33,7 +34,7 @@
     <div class="text-caption text-ink-2 mt-1">{caption}</div>
   </div>
   <div class="text-right">
-    <div class="text-heading {reached ? 'text-success-ink' : ''}">{side}</div>
+    <div class="text-heading num font-semibold normal-case {reached ? 'text-success-ink' : ''}">{side}</div>
     {#if sideCaption}<div class="text-caption text-ink-2 mt-1">{sideCaption}</div>{/if}
   </div>
 </div>

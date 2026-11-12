@@ -27,18 +27,20 @@
   <WeekStrip days={WEEK} today={TODAY} {selected} onselect={(d) => (selected = d)} />
 
   <Card hero aria-label={t.today.calories} data-testid="hero">
-    <HeroNumber value={eaten} caption={t.after.ofKcal(num(target))} side={num(target - eaten)} sideCaption={t.after.toGo} />
-    <div class="mt-4"><Track hero value={eaten} {target} {zone} label="{num(eaten)} {t.after.ofKcal(num(target))}" /></div>
-    <div class="text-caption text-ink-2 mt-2 flex justify-between gap-4">
-      <span>{t.today.trainingDay}</span>
-      <span>{t.today.onTrackFrom(num(zone[0]))}</span>
+    <div class="haze rounded-sheet p-4">
+      <HeroNumber value={eaten} caption={t.after.ofKcal(num(target))} side={num(target - eaten)} sideCaption={t.after.toGo} />
+      <div class="mt-4"><Track hero value={eaten} {target} {zone} label="{num(eaten)} {t.after.ofKcal(num(target))}" /></div>
+      <div class="text-caption text-ink-2 mt-3 flex items-center justify-between gap-4">
+        <span class="glass text-ink rounded-full px-2.5 py-0.5 font-semibold whitespace-nowrap">{t.today.trainingDay}</span>
+        <span class="text-right">{t.today.onTrackFrom(num(zone[0]))}</span>
+      </div>
     </div>
-    <div class="mt-4 grid grid-cols-3 gap-4">
+    <div class="mt-2 grid grid-cols-3 gap-2">
       {#each MACROS as m (m.label)}
-        <div class="flex min-w-0 flex-col">
+        <div class="bg-surface-2 flex min-w-0 flex-col rounded-md px-4 pt-3 pb-4">
           <div class="text-caption text-ink-2">{m.label}</div>
-          <div class="text-body num mb-1.5 font-semibold">{m.value}{' '}<span class="text-caption text-ink-2 font-medium whitespace-nowrap">{t.after.ofGrams(num(m.target))}</span></div>
-          <div class="mt-auto"><Track value={m.value} target={m.target} zone={m.zone} label="{m.label} {m.value} {t.after.ofGrams(num(m.target))}" /></div>
+          <div class="text-body num font-semibold">{m.value}{' '}<span class="text-caption text-ink-2 block font-medium whitespace-nowrap">{t.after.ofGrams(num(m.target))}</span></div>
+          <div class="mt-auto pt-2"><Track value={m.value} target={m.target} zone={m.zone} label="{m.label} {m.value} {t.after.ofGrams(num(m.target))}" /></div>
         </div>
       {/each}
     </div>

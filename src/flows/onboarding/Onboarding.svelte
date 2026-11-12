@@ -183,7 +183,7 @@
           <Step title={t.young.title} onback={back} top testid="step-young">
             <p class="text-lead">{t.young.body(num(V.minAge))}</p>
             {#snippet footer()}
-              <Button variant="secondary" size="lg" full onclick={leave} data-testid="young-leave">{t.onboarding.leave}</Button>
+              <Button variant="primary" size="lg" full onclick={leave} data-testid="young-leave">{t.onboarding.leave}</Button>
             {/snippet}
           </Step>
         {:else if d.at === 'body'}
