@@ -116,7 +116,7 @@ Start from the components in `src/lib/components/` and their gallery at `/galler
 | Header | 56 high, opaque canvas, the title in Title on the left, sync mark and avatar on the right. A hairline appears once content scrolls under it |
 | Week strip | Seven equal cells 64 high: weekday letter in Caption, the date in Body 600 tabular, a 5 px dot in `--success-ink` when that day was on track (`--success` on today's ink pill). Today is an ink pill at radius 24 |
 | Toast | Top centre inside the column, 16 from the edges, `--toast-bg` in both themes, radius 20, one line, optional Undo. One at a time |
-| Source label | Caption text: Database or Estimate. Estimate carries a small outlined circle before it. No colour |
+| Source label | Caption text: Database, Estimate, Yours (the user's remembered numbers, N1) or Quick add. Estimate carries a small outlined circle before it. No colour |
 | Sync mark | An 8 px dot beside the avatar: hidden when idle, `--ink-3` pulsing when syncing, hollow when offline, `--attention` when it needs attention. Tapping it explains the state |
 | Empty state | A line of body text saying what will appear here and one button to make it appear. No illustrations |
 | Skeleton | Blocks in `--surface-2` at the final layout's sizes, with a slow opacity pulse |
