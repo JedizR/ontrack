@@ -1,6 +1,6 @@
 name: ci
 # Quick on every pull request and push to main: the same checks as `pnpm verify`, plus the end to end
-# files the pull request changed. Full (every end to end test, screenshots, stress) only on a `v*` tag,
+# files the pull request changed. Full (every end to end test, screenshots, stress) only on a release tag (v1 and later),
 # a pull request labelled `full-ci`, or a manual run. Docs-only changes skip CI (docs/SOURCES.md is
 # read by a unit test, so it still counts).
 on:
@@ -9,7 +9,7 @@ on:
     paths: ['**', '!**/*.md', '!docs/**', 'docs/SOURCES.md']
   push:
     branches: [main]
-    tags: ['v*']
+    tags: ['v[1-9]*'] # releases only; milestone tags (v0.x) run nothing
     paths: ['**', '!**/*.md', '!docs/**', 'docs/SOURCES.md']
   workflow_dispatch:
 concurrency:
