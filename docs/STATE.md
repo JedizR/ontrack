@@ -13,7 +13,7 @@ Status is one of: not started, in progress, shipped, shipped with cuts, blocked.
 | M2 | Engine | shipped | PR #6, merged, `v0.2.0` | 19 sources checked; 3 values kept against their source, on the owner's review list |
 | M3 | Data, sync, sign-in | shipped with cuts | PR #7, merged, `v0.3.0` | Conformance green on mock and live. Live sign in blocked: no Google client, no SMTP for codes. No Privacy and Terms line |
 | M4 | Onboarding and plan | shipped with cuts | PR #8, merged, `v0.4.0` | Gate green on the mock. Saving on production waits for live sign in (M3 blockers). Templates without muscle balance until M7 |
-| M5 | Today and logging | shipped with cuts | PR #9, open | Gate green on the mock. Three meals do not fit 390 by 844 without scrolling (as in the M1 reference). No install notice card, no deleting a saved meal |
+| M5 | Today and logging | shipped with cuts | PR #9, merged, `v0.5.0` | Gate green on the mock. Three meals do not fit 390 by 844 without scrolling (as in the M1 reference). No install notice card, no deleting a saved meal |
 | M6 | Photo logging | not started | | |
 | M7 | Training | not started | | |
 | M8 | Progress and check-ins | not started | | |
@@ -30,6 +30,8 @@ Status is one of: not started, in progress, shipped, shipped with cuts, blocked.
 - Vision: not built yet. Vercel holds `VITE_BACKEND=supabase`, the Supabase URL and keys, and `CRON_SECRET` for production and preview.
 
 ## Notes for the next milestone
+
+- Open since M5 (for M9 if not sooner): the smoke run's returning-user test logs a console error "onboarding failed to load" while still passing. Find the cause.
 
 - Engine (M2): `src/lib/model/engine/`, import from `$lib/model/engine`. `plan(input)` returns the numbers a stored Plan carries (add `effectiveFrom`, `tdeeSource`, `source`). Derive, never store: `dayTarget(plan, { sex, mode, weekday, skipped })`, `dayMacros`, `tdeeAvg`, `effectiveRate`, `calorieStatus`, `proteinOnTrack`. Onboarding uses `guardrails`, `paceOptions`, `defaultPace`. `checkin(...)` returns stats, proposal and the new plan; `checkinDue`. `analyseProgram(sessions, { goal, experience, library: LIBRARY })` returns findings with `kind` and `source`; M7 words them in `en.ts`.
 - The engine takes day numbers, not date strings, and age, not birth year. `dates.ts` (M3 or M5) converts.
