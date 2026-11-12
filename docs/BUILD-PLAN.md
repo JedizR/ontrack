@@ -177,14 +177,15 @@ Owner checks: the friends who suggested these try them.
 
 ## O1 Onboarding redesign
 
-The owner's rule: onboarding must be very engaging and easy, personalize the app, and take the least effort to finish. Research on how products and designers handle onboarding in 2026 (TikTok, Duolingo and others) is in `/Users/admin/destination/ontrack-design/onboarding/RESEARCH.md`, with references in `refs/`.
+The owner's rule: onboarding must be very engaging and easy, personalize the app, and take the least effort to finish. Research on how products and designers handle onboarding in 2026 (TikTok, Duolingo and others) is in `/Users/admin/destination/ontrack-design/onboarding/RESEARCH.md`, with references in `refs/`. The owner also wants the words, above all the main actions, chosen to maximise engagement and click-through; the wording research and proposed strings are in `COPY.md` beside it.
 
 Read: that research, `docs/PRD.md` F2 and section 7, `docs/SCREENS.md` section 4, `docs/SCIENCE.md`, `docs/DESIGN.md`, `src/flows/onboarding/`.
 
 1. Decide the flow from the research. Ask only what changes the plan or the app; default, infer or defer the rest, and state in `docs/DECISIONS.md` what each default or inference costs in accuracy, using SCIENCE.md. Rewrite `docs/SCREENS.md` section 4 before code.
 2. Build it in the OneFin system, with motion from MOTION.md, auto-advance on single choices, the plan number building as the user answers, and a payoff moment that is honest (no fake loading).
 3. Personalize from the answers: Today's first state, a suggested program, supplements set up (F21), the gain pace (F19), Thai foods (F14).
-4. The guardrails in PRD section 7 stay intact: the adult check, and screening before any number is shown.
+4. Words: apply `COPY.md` to every onboarding string, write its voice guide into `docs/DESIGN.md`, and go over every main action label in `src/lib/i18n/en.ts` app-wide with it. Wording stays within the catalog rules and the PRD's neutral language.
+5. The guardrails in PRD section 7 stay intact: the adult check, and screening before any number is shown.
 
 Gate: end to end tests for the new flow on each goal and for every guardrail exit. The measured taps and time for a typical user beat the current flow and meet the research targets; put both in the pull request. `verify-ui` passes.
 Owner checks: hand the phone to someone who has never seen Ontrack and time them.
@@ -193,7 +194,7 @@ Owner checks: hand the phone to someone who has never seen Ontrack and time them
 
 Read: `docs/PRD.md` F18, `docs/DESIGN.md`, `docs/SCREENS.md` (Welcome), and in `/Users/admin/destination/ontrack-design/onefin/`: `site/SITE-EXTRACT.md` (the "Landing sections" chapter) and `site/motion/MOTION.md`.
 
-Build the landing page for signed-out visitors (no session and no onboarding draft) in the OneFin style, with scroll animations from MOTION.md. It replaces Welcome. "Get started" opens onboarding, "Sign in" opens the sign-in sheet. Phone frames show real screenshots of the app. No OneFin raster or video artwork ships; decoration is CSS or SVG. A lazy chunk, reduced motion respected, no install wording. Update `docs/SCREENS.md` and `docs/PRD.md`.
+Build the landing page for signed-out visitors (no session and no onboarding draft) in the OneFin style, with scroll animations from MOTION.md. Its headline, sections and both buttons are worded for click-through using the voice guide in `docs/DESIGN.md` and the landing proposals in `/Users/admin/destination/ontrack-design/onboarding/COPY.md`. It replaces Welcome. "Get started" opens onboarding, "Sign in" opens the sign-in sheet. Phone frames show real screenshots of the app. No OneFin raster or video artwork ships; decoration is CSS or SVG. A lazy chunk, reduced motion respected, no install wording. Update `docs/SCREENS.md` and `docs/PRD.md`.
 
 Gate: end to end tests: a new visitor sees the landing page, both buttons work, a returning user with a draft or a session skips it, reduced motion shows everything without animation. The initial JavaScript budget still holds. `verify-ui` passes at every size.
 Owner checks: scroll it on the iPhone in Safari.

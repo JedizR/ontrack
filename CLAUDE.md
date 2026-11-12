@@ -42,7 +42,7 @@ These are the rules that are easy to break without noticing.
 - **The server boundary is a directory.** Nothing under `src/` imports from `server/` or `api/`. Secrets exist only there. Anything prefixed `VITE_` is public.
 - **Days are local.** Bucket by the device's calendar date as a `YYYY-MM-DD` string captured at write time. Never derive a day from a UTC timestamp.
 - **Tokens only.** Colours, radii, spacing and type sizes come from `design/tokens.css` through Tailwind theme variables. No raw hex or pixel font sizes in components.
-- **Words live in the catalog.** UI strings come from `src/lib/i18n/en.ts`. No em or en dashes, no middle dot separators, sentence case, no exclamation marks.
+- **Words live in the catalog.** UI strings come from `src/lib/i18n/en.ts`. No em or en dashes, no middle dot separators, sentence case, no exclamation marks. Words are designed like screens: every headline and main action is chosen to be clear and to get the tap (the voice guide in `docs/DESIGN.md`, from O1), never through guilt, false urgency or confirmshaming.
 - **Violet means act, green means reached.** OneFin violet fills the primary action and the dock's plus. Success green marks progress that reached its target. Nothing else is violet or green; lavender tints are surfaces.
 - **iPhone rules.** Inputs at 16 px or larger. `touch-action: manipulation` globally. Respect safe areas. Never set `maximum-scale`. Test at 390 by 844 in Safari with its toolbars (viewport 390 by 664) and at the SE size (375 by 548).
 - **Class names.** Never name a component class after a Tailwind utility (`block`, `flex`, `hidden`). It has bitten us before.
