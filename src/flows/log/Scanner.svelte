@@ -3,7 +3,7 @@
      number on the number pad. When the camera cannot open, the reason sits over the typing field. The camera stops when
      this leaves the screen. -->
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { untrack } from 'svelte';
   import Flashlight from '@lucide/svelte/icons/flashlight';
   import FlashlightOff from '@lucide/svelte/icons/flashlight-off';
   import Button from '$lib/components/Button.svelte';
@@ -12,12 +12,12 @@
   import { haptic } from '$lib/haptics';
   import { t } from '$lib/i18n';
 
-  let { oncode }: { oncode: (code: string) => void } = $props();
+  /** `typing`: the user chose Type the number; the sheet's back chevron sets it false to bring the camera back */
+  let { oncode, typing = $bindable(false) }: { oncode: (code: string) => void; typing?: boolean } = $props();
 
   const SLOW_MS = 8000;
   const EVERY_MS = 150;
 
-  let typing = $state(false);
   let problem = $state<'denied' | 'none' | 'busy' | 'reader' | null>(null);
   let live = $state(false);
   let slow = $state(false);
@@ -93,18 +93,17 @@
     await track.applyConstraints({ advanced: [{ torch: on } as MediaTrackConstraintSet] }).then(() => (torch = on), () => {});
   }
 
-  function type() {
-    stop();
-    typing = true;
-  }
+  const type = () => (typing = true);
   function find() {
     const code = productCode(digits);
     wrong = !code;
     if (code) oncode(code);
   }
 
-  onMount(() => {
-    void start();
+  // the camera runs while it is on screen: from the start, and again after typing, until this goes
+  $effect(() => {
+    if (typing) return;
+    untrack(() => void start());
     return stop;
   });
   // the camera cannot open: the reason, then the typing field under it

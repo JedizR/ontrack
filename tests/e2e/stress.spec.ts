@@ -221,7 +221,21 @@ async function walkLogging(page: Page, dir: string) {
   await page.getByTestId('add').click();
   await page.getByTestId('supplement-new').click();
   await sheet('supplement-sheet', 'supplement-kinds');
+  await page.getByTestId('kind-whey').click();
+  await checkPage(page, 'supplement-source', dir);
   await close('supplement-sheet');
+  // the Scan sheet (B1): no camera here, so the typed number, then the product and its label
+  await page.getByTestId('add').click();
+  await page.getByTestId('add-scan').click();
+  await expect(page.getByTestId('barcode-field')).toBeVisible();
+  await sheet('scan-sheet', 'scan-type', 'barcode-find');
+  await page.getByTestId('barcode-field').fill('8850987101021');
+  await page.getByTestId('barcode-find').click();
+  await expect(page.getByTestId('product')).toBeVisible();
+  await sheet('scan-sheet', 'scan-product', 'product-add');
+  await page.getByTestId('product-correct').click();
+  await sheet('scan-sheet', 'scan-label', 'label-save');
+  await close('scan-sheet');
   await page.getByTestId('add').click();
   await page.getByTestId('add-search').click();
   await page.getByTestId('search-field').fill('chicken');

@@ -29,6 +29,7 @@
 
   let step = $state<Step>('scan');
   let scans = $state(0); // a new Scanner for each scan
+  let typing = $state(false);
   let code = $state('');
   let found = $state<Found | null>(null);
   let product = $state<Product | null>(null);
@@ -47,7 +48,7 @@
   let input = $state<HTMLInputElement>();
 
   $effect(() => {
-    if (sheets.scan) untrack(() => { step = 'scan'; scans++; product = null; found = null; });
+    if (sheets.scan) untrack(() => { step = 'scan'; scans++; typing = false; product = null; found = null; });
   });
 
   const item = $derived(product ? scaleTo(product.per100, grams) : ZERO);
@@ -71,6 +72,7 @@
   }
   function again() {
     scans++;
+    typing = false;
     step = 'scan';
   }
 
@@ -162,7 +164,8 @@
     : t.scan.title,
   );
   const back = $derived<(() => void) | undefined>(
-    step === 'product' || step === 'new' || step === 'failed' ? again
+    step === 'scan' && typing ? () => (typing = false)
+    : step === 'product' || step === 'new' || step === 'failed' ? again
     : step === 'reading' ? () => (step = 'new')
     : step === 'label' ? () => (step = correcting ? 'product' : found?.kind === 'found' ? 'product' : 'new')
     : undefined,
@@ -179,12 +182,18 @@
   {/if}
 {/snippet}
 
-{#snippet pending(words: string)}
-  <div class="flex flex-col gap-4" aria-busy="true">
+<!-- skeletons at the sizes of what replaces them: the Product step, or the Label step -->
+{#snippet pending(words: string, of: 'product' | 'label')}
+  <div class="flex flex-col gap-5" aria-busy="true">
     <p class="text-callout text-ink-2" aria-live="polite">{words}</p>
-    <Skeleton class="h-12 w-40 rounded-sm" />
-    <Skeleton class="h-11 rounded-sm" />
-    <Skeleton class="h-11 rounded-sm" />
+    {#if of === 'product'}
+      <div class="flex flex-col gap-2"><Skeleton class="h-12 w-36 rounded-sm" /><Skeleton class="h-4 w-56 rounded-xs" /><Skeleton class="h-4 w-24 rounded-xs" /></div>
+      <div class="flex gap-2"><Skeleton class="h-11 w-24 rounded-sm" /><Skeleton class="h-11 w-24 rounded-sm" /></div>
+      <Skeleton class="h-11 rounded-sm" />
+    {:else}
+      <Skeleton class="h-14 rounded-sm" />
+      {#each [0, 1, 2, 3, 4] as i (i)}<Skeleton class="h-11 rounded-sm" />{/each}
+    {/if}
   </div>
 {/snippet}
 
@@ -201,9 +210,9 @@
   backLabel={t.scan.back}
 >
   {#if step === 'scan'}
-    {#key scans}<Scanner oncode={look} />{/key}
+    {#key scans}<Scanner oncode={look} bind:typing />{/key}
   {:else if step === 'finding'}
-    {@render pending(t.scan.finding)}
+    {@render pending(t.scan.finding, 'product')}
   {:else if step === 'product' && product}
     <div class="flex flex-col gap-5" data-testid="product">
       <div aria-live="polite">
@@ -228,7 +237,7 @@
       {#if product.source === 'off'}
         <p class="text-caption text-ink-2" data-testid="product-cite">
           {t.search.from(OFF_SOURCE.name)}
-          <a href={OFF_SOURCE.terms} target="_blank" rel="noopener" class="relative underline after:absolute after:-inset-x-2 after:-inset-y-4">{t.search.terms}</a>
+          <a href={OFF_SOURCE.terms} target="_blank" rel="noopener" class="-my-3 inline-flex min-h-11 items-center underline">{t.search.terms}</a>
         </p>
       {/if}
     </div>
@@ -256,7 +265,7 @@
         </div>
       </div>
     {:else}
-      {@render pending(t.scan.reading)}
+      {@render pending(t.scan.reading, 'label')}
     {/if}
   {:else if step === 'label'}
     <div class="flex flex-col gap-5" data-testid="label">
@@ -278,10 +287,10 @@
           </div>
         {/each}
       </div>
+      <p class="text-caption text-ink-2">{t.scan.check}</p>
       {#if problem && (problem !== 'serving' || values.kcal || values.protein || values.carbs || values.fat)}
         <p class="text-callout text-attention" role="alert" data-testid="label-problem">{problem === 'heavy' ? t.scan.heavy : problem === 'kcal' ? t.scan.tooMuch : t.scan.noServing}</p>
       {/if}
-      <p class="text-caption text-ink-2">{t.scan.check}</p>
     </div>
   {/if}
 </Sheet>

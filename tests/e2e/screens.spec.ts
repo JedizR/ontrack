@@ -365,13 +365,25 @@ for (const theme of ['light', 'dark'] as const) {
         await settled();
         await shot(page, 'supplements', 'kinds');
         await page.getByTestId('kind-whey').click();
+        await expect(page.getByTestId('supplement-source')).toBeVisible();
+        await shot(page, 'supplements', 'source-whey');
+        await page.getByTestId('tub-typical').click();
         await expect(page.getByTestId('supplement-label')).toBeVisible();
         await shot(page, 'supplements', 'label-whey');
+        await page.getByTestId('supplement-save').click();
+        await expect(page.getByTestId('supplement-typical')).toBeVisible();
+        await shot(page, 'supplements', 'amount-typical');
+        await page.getByTestId('supplement-edit').click();
         await typeIn('supplement-protein', '40');
         await page.getByTestId('supplement-heavy').scrollIntoViewIfNeeded();
         await shot(page, 'supplements', 'label-heavy');
-        await page.getByTestId('sheet-back').click();
+        await close();
+        await page.getByTestId('add').click();
+        await expect(page.getByTestId('add-sheet')).toHaveCSS('transform', 'none');
+        await shot(page, 'supplements', 'add-typical');
+        await page.getByTestId('supplement-new').click();
         await page.getByTestId('kind-creatine').click();
+        await page.getByTestId('tub-type').click();
         await page.getByTestId('supplement-zero').scrollIntoViewIfNeeded();
         await shot(page, 'supplements', 'label-creatine');
         await close();
@@ -416,6 +428,124 @@ for (const theme of ['light', 'dark'] as const) {
         await expect(page.getByText('The milk values did not load. Water still works.')).toBeVisible();
         await settled();
         await shot(page, 'supplements', 'milk-failed');
+      });
+
+      // SCREENS.md section 7, Scan sheet (B1): the Add sheet, the camera, typing (no camera, denied, wrong digits),
+      // finding, a product from Open Food Facts, a new product, reading the label and its errors, the Label step and its
+      // problem, a product read from its label, lookup offline, and the scanned row on Today
+      test('scan', async ({ page, context }) => {
+        const settled = () => expect(page.getByTestId('scan-sheet')).toHaveCSS('transform', 'none');
+        const close = async () => { await page.keyboard.press('Escape'); await expect(page.getByTestId('scan-sheet')).toBeHidden(); };
+        const typeIn = async (id: string, v: string) => { const f = page.getByTestId(id).getByRole('textbox'); await f.fill(v); await f.press('Enter'); };
+        // a camera that shows a plain grey scene, so the viewfinder is live and reads nothing; then none at all
+        await page.addInitScript(() => {
+          const w = window as unknown as { cameraError?: string };
+          Object.defineProperty(navigator, 'mediaDevices', { configurable: true, value: { getUserMedia: async () => {
+            if (w.cameraError) throw new DOMException('camera', w.cameraError);
+            const c = Object.assign(document.createElement('canvas'), { width: 640, height: 480 });
+            const g = c.getContext('2d')!;
+            g.fillStyle = '#8a8378';
+            g.fillRect(0, 0, 640, 480);
+            setInterval(() => g.fillRect(0, 0, 1, 1), 100);
+            return c.captureStream(10);
+          } } });
+        });
+        const s = await open(page);
+        await page.getByTestId('add').click();
+        await expect(page.getByTestId('add-sheet')).toHaveCSS('transform', 'none');
+        await shot(page, 'scan', 'add');
+        await page.getByTestId('add-scan').click();
+        await settled();
+        await expect(page.getByTestId('scanner-hint')).toHaveText('Hold the barcode inside the frame. It reads by itself.', { timeout: 15_000 });
+        await shot(page, 'scan', 'camera');
+        await page.getByTestId('scanner-type').click();
+        await page.getByTestId('barcode-field').fill('8850987101022');
+        await page.getByTestId('barcode-find').click();
+        await shot(page, 'scan', 'type-wrong');
+        // back from typing brings the camera back
+        await page.getByTestId('sheet-back').click();
+        await expect(page.getByTestId('scanner-hint')).toHaveText('Hold the barcode inside the frame. It reads by itself.', { timeout: 15_000 });
+        await close();
+        await page.evaluate(() => { (window as unknown as { cameraError?: string }).cameraError = 'NotAllowedError'; });
+        await page.getByTestId('add').click();
+        await page.getByTestId('add-scan').click();
+        await settled();
+        await expect(page.getByTestId('scanner-problem')).toBeVisible();
+        await shot(page, 'scan', 'type-denied');
+
+        // finding, held, then a product from Open Food Facts
+        let release = () => {};
+        const held = new Promise<void>((r) => (release = r));
+        await page.route('**/__mock/off/**', async (route) => { await held; await route.continue(); });
+        await page.getByTestId('barcode-field').fill('8850987101021');
+        await page.getByTestId('barcode-find').click();
+        await expect(page.getByText('Finding the product')).toBeVisible();
+        await shot(page, 'scan', 'finding');
+        release();
+        await expect(page.getByTestId('product')).toBeVisible();
+        await page.unroute('**/__mock/off/**');
+        await shot(page, 'scan', 'product-off');
+        await page.getByTestId('product-cite').scrollIntoViewIfNeeded();
+        await shot(page, 'scan', 'product-off-end');
+        await close();
+
+        // a new product, its label read (held), then the Label step and a product from its label
+        await page.getByTestId('add').click();
+        await page.getByTestId('add-scan').click();
+        await page.getByTestId('barcode-field').fill('8850999220017');
+        await page.getByTestId('barcode-find').click();
+        await expect(page.getByTestId('product-new')).toBeVisible();
+        await settled();
+        await shot(page, 'scan', 'new');
+        let readIt = () => {};
+        const reading = new Promise<void>((r) => (readIt = r));
+        await page.route('**/api/analyze', async (route) => { await reading; await route.continue(); });
+        const chooser = page.waitForEvent('filechooser');
+        await page.getByTestId('label-photo').click();
+        await (await chooser).setFiles('tests/fixtures/meal.jpg');
+        await expect(page.getByText('Reading the label')).toBeVisible();
+        await shot(page, 'scan', 'reading');
+        readIt();
+        await expect(page.getByTestId('label')).toBeVisible();
+        await page.unroute('**/api/analyze');
+        await shot(page, 'scan', 'label');
+        await typeIn('label-protein', '30');
+        await page.getByTestId('label-problem').scrollIntoViewIfNeeded();
+        await shot(page, 'scan', 'label-heavy');
+        await typeIn('label-protein', '2');
+        await page.getByTestId('label-save').click();
+        await expect(page.getByTestId('product-source')).toHaveText('Label');
+        await shot(page, 'scan', 'product-label');
+        await page.getByTestId('product-add').click();
+        await expect(page.getByTestId('scan-sheet')).toBeHidden();
+        await expect(page.getByTestId('meals')).toHaveCSS('opacity', '1');
+        await shot(page, 'scan', 'today');
+
+        // a label photo that is not one
+        await vision(page, s, { fixture: 'not-label' });
+        await page.getByTestId('add').click();
+        await page.getByTestId('add-scan').click();
+        await page.getByTestId('barcode-field').fill('8851234567898');
+        await page.getByTestId('barcode-find').click();
+        await expect(page.getByTestId('product-new')).toBeVisible();
+        const again = page.waitForEvent('filechooser');
+        await page.getByTestId('label-photo').click();
+        await (await again).setFiles('tests/fixtures/meal.jpg');
+        await expect(page.getByTestId('label-failed')).toBeVisible();
+        await settled();
+        await shot(page, 'scan', 'read-failed');
+        await close();
+
+        // offline: a barcode never scanned
+        await context.setOffline(true);
+        await page.getByTestId('add').click();
+        await page.getByTestId('add-scan').click();
+        await page.getByTestId('barcode-field').fill('8851717040016');
+        await page.getByTestId('barcode-find').click();
+        await expect(page.getByTestId('product-failed')).toBeVisible();
+        await settled();
+        await shot(page, 'scan', 'offline');
+        await context.setOffline(false);
       });
 
       test('photo', async ({ page }) => {

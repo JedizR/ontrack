@@ -2,6 +2,21 @@
 
 Changes to a doc's decision, and choices made on the owner's behalf. Newest first, one line each: what, why.
 
+## B1
+
+Barcode scanning (PRD F22) and supplements set from the tub, decided on the owner's behalf:
+- **Open Food Facts is read from the browser, not through a server route.** Its API allows 15 product reads a minute per IP address (read 12 November 2026); from the browser that is each phone's own allowance, while a Vercel function would share egress addresses with every other Vercel project. It answers CORS with `*` and allows an `X-User-Agent` header, which the app sets to `Ontrack/<version> (https://ontrack-black.vercel.app)` since a browser cannot set User-Agent (OFF asks for an app name and contact; the owner may add a contact email). No key, no function, nothing to pay. The cost is a CORS preflight per lookup. Its data is open under the ODbL: "Values from Open Food Facts, open data under the ODbL" with its terms under every product from it.
+- **No shared server cache of lookups.** A class proof of concept makes a few lookups a day; each user's products are their own cache (synced, offline). Revisit if Ontrack goes public.
+- **The decoder:** `barcode-detector` 3.2.3 (MIT, monthly releases, last 19 October 2026), a ponyfill on `zxing-wasm` 3.1.6 (MIT, zxing-cpp inside). The reader's WebAssembly is 947 KB (414 KB gzip); it loads only when the scanner opens, from the site instead of the package's default CDN, and the service worker caches it then (not precached for everyone). Chrome's own `BarcodeDetector` is used where it reads the four formats. Initial JavaScript is unchanged in kind: the ponyfill is a 43 KB lazy chunk.
+- **Product ids** are the barcode as 13 digits (UPC-A with a leading 0, UPC-E expanded), as Open Food Facts stores them, or 8 for EAN-8. Typed 8 digits are taken as EAN-8.
+- **A product is kept when it is logged or its label confirmed,** with the amount as the next start. Lookups the user does not log are not stored. Undo of a first log keeps the product (it is only a cache).
+- **Drinks are measured in ml** where Open Food Facts or the label says so (the owner's call for milk after N2); 1 ml is counted as 1 g in the meal item's `grams`, as labels give values per 100 ml.
+- **The label reader** goes through `/api/analyze` as `kind: 'label'` (same auth, quota, size limit, timeout and retry) with its own prompt and schema; it never estimates. Calories from kilojoules use 4.184 (FAO FNP 77 section 3.1, S19, added to `constants.ts` and `docs/SOURCES.md`). The Label step asks the user to confirm per serving, like Correct and the supplement label; a label printing only per 100 g starts at a 100 g serving. Kept as read it is Label; any value typed or changed makes it Yours.
+- **Typing the number** shows "Find product" right under the field, not pinned: the iPhone's number pad has no return key and a pinned button would sit under it.
+- **Supplements lead with the tub** (owner, during B1): Kind, then From your tub with Scan the tub (violet) and Photograph the label, then a plain "Use typical values for now" (whey and plant only) or "Type the numbers". A scan or label fills the scoop as the serving over the scoops in it ("2 scoops (60 g)" in Open Food Facts' serving text, or the label reader's scoops per serving) and lets the values follow the scoop. Setting a supplement from its tub keeps the user's name for it; a new one takes the product's name. A supplement on typical values is labelled Typical on its amount step, its Add row, Today's entry caption and the logged item, with one plain "Set it from your tub" on the amount step.
+- **Not done:** the light (torch) is offered only where the camera reports it; Safari may not. A product scanned in the supplement setup is not also kept as a product. "Use default values" does not exist for products: Correct the numbers again instead.
+- Sheet titles now wrap to a second line instead of cutting off, for long product names (Search's food names benefit too).
+
 ## N2
 
 Supplements (PRD F21), decided on the owner's behalf:

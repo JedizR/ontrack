@@ -50,6 +50,7 @@
   /** where the Label step's back chevron goes */
   let labelBack = $state<Step>('source');
   let scans = $state(0);
+  let typing = $state(false);
   let found = $state<Found | null>(null);
   let failure = $state<Exclude<LabelResult, { ok: true }>['error'] | null>(null);
   let limit = $state(0);
@@ -161,6 +162,7 @@
 
   function scanTub() {
     scans++;
+    typing = false;
     step = 'scan';
   }
   async function look(code: string) {
@@ -263,12 +265,13 @@
   const title = $derived(step === 'kind' ? t.supplement.setup : step !== 'amount' && !id ? t.supplement.kinds[kind] : (s?.name ?? ''));
   const back = $derived<(() => void) | undefined>(
     step === 'source' ? () => (step = id ? 'amount' : 'kind')
+    : step === 'scan' && typing ? () => (typing = false)
     : step === 'scan' || step === 'new' || step === 'reading' ? () => (step = 'source')
     : step === 'label' ? () => (step = labelBack)
     : undefined,
   );
   const readWords = $derived(failure === 'offline' ? t.scan.readOffline : failure === 'not_food' ? t.scan.notLabel : failure === 'daily_limit' ? t.scan.limit(num(limit)) : t.scan.readFailed);
-  const tiles = 'flex min-h-26 flex-col items-start justify-between gap-2 rounded-md p-4 text-left transition-[transform,background-color,box-shadow] duration-[var(--d-press)]';
+  const tiles = 'flex min-h-26 flex-col items-start gap-3 rounded-md p-4 text-left transition-[transform,background-color,box-shadow] duration-[var(--d-press)]';
 </script>
 
 {#snippet footer()}
@@ -323,13 +326,13 @@
       {/if}
     </div>
   {:else if step === 'scan'}
-    {#key scans}<Scanner oncode={look} />{/key}
+    {#key scans}<Scanner oncode={look} bind:typing />{/key}
   {:else if step === 'finding' || (step === 'reading' && !failure)}
     <div class="flex flex-col gap-4" aria-busy="true">
       <p class="text-callout text-ink-2" aria-live="polite">{step === 'finding' ? t.scan.finding : t.scan.reading}</p>
+      <!-- the Label step's sizes, which replaces it -->
       <Skeleton class="h-14 rounded-sm" />
-      <Skeleton class="h-11 rounded-sm" />
-      <Skeleton class="h-11 rounded-sm" />
+      {#each [0, 1, 2, 3, 4] as i (i)}<Skeleton class="h-11 rounded-sm" />{/each}
     </div>
   {:else if step === 'new' || step === 'reading'}
     <div class="flex flex-col gap-3" data-testid="supplement-tub-failed">
