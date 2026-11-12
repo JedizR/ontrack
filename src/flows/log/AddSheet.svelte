@@ -16,18 +16,22 @@
   import { num } from '$lib/model/format';
   import { haptic } from '$lib/haptics';
   import { t } from '$lib/i18n';
-  import type { MealItem } from '../../../shared/records';
+  import type { Meal, MealItem } from '../../../shared/records';
 
   const recent = $derived(recentMeals(db.live('meal')));
   const saved = $derived(db.live('saved').sort((a, b) => b.data.uses - a.data.uses || b.data.lastUsedAt.localeCompare(a.data.lastUsedAt)));
   const kcalOf = (items: MealItem[]) => num(Math.round(totals(items).kcal));
   const titleOf = (title: string, items: MealItem[]) => title || items[0]?.name || t.source.manual;
 
-  function logged(id: string | null, title: string) {
-    if (!id) return;
+  function logged(undo: (() => void) | null, title: string) {
+    if (!undo) return;
     haptic();
     sheets.add = false;
-    undoToast(t.add.logged(title), () => { deleteMeal(id); });
+    undoToast(t.add.logged(title), undo);
+  }
+  function relog(m: Meal) {
+    const id = logAgain(m, view.date, stampOn(view.date));
+    return () => { deleteMeal(id); };
   }
   const go = (to: 'search' | 'quick') => {
     sheets.add = false;
@@ -67,7 +71,7 @@
       {#each recent as { id, data: m } (id)}
         {@const title = titleOf(m.title, m.items)}
         <Row {title} value={kcalOf(m.items)}>
-          {#snippet trailing()}{@render again(t.add.again(title), () => logged(logAgain(m, view.date, stampOn(view.date)), title))}{/snippet}
+          {#snippet trailing()}{@render again(t.add.again(title), () => logged(relog(m), title))}{/snippet}
         </Row>
       {/each}
     </div>

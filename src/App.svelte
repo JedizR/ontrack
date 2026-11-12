@@ -67,6 +67,7 @@
     await loadTab(i);
     dir = d ?? (i > prefs.tab ? 1 : -1);
     prefs.tab = i;
+    view.date = view.today; // a past day is a Today view; elsewhere the plus logs to today
     scrollTo({ top: 0 });
   }
   let dragX = $state(0);
@@ -88,6 +89,7 @@
     // the installed app can stay open past midnight: Today follows the calendar when it comes back
     const tick = () => { if (document.visibilityState === 'visible') view.tick(); };
     document.addEventListener('visibilitychange', tick);
+    const clock = setInterval(tick, 60_000);
 
     if (import.meta.env.PROD) {
       import('virtual:pwa-register').then(({ registerSW }) => {
@@ -98,7 +100,7 @@
         });
       });
     }
-    return () => { clearTimeout(preload); document.removeEventListener('visibilitychange', tick); };
+    return () => { clearTimeout(preload); clearInterval(clock); document.removeEventListener('visibilitychange', tick); };
   });
 </script>
 

@@ -19,6 +19,7 @@
   import { PORTIONS, lineOf, scaled, type Line } from './items';
   import type { Meal } from '../../../shared/records';
 
+  const MAX_ITEMS = 30; // the record schema's limit
   let id = $state<string | null>(null);
   let meal = $state<Meal | null>(null);
   let title = $state('');
@@ -129,7 +130,7 @@
         <p class="text-callout text-ink-2" data-testid="meal-empty">{t.meal.empty}</p>
       {/each}
     </div>
-    <Button variant="plain" class="-ml-5 mt-1" onclick={() => pick(null)} data-testid="meal-add-item">{t.meal.addItem}</Button>
+    <Button variant="plain" class="-ml-5 mt-1" disabled={lines.length >= MAX_ITEMS} onclick={() => pick(null)} data-testid="meal-add-item">{t.meal.addItem}</Button>
 
     <div class="border-line mt-4 flex flex-wrap gap-2 border-t pt-4">
       <Button disabled={!items.length} onclick={keep} data-testid="meal-keep">{t.meal.saveAs}</Button>
