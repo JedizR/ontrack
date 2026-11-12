@@ -1,7 +1,7 @@
 // The plan: goal adjustment, caps, floors, protein and fat. docs/SCIENCE.md sections 6 to 8 and 12.
-import { ENGINE_VERSION, U, V } from './constants';
-import { baseline, bmi, bmr, eeeByWeekday, weightAtBmi, type Neat, type SessionLike, type Sex } from './bmr';
-import { dayTarget, floorFor, rawTarget, tdeeAvg } from './targets';
+import { ENGINE_VERSION, U, V } from './constants.ts';
+import { baseline, bmi, bmr, eeeByWeekday, weightAtBmi, type Neat, type SessionLike, type Sex } from './bmr.ts';
+import { dayTarget, floorFor, rawTarget, tdeeAvg } from './targets.ts';
 
 export type Goal = 'lose' | 'maintain' | 'gain';
 export type Experience = 'beginner' | 'intermediate' | 'advanced';

@@ -9,7 +9,7 @@ import { session } from '$lib/session.svelte';
 import { prefs } from '$lib/prefs.svelte';
 import { BackendError } from '$lib/backend';
 import type { FailKind } from '$lib/backend/types';
-import { eeeByWeekday, planFromBaseline } from '$lib/model/engine';
+import { eeeByWeekday, planFromBaseline, type CheckinResult } from '$lib/model/engine';
 import { planFor } from '$lib/model/day';
 import { addDays, today } from '$lib/model/dates';
 import type { AnalyzeRequest, AnalyzeResponse } from '../../shared/analysis';
@@ -99,6 +99,22 @@ export function changeProgram(p: Program) {
 export const logSession = (l: SessionLog) => write('slog', ids.slog(l.date, l.sessionKey), l);
 export const clearSessionLog = (date: string, key: string) => remove('slog', ids.slog(date, key));
 export const saveCheckin = (c: Checkin) => write('checkin', ids.checkin(c.date), c);
+/**
+ * The check-in on `date`, decided. Accepting a raise or a lower writes a plan from the next day on the measured
+ * baseline, carrying the sessions of the plan it replaces (or the program's, for a plan from before M7), so the days
+ * it covers keep their training. Then the record: stats, proposal, decision and the new plan's id.
+ */
+export function decideCheckin(date: string, r: CheckinResult, decision?: 'accepted' | 'kept') {
+  let planId: string | undefined;
+  if (decision === 'accepted' && r.plan) {
+    const from = addDays(date, 1);
+    const replaced = planFor(db.live('plan'), from);
+    const goalWeightKg = replaced?.goalWeightKg;
+    const sessions = replaced?.sessions ?? kept(db.get('program', 'program') ?? { name: '', sessions: [] });
+    planId = savePlan({ ...r.plan, effectiveFrom: from, ...(goalWeightKg ? { goalWeightKg } : {}), tdeeSource: 'measured', source: 'checkin', sessions });
+  }
+  saveCheckin({ date, stats: r.stats, proposal: r.proposal, ...(decision ? { decision } : {}), ...(planId ? { planId } : {}) });
+}
 /** The end of onboarding: profile, program, the first plan and the first weigh-in. All four are checked before any is written. */
 export function finishOnboarding(r: { profile: Profile; program: Program; plan: Plan; weight: Weight }) {
   SCHEMAS.profile.parse(r.profile);

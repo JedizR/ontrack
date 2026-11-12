@@ -10,6 +10,8 @@ import { recSchema, type Rec } from '../shared/records.ts';
 import { analyze } from '../server/handlers/analyze.ts';
 import { envInt } from '../server/env.ts';
 import { fixture, isFixture, mockProvider } from '../server/vision/mock.ts';
+import { isOutcome, seedRecords } from './seed.ts';
+import { today } from '../src/lib/model/dates.ts';
 
 /** The only code the mock accepts. The dev server prints it when a code is "sent". */
 export const MOCK_CODE = '123456';
@@ -47,6 +49,14 @@ export function createMockServer() {
     if (!spaces.has(name)) spaces.set(name, { epoch: 0, rows: new Map(), thumbs: new Map(), lastTs: 0, vision: null, ai: new Map(), aiFrom: 0 });
     return spaces.get(name)!;
   };
+  /** A write as the database takes it: a stale or repeated one is skipped (sync rule 2). */
+  const put = (space: Space, userId: string, rec: Rec) => {
+    const k = `${userId}|${rec.collection}|${rec.id}`;
+    const stored = space.rows.get(k);
+    if (stored && rec.updatedAt <= stored.rec.updatedAt) return;
+    space.lastTs = Math.max(Date.now(), space.lastTs + 1);
+    space.rows.set(k, { userId, rec, ts: space.lastTs });
+  };
   const session = (name: string, email: string) => {
     const userId = userIdFor(email);
     return { token: encode({ u: userId, e: email, ep: spaceOf(name).epoch, s: name }), userId, email };
@@ -78,6 +88,12 @@ export function createMockServer() {
       const b = await body(verifyBody);
       if (!b.success) return fail(400, 'bad_request');
       if (b.data.code !== MOCK_CODE) return fail(400, 'wrong_code');
+      // <outcome>@seed.test signs in to four weeks of logs with that check-in due today (dev/seed.ts), once
+      const outcome = /^(.+)@seed\.test$/.exec(b.data.email.toLowerCase())?.[1];
+      const id = userIdFor(b.data.email);
+      if (outcome && isOutcome(outcome) && ![...space.rows.values()].some((r) => r.userId === id)) {
+        for (const rec of seedRecords(outcome, today())) put(space, id, rec);
+      }
       return json(200, { ok: true, ...session(name, b.data.email) });
     }
     if (path === '/expire') {
@@ -102,13 +118,7 @@ export function createMockServer() {
     if (path === '/push') {
       const b = await body(pushBody);
       if (!b.success) return fail(400, 'bad_request'); // like the database, one bad record refuses the batch
-      for (const rec of b.data.records as Rec[]) {
-        const k = `${userId}|${rec.collection}|${rec.id}`;
-        const stored = space.rows.get(k);
-        if (stored && rec.updatedAt <= stored.rec.updatedAt) continue; // sync rule 2: stale or repeated
-        space.lastTs = Math.max(Date.now(), space.lastTs + 1);
-        space.rows.set(k, { userId, rec, ts: space.lastTs });
-      }
+      for (const rec of b.data.records as Rec[]) put(space, userId, rec);
       return json(200, { ok: true });
     }
     if (path === '/pull') {

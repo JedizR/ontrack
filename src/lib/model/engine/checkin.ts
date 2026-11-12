@@ -1,9 +1,9 @@
 // The weekly check-in. docs/SCIENCE.md section 10.
-import { U, V } from './constants';
-import type { Sex } from './bmr';
-import { planFromBaseline, type Experience, type PlanNumbers } from './plan';
-import { effectiveRate, rawTarget, roundTarget, tdeeAvg, weeklyEee } from './targets';
-import { slope, type WeighIn } from './trend';
+import { U, V } from './constants.ts';
+import type { Sex } from './bmr.ts';
+import { planFromBaseline, type Experience, type PlanNumbers } from './plan.ts';
+import { effectiveRate, rawTarget, roundTarget, tdeeAvg, weeklyEee } from './targets.ts';
+import { slope, type WeighIn } from './trend.ts';
 
 export type CheckinReason = 'on_track' | 'raise' | 'lower' | 'adherence' | 'need_data';
 /** One day in the window. `items` is the number of logged items; `closed` means the user closed the day. */

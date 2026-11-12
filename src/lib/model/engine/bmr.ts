@@ -1,5 +1,5 @@
 // Resting energy, daily movement and exercise energy. docs/SCIENCE.md sections 2 to 5.
-import { U, V } from './constants';
+import { U, V } from './constants.ts';
 
 export type Sex = 'male' | 'female' | 'unspecified';
 export type Neat = 'seated' | 'light' | 'moving' | 'physical';
