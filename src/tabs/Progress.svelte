@@ -176,7 +176,7 @@
       <p class="text-eyebrow text-ink-2">{t.progress.training}</p>
       {#if training.planned}
         <p class="text-display mt-2" data-testid="progress-sessions-done">{num(training.done)}</p>
-        <p class="text-caption text-ink-2 mt-1">{t.progress.ofPlanned(num(training.planned))}</p>
+        <p class="text-caption text-ink-2 mt-1">{t.after.ofPlanned(num(training.planned))}</p>
         <div class="mt-4">
           <WeekBars weeks={sessionBars} from={shortDate(weeks[0].start)} to={shortDate(today)} label={t.progress.sessionBars(num(weeks.length))} />
         </div>

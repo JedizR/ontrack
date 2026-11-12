@@ -60,7 +60,8 @@
     }
   }
   function hybridSentence(p: HybridPoint) {
-    const days = t.train.dayList(p.weekdays.map((d) => t.train.weekdays[d]));
+    const names = p.weekdays.map((d) => t.train.weekdays[d]);
+    const days = names.length > 1 ? t.train.dayList(names.slice(0, -1).join(', '), names[names.length - 1]) : names[0];
     return p.kind === 'spaceOut' ? t.train.hybridPoints.spaceOut(days, num(p.value ?? 0)) : t.train.hybridPoints[p.kind](days);
   }
 

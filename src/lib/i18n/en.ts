@@ -50,6 +50,7 @@ export const en = {
     kcalWeekAvg: 'kcal a day, weekly average',
     measured: 'kcal a day, measured',
     formula: 'kcal a day, formula',
+    ofPlanned: (n: string) => `of ${n} planned ${n === '1' ? 'session' : 'sessions'} done`,
   },
   today: {
     calories: 'Calories',
@@ -457,8 +458,8 @@ export const en = {
       spaceOut: (days: string, hours: string) => `On ${days}, leave ${hours} hours or more between lifting and cardio if you can.`,
       legDayCardio: (days: string) => `On ${days} you train legs, so cycle rather than run.`,
     },
-    /** "Monday, Wednesday and Friday" */
-    dayList: (days: string[]) => (days.length < 2 ? days.join('') : `${days.slice(0, -1).join(', ')} and ${days.at(-1)}`),
+    /** the last of a list of days: "Monday, Wednesday" and "Friday" */
+    dayList: (most: string, last: string) => `${most} and ${last}`,
     // the Session sheet, the exercise picker and Templates
     newSession: 'New session',
     name: 'Name',
@@ -575,7 +576,6 @@ export const en = {
     weekOnTrack: (week: string, n: string) => `${week}, ${n} of 7 days on track`,
     // the training card (PRD F20), for the range in view
     training: 'Training',
-    ofPlanned: (n: string) => `of ${n} planned ${n === '1' ? 'session' : 'sessions'} done`,
     sessionBars: (n: string) => `Sessions done each week against planned, ${n} weeks`,
     sessionsLine: 'Sessions marked done each week. The line is what you planned.',
     strength: 'Strength sessions',
