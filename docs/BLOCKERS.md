@@ -6,32 +6,7 @@ Everything that needs you, in one place. Newest first within each section.
 
 Each entry: what is blocked, what Claude tried, the exact steps for you, and what to tell Claude afterwards.
 
-### Google sign in (M3)
-
-- **Blocked:** the Google OAuth client, so the Google provider in Supabase is off and the app hides "Continue with Google" on the live backend. Everything else for Google is built and tested against the mock.
-- **Tried:** the CLI (there is no `gcloud` on this Mac, and gcloud cannot create OAuth web clients anyway), then your browser through Yab: every tab, even `example.com`, stayed blank and timed out, so the console never loaded. Nothing was created in Google Cloud. Retried after M3 from two Yab spaces: no answer within 25 s both times.
-- **Steps:**
-  1. In the Google Cloud console create a project `ontrack` (no billing account).
-  2. Google Auth Platform: Branding, app name Ontrack, your address as support and developer contact. Audience: External, leave it in Testing, add your address as a test user.
-  3. Clients, Create client, Web application, name "Ontrack Supabase". Authorized redirect URI: `https://sbexrpzbzkzofnbpaauu.supabase.co/auth/v1/callback`. Download the JSON when it shows the secret.
-  4. In Supabase, Authentication, Sign In / Providers, Google: turn it on and paste the client id and secret. Or tell Claude where the JSON is and it pushes it with the CLI.
-- **Then tell Claude:** "The Google client is set up."
-
-### Email codes need SMTP (M3)
-
-- **Blocked:** email code sign in on the live backend. Supabase's free built in mailer refuses edits to its email templates, and the default template sends a link, not the 6 digit code. A link opens Safari, which does not share storage with the installed app, so it cannot sign the app in. Until this or Google works, nobody can sign in on production, so nothing can be saved there yet (the device store is per account). Both paths work against the mock with `pnpm dev`.
-- **Tried:** `supabase config push` with a code template (`supabase/templates/code.html`): refused with "Email template modification is not available for free tier projects using the default email provider". There is no other route on the free plan.
-- **Steps:** create a Gmail app password (Google account, Security, App passwords). In Supabase, Authentication, Emails, SMTP Settings: host `smtp.gmail.com`, port 587, your Gmail address as user and sender, the app password. Then in `supabase/config.toml` uncomment the two `[auth.email.template.*]` blocks and run `supabase config push`, or ask Claude to.
-- **Then tell Claude:** "SMTP is set up, push the code template."
-
-### Supabase MCP for Claude (M0, optional)
-
-- **Blocked:** the Supabase MCP server at project scope. Nothing else waits on it; the Supabase CLI covers migrations and advisors.
-- **Tried:** nothing. The run's rules forbid adding an MCP server that needs a browser sign in, and Supabase's hosted MCP always opens one.
-- **Steps:** in a terminal in the repository, run
-  `claude mcp add --scope project --transport http supabase "https://mcp.supabase.com/mcp?project_ref=sbexrpzbzkzofnbpaauu"`
-  then start `claude`, type `/mcp`, pick supabase and choose Authenticate. Sign in with the account that owns the `ontrack` project.
-- **Then tell Claude:** "The Supabase MCP is connected."
+None open. Resolved items are at the end of this file.
 
 ## Needs your eyes
 
@@ -80,3 +55,10 @@ Each entry: what to look at (URL or screenshot paths), what to look for, and whi
 
 - **Where:** `https://ontrack-black.vercel.app` once M0 is merged to `main`. Previews (each pull request's Vercel link) ask for your Vercel login. Screenshots: branch `pr-assets`, folder `m0/`, and `screenshots/shell/` after `pnpm screenshots`.
 - **Look for:** open it in Safari, Share, Add to Home Screen. The icon is the lime track on an ink tile. It opens full screen with no Safari bars. The header reads Today with the round avatar on the right. The floating dock shows Today, Train, Progress and the lime plus. Tapping or swiping changes the tab and its title. Switch the phone to dark mode and back. The plus and the avatar do nothing yet.
+
+## Resolved during the run
+
+- **Google sign in (M3):** done by Claude after Yab came back (through the `yab` command; the MCP link stayed refused). Google Cloud project `ontrack` (`ontrack-514502`): consent screen "Ontrack", External, in Testing, test user `teenday.jedi@gmail.com`; Web client "Ontrack Supabase" with the Supabase callback. The client JSON is at `~/.config/ontrack/google-oauth-client.json` (mode 600). The Supabase Google provider is on (pushed with the CLI from a scratch config, so `supabase/config.toml` does not declare it and pushes leave it alone). Google linked the new project to your billing account on its own; you disabled billing on it.
+- **Email codes (M3):** you set Gmail SMTP in Supabase; Claude pushed the code template (`supabase/config.toml`, `supabase/templates/code.html`) and sent one test code to `teenday.jedi@gmail.com` (HTTP 200).
+- **Gemini key (M6):** made by Claude in a new AI Studio project "Ontrack Gemini" (`gen-lang-client-0967924647`), Free tier, no billing. File `~/.config/ontrack/gemini-api-key`; in Vercel as `GEMINI_API_KEY` for production and preview.
+- **Supabase MCP (M0):** you connected it. It is at user scope with account tools, not limited to this project; the project scoped command was `claude mcp add --scope project --transport http supabase "https://mcp.supabase.com/mcp?project_ref=sbexrpzbzkzofnbpaauu"`. It loads in new sessions.

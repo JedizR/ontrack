@@ -11,10 +11,10 @@ Status is one of: not started, in progress, shipped, shipped with cuts, blocked.
 | M0 | Foundations | shipped with cuts | PR #4, merged, `v0.0.0` | Supabase MCP not added (needs browser sign in). `foods:build` waits for M5 |
 | M1 | Design system | shipped | PR #5, merged, `v0.1.0` | Rubric pass stands in for the owner's approval; gallery is on his review list |
 | M2 | Engine | shipped | PR #6, merged, `v0.2.0` | 19 sources checked; 3 values kept against their source, on the owner's review list |
-| M3 | Data, sync, sign-in | shipped with cuts | PR #7, merged, `v0.3.0` | Conformance green on mock and live. Live sign in blocked: no Google client, no SMTP for codes. No Privacy and Terms line |
+| M3 | Data, sync, sign-in | shipped with cuts | PR #7, merged, `v0.3.0` | Conformance green on mock and live. Live sign in unblocked after the run's M6 (Google client, SMTP). No Privacy and Terms line |
 | M4 | Onboarding and plan | shipped with cuts | PR #8, merged, `v0.4.0` | Gate green on the mock. Saving on production waits for live sign in (M3 blockers). Templates without muscle balance until M7 |
 | M5 | Today and logging | shipped with cuts | PR #9, merged, `v0.5.0` | Gate green on the mock. Three meals do not fit 390 by 844 without scrolling (as in the M1 reference). No install notice card, no deleting a saved meal |
-| M6 | Photo logging | shipped with cuts | PR #10, open | Gate green on the mock. Eval on ten Commons photos with `gemini-3.6-flash`; deployed time to a review 4.8 s on the one full sample (free tier limits) |
+| M6 | Photo logging | shipped with cuts | PR #10, merged, `v0.6.0` | Gate green on the mock. Eval on ten Commons photos with `gemini-3.6-flash`; deployed time to a review 4.8 s on the one full sample (free tier limits) |
 | M7 | Training | not started | | |
 | M8 | Progress and check-ins | not started | | |
 | M9 | Hardening and release | not started | | |
@@ -26,7 +26,7 @@ Status is one of: not started, in progress, shipped, shipped with cuts, blocked.
 - Database: real. Supabase `ontrack`, ref `sbexrpzbzkzofnbpaauu`, Singapore, free plan. Migration `0001_init.sql` applied. Security advisors clean.
 - Keep-alive: real. `/api/cron/keepalive`, daily 03:17 UTC, answered 200 on the preview.
 - Sync and account deletion: real, checked by `pnpm test:live` (the conformance suite against the project, test users made and deleted). Security advisors clean.
-- Sign in: built for both providers, live on neither yet. Google provider off (no OAuth client; the app hides the button). Email codes need custom SMTP before Supabase lets the template carry the code. Both are in `docs/BLOCKERS.md`. Auth settings (site URL, redirects, 6 digit codes, 10 minutes, 30 s resend) are pushed.
+- Sign in: real. Google (OAuth client in project `ontrack-514502`, Testing, one test user) and 6 digit email codes over the owner's Gmail SMTP. Auth settings (site URL, redirects, 6 digit codes, 10 minutes, 30 s resend, code templates) are pushed; Google and SMTP are not declared in `supabase/config.toml`, so pushes leave them alone.
 - Vision: real. `/api/analyze` with `gemini-3.6-flash`, minimal thinking. Vercel holds `VISION_PROVIDER=gemini`, `GEMINI_MODEL`, and `GEMINI_API_KEY` (the development key, free tier: 20 requests a day per model) for production and preview, plus `VITE_BACKEND=supabase`, the Supabase URL and keys, and `CRON_SECRET`. The key's file is `~/.config/ontrack/gemini-api-key`; `scripts/live-env.sh` reads it for `dev:live` and `eval:vision`.
 
 ## Notes for the next milestone
