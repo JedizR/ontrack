@@ -29,6 +29,12 @@ Each entry: what is blocked, what Claude tried, the exact steps for you, and wha
 
 Each entry: what to look at (URL or screenshot paths), what to look for, and which milestone it belongs to.
 
+### L1: scroll the landing page on your iPhone in Safari
+
+- **Where:** the pull request's Vercel preview in Safari on the iPhone, signed out (a private tab), and on a Mac browser. Screenshots: `screenshots/landing/` after `pnpm screenshots -- --grep landing` (each view as you scroll, every phone size, light and dark, and `desktop`), and the scroll-through in the pull request.
+- **Look for:** whether the page reads as OneFin beside your picks (stickers, condensed headlines, pills, tiles, the dark sections, the footer); whether the scroll motion feels smooth in Safari, above all the statement filling in word by word and the cards settling (Playwright's WebKit cannot show those; Safari 26 runs them); whether Build your plan floating at the bottom helps or crowds; whether the eight screens are the right ones to show; the words, and whether the hero says enough to tap.
+- **Then tell Claude:** what to change, or "keep L1 as is".
+
 ### O1: hand the phone to someone who has never seen Ontrack, and time them
 
 - **Where:** the pull request's Vercel preview in Safari on the iPhone, signed out (a private tab), or `pnpm dev` on the Mac against the mock (code 123456). Screenshots of every step in `screenshots/onboarding/` after `pnpm screenshots -- --grep onboarding` (light and dark, 390, SE and Pro Max), plus `screenshots/today/first-day-*`, `screenshots/shell/train-*`; a few on branch `pr-assets`, folder `o1/`.

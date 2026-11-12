@@ -1,13 +1,13 @@
-<!-- SCREENS.md sections 3 and 4 (O1): Welcome, up to nine questions with their guardrail screens, and Your plan. Single
-     answers advance on tap, 240 ms after the pick fills ink, with no button; the number builds in the footer from the
-     daily movement question on. Answers live in the prefs draft, so a reload or the Google redirect lands on the same
-     screen. Signed out, Save this plan opens sign in; signed in, it writes the plan at once. -->
+<!-- SCREENS.md section 4 (O1): up to nine questions with their guardrail screens, and Your plan. Before the first
+     question the draft sits at 'welcome', which App shows as the landing page (L1). Single answers advance on tap, 240 ms
+     after the pick fills ink, with no button; the number builds in the footer from the daily movement question on.
+     Answers live in the prefs draft, so a reload or the Google redirect lands on the same screen. Signed out, Save this
+     plan opens sign in; signed in, it writes the plan at once. -->
 <script lang="ts">
   import { fly } from 'svelte/transition';
   import type { Component } from 'svelte';
   import Step from './Step.svelte';
   import Choices from './Choices.svelte';
-  import Welcome from './Welcome.svelte';
   import Body from './Body.svelte';
   import YourPlan from './YourPlan.svelte';
   import SoFar from './SoFar.svelte';
@@ -156,10 +156,7 @@
 <div class="bg-canvas relative mx-auto min-h-svh w-full max-w-[480px] overflow-x-clip" data-onboarding data-testid="onboarding">
     {#key d.at}
       <div in:fly={{ x: 32 * dir, duration: dur(240) }}>
-        {#if d.at === 'welcome'}
-          <!-- signed in to an account with no plan, this is also the way to switch to the right account -->
-          <Welcome onstart={() => next()} onsignin={() => (sheets.signin = true)} />
-        {:else if d.at === 'goal'}
+        {#if d.at === 'goal'}
           <Step title={t.goal.q} onback={back} progress={prog} testid="step-goal">
             <Choices label={t.goal.q} options={GOALS} value={d.goal} onpick={(goal) => repace({ goal }, goal === d.goal)} />
           </Step>

@@ -57,7 +57,6 @@
     radial-gradient(70% 100% at 0% 0%, rgba(196, 214, 255, 0.7) 0%, transparent 70%),
     radial-gradient(60% 90% at 85% 110%, rgba(246, 204, 250, 0.6) 0%, transparent 70%),
     radial-gradient(60% 90% at 5% 110%, rgba(196, 244, 250, 0.6) 0%, transparent 70%), #fbfbff;
-  --grad-brand: linear-gradient(180deg, #6262fe 0%, #9696ff 38%, #f5f5f5 78%);             /* Welcome, after the hero sky */
 
   /* Depth */
   --shadow-card: 0 4px 8px rgba(8, 7, 49, 0.06), 0 14px 14px rgba(8, 7, 49, 0.05);       /* Stats card */
@@ -130,9 +129,35 @@
   --d-ui: 420ms;                /* with --spring-default */
   --d-move: 420ms;
   --d-appear: 600ms;            /* with --spring-appear, cut short: it has settled to the eye by then */
+
+  /* Landing page (L1) only: OneFin's landing sections, which no app screen has (DESIGN.md section 13). The sizes follow
+     OneFin's Heading 1 and Heading 3 (48 and 36 on a phone) and grow with the window */
+  --t-poster: calc(clamp(48px, 8vw, 128px) * var(--fs-display));
+  --t-section: calc(clamp(36px, 5.6vw, 88px) * var(--fs-display));
+  --t-statement: calc(clamp(24px, 3.4vw, 48px) * var(--fs));
+  --t-pill: 0.62em;             /* a word pill inside the statement, relative to it */
+  --spring-pop: linear(0, 0.083, 0.2913, 0.5403, 0.798, 1.0025, 1.1532, 1.2312, 1.2517, 1.2269, 1.1722, 1.1089, 1.0476, 0.9947, 0.9598, 0.9405, 0.9367, 0.944, 0.9575, 0.9743, 0.9895, 1.002, 1.0108, 1.0151, 1.0159, 1.014, 1.0103, 1.0063, 1.0023, 0.9992, 0.9971, 0.9961, 0.996, 0.9966, 0.9975, 0.9985, 0.9995, 1.0003, 1.0008, 1.001, 1);
+  --spring-fly: linear(0, 0.0203, 0.0732, 0.1449, 0.2281, 0.3163, 0.4074, 0.4927, 0.5726, 0.6476, 0.7127, 0.77, 0.8207, 0.8626, 0.8976, 0.9264, 0.9503, 0.9687, 0.983, 0.9941, 1.002, 1.0075, 1.0113, 1.0135, 1.0145, 1.0147, 1.0143, 1.0135, 1.0124, 1.0111, 1.0098, 1.0085, 1.0072, 1.006, 1.005, 1.0041, 1.0032, 1.0025, 1.0019, 1.0014, 1);
+  --spring-reveal: linear(0, 0.049, 0.1471, 0.2642, 0.3706, 0.4664, 0.55, 0.6217, 0.6858, 0.7366, 0.7794, 0.8152, 0.8453, 0.8719, 0.8927, 0.9102, 0.9249, 0.9371, 0.9479, 0.9564, 0.9635, 0.9695, 0.9744, 0.9788, 0.9823, 0.9852, 0.9876, 0.9896, 0.9914, 0.9928, 0.994, 0.995, 0.9958, 0.9965, 0.9971, 0.9976, 0.998, 0.9983, 0.9986, 0.9988, 1);
+  /* the same in both themes: the dark sections, the phone's bezel, and words on the washes */
+  --night: #121214;
+  --on-night: #ffffff;
+  --lavender: #bebeff;          /* Violet/04: the flat lavender panels of picks 06 and 07, also inside dark sections */
+  /* the hero's sky (OneFin's hero): violet behind the bar, light behind the words (ink and violet pass on it), a violet
+     floor under the phone where the next section's white sheet begins */
+  --grad-sky: linear-gradient(180deg, #8888ff 0%, #c4c4ff 22%, #f5f5ff 45%, #f5f5ff 68%, #9696ff 100%);
+  /* the violet glow at the foot of a dark section (pick 06, 09) and the footer's violet panels (pick 09) */
+  --glow: radial-gradient(70% 60% at 50% 100%, rgba(91, 79, 245, 0.6) 0%, rgba(56, 26, 201, 0.25) 45%, transparent 75%);
+  --grad-panel: linear-gradient(160deg, #28119c 0%, #381ac9 45%, #5b4ff5 100%);
+  /* the colour-washed cards (pick 10): white words on the first three, night words on the lavender one */
+  --wash-ink: linear-gradient(180deg, #3a3a3e 0%, #121214 100%);
+  --wash-blue: linear-gradient(180deg, #2747b8 0%, #1a2f86 100%);
+  --wash-magenta: linear-gradient(180deg, #9233bb 0%, #6d1f8e 100%);
+  --wash-lavender: linear-gradient(180deg, #ffffff 0%, #bebeff 100%);
 }
 
-:root[data-theme="dark"] {
+/* the root in the dark theme, and any element marked dark: the landing page's dark sections in either theme */
+:root[data-theme="dark"], [data-theme="dark"] {
   color-scheme: dark;
 
   /* OneFin's dark sections: ground Neutral/01, cards Neutral/02, inner Neutral/03, raised Neutral/04 */
@@ -174,7 +199,7 @@
   --grad-hero: radial-gradient(90% 120% at 100% 0%, rgba(91, 79, 245, 0.45) 0%, transparent 70%),
     radial-gradient(70% 100% at 0% 0%, rgba(56, 110, 220, 0.3) 0%, transparent 70%),
     radial-gradient(60% 90% at 85% 110%, rgba(190, 70, 210, 0.22) 0%, transparent 70%), #1b1b1f;
-  --grad-brand: linear-gradient(180deg, #28119c 0%, #381ac9 30%, #121214 78%);
+  --grad-sky: linear-gradient(180deg, #381ac9 0%, #28119c 22%, #17142e 45%, #17142e 68%, #381ac9 100%);
 
   --shadow-card: 0 0 0 1px var(--line);
   --shadow-float: 0 1px 50px rgba(0, 0, 0, 0.25), 0 0 0 1px var(--line);   /* Carousel Feature Card */

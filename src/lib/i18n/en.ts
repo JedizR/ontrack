@@ -21,6 +21,80 @@ export const en = {
     ready: 'A new version is ready',
     action: 'Update',
   },
+  /**
+   * L1, the landing page for a signed-out visitor (SCREENS.md section 3). Words between asterisks read in violet in the
+   * headline, and sit in pills in the statement. Words from onboarding COPY.md section 3.1 and the voice guide.
+   */
+  landing: {
+    signin: 'Sign in',
+    start: 'Build your plan',
+    noAccount: 'No account until you save it.',
+    promise: 'Eat for the body *you are training for.*',
+    lead: 'Your daily calories and protein, from published equations and how you train. Raised on training days, and checked against your weigh-ins every week.',
+    statement: 'Ontrack builds your target from *how you train*, logs a meal from *one photo*, and corrects it from *your own weigh-ins* every week.',
+    log: {
+      tag: 'Logging',
+      title: 'One photo logs a meal.',
+      lead: 'Ontrack names each food and estimates the grams. Calories come from published food tables wherever there is a match, and an estimate says it is one.',
+      cards: [
+        { title: 'Snap the plate', line: 'Each food with its grams, ready to adjust before you add it.' },
+        { title: 'Scan the barcode', line: 'Packaged food logged from its barcode, with Open Food Facts or a photo of the label.' },
+        { title: 'Thai food by name', line: 'Thai dishes from published food tables, Thai ones first, found in English or in Thai script.' },
+        { title: 'Shakes by the scoop', line: 'Set up your tub once, then log a shake in three taps.' },
+      ],
+    },
+    train: {
+      tag: 'Training',
+      title: 'Your training sets the target.',
+      lead: 'Tell Ontrack your week. Each session adds its own energy to the day you train, so training days get more food than rest days.',
+      cards: [
+        { title: 'More food on training days', line: 'Session energy comes from the Compendium of Physical Activities and goes to that day only.' },
+        { title: 'A floor for lifters who struggle to gain', line: 'With a gain goal the target is a floor to reach, not a ceiling. If the scale stays flat, the check-in raises it.' },
+      ],
+    },
+    checkin: {
+      tag: 'Check-in',
+      title: 'Corrected every week.',
+      lead: 'Equations are a starting point. Your weigh-ins and meals show what your body really uses, and the target follows.',
+      steps: [
+        { title: 'Weigh in', line: 'On a few mornings a week. Your check-in reads from them.' },
+        { title: 'Log your meals', line: 'A photo, a scan or a search.' },
+        { title: 'Choose your next target', line: 'Once a week Ontrack proposes one, with the reason. Use it or keep yours. Nothing changes on its own.' },
+      ],
+    },
+    sources: {
+      tag: 'Sources',
+      title: 'Every number shows its work.',
+      lead: 'Tap any target to see each part of it and the paper it comes from.',
+      resting: 'Resting energy',
+      training: 'Training energy',
+      gain: 'Gain pace',
+      thai: 'Thai dishes',
+      thaiSource: 'Thai Food Composition Database, Mahidol University',
+    },
+    cta: {
+      words: ['Plan.', 'Log.', 'Adjust.'],
+      line: 'Your calories and protein for training days and rest days, from how you train.',
+      account: 'Already have an account?',
+    },
+    footer: {
+      start: 'Start',
+      know: 'Good to know',
+      concept: 'A proof of concept for a product management class, for adults who train.',
+      top: 'Back to top',
+      year: 'Ontrack 2026',
+    },
+    alt: {
+      today: 'Today on a training day: 1,840 of 2,460 kcal eaten, 620 to go, with protein, carbs and fat below',
+      photo: 'The review after a photo of basil pork with rice and a fried egg: each food with its grams and calories',
+      scan: 'A scanned packet of instant noodles: 260 kcal a serving from Open Food Facts, with the amount to add',
+      thai: 'Search in Thai script: rice noodles, pad kee mao, boat noodles and more, each with its calories',
+      supplement: 'Whey protein, two scoops with 242 ml of whole milk: 393 kcal and 55.9 g protein',
+      train: 'Train: four strength sessions a week, adding 137 kcal a day on average',
+      progress: 'Progress: the weight trend at 60 kg, gaining 0.1 percent a week against a target of 0.5',
+      checkin: 'The weekly check-in proposing a raise to 2,560 kcal on training days and 2,320 on rest days',
+    },
+  },
   /** Captions that continue the number above or before them ("620" then "to go"), so they start in lower case. */
   after: {
     ofKcal: (n: string) => `of ${n} kcal`,
@@ -309,15 +383,6 @@ export const en = {
   },
   units: {
     ftIn: (ft: string, inches: string) => `${ft} ft ${inches} in`,
-  },
-  welcome: {
-    // the words between asterisks read in violet (D2: OneFin's highlighted phrase)
-    promise: 'Eat for the body *you are training for.*',
-    lines: ['A daily target built from how you train.', 'One photo logs a meal.', 'Corrected each week from your own weigh-ins.'],
-    start: 'Build your plan',
-    /** under the primary; "About a minute" only once a cold median is measured (onboarding COPY section 3.1) */
-    time: 'No account until you save it.',
-    account: 'I already have an account',
   },
   onboarding: {
     label: 'Set up your plan',

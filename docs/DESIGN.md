@@ -10,8 +10,8 @@
 - **Personality.** A calm coach who is good with numbers. Precise, warm, brief. Not a cheerleader and not a nag.
 - **Mark.** `design/brand/mark.svg`: a stadium shaped track with a marker sitting on its top edge. One colour, inherits `currentColor`.
 - **App icon.** `design/brand/app-icon.svg`: the mark in white on a violet tile (`--accent`). The tile is the logo wherever the logo sits on a coloured or photographic background, because it brings its own contrast.
-- **Wordmark.** `design/brand/wordmark.svg`: ONTRACK in Roboto Condensed Black capitals with the mark as its O (owner, 12 November 2026), filled outlines in `currentColor`, frozen with the mark and icon (`design/brand/ICON.md`). `Wordmark.svelte` draws the file itself. Use it only where the name is spelled out: Welcome, and the landing page (L1).
-- **In the product,** the track shape returns as the progress bar. That echo is the branding. The logo itself appears only on Welcome and Settings.
+- **Wordmark.** `design/brand/wordmark.svg`: ONTRACK in Roboto Condensed Black capitals with the mark as its O (owner, 12 November 2026), filled outlines in `currentColor`, frozen with the mark and icon (`design/brand/ICON.md`). `Wordmark.svelte` draws the file itself. Use it only where the name is spelled out: the landing page's bar and its giant footer (L1).
+- **In the product,** the track shape returns as the progress bar. That echo is the branding. The logo itself appears only on the landing page and in Settings.
 
 ## 2. Voice
 
@@ -84,7 +84,7 @@ Rules:
 1. **Ink means act, violet is the brand, green means reached.** At most one ink primary pill on a screen or sheet, plus the dock's plus. Violet only in the brand uses above, with at most one solid violet featured card on a screen. Green only for a reached target.
 2. Selected chips, segments and choice cards are ink, as OneFin's selected option is black. Switches are ink when on.
 3. Progress is violet until it reaches its zone, then green. Over the zone it returns to violet.
-4. At most one gradient per screen, on its hero: the haze panel (Today, Your plan, Progress) or the brand gradient (Welcome). Never on a button, a row, a chip or text.
+4. At most one gradient per screen, on its hero: the haze panel (Today, Your plan, Progress). Never on a button, a row, a chip or text. The landing page has its own gradients (section 13).
 5. Macros are not colour coded. They are told apart by label and position.
 6. Green on a light surface is a fill, never small text: words use `--success-ink`.
 
@@ -116,8 +116,8 @@ Two faces, self hosted from their OFL packages and precached: Roboto Condensed 9
 - **Radii.** OneFin's large, concentric corners: 8 for checkboxes, 16 for inputs, thumbnails, chips, small buttons, icon buttons and the wheel band, 20 for the large button and the segmented track, 24 for choice cards, tiles and stat tiles, 32 for cards, 40 for the top of sheets and the hero's haze panel, 48 for the hero card. Full for tracks, the dock, the dock's plus, the avatar and pill chips. A nested corner is the outer one minus the gap.
 - **Depth.** In light mode cards carry `--shadow-card`, OneFin's soft stats card shadow, and never a border with it. In dark mode cards have no shadow and a 1 px `--line` ring. Things that float (the dock, toasts, a dragged row) have `--shadow-float`. The ink pill and the dock's plus carry `--shadow-action`, a soft drop below them. No button has an inner light, a bevel, a rim, a gradient or a glow (`tests/e2e/app.spec.ts` sweeps every button for them).
 - **Content cards stay solid,** white or the dark surface, so their numbers stay readable. Nothing that carries a number you need to read is glass.
-- **Gradients.** At most one per screen, on its hero. `--grad-hero` is the aurora haze of OneFin's Premium and stats cards (lavender, blue, pink and cyan over white; violet, blue and magenta in dark), filling the hero's haze panel through the `haze` utility. `--grad-brand` is Welcome's ground. No stop of the haze is stronger than lavender at 75 percent, so ink, `--ink-2` and `--success-ink` words pass on it. Nothing else has a gradient.
-- **Glass.** As OneFin's "Paid" pill and "Direct pay" chip: backdrop blur, a translucent fill, a 1 px translucent white edge and a soft drop (`glass`; `glass-bar` for the dock, with more fill since rows scroll under it). Without blur (`@supports not`) the solid `--glass-solid` or `--bar-solid` stands in. Allowed only on: small chips and pills over a coloured or gradient surface or a picture (the hero's day chip, Welcome's decoration), sheet backdrops (the blurred scrim), and the dock. The header is opaque.
+- **Gradients.** At most one per screen, on its hero. `--grad-hero` is the aurora haze of OneFin's Premium and stats cards (lavender, blue, pink and cyan over white; violet, blue and magenta in dark), filling the hero's haze panel through the `haze` utility. The landing page's gradients are in section 13. No stop of the haze is stronger than lavender at 75 percent, so ink, `--ink-2` and `--success-ink` words pass on it. Nothing else has a gradient.
+- **Glass.** As OneFin's "Paid" pill and "Direct pay" chip: backdrop blur, a translucent fill, a 1 px translucent white edge and a soft drop (`glass`; `glass-bar` for the dock, with more fill since rows scroll under it). Without blur (`@supports not`) the solid `--glass-solid` or `--bar-solid` stands in. Allowed only on: small chips and pills over a coloured or gradient surface or a picture (the hero's day chip, the landing page's bar and tiles), sheet backdrops (the blurred scrim), and the dock. The header is opaque.
 - **Width.** Content sits in a column of at most 480 px, centred on `--surround` on wider screens.
 - **One card, one job.** Nest only as OneFin nests: the hero card is a white shell holding its haze panel and grey stat tiles, radii stepping down. Otherwise divide a card with a hairline.
 
@@ -131,12 +131,12 @@ Two faces, self hosted from their OFL packages and precached: Roboto Condensed 9
 | White card with a big number, grey stat tiles (15) | Today's hero, Your plan, Progress's weight card | The number is what the screen is about; the macros become three equal tiles that read as a set and stay level at large text |
 | One gradient region in a white card (16 invoice header) | The hero's haze panel | One soft colour field marks the hero without tinting the numbers below it; the frame keeps it a card, not a banner |
 | Aurora haze (03 Premium, 14 stats) | The haze itself | Softer than D1's flat lavender wash, with enough white that every word on it passes 4.5 to 1 |
-| Frosted chip with a white edge (16 "Paid", 01) | The hero's Training day or Rest day chip, Welcome's tile and "On track" pill | Glass shows only where something sits over colour or a picture, which is where it reads as glass |
-| Violet as the brand (02, 06, 12, 13) | Feature tiles on Welcome, links (`plain`), the promise's key phrase, tracks and charts, the Add sheet's Photo card | Violet now says "this is Ontrack" and marks progress, so the ink action is never confused with it |
+| Frosted chip with a white edge (16 "Paid", 01) | The hero's Training day or Rest day chip | Glass shows only where something sits over colour or a picture, which is where it reads as glass |
+| Violet as the brand (02, 06, 12, 13) | Feature tiles on the landing page, links (`plain`), the promise's key phrase, tracks and charts, the Add sheet's Photo card | Violet now says "this is Ontrack" and marks progress, so the ink action is never confused with it |
 | One solid featured card (02 "Investing for beginners") | Photo on the Add sheet, Scan the tub in the supplement setup | The one way the screen suggests first, without a second button colour |
 | White icon tiles with a lavender edge (05) | The Add sheet's other ways, Photograph the label | Lifts the method icons off the grey cards as shortcuts, with no glow inside a button |
 | Regular weight big numbers, lighter decimals (14, 15) | The Hero number; `Figure` on weights and rates | Geist figures read faster than condensed black at a glance; the lighter decimals keep 72.4 from reading as 724 |
-| Wordmark (owner's own, after 09) | Welcome | The name is spelled out there, so the frozen ONTRACK wordmark replaces the mark beside live text |
+| Wordmark (owner's own, after 09) | The landing page | The name is spelled out there, so the frozen ONTRACK wordmark replaces the mark beside live text |
 
 Not taken, on purpose: the ring progress (07), since the track is Ontrack's signature and reads in one glance; tilted stickers, floating tiles, testimonial colours and dark gradient footers (08 to 10, 12), which belong to the landing page (L1); grain on glass (14), which costs legibility on a phone.
 
@@ -153,7 +153,7 @@ Start from the components in `src/lib/components/` and their gallery at `/galler
 | Glass chip | A pill on the haze or a picture: the `glass` utility, Caption 600 in ink, 2 by 10 inside. The hero's day kind |
 | Featured card | At most one per screen: a solid `--accent` card at radius 24 with an `--on-accent` label and a translucent white icon tile. The Add sheet's Photo, the supplement setup's Scan the tub. Pressed `--accent-press` and 0.97 |
 | Row | A 48 px tile or thumbnail at radius 16, title in Body 600, one line of caption, trailing number in Body 600 tabular. At least 64 high in lists. Divided by hairlines inset to the text |
-| Icon tile | 48 square (40 in choice cards and ways) at radius 16, in three tones as in OneFin's pricing: lavender (`tile`: `--accent-soft` with an ink glyph, lavender in dark) for rows and choices; violet (`bg-accent` with an `--on-accent` glyph) for feature icons, as on Welcome; white with a 1 px lavender edge and a violet glyph for shortcuts on grey, as the Add sheet's ways. Flat: no inner glow |
+| Icon tile | 48 square (40 in choice cards and ways) at radius 16, in three tones as in OneFin's pricing: lavender (`tile`: `--accent-soft` with an ink glyph, lavender in dark) for rows and choices; violet (`bg-accent` with an `--on-accent` glyph) for feature icons, as on the landing page; white with a 1 px lavender edge and a violet glyph for shortcuts on grey, as the Add sheet's ways. Flat: no inner glow |
 | Chip | 44 high, radius 16, Callout 600, `--surface-2`. Selected: ink fill with canvas text |
 | Segmented control | A radius 20 track on `--surface-2` with 4 px padding, segments 44 high at radius 16; the selected segment is `--surface` with `--shadow-card`. At most four options |
 | Switch | 50 by 30, ink when on, `--surface-3` when off |
@@ -229,7 +229,7 @@ Fixed values from MOTION.md. With reduced motion set, every one becomes an insta
 
 - Lucide icons at 24 px, stroke 2, in `currentColor`. Tab icons: a track for Today, a barbell for Train, a rising line for Progress.
 - Icon tiles come in three tones, lavender, violet and white (section 7), OneFin's tile treatment in Ontrack's colours.
-- Imagery is the user's own meal photos, the haze and Welcome's gradient, and decoration drawn in CSS or SVG in OneFin's manner (glass tiles, tilted chips). No stock art and none of OneFin's 3D renders, mockups, photos or screen images.
+- Imagery is the user's own meal photos, the haze, the landing page's real screens of the app and its gradients, and decoration drawn in CSS or SVG in OneFin's manner (glass tiles, tilted chips). No stock art and none of OneFin's 3D renders, mockups, photos or screen images.
 - A meal without a photo gets a neutral tile with an icon for how it was logged.
 
 ## 12. Accessibility
@@ -238,3 +238,51 @@ Fixed values from MOTION.md. With reduced motion set, every one becomes an insta
 - The green fill of a reached track is about 1.8 to 1 on white. It is never the only signal: the value is always also text, and "On track" is also a word and a dot.
 - Every control has an accessible name. Sheets trap focus and restore it. The track exposes its value as text. Wheel columns are sliders with a value text ("168 cm") and arrow, page and home or end keys.
 - Pinch zoom stays enabled. Text size follows the device by default.
+
+## 13. Landing page (L1)
+
+The landing page is the one marketing screen: a visitor reads it top to bottom, once, before deciding to start. It takes the landing-only patterns the owner picked from OneFin and D2 left out on purpose (section 6), and it is the only place they appear. Its job is one tap on "Build your plan", so every pattern either says what Ontrack does or moves the eye toward that action. Spec in `docs/SCREENS.md` section 3, code in `src/flows/landing/`.
+
+| Pattern (pick) | Where | Why it helps there |
+| --- | --- | --- |
+| Tilted sticker eyebrows, "01 BENEFITS" (01, 05, 12) | Over each section headline: 01 Logging, 02 Training, 03 Check-in, 04 Sources | Numbered chapters tell a scanning visitor how far they are and what the next block is about |
+| Huge condensed capitals ending in a full stop (01, 05, 10, 12) | The hero (Poster) and every section (Section) | A statement, not a slogan: one claim per block, readable at a glance on a phone |
+| Inline word pills in big body text (08) | The statement under the hero | The three things Ontrack does are the pills, so a skimmer reads them first; the last one is ink |
+| Floating tilted icon tiles (08) | Around the statement | The four ways in (photo, barcode, training, weigh-in) as violet tiles, moving a little with the scroll |
+| Dark sections with a violet glow (06, 09, 12) | 02 Training, and the run from 04 Sources to the footer | Changes the pace of a long page and marks the two blocks about the method |
+| Flat lavender panels (`--lavender`, the same in both themes) inside dark cards, number badges (06) | 02 Training | The screen is the content; the panel frames it the way OneFin frames its feature art |
+| Flat lavender field with rings and tilted white cards, the 1-2-3 stepper (07) | 03 Check-in | The check-in is a sequence; the stepper says so, the cards repeat its own words |
+| Colour-washed cards (10) | 04 Sources | Where OneFin puts testimonials, Ontrack puts its sources: honest proof in the same look, read from `constants.ts` so it cannot drift |
+| The nested-panel footer with a giant wordmark (09) | The footer | Ends the page on the name, with the two actions and the wellness line in reach |
+| OneFin's sky and glass bar, tilted white chips flying in (hero, nav, 15) | The hero and the fixed bar | The first screen reads as OneFin at once; the glass bar sits over colour, where glass belongs. The chips are white with night words in both themes, since they sit on the phone's light screen |
+| Phones with real screens (05, 12) | Every feature | Proof by showing: each is a screenshot of the app at the current look, never a mock-up. A night bezel at radius 48, no island (the screens have no status bar) and no shadow |
+
+Rules that bend here, and only here:
+- **Gradients.** Besides the haze: `--grad-sky` (the hero), `--glow` (the foot of dark sections and the footer), `--grad-panel` (the footer's panels) and the four `--wash-*` (the source cards). Still never on a button, a row, a chip or text.
+- **Centred text.** Headlines, leads and the statement are centred on a phone, as OneFin's are; the hero is left aligned on a wide screen.
+- **More than one primary.** "Build your plan" appears in the hero, floating, in the closing call and in the footer, but never two pills on screen at once: the floating one shows only between the hero's and the closing call's. Ink on light, white on dark and on violet.
+- **Two violet cards.** Snap the plate and the closing call's panel are never on screen together.
+- **Dark sections in the light theme.** A section marked `data-theme="dark"` takes the dark tokens (`design/tokens.css` applies the dark block to any element so marked). Use `overflow-clip`, never `overflow-hidden`, on a section that holds scroll-driven motion: a scroll container captures `view()` timelines. `--night`, `--on-night` and `--lavender` stay the same in both themes: the phone's bezel, the words on the washes and the chips, and the lavender panels.
+- **Width.** The page is full width, with content up to 1200; it is not the app's 480 column.
+
+What still holds: tokens only, the type scale (Poster, Section and Statement are the landing's three sizes, and `text-pill` the statement's pills), ink means act and violet is the brand, green only in the "On track" chip that shows the app's reached state, 44 px targets, 4.5 to 1 for words (the sky and the washes are in `contrast.test.ts`), no emoji, the catalog rules for words, and no OneFin artwork: the phones, rings, chips and tiles are CSS and SVG.
+
+Motion, from MOTION.md, all inside `prefers-reduced-motion: no-preference` (with reduce, everything is at rest at once and nothing animates; an end to end test checks it):
+
+| Id | What | How |
+| --- | --- | --- |
+| M1 | The bar drops in | CSS on load, 1 s, `--ease-framer`, delay 0.2 |
+| M2 | The promise blurs up word by word | CSS on load, 0.8 s, 0.1 s apart |
+| M3 | Build your plan pops in | `--spring-pop`, delay 0.6 |
+| M4, M5 | Today rises; its chips fly in from tilted offsets | `--spring-fly`, 2.35 s |
+| M9 | Section headlines blur in word by word | In view (IntersectionObserver), once |
+| M10 | Logging cards scale in from 0.5 | In view, `--spring-appear`, siblings 0.1 s apart, once |
+| M3 spring | Stickers pop in | In view, `--spring-pop`, once |
+| M12 | The footer panel rises 64 | In view, `--spring-reveal`, once |
+| M15 | The hero chips and the statement's tiles drift with the scroll | `animation-timeline: view()` |
+| M16 | The statement fills in word by word | A named view timeline on the statement |
+| M17 | Dark cards and source cards settle from a tilt | `view()`, entry to cover 35 percent |
+| M18 | "Plan. Log. Adjust." slides in from the left | `view()`, entry to cover 45 percent |
+| Pick 08 | The violet tiles float a few pixels | CSS, 5 s, alternate |
+
+Scroll-scrubbed motion runs where `animation-timeline` exists (Safari 26, Chrome); elsewhere those parts stay at rest. The phones' screens are regenerated with `LANDING_SHOTS=1 pnpm exec playwright test --project=shots` whenever the app's look changes; update `t.landing.alt` when their numbers do.

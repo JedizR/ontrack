@@ -5,8 +5,8 @@ Each screen lists what it contains from top to bottom, its states, and its words
 ## 1. Map
 
 ~~~
-First run:  Welcome > Onboarding (up to 9 questions) > Your plan > Sign in > Today
-Returning:  Welcome > Sign in > Today
+First run:  Landing page > Onboarding (up to 9 questions) > Your plan > Sign in > Today
+Returning:  Landing page > Sign in > Today
 
 Tabs:       Today | Train | Progress           Dock: plus button opens Add
 Sheets:     Add, Review, Search, Describe, Quick add, Meal, Supplement, Weigh in, How it is calculated,
@@ -20,14 +20,25 @@ Sheets:     Add, Review, Search, Describe, Quick add, Meal, Supplement, Weigh in
 - The dock hides while the keyboard is up and while a sheet is open.
 - On screens wider than 480 px the app is a centred column.
 
-## 3. Welcome
+## 3. Landing page
 
-The first screen in a browser that is signed out. Ontrack runs in the browser tab; nothing mentions installing. (L1's landing page replaces Welcome for visitors later.)
+L1 (PRD F18). The first screen in a browser that is signed out, with no onboarding draft; it replaced Welcome. It also shows when a visitor comes back from the first question, and for a signed in account that has no plan yet (as Welcome did: its Sign in is the way to switch accounts). A returning user (the phone knows its last user) and a visitor with a draft skip it. Ontrack runs in the browser tab; nothing mentions installing. A lazy chunk of its own; onboarding loads beside it, so Build your plan answers at once. Style from the owner's picks, DESIGN.md section 13. Words in `t.landing`.
 
-**Welcome.**
-- On the brand gradient: the wordmark (D2: the frozen ONTRACK file), then "Eat for the body you are training for." in Title, "you are training for." in violet.
-- Three short lines, each one sentence beside a violet icon tile: "A daily target built from how you train.", "One photo logs a meal.", "Corrected each week from your own weigh-ins."
-- Primary: "Build your plan", with "No account until you save it." in Caption under it (O1: the time claim "About a minute" waits for a measured cold median). Plain: "I already have an account".
+From the top:
+- **Bar.** Fixed, 8 below the safe area: OneFin's glass bar at radius 20 with the ONTRACK wordmark and "Sign in" (`neutral`, `sm`), which opens the sign in sheet titled "Welcome back".
+- **Hero.** On the sky gradient: "Eat for the body you are training for." in Poster capitals, "you are training for." in violet; the line "Your daily calories and protein, from published equations and how you train. Raised on training days, and checked against your weigh-ins every week."; the primary "Build your plan" with "No account until you save it." in Caption under it. Below (beside it on a wide screen), Today in a phone, cut by the next section, with two tilted white chips flying in: "Training day" and "On track".
+- **Statement.** On a white sheet that rises over the hero at radius 48: "Ontrack builds your target from [how you train], logs a meal from [one photo], and corrects it from [your own weigh-ins] every week." in Statement size, the bracketed words in pills (the last one ink), four tilted violet icon tiles around it.
+- **01 Logging.** Sticker eyebrow, "One photo logs a meal.", a lead on where calories come from. Four cards, each a title, a line and a real screen: Snap the plate (the photo review; the one solid violet card), Scan the barcode (a product from Open Food Facts), Thai food by name (search in Thai script), Shakes by the scoop (the whey sheet).
+- **02 Training.** A dark rounded section with a violet glow: "Your training sets the target." Two dark cards with flat lavender panels, a violet icon tile and a number badge: More food on training days (Train), A floor for lifters who struggle to gain (Progress on vector F).
+- **03 Check-in.** "Corrected every week." A lavender panel with rings, the check-in's proposal in a phone and two tilted white cards in the check-in's own words. Beside it a 1-2-3 stepper: Weigh in, Log your meals, Choose your next target; each number turns ink as it comes into view.
+- **04 Sources.** The dark run to the end starts here. "Every number shows its work." Four colour-washed cards, each a part of the target and its source, read from the engine's constants: resting energy (Mifflin and St Jeor), training energy (the Compendium), gain pace (Iraki and others), Thai dishes (the Thai Food Composition Database).
+- **Closing call.** "Plan. Log. Adjust." in Poster capitals, then a violet panel with the mark, "Your calories and protein for training days and rest days, from how you train.", the white "Build your plan" and its Caption. Under it, "Already have an account? Sign in".
+- **Footer.** The giant wordmark in the glow, a back to top glass tile, and a glass panel holding two violet panels: Start (Build your plan, Sign in) and Good to know (the wellness disclaimer from screening; "A proof of concept for a product management class, for adults who train."). "Ontrack 2026" at the foot.
+- **Floating action.** Once the hero's Build your plan has scrolled away, the same action floats at the bottom on the dock's glass; it stays away from the closing call to the end of the page.
+
+Every phone shows a real screen of the app, made by `tests/e2e/landing-shots.spec.ts` (the alt text says what each shows). No testimonials, ratings, counts, logos, prices or claims beyond what the app does. Friends and the food map get a section when S1 ships.
+
+States: the only state is the page; images load lazily below the hero, with their alt text until then. With reduced motion everything shows at rest at once.
 
 ## 4. Onboarding
 
@@ -67,7 +78,7 @@ Full height flow. A thin track at the top with "Step n of N", where N counts onl
 
 ## 5. Sign in
 
-Sheet over the plan, or over Welcome for returning users.
+Sheet over the plan, or over the landing page for returning users.
 - Title "Save your plan" or "Welcome back". One line: "Your data stays on this phone and backs up to your account."
 - "Continue with Google" as a neutral button with the Google mark.
 - A hairline with "or", then an email field and "Send code". Then six code boxes with numeric keyboard and auto advance. "Send again" after 30 seconds.

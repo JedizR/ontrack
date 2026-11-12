@@ -56,6 +56,9 @@
   --color-toast: var(--toast-bg);
   --color-toast-ink: var(--toast-ink);
   --color-scrim: var(--scrim);
+  --color-night: var(--night);
+  --color-on-night: var(--on-night);
+  --color-lavender: var(--lavender);
 
   --font-sans: var(--font-ui);
   --font-condensed: var(--font-display);
@@ -90,6 +93,20 @@
   --text-callout: var(--t-callout);
   --text-callout--line-height: 1.5;
   --text-callout--letter-spacing: -0.01em;
+  /* the landing page's three (L1): the hero headline, section headlines, and the big body text with inline pills */
+  --text-poster: var(--t-poster);
+  --text-poster--line-height: 0.9;
+  --text-poster--font-weight: 900;
+  --text-poster--letter-spacing: -0.04em;
+  --text-section: var(--t-section);
+  --text-section--line-height: 0.95;
+  --text-section--font-weight: 900;
+  --text-section--letter-spacing: -0.04em;
+  --text-statement: var(--t-statement);
+  --text-statement--line-height: 1.3;
+  --text-statement--letter-spacing: -0.03em;
+  --text-pill: var(--t-pill);
+  --text-pill--line-height: 1;
   --text-caption: var(--t-caption);
   --text-caption--line-height: 1.5;
   --text-caption--font-weight: 500;
@@ -106,11 +123,11 @@
 
 /* The condensed display face. In the components layer, so `num` (a utility) can put a number back in Geist. */
 @layer components {
-  .text-display, .text-title, .text-heading, .text-eyebrow {
+  .text-display, .text-title, .text-heading, .text-eyebrow, .text-poster, .text-section {
     font-family: var(--font-display);
     font-variant-numeric: tabular-nums;
   }
-  .text-title, .text-heading, .text-eyebrow { text-transform: uppercase; }
+  .text-title, .text-heading, .text-eyebrow, .text-poster, .text-section { text-transform: uppercase; }
   /* D2: the one big number in a card is Geist 500, not bold, as OneFin's "$ 4,025.08" and "2M+" */
   .text-hero { font-family: var(--font-ui); font-variant-numeric: tabular-nums; }
 }

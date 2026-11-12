@@ -71,9 +71,9 @@ test.use({ locale: 'en-TH' });
 test('a typical gain user (vector A: 25, 175 cm, 60 kg, lifts 4 days)', async ({ page }) => {
   await openFresh(page);
   const w = walker(page);
-  await w.at('welcome');
+  await w.at('landing-hero');
   const t0 = Date.now();
-  await w.tap('welcome-start');
+  await w.tap('landing-start');
   await w.at('step-goal');
   await w.tap('choice-gain');
   await w.at('step-screening');
@@ -104,9 +104,9 @@ test('a typical gain user (vector A: 25, 175 cm, 60 kg, lifts 4 days)', async ({
 test('a typical cut user (32, 165 cm, 75 kg, some walking, lifts 3 days)', async ({ page }) => {
   await openFresh(page);
   const w = walker(page);
-  await w.at('welcome');
+  await w.at('landing-hero');
   const t0 = Date.now();
-  await w.tap('welcome-start');
+  await w.tap('landing-start');
   await w.at('step-goal');
   await w.tap('choice-lose');
   await w.at('step-screening');

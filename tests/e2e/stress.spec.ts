@@ -81,14 +81,18 @@ async function checkAll(page: Page, dir: string) {
   await page.screenshot({ path: `${dir}/wheel-sheet.png` });
 
   // the sign in and account sheets: their main action is on screen without scrolling. Signed out, sign in opens from
-  // Welcome; the account in this test's space already has a plan, so signing in lands on Today
+  // the landing page; the account in this test's space already has a plan, so signing in lands on Today
   await open(page, '/gallery');
   await page.evaluate(() => {
     localStorage.removeItem('ontrack:mock-session');
     localStorage.setItem('ot-ui', JSON.stringify({ ...JSON.parse(localStorage.getItem('ot-ui') ?? '{}'), lastUser: null }));
   });
+  // L1: the landing page top to bottom, at rest: reduced motion shows every animation's end state at once
+  await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/');
-  await page.getByTestId('welcome-signin').click();
+  await expect(page.getByTestId('landing')).toBeVisible();
+  await checkPage(page, 'landing', dir);
+  await page.getByTestId('landing-signin').click();
   await expect(page.getByTestId('signin-sheet')).toHaveCSS('transform', 'none');
   await expect(page.getByTestId('signin-send')).toBeInViewport({ ratio: 1 });
   await checkPage(page, 'signin', dir);
@@ -128,14 +132,14 @@ for (const d of PHONES) {
   }
 }
 
-/** Every onboarding screen in order, with a check at each. Welcome to Your plan, with the advice, age and sheet stops. */
+/** Every onboarding screen in order, with a check at each. The landing page's Build your plan to Your plan, with the advice, age and sheet stops. */
 async function walkOnboarding(page: Page, dir: string) {
   const go = (id: string) => page.getByTestId(id).click();
   const check = async (id: string, name: string) => { await page.getByTestId(id).waitFor(); await page.waitForTimeout(300); await checkPage(page, name, dir); };
   await page.clock.setFixedTime(new Date('2026-11-11T10:00:00+07:00'));
   await page.goto('/');
-  await check('welcome', 'welcome');
-  await go('welcome-start');
+  await page.getByTestId('landing').waitFor(); // checked at rest in checkAll
+  await go('landing-start');
   await check('step-goal', 'goal');
   await go('choice-lose');
   await go('screen-medical');

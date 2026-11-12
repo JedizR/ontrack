@@ -32,16 +32,22 @@ export async function takePhoto(page: Page, notice = false) {
 /** The dev server compiles the lazy onboarding chunk on first request, which is slow with every worker asking at once. */
 const FIRST_PAINT = 15_000;
 
-/** Wait for Welcome, the first screen of a signed out browser. */
-export const toWelcome = (page: Page) => expect(page.getByTestId('welcome')).toBeVisible({ timeout: FIRST_PAINT });
+/** Wait for the landing page (L1), the first screen of a signed out browser. */
+export const toLanding = (page: Page) => expect(page.getByTestId('landing')).toBeVisible({ timeout: FIRST_PAINT });
 
-/** Open the app signed out, in a fresh browser: Welcome. */
+/** Open the app signed out, in a fresh browser: the landing page. */
 export async function openFresh(page: Page, s = space('fresh')) {
   await page.clock.setFixedTime(new Date(`${TODAY}T10:00:00+07:00`));
   await useSpace(page, s);
   await page.goto('/');
-  await toWelcome(page);
+  await toLanding(page);
   return s;
+}
+
+/** Build your plan on the landing page, to the first question. Onboarding is its own chunk, loaded beside the landing page. */
+export async function startPlan(page: Page) {
+  await page.getByTestId('landing-start').click();
+  await expect(page.getByTestId('step-goal')).toBeVisible({ timeout: FIRST_PAINT });
 }
 
 /** Seed per-device prefs (theme, text size, last tab) before the app loads, over what the app saved itself. */
@@ -76,16 +82,16 @@ export const space = (name: string) => `e2e-${name}-${Date.now()}-${Math.random(
 export const useSpace = (page: Page, s: string) => page.addInitScript((v) => localStorage.setItem('ontrack:mock-space', v), s);
 
 /**
- * Sign in through the sheet with the mock's code. Opens the sheet from the avatar, or from Welcome, unless it is open.
+ * Sign in through the sheet with the mock's code. Opens the sheet from the avatar, or from the landing page, unless it is open.
  * By default the account has a plan, so the app lands on Today; `shell: false` stops once the sheet has closed.
  */
 export async function signIn(page: Page, email = EMAIL, { shell = true } = {}) {
   const sheet = page.getByTestId('signin-sheet');
   if (!(await sheet.isVisible())) {
     const avatar = page.getByTestId('avatar');
-    const welcome = page.getByTestId('welcome-signin');
-    await expect(avatar.or(welcome)).toBeVisible({ timeout: FIRST_PAINT });
-    await (await avatar.isVisible() ? avatar : welcome).click();
+    const landing = page.getByTestId('landing-signin');
+    await expect(avatar.or(landing)).toBeVisible({ timeout: FIRST_PAINT });
+    await (await avatar.isVisible() ? avatar : landing).click();
   }
   await page.getByTestId('signin-email').fill(email);
   await page.getByTestId('signin-send').click();
@@ -205,10 +211,10 @@ export type Answers = {
 /** The pace control's label for a rate (SCIENCE.md section 6). */
 export const PACE = { lose: { 0.25: 'Gentle', 0.5: 'Steady', 0.75: 'Faster' }, gain: { 0.25: 'Lean', 0.5: 'Standard', 0.75: 'Faster' } } as const;
 
-/** From Welcome to Your plan. Defaults are vector A of docs/SCIENCE.md. Single answers advance on tap. */
+/** From the landing page to Your plan. Defaults are vector A of docs/SCIENCE.md. Single answers advance on tap. */
 export async function onboard(page: Page, a: Answers) {
-  await expect(page.getByTestId('welcome-start')).toBeVisible({ timeout: FIRST_PAINT });
-  await page.getByTestId('welcome-start').click();
+  await expect(page.getByTestId('landing-start')).toBeVisible({ timeout: FIRST_PAINT });
+  await startPlan(page);
   await page.getByTestId(`choice-${a.goal}`).click();
 
   await expect(page.getByTestId('step-screening')).toBeVisible();
