@@ -1,7 +1,7 @@
 // Visual review: every screen in its main states -> screenshots/<screen>/<state>-<theme>-<device>.png
 //   pnpm screenshots -- --grep "shell"
 import { expect, test, type Page } from '@playwright/test';
-import { EMAIL, MEALS, TODAY, keypadEnter, onboard, open, openFresh, seedAccount, signIn, toWelcome, withPrefs } from './helpers';
+import { EMAIL, MEALS, TODAY, keypadEnter, onboard, open, openFresh, seedAccount, signIn, takePhoto, toWelcome, vision, withPrefs } from './helpers';
 
 const SECTIONS = ['prefs', 'buttons', 'track', 'hero', 'rows', 'chips', 'sheets', 'week', 'feedback', 'states'];
 
@@ -252,6 +252,58 @@ for (const theme of ['light', 'dark'] as const) {
         await page.getByTestId('session-undo').click();
         await page.getByTestId('session-more').click();
         await sheet('session-sheet', 'session-menu');
+      });
+
+      // SCREENS.md section 7, photo logging: the first photo notice, the review loading and loaded, the oil control,
+      // the logged meal with its thumbnail, two errors, and Describe
+      test('photo', async ({ page }) => {
+        const settled = (id: string) => expect(page.getByTestId(id)).toHaveCSS('transform', 'none');
+        const s = await open(page);
+        await vision(page, s, { fixture: 'basil-pork' });
+        await page.getByTestId('add').click();
+        await page.getByTestId('add-photo').click();
+        await settled('add-sheet');
+        await shot(page, 'photo', 'notice');
+        let release = () => {};
+        const held = new Promise<void>((r) => (release = r));
+        await page.route('**/api/analyze', async (route) => { await held; await route.continue(); });
+        const chooser = page.waitForEvent('filechooser');
+        await page.getByTestId('photo-continue').click();
+        await (await chooser).setFiles('tests/fixtures/meal.jpg');
+        await expect(page.getByTestId('review-photo')).toBeVisible();
+        await settled('review-sheet');
+        await shot(page, 'photo', 'looking');
+        release();
+        await expect(page.getByTestId('meal-item')).toHaveCount(3);
+        await page.unroute('**/api/analyze');
+        await shot(page, 'photo', 'review');
+        await page.getByRole('radio', { name: '1 tsp' }).click();
+        await page.getByTestId('review-oil').scrollIntoViewIfNeeded();
+        await shot(page, 'photo', 'review-oil');
+        await page.getByTestId('review-add').click();
+        await expect(page.getByTestId('thumb')).toBeVisible();
+        await shot(page, 'photo', 'today');
+        await page.getByTestId('meal').first().getByRole('button').click();
+        await settled('meal-sheet');
+        await shot(page, 'photo', 'meal');
+        await page.keyboard.press('Escape');
+        await page.getByTestId('meal-sheet').waitFor({ state: 'detached' });
+
+        await vision(page, s, { fixture: 'not-food' });
+        await takePhoto(page);
+        await expect(page.getByTestId('review-error')).toBeVisible();
+        await shot(page, 'photo', 'not-food');
+        await vision(page, s, { fixture: null, used: 40 });
+        await page.getByTestId('review-retry').click();
+        await expect(page.getByTestId('review-retry')).toBeHidden();
+        await shot(page, 'photo', 'limit');
+        await page.keyboard.press('Escape');
+        await page.getByTestId('review-sheet').waitFor({ state: 'detached' });
+        await page.getByTestId('add').click();
+        await page.getByTestId('add-describe').click();
+        await page.getByTestId('describe-text').fill('Two eggs, toast with butter and a latte');
+        await settled('describe-sheet');
+        await shot(page, 'photo', 'describe');
       });
 
       // Today composed from the real components, next to the static reference mock

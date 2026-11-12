@@ -75,7 +75,7 @@
   </button>
 {/snippet}
 
-<input bind:this={input} type="file" accept="image/*" capture="environment" class="sr-only" tabindex="-1" aria-hidden="true" onchange={taken} data-testid="photo-input" />
+<input bind:this={input} type="file" accept="image/*" capture="environment" hidden onchange={taken} data-testid="photo-input" />
 
 <Sheet bind:open={sheets.add} title={notice ? t.add.consentTitle : t.add.title} layer="base" testid="add-sheet">
   {#if notice}
