@@ -1,7 +1,7 @@
 // M4: first run to a saved plan (SCREENS.md sections 3 to 5, PRD F2 and section 7). Each test is a fresh browser in its own
 // mock space, which opens on Welcome.
 import { expect, test, type Page } from '@playwright/test';
-import { EMAIL, TODAY, keypadEnter, onboard, openFresh, seedAccount, signIn } from './helpers';
+import { EMAIL, TODAY, onboard, openFresh, pickerSave, seedAccount, signIn, wheelType } from './helpers';
 
 type Hook = { ontrack: { db: { get(c: string, id: string): unknown; live(c: string): { data: unknown }[] } } };
 const record = (page: Page, c: string, id: string) => page.evaluate(([c, id]) => (window as unknown as Hook).ontrack.db.get(c, id), [c, id] as const);
@@ -129,13 +129,19 @@ test('a birth year under 18 ends setup with an explanation', async ({ page }) =>
   await page.getByTestId('screen-none').click();
   await page.getByTestId('continue').click();
   await page.getByTestId('choice-male').click();
-  await keypadEnter(page, '2012');
+  // the wheel starts at a 30 year old's year
+  await expect(page.getByTestId('wheel-year').getByRole('slider')).toHaveAttribute('aria-valuenow', '1996');
+  await wheelType(page, 'wheel-year', '2012');
+  await page.getByTestId('continue').click();
   await expect(page.getByTestId('step-young')).toContainText('people 18 and over');
   await expect(page.getByTestId('continue')).toHaveCount(0);
-  // a typo can be fixed
+  // a typo can be fixed: the wheel keeps the year
   await page.getByTestId('back').click();
-  await page.getByTestId('field-year').click();
-  await keypadEnter(page, '2000');
+  await expect(page.getByTestId('wheel-year').getByRole('slider')).toHaveAttribute('aria-valuenow', '2012');
+  await wheelType(page, 'wheel-year', '1850'); // out of range: brought inside, and said why
+  await expect(page.getByTestId('step-born')).toContainText('Enter a year from 1916 to 2026.');
+  await wheelType(page, 'wheel-year', '2000');
+  await page.getByTestId('continue').click();
   await expect(page.getByTestId('step-body')).toBeVisible();
 });
 
@@ -167,13 +173,21 @@ test('under BMI 16 a doctor card shows, gaining is still offered, and a low goal
   await expect(page.getByTestId('plan-doctor')).toContainText('See a doctor first');
   await expect(page.getByTestId('plan-expect')).toContainText('Expect to gain');
   await page.getByTestId('tune-goalweight').click();
-  await keypadEnter(page, '50');
-  await expect(page.getByTestId('tune-error')).toContainText('A goal weight below 56.7 kg is not offered');
+  // the wheel starts at the current weight and goes no lower than BMI 18.5
+  await expect(page.getByTestId('picker-save')).toBeVisible();
+  await wheelType(page, 'picker-wheel', '50');
+  await expect(page.getByTestId('picker-hint')).toContainText('A goal weight below 56.7 kg is not offered');
+  await expect(page.getByTestId('picker-wheel').getByRole('slider').first()).toHaveAttribute('aria-valuetext', '56.7 kg');
+  await page.keyboard.press('Escape');
+  await expect(page.getByTestId('picker')).toBeHidden();
   await expect(page.getByTestId('tune-goalweight')).toContainText('None yet');
   await page.getByTestId('tune-goalweight').click();
-  await keypadEnter(page, '62');
+  await pickerSave(page, '62');
   await expect(page.getByTestId('tune-goalweight')).toContainText('62 kg');
-  await expect(page.getByTestId('tune-error')).toHaveText('');
+  // Clear takes it away again
+  await page.getByTestId('tune-goalweight').click();
+  await page.getByTestId('picker-clear').click();
+  await expect(page.getByTestId('tune-goalweight')).toContainText('None yet');
 });
 
 test('a returning user signs in from Welcome and lands on Today with the account plan', { tag: '@smoke' }, async ({ page }) => {

@@ -167,6 +167,7 @@ export const en = {
     promptNone: 'Your weekly check-in reads from your weigh-ins.',
     action: 'Weigh in',
     saved: (w: string) => `Weigh-in saved, ${w}`,
+    save: (w: string) => `Save ${w}`,
   },
   week: {
     label: 'This week',
@@ -302,7 +303,6 @@ export const en = {
     imperial: 'Imperial',
     heightRange: (from: string, to: string) => `Enter a height from ${from} to ${to}.`,
     weightRange: (from: string, to: string) => `Enter a weight from ${from} to ${to}.`,
-    tap: 'Tap to enter',
   },
   move: {
     q: 'Outside of workouts, how much do you move?',
@@ -447,10 +447,10 @@ export const en = {
     assumption: 'Working assumption',
     tune: 'Fine tune',
     bodyFat: 'Body fat',
-    bodyFatHint: 'Leave at 0 to clear it',
+    bodyFatHint: 'If you know it, resting energy comes from your lean mass.',
     bodyFatRange: (from: string, to: string) => `Enter ${from} to ${to} percent.`,
     goalWeight: 'Goal weight',
-    goalWeightHint: 'Leave at 0 to clear it',
+    goalWeightHint: 'Optional. Your target does not depend on it.',
     goalWeightLow: (min: string) => `A goal weight below ${min} is not offered. It would put your BMI under the healthy range.`,
     even: 'Same target every day',
     noneYet: 'None yet',
@@ -471,13 +471,13 @@ export const en = {
     mealSaved: 'Saved to your meals',
     changesSaved: 'Changes saved',
   },
-  keypad: {
-    keys: 'Keypad',
-    back: 'Delete last digit',
-    clear: 'Clear',
-    clearShort: 'C',
-    plus: 'Add another amount',
+  wheel: {
+    /** the tenths column of a decimal wheel, read after its label */
+    tenths: (label: string) => `${label}, tenths`,
+  },
+  picker: {
     save: 'Save',
+    clear: 'Clear',
   },
   stepper: {
     less: (what: string) => `Less ${what}`,

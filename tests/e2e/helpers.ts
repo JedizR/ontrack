@@ -137,18 +137,29 @@ export async function seedAccount(page: Page, o: { space?: string; email?: strin
   return s;
 }
 
-/** Type digits on the open keypad and save. Onboarding may open the keypad again for the next value at once. */
-export async function keypadEnter(page: Page, digits: string) {
-  const pad = page.getByTestId('keypad');
-  const title = pad.locator('[data-slot="drawer-title"]');
-  await expect(pad).toBeVisible();
-  const asked = await title.innerText();
-  await pad.getByRole('button', { name: 'Clear' }).click();
-  for (const k of digits) await page.locator(`[data-key="${k}"]`).click();
-  await page.getByTestId('keypad-save').click();
-  // the sheet may detach between the two reads: a title that is gone counts as closed instead of waiting for it
-  await expect.poll(async () => !(await pad.isVisible()) || (await title.innerText({ timeout: 200 }).catch(() => '')) !== asked).toBe(true);
+/**
+ * Type a value into a wheel: Enter on its first column opens the field (as tapping the band does), then type and Enter.
+ * The keyboard path, because Playwright scrolls a tapped row into view first, which moves the wheel under the tap.
+ */
+export async function wheelType(page: Page, testid: string, value: string) {
+  const wheel = page.getByTestId(testid);
+  await wheel.getByRole('slider').first().press('Enter');
+  const field = wheel.getByRole('textbox');
+  await field.fill(value);
+  await field.press('Enter');
+  await expect(field).toHaveCount(0);
 }
+
+/** The wheel sheet: type a value and save it. */
+export async function pickerSave(page: Page, value: string) {
+  await expect(page.getByTestId('picker')).toBeVisible();
+  await wheelType(page, 'picker-wheel', value);
+  await page.getByTestId('picker-save').click();
+  await expect(page.getByTestId('picker')).toBeHidden();
+}
+
+/** A native field, filled. */
+export const fieldFill = (page: Page, testid: string, value: string) => page.getByTestId(testid).fill(value);
 
 export type Answers = {
   goal: 'gain' | 'lose' | 'maintain';
@@ -181,20 +192,18 @@ export async function onboard(page: Page, a: Answers) {
   if (a.screening?.length) await page.getByTestId('advice-continue').click();
 
   await page.getByTestId(`choice-${a.sex ?? 'male'}`).click();
-  await keypadEnter(page, a.year ?? '2001'); // the keypad opens by itself, and a valid year moves on
+  await wheelType(page, 'wheel-year', a.year ?? '2001');
+  await page.getByTestId('continue').click();
   await expect(page.getByTestId('step-body')).toBeVisible();
   if (a.units === 'imperial') {
-    await page.keyboard.press('Escape'); // the height keypad opened in metric
-    await expect(page.getByTestId('keypad')).toBeHidden();
     await page.getByRole('radio', { name: 'Imperial' }).click();
     const [ft, inches] = (a.height ?? '5 9').split(' ');
-    await page.getByTestId('field-height').click();
-    await keypadEnter(page, ft);
-    await keypadEnter(page, inches);
-    await keypadEnter(page, a.weight ?? '132'); // weight follows height while it is empty
+    await wheelType(page, 'wheel-height-ft', ft);
+    await wheelType(page, 'wheel-height-in', inches);
+    await wheelType(page, 'wheel-weight', a.weight ?? '132');
   } else {
-    await keypadEnter(page, a.height ?? '175');
-    await keypadEnter(page, a.weight ?? '60');
+    await wheelType(page, 'wheel-height', a.height ?? '175');
+    await wheelType(page, 'wheel-weight', a.weight ?? '60');
   }
   await page.getByTestId('continue').click();
   await page.getByTestId(`choice-${a.neat ?? 'seated'}`).click();

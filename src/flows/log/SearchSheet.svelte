@@ -1,6 +1,7 @@
 <!-- SCREENS.md section 7, Search: a field with focus, results with kcal for the default portion, Recent foods while the
-     field is empty. A result opens the portion step: portion chips, grams on the keypad, live calories, Add. Opened from
-     a meal (Replace, Add an item), Add hands the item back instead of logging a meal. -->
+     field is empty. A result opens the portion step, with a back chevron to the results: live calories, portion chips,
+     grams on a stepper that can be typed, Add. Opened from a meal (Replace, Add an item), Add hands the item back
+     instead of logging a meal. -->
 <script lang="ts">
   import { untrack } from 'svelte';
   import Sheet from '$lib/components/Sheet.svelte';
@@ -10,7 +11,7 @@
   import Skeleton from '$lib/components/Skeleton.svelte';
   import { sheets } from '$lib/sheets.svelte';
   import { view } from '$lib/view.svelte';
-  import { keypad } from '$lib/keypad.svelte';
+  import Stepper from '$lib/components/Stepper.svelte';
   import { db } from '$lib/db/store.svelte';
   import { deleteMeal, saveMeal, undoToast } from '$lib/actions';
   import { itemFor, loadFoods, searchFoods, type Food } from '$lib/data/foods';
@@ -46,11 +47,6 @@
   const kcalFor = (f: Food, grams: number) => num(Math.round((f.per100.kcal * grams) / 100));
   const item = $derived(picked ? itemFor(picked.food, picked.grams) : null);
 
-  async function askGrams() {
-    if (!picked) return;
-    const v = await keypad.ask({ title: picked.food.name, unit: t.after.g, value: picked.grams, hint: t.search.grams });
-    if (v !== null && picked) picked.grams = Math.min(MAX_GRAMS, v);
-  }
 
   function add() {
     if (!picked || !item) return;
@@ -83,6 +79,8 @@
   testid="search-sheet"
   onclose={() => (sheets.pick = null)}
   footer={picked ? footer : undefined}
+  onback={picked ? () => (picked = null) : undefined}
+  backLabel={t.search.back}
 >
   {#if picked}
     <div class="flex flex-col gap-4" data-testid="portion">
@@ -98,11 +96,10 @@
           <Chip selected={picked.grams === p.grams} onclick={() => { if (picked) picked.grams = p.grams; }}>{p.label}</Chip>
         {/each}
       </div>
-      <button type="button" class="bg-surface-2 active:bg-surface-3 flex min-h-13 items-center justify-between rounded-sm px-4 transition-colors duration-[var(--d-press)]" onclick={askGrams} data-testid="portion-grams">
-        <span class="text-callout text-ink-2">{t.search.grams}</span>
-        <span class="text-body num font-semibold">{num(picked.grams)} {t.after.g}</span>
-      </button>
-      <div><Button size="sm" onclick={() => (picked = null)}>{t.search.back}</Button></div>
+      <div class="flex items-center justify-between gap-3">
+        <span class="text-body font-semibold">{t.search.grams}</span>
+        <Stepper bind:value={picked.grams} step={10} min={1} max={MAX_GRAMS} unit={t.after.g} label={t.after.grams} testid="portion-grams" />
+      </div>
     </div>
   {:else}
     <input

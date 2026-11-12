@@ -1,7 +1,7 @@
 // Today and logging without a photo (F3, F5, F6), on the mock backend. "Today" is frozen at 2026-11-11, a Wednesday
 // and a training day for the seeded plan: 2,460 kcal, 2,220 on rest days.
 import { expect, test, type Page } from '@playwright/test';
-import { MEALS, TODAY, keypadEnter, open } from './helpers';
+import { MEALS, TODAY, fieldFill, open, pickerSave, wheelType } from './helpers';
 
 const hero = (page: Page) => page.getByTestId('hero-value');
 const meals = (page: Page) => page.getByTestId('meal');
@@ -22,8 +22,12 @@ test('search a food, pick a portion and add it: Today updates at once', { tag: '
   await expect(page.getByTestId('portion')).toBeVisible();
   await page.getByRole('button', { name: '1 plate' }).click();
   await expect(page.getByTestId('portion-kcal')).toHaveText('325');
-  await page.getByTestId('portion-grams').click();
-  await keypadEnter(page, '200');
+  // grams on the stepper: typed, then nudged by 10
+  const grams = page.getByTestId('portion-grams').getByRole('textbox');
+  await grams.fill('190');
+  await grams.press('Enter');
+  await page.getByTestId('portion-grams').getByRole('button', { name: 'More grams' }).click();
+  await expect(grams).toHaveValue('200');
   await expect(page.getByTestId('search-add')).toHaveText('Add 260 kcal');
   await page.getByTestId('search-add').click();
 
@@ -43,10 +47,15 @@ test('quick add with macros and a name, then log it again from Recent in two tap
   await open(page);
   await page.getByTestId('add').click();
   await page.getByTestId('add-quick').click();
-  await keypadEnter(page, '450'); // the keypad opens by itself for calories
-  await page.getByTestId('quick-protein').click();
-  await keypadEnter(page, '30');
+  await expect(page.getByTestId('quick-kcal')).toBeFocused(); // the number pad comes up for calories
+  await expect(page.getByTestId('quick-add')).toBeDisabled();
+  await fieldFill(page, 'quick-kcal', '12000');
+  await expect(page.getByTestId('quick-error')).toHaveText('Enter up to 10,000 kcal at a time.');
+  await expect(page.getByTestId('quick-add')).toBeDisabled();
+  await fieldFill(page, 'quick-kcal', '450');
+  await fieldFill(page, 'quick-protein', '30');
   await page.getByTestId('quick-name').fill('Protein shake');
+  await expect(page.getByTestId('quick-add')).toHaveText('Add 450 kcal');
   await page.getByTestId('quick-add').click();
   await expect(hero(page)).toHaveText('450');
   await expect(page.getByTestId('macro-protein')).toContainText('30');
@@ -141,12 +150,19 @@ test('the weigh-in prompt shows after three days and goes once you weigh in', as
   const card = page.getByTestId('weigh-card');
   await expect(card).toContainText('Your last weigh-in was 4 days ago');
   await card.getByTestId('weigh-open').click();
-  await expect(page.getByTestId('keypad-value')).toContainText('60.4');
-  await page.getByRole('button', { name: 'Clear' }).click();
-  await page.locator('[data-key="9"]').click();
-  await page.getByTestId('keypad-save').click();
-  await expect(page.getByTestId('keypad-expr')).toHaveText('Enter a weight from 30 kg to 300 kg.'); // asks again, saying why
-  await keypadEnter(page, '61.2');
+  // the wheel starts at the last weigh-in
+  await expect(page.getByTestId('picker-save')).toHaveText('Save 60.4 kg');
+  await expect(page.getByTestId('picker-hint')).toHaveText('One a day. A new one replaces it.');
+  // a flick of the tenths column: two rows down
+  const tenths = page.getByTestId('picker-wheel').getByRole('slider').nth(1);
+  await tenths.focus();
+  await page.keyboard.press('ArrowUp');
+  await page.keyboard.press('ArrowUp');
+  await expect(page.getByTestId('picker-save')).toHaveText('Save 60.6 kg');
+  await wheelType(page, 'picker-wheel', '9'); // too light: brought inside the range, and said why
+  await expect(page.getByTestId('picker-hint')).toHaveText('Enter a weight from 30 kg to 300 kg.');
+  await expect(page.getByTestId('picker-save')).toHaveText('Save 30 kg');
+  await pickerSave(page, '61.2');
   await expect(page.getByText('Weigh-in saved, 61.2 kg')).toBeVisible();
   await expect(card).toBeHidden();
 });

@@ -10,10 +10,10 @@
   import { evenEee, kgPerWeek, targetParts, targetWith, trainingDayEee } from '$lib/model/day';
   import { kgToLb, lbToKg, weightText } from '$lib/model/units';
   import { num } from '$lib/model/format';
-  import { keypad } from '$lib/keypad.svelte';
+  import { picker } from '$lib/picker.svelte';
   import Breakdown from '../plan/Breakdown.svelte';
   import { t } from '$lib/i18n';
-  import { LIMITS, goalWeightOf, inputOf, minGoalWeightKg, type Draft } from './draft';
+  import { START, goalWeightOf, inputOf, minGoalWeightKg, weightWheel, type Draft } from './draft';
 
   let { d, year, set, back, onsave }: {
     d: Draft;
@@ -49,29 +49,29 @@
 
   const bodyFat = $derived(input.bodyFatPct != null && input.bodyFatPct >= V.bodyFatRange.min && input.bodyFatPct <= V.bodyFatRange.max);
 
-  let tuneError = $state('');
+  // the wheel sheets answer a number, 0 for Clear, or null when dismissed
   const round = (x: number, places: number) => Math.round(x * 10 ** places) / 10 ** places;
   async function askBodyFat() {
-    tuneError = '';
-    const v = await keypad.ask({ title: t.plan.bodyFat, unit: t.after.percent, decimal: true, value: d.bodyFatPct ?? null, allowZero: true, hint: t.plan.bodyFatHint });
-    if (v === null) return;
-    if (v === 0) return set({ bodyFatPct: undefined });
     const { min, max } = V.bodyFatRange;
-    if (v < min || v > max) return void (tuneError = t.plan.bodyFatRange(num(min), num(max)));
-    set({ bodyFatPct: v });
+    // whole percent on the wheel: a stored 18.5 shows as 19 and stays 18.5 unless the wheel moves
+    const was = d.bodyFatPct ? Math.round(d.bodyFatPct) : undefined;
+    const v = await picker.ask({ title: t.plan.bodyFat, value: was ?? START.bodyFatPct, min, max, unit: t.after.percent, hint: t.plan.bodyFatHint, clearable: was !== undefined, range: t.plan.bodyFatRange(num(min), num(max)) });
+    if (v === null || v === was) return;
+    set({ bodyFatPct: v === 0 ? undefined : v });
   }
   async function askGoalWeight() {
-    tuneError = '';
     const metric = d.units === 'metric';
-    const was = d.goalWeightKg ? round(metric ? d.goalWeightKg : kgToLb(d.goalWeightKg), 1) : null;
-    const v = await keypad.ask({ title: t.plan.goalWeight, unit: metric ? t.after.kg : t.after.lb, decimal: true, value: was, allowZero: true, hint: t.plan.goalWeightHint });
+    const shown = (kg: number) => round(metric ? kg : kgToLb(kg), 1);
+    // from the lowest goal weight offered (BMI 18.5) to the field's top
+    const { min, max } = weightWheel(d.units, minGoalWeightKg(d));
+    const goal = goalWeightOf(d);
+    const start = Math.min(max, Math.max(min, shown(goal ?? d.weightKg ?? START.weightKg)));
+    const v = await picker.ask({
+      title: t.plan.goalWeight, value: start, min, max, decimals: 1, unit: metric ? t.after.kg : t.after.lb,
+      hint: t.plan.goalWeightHint, clearable: !!goal, range: t.plan.goalWeightLow(weightText(minGoalWeightKg(d), d.units)),
+    });
     if (v === null) return;
-    if (v === 0) return set({ goalWeightKg: undefined });
-    const kg = metric ? v : lbToKg(v);
-    const min = minGoalWeightKg(d);
-    if (kg < min) return void (tuneError = t.plan.goalWeightLow(weightText(min, d.units)));
-    if (kg > LIMITS.weightKg[1]) return void (tuneError = t.body.weightRange(weightText(LIMITS.weightKg[0], d.units, 0), weightText(LIMITS.weightKg[1], d.units, 0)));
-    set({ goalWeightKg: round(kg, 2) });
+    set({ goalWeightKg: v === 0 ? undefined : round(metric ? v : lbToKg(v), 2) });
   }
 </script>
 
@@ -109,7 +109,6 @@
       </Row>
     </Card>
     {#each flags as f (f)}<p class="text-callout text-attention" data-testid="plan-flag">{f}</p>{/each}
-    <p class="text-callout text-attention min-h-5" role="alert" data-testid="tune-error">{tuneError}</p>
   </div>
   {#snippet footer()}
     <Button variant="primary" size="lg" full onclick={onsave} data-testid="plan-save">{t.plan.save}</Button>

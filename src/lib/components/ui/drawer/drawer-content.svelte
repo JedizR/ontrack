@@ -25,7 +25,7 @@
 		bind:ref
 		data-slot="drawer-content"
 		class={cn(
-			"bg-surface text-ink fixed inset-x-0 bottom-0 mx-auto flex max-h-[92dvh] w-full max-w-[480px] flex-col rounded-t-xl outline-none",
+			"bg-surface text-ink fixed inset-x-0 bottom-0 mx-auto flex max-h-[92dvh] w-full max-w-[480px] flex-col rounded-t-sheet outline-none",
 			className
 		)}
 		{...restProps}

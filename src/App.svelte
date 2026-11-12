@@ -15,7 +15,7 @@
   import { logOpen, sheets } from '$lib/sheets.svelte';
   import { view } from '$lib/view.svelte';
   import { dayTitle } from '$lib/model/dates';
-  import { keypad } from '$lib/keypad.svelte';
+  import { picker } from '$lib/picker.svelte';
   import { db } from '$lib/db/store.svelte';
   import type { SyncState } from '$lib/components/SyncMark.svelte';
 
@@ -30,15 +30,15 @@
   }
   $effect(() => { void loadTab(prefs.tab); });
 
-  // the sign in, account and keypad sheets (and the drawer code under them) load after the first paint, like the tabs
+  // the sign in, account and wheel sheets (and the drawer code under them) load after the first paint, like the tabs
   let SignIn = $state<Component<{ open: boolean; title?: string }> | null>(null);
   let Account = $state<Component<{ open: boolean }> | null>(null);
-  let Keypad = $state<Component | null>(null);
+  let Wheel = $state<Component | null>(null);
   async function loadSheets() {
-    const [s, a, k] = await Promise.all([import('./flows/signin/SignInSheet.svelte'), import('./settings/AccountSheet.svelte'), import('$lib/components/KeypadSheet.svelte')]);
-    [SignIn, Account, Keypad] = [s.default, a.default, k.default];
+    const [s, a, k] = await Promise.all([import('./flows/signin/SignInSheet.svelte'), import('./settings/AccountSheet.svelte'), import('$lib/components/WheelSheet.svelte')]);
+    [SignIn, Account, Wheel] = [s.default, a.default, k.default];
   }
-  $effect(() => { if ((sheets.signin || sheets.account || keypad.open) && !SignIn) void loadSheets(); });
+  $effect(() => { if ((sheets.signin || sheets.account || picker.open) && !SignIn) void loadSheets(); });
   // the logging sheets: Add, Search, Quick add, Meal, How it is calculated and the session menu
   let Log = $state<Component | null>(null);
   const loadLog = async () => { Log ??= (await import('./flows/log/LogSheets.svelte')).default; };
@@ -139,5 +139,5 @@
 {#if SignIn}<SignIn bind:open={sheets.signin} title={onboarding && prefs.draft?.at === 'plan' ? t.signin.save : t.signin.welcomeBack} />{/if}
 {#if Account}<Account bind:open={sheets.account} />{/if}
 {#if Log}<Log />{/if}
-{#if Keypad}<Keypad />{/if}
+{#if Wheel}<Wheel />{/if}
 <Toasts />

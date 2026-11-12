@@ -6,7 +6,7 @@ import {
 } from '$lib/model/engine';
 import { TEMPLATES } from '$lib/data/templates';
 import { weekdayOf, yearOf } from '$lib/model/dates';
-import type { Units } from '$lib/model/units';
+import { kgToLb, type Units } from '$lib/model/units';
 import { t } from '$lib/i18n';
 import type { Plan, Profile, Program, Weight } from '../../../shared/records';
 
@@ -43,6 +43,14 @@ export const fresh = (): Draft => ({ at: 'welcome', units: 'metric' });
 
 /** What the fields accept, before the engine's own guardrails. Wider than any adult, narrower than the database. */
 export const LIMITS = { heightCm: [100, 250], weightKg: [30, 300], oldestAge: 110 } as const;
+/** Where the wheels start when there is no answer yet: interface defaults near the median adult, not science. */
+export const START = { ageYears: 30, heightCm: 170, weightKg: 70, bodyFatPct: 20 } as const;
+
+/** A weight wheel's ends in the user's units, to the tenth, inside the given kg (the field limits by default). */
+export function weightWheel(units: Units, minKg: number = LIMITS.weightKg[0], maxKg: number = LIMITS.weightKg[1]) {
+  const shown = (kg: number) => +((units === 'metric' ? kg : kgToLb(kg)) * 10).toFixed(6);
+  return { min: Math.ceil(shown(minKg)) / 10, max: Math.floor(shown(maxKg)) / 10 };
+}
 export const DEFAULT_TRAIN: Train = { kind: 'custom', days: 3, type: 'strength', minutes: 60, intensity: 'moderate' };
 
 /** The nine questions in order. The advice and age screens belong to the question before them. */

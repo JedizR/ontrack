@@ -7,14 +7,15 @@
   import Hash from '@lucide/svelte/icons/hash';
   import Search from '@lucide/svelte/icons/search';
   import { prefs, applyTheme, applyFontSize, type FontSize, type Tab, type Theme } from '$lib/prefs.svelte';
-  import { keypad } from '$lib/keypad.svelte';
+  import { picker } from '$lib/picker.svelte';
   import { undoToast } from '$lib/actions';
   import { num } from '$lib/model/format';
   import { t } from '$lib/i18n';
   import Header from '$lib/components/Header.svelte';
   import Dock from '$lib/components/Dock.svelte';
   import Toasts from '$lib/components/Toasts.svelte';
-  import KeypadSheet from '$lib/components/KeypadSheet.svelte';
+  import WheelSheet from '$lib/components/WheelSheet.svelte';
+  import Wheel from '$lib/components/Wheel.svelte';
   import Sheet from '$lib/components/Sheet.svelte';
   import Button from '$lib/components/Button.svelte';
   import Card from '$lib/components/Card.svelte';
@@ -63,15 +64,11 @@
   let picked = $state('2026-11-10');
   let sheetOpen = $state(false);
 
-  async function quickAdd() {
-    const kcal = await keypad.ask({
-      title: 'Quick add',
-      unit: 'kcal',
-      hint: 'Calories',
-      chips: [100, 250, 500].map((v) => ({ label: num(v), value: v })),
-      saveLabel: (v) => `Add ${num(v)} kcal`,
-    });
-    if (kcal !== null) toast(`Added ${num(kcal)} kcal`);
+  let height = $state(170);
+  let weight = $state(70);
+  async function weighIn() {
+    const kg = await picker.ask({ title: t.weigh.title, value: 82.4, min: 30, max: 300, decimals: 1, unit: t.after.kg, hint: t.weigh.hint, saveLabel: (v) => t.weigh.save(`${num(v, 1)} ${t.after.kg}`) });
+    if (kg !== null) toast(t.weigh.saved(`${num(kg, 1)} ${t.after.kg}`));
   }
 </script>
 
@@ -187,10 +184,19 @@
       </section>
 
       <section data-section="sheets">
-        {@render heading('Sheet and keypad')}
+        {@render heading('Sheets')}
         <div class="flex flex-wrap gap-2">
           <Button onclick={() => (sheetOpen = true)}>Open a sheet</Button>
-          <Button onclick={quickAdd}>Open the keypad</Button>
+          <Button onclick={weighIn}>Open the wheel sheet</Button>
+        </div>
+      </section>
+
+      <section data-section="wheel">
+        {@render heading('Wheels')}
+        {@render note('A bounded value: tap the band to type it')}
+        <div class="grid grid-cols-2 gap-3">
+          <Wheel bind:value={height} min={100} max={250} unit={t.after.cm} label={t.body.height} testid="wheel-height" />
+          <Wheel bind:value={weight} min={30} max={300} decimals={1} unit={t.after.kg} label={t.body.weight} testid="wheel-weight" />
         </div>
       </section>
 
@@ -249,4 +255,4 @@
   {/snippet}
 </Sheet>
 <Toasts />
-<KeypadSheet />
+<WheelSheet />

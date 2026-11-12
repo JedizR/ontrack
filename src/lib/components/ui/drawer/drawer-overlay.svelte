@@ -12,6 +12,6 @@
 <DrawerPrimitive.Overlay
 	bind:ref
 	data-slot="drawer-overlay"
-	class={cn("bg-scrim fixed inset-0", className)}
+	class={cn("bg-scrim fixed inset-0 [-webkit-backdrop-filter:var(--blur-scrim)] [backdrop-filter:var(--blur-scrim)]", className)}
 	{...restProps}
 />

@@ -4,7 +4,6 @@
   import { fly } from 'svelte/transition';
   import Step from './Step.svelte';
   import Choices from './Choices.svelte';
-  import Field from './Field.svelte';
   import Welcome from './Welcome.svelte';
   import Body from './Body.svelte';
   import Training from './Training.svelte';
@@ -15,13 +14,13 @@
   import { prefs } from '$lib/prefs.svelte';
   import { db } from '$lib/db/store.svelte';
   import { sheets } from '$lib/sheets.svelte';
-  import { keypad } from '$lib/keypad.svelte';
+  import Wheel from '$lib/components/Wheel.svelte';
   import { C, V, type Experience, type Goal, type Neat, type Sex } from '$lib/model/engine';
   import { today, yearOf } from '$lib/model/dates';
   import { num } from '$lib/model/format';
   import { dur, haptic } from '$lib/haptics';
   import { t } from '$lib/i18n';
-  import { LIMITS, fresh, progress, step, type Draft, type Screen, type Screening } from './draft';
+  import { LIMITS, START, fresh, progress, step, type Draft, type Screen, type Screening } from './draft';
   import { settle } from './settle';
 
   const year = yearOf(today());
@@ -102,18 +101,9 @@
     if (none) ticks = { ...NONE };
   }
 
-  // ----- birth year -----
+  // ----- birth year: a wheel from the answer, or from a 30 year old; Continue saves it -----
+  let born = $state(prefs.draft?.birthYear ?? year - START.ageYears);
   let yearError = $state('');
-  async function askYear() {
-    yearError = '';
-    const v = await keypad.ask({ title: t.born.q, unit: '', value: d.birthYear ?? null });
-    if (v === null) return;
-    const from = year - LIMITS.oldestAge;
-    if (!Number.isInteger(v) || v < from || v > year) return void (yearError = t.born.invalid(String(from), String(year)));
-    next({ birthYear: v });
-  }
-  // a first visit opens the keypad at once
-  $effect(() => { if (d.at === 'born' && !d.birthYear) void askYear(); });
 </script>
 
 {#snippet cta(disabled: boolean, onclick: () => void)}
@@ -173,10 +163,18 @@
         {:else if d.at === 'born'}
           <Step title={t.born.q} onback={back} progress={prog} testid="step-born">
             <div class="flex flex-col gap-3">
-              <Field label={t.born.field} value={d.birthYear ? String(d.birthYear) : null} onclick={askYear} testid="field-year" />
-              <p class="text-callout text-attention min-h-5" role="alert">{yearError}</p>
+              <Wheel
+                bind:value={born}
+                min={year - LIMITS.oldestAge}
+                max={year}
+                label={t.born.field}
+                testid="wheel-year"
+                onchange={() => (yearError = '')}
+                onclamp={() => (yearError = t.born.invalid(String(year - LIMITS.oldestAge), String(year)))}
+              />
+              <p class="text-callout text-attention min-h-[1lh]" role="alert">{yearError}</p>
             </div>
-            {#snippet footer()}{@render cta(!d.birthYear, () => next())}{/snippet}
+            {#snippet footer()}{@render cta(false, () => next({ birthYear: born }))}{/snippet}
           </Step>
         {:else if d.at === 'young'}
           <Step title={t.young.title} onback={back} top testid="step-young">
@@ -186,7 +184,7 @@
             {/snippet}
           </Step>
         {:else if d.at === 'body'}
-          <Body {d} {set} next={() => next()} {back} progress={prog} />
+          <Body {d} {set} {next} {back} progress={prog} />
         {:else if d.at === 'move'}
           <Step title={t.move.q} onback={back} progress={prog} testid="step-move">
             <Choices label={t.move.q} options={NEATS} value={d.neat} onpick={(neat) => next({ neat })} />

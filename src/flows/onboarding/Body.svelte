@@ -1,87 +1,81 @@
-<!-- Step 5: height and weight through the keypad, in the units picked here. Stored in cm and kg. -->
+<!-- Step 5: height and weight on two wheels side by side, in the units picked here. Stored in cm and kg. The wheels start
+     at the answer, or near the median adult; Continue saves what they show. -->
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { untrack } from 'svelte';
   import Step from './Step.svelte';
-  import Field from './Field.svelte';
   import Segmented from '$lib/components/Segmented.svelte';
   import Button from '$lib/components/Button.svelte';
-  import { keypad } from '$lib/keypad.svelte';
+  import Wheel from '$lib/components/Wheel.svelte';
   import { cmToFtIn, ftInToCm, heightText, kgToLb, lbToKg, weightText, type Units } from '$lib/model/units';
   import { t } from '$lib/i18n';
-  import { LIMITS, type Draft } from './draft';
+  import { LIMITS, START, weightWheel, type Draft } from './draft';
 
   let { d, set, next, back, progress }: {
     d: Draft;
     set: (p: Partial<Draft>) => void;
-    next: () => void;
+    next: (p: Partial<Draft>) => void;
     back: () => void;
     progress: { n: number; total: number } | null;
   } = $props();
 
-  let error = $state('');
   const round = (x: number, places: number) => Math.round(x * 10 ** places) / 10 ** places;
+  // what the wheels show, in cm and kg; this screen is created fresh on each visit
+  let cm = $state(untrack(() => d.heightCm ?? START.heightCm));
+  let kg = $state(untrack(() => d.weightKg ?? START.weightKg));
+  let error = $state('');
 
-  async function askHeight() {
-    error = '';
-    let cm: number;
-    if (d.units === 'metric') {
-      const v = await keypad.ask({ title: t.body.height, unit: t.after.cm, decimal: true, value: d.heightCm ? round(d.heightCm, 0) : null });
-      if (v === null) return false;
-      cm = v;
-    } else {
-      const was = d.heightCm ? cmToFtIn(d.heightCm) : null;
-      const ft = await keypad.ask({ title: t.body.feet, unit: t.after.ft, value: was?.ft });
-      if (ft === null) return false;
-      const inches = await keypad.ask({ title: t.body.inches, unit: t.after.in, value: was?.inches, allowZero: true });
-      if (inches === null) return false;
-      cm = ftInToCm(ft, inches);
-    }
-    const [lo, hi] = LIMITS.heightCm;
-    if (cm < lo || cm > hi) {
-      error = t.body.heightRange(heightText(lo, d.units), heightText(hi, d.units));
-      return false;
-    }
-    set({ heightCm: round(cm, 1) });
-    return true;
-  }
+  const metric = $derived(d.units === 'metric');
+  const kgBounds = $derived(weightWheel(d.units));
+  const [lo, hi] = LIMITS.heightCm;
+  const heightError = () => t.body.heightRange(heightText(lo, d.units), heightText(hi, d.units));
+  const weightError = () => t.body.weightRange(weightText(LIMITS.weightKg[0], d.units, 0), weightText(LIMITS.weightKg[1], d.units, 0));
+  const ftIn = $derived(cmToFtIn(cm));
 
-  async function askWeight() {
-    error = '';
-    const metric = d.units === 'metric';
-    const shown = d.weightKg ? round(metric ? d.weightKg : kgToLb(d.weightKg), 1) : null;
-    const v = await keypad.ask({ title: t.body.weight, unit: metric ? t.after.kg : t.after.lb, decimal: true, value: shown });
-    if (v === null) return false;
-    const kg = metric ? v : lbToKg(v);
-    const [lo, hi] = LIMITS.weightKg;
-    if (kg < lo || kg > hi) {
-      error = t.body.weightRange(weightText(lo, d.units, 0), weightText(hi, d.units, 0));
-      return false;
-    }
-    set({ weightKg: round(kg, 2) });
-    return true;
+  function save() {
+    // feet and inches can reach below or above what the field takes
+    if (cm < lo || cm > hi) return void (error = heightError());
+    next({ heightCm: round(cm, 1), weightKg: round(kg, 2) });
   }
-
-  /** Height, then weight straight after while it is still empty. */
-  async function askBoth() {
-    if ((await askHeight()) && !d.weightKg) await askWeight();
-  }
-  // on a first visit the keypad opens at once
-  onMount(() => { if (!d.heightCm) void askBoth(); });
 </script>
 
 <Step title={t.body.q} caption={t.body.caption} onback={back} {progress} testid="step-body">
-  <div class="flex flex-col gap-3">
+  <div class="flex flex-col gap-6">
     <Segmented
       label={t.body.units}
       value={d.units}
       options={[{ value: 'metric' as Units, label: t.body.metric }, { value: 'imperial' as Units, label: t.body.imperial }]}
       onchange={(units) => { error = ''; set({ units }); }}
     />
-    <Field label={t.body.height} value={d.heightCm ? heightText(d.heightCm, d.units) : null} onclick={askBoth} testid="field-height" />
-    <Field label={t.body.weight} value={d.weightKg ? weightText(d.weightKg, d.units) : null} onclick={askWeight} testid="field-weight" />
-    <p class="text-callout text-attention min-h-5" role="alert">{error}</p>
+    <div class="grid grid-cols-2 gap-3">
+      <div class="flex min-w-0 flex-col gap-2">
+        <span class="text-eyebrow text-ink-2 text-center">{t.body.height}</span>
+        {#if metric}
+          <Wheel bind:value={() => Math.round(cm), (v) => (cm = v)} min={lo} max={hi} unit={t.after.cm} label={t.body.height} testid="wheel-height" onchange={() => (error = '')} onclamp={() => (error = heightError())} />
+        {:else}
+          <div class="flex">
+            <Wheel bind:value={() => ftIn.ft, (ft) => (cm = ftInToCm(ft, ftIn.inches))} min={3} max={8} unit={t.after.ft} label={t.body.feet} testid="wheel-height-ft" onchange={() => (error = '')} />
+            <Wheel bind:value={() => ftIn.inches, (inches) => (cm = ftInToCm(ftIn.ft, inches))} min={0} max={11} unit={t.after.in} label={t.body.inches} testid="wheel-height-in" onchange={() => (error = '')} />
+          </div>
+        {/if}
+      </div>
+      <div class="flex min-w-0 flex-col gap-2">
+        <span class="text-eyebrow text-ink-2 text-center">{t.body.weight}</span>
+        <Wheel
+          bind:value={() => round(metric ? kg : kgToLb(kg), 1), (v) => (kg = metric ? v : lbToKg(v))}
+          min={kgBounds.min}
+          max={kgBounds.max}
+          decimals={1}
+          unit={metric ? t.after.kg : t.after.lb}
+          label={t.body.weight}
+          testid="wheel-weight"
+          onchange={() => (error = '')}
+          onclamp={() => (error = weightError())}
+        />
+      </div>
+    </div>
+    <p class="text-callout text-attention min-h-[1lh]" role="alert">{error}</p>
   </div>
   {#snippet footer()}
-    <Button variant="primary" size="lg" full disabled={!d.heightCm || !d.weightKg} onclick={next} data-testid="continue">{t.onboarding.continue}</Button>
+    <Button variant="primary" size="lg" full onclick={save} data-testid="continue">{t.onboarding.continue}</Button>
   {/snippet}
 </Step>
