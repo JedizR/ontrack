@@ -17,8 +17,10 @@ Status is one of: not started, in progress, shipped, shipped with cuts, blocked.
 | M6 | Photo logging | shipped with cuts | PR #10, merged, `v0.6.0` | Gate green on the mock. Eval on ten Commons photos with `gemini-3.6-flash`; deployed time to a review 4.8 s on the one full sample (free tier limits) |
 | M7 | Training | shipped | PR #11, merged, `v0.7.0` | Gate green on the mock. Drag on a real phone, and whether the recommendations fit the owner's program, are on his review list |
 | D1 | Design refresh (owner, after M7) | shipped | PR #12, merged, `v0.7.1` | OneFin identity in light and dark, wheels and typed steppers instead of the keypad, browser first (no install guide). The look by eye and the wheels by thumb, and the template licence, are on the owner's list |
-| M8 | Progress and check-ins | shipped | `m8-progress`, PR #13 | Gate green on the mock: one test per check-in reason on the seeder, vectors F and G on screen. Whether each seeded sentence matches its numbers is on the owner's list |
-| L1 | Landing page (owner, after M8) | not started | | For signed-out visitors, OneFin style with scroll animations; replaces Welcome |
+| M8 | Progress and check-ins | shipped | PR #13, merged, `v0.8.0` | Gate green on the mock: one test per check-in reason on the seeder, vectors F and G on screen. Whether each seeded sentence matches its numbers is on the owner's list |
+| N1 | Thai foods and remembered nutrition (owner, after M8) | not started | | F14, F15. Thai table from a published source, corrections remembered and labelled Yours |
+| L1 | Landing page (owner, after N1) | not started | | For signed-out visitors, OneFin style with scroll animations; replaces Welcome |
+| S1 | Friends, profiles and the food map (owner, after L1) | not started | | F16, F17. Friends by request, optional program on the profile, opt-in meal photos on a map at rounded photo locations |
 | M9 | Hardening and release | not started | | |
 
 ## What is real and what is mocked
