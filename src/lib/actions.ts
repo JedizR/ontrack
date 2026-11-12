@@ -14,10 +14,15 @@ import { planFor } from '$lib/model/day';
 import { addDays, today } from '$lib/model/dates';
 import { foodKey, per100Of, type Food } from '$lib/data/foods';
 import { supplementItems } from '$lib/model/supplements';
-import type { AnalyzeRequest, AnalyzeResponse } from '../../shared/analysis';
-import { foodSchema, ids, recSchema, SCHEMAS, type Checkin, type Collection, type DataOf, type Meal, type MealItem, type Plan, type Profile, type Program, type Saved, type SessionLog, type Supplement, type Weight } from '../../shared/records';
+import { productItem } from '$lib/model/products';
+import { fetchOff } from '$lib/data/off';
+import { preparePhoto } from '$lib/photo';
+import type { AnalyzeRequest, AnalyzeResponse, LabelResponse } from '../../shared/analysis';
+import { foodSchema, ids, productSchema, recSchema, SCHEMAS, type Checkin, type Collection, type DataOf, type Meal, type MealItem, type Plan, type Product, type Profile, type Program, type Saved, type SessionLog, type Supplement, type Weight } from '../../shared/records';
 
 const uid = () => crypto.randomUUID();
+/** a plain copy of the store's proxy, for undo */
+const copy = <T>(v: T) => JSON.parse(JSON.stringify(v)) as T;
 
 function write<C extends Collection>(c: C, id: string, data: DataOf[C]) {
   if (!db.ready) throw new Error('not signed in');
@@ -66,6 +71,13 @@ export function logSaved(id: string, date: string, at: string) {
  * remembered. */
 export function rememberFoods(items: MealItem[]) {
   for (const i of items) {
+    // a scanned product's numbers belong to the product: the next scan uses them, labelled Yours (B1)
+    const product = i.barcode ? db.get('product', i.barcode) : undefined;
+    if (product) {
+      const per100 = per100Of(i);
+      if (per100 && productSchema.shape.per100.safeParse(per100).success) write('product', i.barcode!, { ...copy(product), per100, source: 'yours' });
+      continue;
+    }
     const data = { name: i.name, per100: per100Of(i) };
     if (foodSchema.safeParse(data).success) write('food', foodKey(i), data as DataOf['food']);
   }
@@ -85,7 +97,6 @@ export const removeSupplement = (id: string) => remove('supplement', id);
 export function logSupplement(id: string, scoops: number, milk: { food: Food; grams: number } | null, date: string, at: string, mealId?: string) {
   const s = db.get('supplement', id);
   if (!s) return null;
-  const copy = <T>(v: T) => JSON.parse(JSON.stringify(v)) as T; // a plain copy of the store's proxy, for undo
   const was = copy(s);
   const before = mealId ? db.get('meal', mealId) : undefined;
   const old = before && copy(before);
@@ -98,6 +109,43 @@ export function logSupplement(id: string, scoops: number, milk: { food: Food; gr
     deleteMeal(newId);
     saveSupplement(was, id);
   };
+}
+/** A product kept under its barcode (B1, F22): confirmed from its label, corrected, or logged from Open Food Facts. */
+export const saveProduct = (p: Product, code: string) => write('product', code, p).id;
+/**
+ * A scanned product logged on a day at an amount. The product is kept under its barcode with that amount as the next
+ * start, so the next scan is instant and works offline. Returns the undo: the entry gone, the product as it was.
+ */
+export function logProduct(code: string, p: Product, grams: number, date: string, at: string) {
+  const before = db.get('product', code);
+  const was = before && copy(before);
+  const id = saveMeal({ date, at, title: p.name, method: 'barcode', items: [productItem(code, p, grams)] }); // checked first
+  saveProduct({ ...copy(p), lastG: grams }, code);
+  return () => {
+    deleteMeal(id);
+    if (was) saveProduct(was, code);
+  };
+}
+/** What a barcode finds: the user's product, Open Food Facts' (`empty` when it has no nutrition), or nothing. */
+export type Found =
+  | { kind: 'found'; code: string; product: Product }
+  | { kind: 'empty'; code: string; name: string; brand?: string }
+  | { kind: 'missing' | 'offline' | 'failed'; code: string };
+/** The user's saved product first, at once and offline too, then Open Food Facts. Never throws. */
+export async function findProduct(code: string): Promise<Found> {
+  const mine = db.get('product', code);
+  if (mine) return { kind: 'found', code, product: copy(mine) };
+  if (!navigator.onLine) return { kind: 'offline', code };
+  try {
+    const p = await fetchOff(code);
+    if (!p) return { kind: 'missing', code };
+    const { per100, ...rest } = p;
+    const name = p.name || p.brand || t.scan.unnamed;
+    if (!per100) return { kind: 'empty', code, name, ...(p.brand ? { brand: p.brand } : {}) };
+    return { kind: 'found', code, product: { ...rest, name, per100, source: 'off' } };
+  } catch {
+    return { kind: navigator.onLine ? 'failed' : 'offline', code };
+  }
 }
 const kept = (p: Program) => p.sessions.map(({ exercises: _, ...s }) => s);
 /**
@@ -178,15 +226,25 @@ export async function mealThumb(mealId: string): Promise<Blob | null> {
 }
 
 /** Photo or text analysis on the server (TECH-SPEC section 7). Never throws; no connection is `offline`. */
-export type Analyzed = AnalyzeResponse | { ok: false; error: 'offline' };
+type Failed = Extract<AnalyzeResponse, { ok: false }> | { ok: false; error: 'offline'; usage?: undefined };
+export type Analyzed = Extract<AnalyzeResponse, { ok: true }> | Failed;
+export const analyzeMeal = (req: Exclude<AnalyzeRequest, { kind: 'label' }>) => analyze<Extract<AnalyzeResponse, { ok: true }>>(req);
+/** A pack's nutrition label read by the vision provider (B1): printed values only. Never throws. */
+export type LabelResult = Extract<LabelResponse, { ok: true }> | Failed;
+export async function readLabel(file: Blob, localDate: string): Promise<LabelResult> {
+  if (!navigator.onLine) return { ok: false, error: 'offline' };
+  const photo = await preparePhoto(file).catch(() => null);
+  if (!photo) return { ok: false, error: 'bad_request' };
+  return analyze<Extract<LabelResponse, { ok: true }>>({ kind: 'label', image: photo.image, localDate, locale: 'en' });
+}
 const ANALYZE_WAIT_MS = 55_000; // two provider tries of 20 s each, plus the checks around them
-export async function analyzeMeal(req: AnalyzeRequest): Promise<Analyzed> {
+async function analyze<R extends { ok: true }>(req: AnalyzeRequest): Promise<R | Failed> {
   if (!navigator.onLine) return { ok: false, error: 'offline' };
   const token = await session.backend?.accessToken();
   if (!token) return { ok: false, error: 'unauthorized' };
   try {
     const res = await fetch('/api/analyze', { method: 'POST', headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' }, body: JSON.stringify(req), signal: AbortSignal.timeout(ANALYZE_WAIT_MS) });
-    const body = (await res.json().catch(() => null)) as AnalyzeResponse | null;
+    const body = (await res.json().catch(() => null)) as R | Failed | null;
     // a platform error page (a gateway timeout, a body too large) is not JSON
     return body && typeof body.ok === 'boolean' ? body : { ok: false, error: res.status === 504 ? 'timeout' : res.status === 413 ? 'too_large' : 'provider_error' };
   } catch (e) {

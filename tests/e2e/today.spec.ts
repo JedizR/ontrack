@@ -92,6 +92,8 @@ test('a meal opens, edits grams, saves, keeps as a saved meal and deletes with u
   await expect(page.getByTestId('saved').getByRole('button', { name: 'Add Chicken rice bowl again' })).toBeVisible();
   await page.getByTestId('saved').getByRole('button', { name: 'Add Usual breakfast again' }).click();
   await expect(hero(page)).toHaveText('1,965');
+  // the Add sheet (taller since B1) must be gone before the swipe, or the swipe lands on it as it slides away
+  await expect(page.getByTestId('add-sheet')).toBeHidden();
 
   // swipe left to delete, with undo
   const row = meals(page).filter({ hasText: 'Snack' });

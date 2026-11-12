@@ -12,6 +12,13 @@ import { envInt } from '../server/env.ts';
 import { fixture, isFixture, mockProvider } from '../server/vision/mock.ts';
 import { isOutcome, seedRecords } from './seed.ts';
 import { today } from '../src/lib/model/dates.ts';
+// Open Food Facts answers for the scanner (B1), as read on 12 November 2026 (open data under the ODbL); one is made up
+import mama from '../tests/fixtures/off/8850987101021.json' with { type: 'json' };
+import dutchMill from '../tests/fixtures/off/8851717040016.json' with { type: 'json' };
+import whey from '../tests/fixtures/off/0748927028669.json' with { type: 'json' };
+import noNutrition from '../tests/fixtures/off/8851234567898.json' with { type: 'json' };
+
+const OFF: Record<string, object> = { '8850987101021': mama, '8851717040016': dutchMill, '0748927028669': whey, '8851234567898': noNutrition };
 
 /** The only code the mock accepts. The dev server prints it when a code is "sent". */
 export const MOCK_CODE = '123456';
@@ -95,6 +102,11 @@ export function createMockServer() {
         for (const rec of seedRecords(outcome, today())) put(space, id, rec);
       }
       return json(200, { ok: true, ...session(name, b.data.email) });
+    }
+    if (path.startsWith('/off/api/v2/product/')) {
+      // Open Food Facts' product read, with its 404 for a barcode it does not have
+      const code = path.slice('/off/api/v2/product/'.length);
+      return Object.hasOwn(OFF, code) ? json(200, OFF[code]) : json(404, { code, status: 0, status_verbose: 'product not found' });
     }
     if (path === '/expire') {
       space.epoch++;

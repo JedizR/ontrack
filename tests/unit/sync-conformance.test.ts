@@ -200,6 +200,18 @@ describe.each(harnesses)('sync conformance: $name', (h) => {
     expect((await z.pull(null)).records).toEqual([]);
   });
 
+  test('scanned products (the product collection, B1) round trip by barcode and stay with their user', async () => {
+    const a = await signIn('p');
+    const z = await signIn('q');
+    const mama: Rec = { collection: 'product', id: '8850987101021', updatedAt: 10, data: { name: 'Mama tom yum', brand: 'Mama', source: 'off', unit: 'g', per100: { kcal: 472.73, protein: 9.09, carbs: 61.82, fat: 20 }, servingG: 55, packG: 55, lastG: 55 } };
+    const entry: Rec = { collection: 'meal', id: 'meal-b', updatedAt: 10, data: { date: '2026-11-12', at: '2026-11-12T05:30:00.000Z', title: 'Mama tom yum', method: 'barcode', items: [{ name: 'Mama tom yum', grams: 55, kcal: 260, protein: 5, carbs: 34, fat: 11, source: 'off', barcode: '8850987101021' }] } };
+    await a.push([mama, entry]);
+    const { records } = await a.pull(null);
+    expect(byId(records, '8850987101021')).toEqual(mama);
+    expect(byId(records, 'meal-b')).toEqual(entry);
+    expect((await z.pull(null)).records).toEqual([]);
+  });
+
   test('a record the database would refuse is refused as a bad request', async () => {
     const b = await signIn('g');
     expect(await failKind(b.push([rec('x'.repeat(81), 1)]))).toBe('bad_request');
@@ -290,7 +302,7 @@ describe.each(harnesses)('sync conformance: $name', (h) => {
   });
 });
 
-test.each([1, 2])('store migration from schema %i: a device that had pulled pulls everything again, still counted as pulled', async (from) => {
+test.each([1, 2, 3])('store migration from schema %i: a device that had pulled pulls everything again, still counted as pulled', async (from) => {
   const idb = (globalThis.indexedDB = new IDBFactory());
   const old = new Store();
   await old.open(`migrating-${from}`);
@@ -301,7 +313,7 @@ test.each([1, 2])('store migration from schema %i: a device that had pulled pull
   globalThis.indexedDB = idb;
   const now = new Store();
   await now.open(`migrating-${from}`);
-  expect(now.meta.schemaVersion).toBe(3);
+  expect(now.meta.schemaVersion).toBe(4);
   expect(now.meta.cursor).toBe(new Date(0).toISOString());
   expect(now.get('weight', 'weight:2026-11-01')).toEqual({ date: '2026-11-01', kg: 70 });
 });

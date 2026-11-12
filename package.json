@@ -30,6 +30,7 @@
     "@google/genai": "3.0.0",
     "@lucide/svelte": "1.62.0",
     "@supabase/supabase-js": "2.119.0",
+    "barcode-detector": "3.2.3",
     "bits-ui": "2.20.2",
     "clsx": "2.1.1",
     "d3-scale": "4.0.2",
@@ -39,7 +40,8 @@
     "svelte-sonner": "1.2.2",
     "vaul-svelte": "1.0.0-next.7",
     "workbox-window": "7.4.1",
-    "zod": "4.6.7"
+    "zod": "4.6.7",
+    "zxing-wasm": "3.1.6"
   },
   "devDependencies": {
     "@playwright/test": "1.64.1",

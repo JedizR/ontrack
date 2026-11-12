@@ -61,7 +61,7 @@ Everything a user owns is a record in a named collection. Weekdays are numbered 
 // shared/records.ts
 export type Collection =
   | 'profile' | 'plan' | 'weight' | 'meal' | 'saved'
-  | 'program' | 'slog' | 'checkin' | 'day' | 'food' | 'supplement';
+  | 'program' | 'slog' | 'checkin' | 'day' | 'food' | 'supplement' | 'product';
 
 export type Rec<T = unknown> = {
   collection: Collection;
@@ -110,17 +110,19 @@ export type MealItem = {
   name: string;
   grams?: number;
   kcal: number; protein: number; carbs: number; fat: number;
-  source: 'db' | 'estimate' | 'manual' | 'yours';   // yours: the user's remembered numbers for the food (F15)
+  source: 'db' | 'estimate' | 'manual' | 'yours'    // yours: the user's remembered numbers for the food (F15)
+    | 'off' | 'label' | 'typical';                  // B1: Open Food Facts, a pack's label read and confirmed, a supplement on typical values
   foodId?: string;
   confidence?: 'high' | 'medium' | 'low';
   supplementId?: string;              // a logged supplement (F21): the supplement it came from
   scoops?: number;                    // and how many scoops, 0.5 to 10
+  barcode?: string;                   // a scanned product (F22): its barcode, the product's id
 };
 export type Meal = {                  // id: uuid
   date: string;
   at: string;                         // ISO timestamp
   title: string;
-  method: 'photo' | 'text' | 'search' | 'quick' | 'saved' | 'supplement';
+  method: 'photo' | 'text' | 'search' | 'quick' | 'saved' | 'supplement' | 'barcode';
   items: MealItem[];
   thumb?: true;
   ai?: { model: string; raw?: unknown };   // compact model output, at most 4 KB, kept for later evaluation
@@ -168,12 +170,29 @@ export type Supplement = {
   perScoop: { kcal: number; protein: number; carbs: number; fat: number };
   lastScoops: number;                 // 0.5 to 10: where the amount step starts, the scoops the user takes at first
   lastMix?: { foodId: string; grams: number };   // the milk from the food table it was last mixed with; none is water
+  typical?: true;                     // B1: still on the table's typical values, labelled Typical until set from the tub
+};
+
+// A packaged food by its barcode (F22, B1). id: the barcode, 13 digits (a UPC-A gets a leading 0, as Open Food Facts
+// stores it; UPC-E is expanded) or 8 for EAN-8. Values per 100 g, or per 100 ml when `unit` is ml.
+export type Product = {
+  name: string;                       // 1 to 120 characters
+  brand?: string;
+  source: 'off' | 'label' | 'yours';  // Open Food Facts; read from the label and confirmed as read; typed or changed
+  unit: 'g' | 'ml';
+  per100: { kcal: number; protein: number; carbs: number; fat: number };   // kcal at most 1,000
+  servingG?: number;                  // one serving, from the label or Open Food Facts
+  packG?: number;                     // the whole pack, at most 10,000 like a meal item
+  serving?: string;                   // the serving as Open Food Facts prints it ("2 scoops (60 g)")
+  lastG?: number;                     // where the amount starts next time
 };
 ~~~
 
 Remembered nutrition is written by `rememberFoods` when a Review or Meal sheet is saved with items the user corrected (per 100 g, two decimals, from the item's numbers and grams; an item without grams or past 900 kcal in 100 g is not remembered) and removed by `forgetFood` ("Use default values"). It is applied on the device: to a photo or description's items after the server's resolution, and to Search's results and portion step. The server never sees it.
 
 A logged supplement (F21) is a meal with `method: 'supplement'`: its first item is the supplement at its scoops (`supplementId`, `scoops`, source `yours`, from the label's values per scoop), then the milk it was mixed with as a table item. `logSupplement` writes it from the supplement's current label; a new entry's amount and mix become the supplement's `lastScoops` and `lastMix`, a corrected one leaves them. A supplement with no calories is shown as taken, and its item does not count toward a complete day. Presets start from the food table where USDA has the powder (whey: SR Legacy 173180, plant: SR Legacy 173181, soy based); casein, mass gainer and creatine have no USDA entry and start at 0, for the label.
+
+A scanned product (F22) is kept in `product` when the user logs it from Open Food Facts or confirms its label, so the next scan of that barcode is instant and works offline. `logProduct` writes a meal with `method: 'barcode'` and one item carrying `barcode`, labelled as the product is; it keeps the amount as the product's `lastG`. Correcting such an item in the Meal sheet (`rememberFoods`) rewrites the product's values as Yours instead of a food memory. A supplement saved with the table's typical values untouched carries `typical`; its logged items read Typical, and setting it from the tub (a scan or a label photo) clears it.
 
 Derived and never stored: day totals, the day's target, on track status, trend weight, weekly averages. They are functions in `src/lib/model/`.
 
@@ -182,7 +201,7 @@ Device only, kept in `localStorage` under `ontrack:prefs` and never synced: them
 ## 4. On the device
 
 - One idb-keyval store per user, named `ontrack-<userId>`. Keys: `r:<collection>:<id>` holds a `Rec`. `outbox` holds the keys changed since the last successful push. `meta` holds `{ schemaVersion, cursor, lastSyncAt }`. `blob:<mealId>` holds a thumbnail. `blobq` holds meal ids waiting to upload.
-- At start the store reads every record into `$state` maps, one per collection. Screens read from these maps. Schema changes are handled by numbered migrations in `src/lib/db/migrations.ts`, as in watermelon. A migration takes the records and the meta. Adding a collection needs one: an older version on another device skips the new collection's records but moves its cursor past them, so the migration sets a cursor back to the epoch (schema 2 for `food` in N1, schema 3 for `supplement` in N2), which pulls everything once without the first load state.
+- At start the store reads every record into `$state` maps, one per collection. Screens read from these maps. Schema changes are handled by numbered migrations in `src/lib/db/migrations.ts`, as in watermelon. A migration takes the records and the meta. Adding a collection needs one: an older version on another device skips the new collection's records but moves its cursor past them, so the migration sets a cursor back to the epoch (schema 2 for `food` in N1, schema 3 for `supplement` in N2, schema 4 for `product` in B1), which pulls everything once without the first load state.
 - Every mutation goes through `actions.ts`: validate with zod, stamp `updatedAt` with `Date.now()`, write memory, write IndexedDB, add the key to the outbox, wake the sync engine. Actions that delete return an undo function.
 - Onboarding happens before sign-in. Answers live in the prefs draft so they survive the Google redirect. After sign-in and the first pull: if the account already has a profile, the draft is discarded. If not, the draft becomes the profile, program and first plan.
 
@@ -230,7 +249,7 @@ export interface Backend {
 create table public.records (
   user_id    uuid        not null default auth.uid() references auth.users (id) on delete cascade,
   collection text        not null check (collection in
-               ('profile','plan','weight','meal','saved','program','slog','checkin','day','food','supplement')),   -- 'food' from 0002, 'supplement' from 0003
+               ('profile','plan','weight','meal','saved','program','slog','checkin','day','food','supplement','product')),   -- 'food' from 0002, 'supplement' from 0003, 'product' from 0004
   id         text        not null check (char_length(id) between 1 and 80),
   data       jsonb       not null check (octet_length(data::text) <= 65536),
   updated_at bigint      not null,
@@ -309,7 +328,8 @@ Header `Authorization: Bearer <access token>`. Body, at most 900 KB:
 ~~~ts
 type AnalyzeRequest =
   | { kind: 'photo'; image: string /* base64 JPEG, 1024 px longest edge */; localDate: string; locale: 'en'; hint?: string }
-  | { kind: 'text'; text: string /* at most 500 characters */; localDate: string; locale: 'en' };
+  | { kind: 'text'; text: string /* at most 500 characters */; localDate: string; locale: 'en' }
+  | { kind: 'label'; image: string /* a nutrition label, as a photo */; localDate: string; locale: 'en' };   // B1
 
 // shared/analysis.ts
 type AnalysisItem = {
@@ -324,6 +344,8 @@ type AnalyzeResponse =
   | { ok: true; analysis: { title: string; items: AnalysisItem[]; model: string; raw: unknown }; usage: { usedToday: number; limit: number } }
   | { ok: false; error: 'bad_request' | 'unauthorized' | 'too_large' | 'not_food' | 'daily_limit' | 'busy' | 'provider_error' | 'timeout' };
 ~~~
+
+A label (B1) answers `{ ok: true; label: LabelRead; model; usage }` instead of an analysis (`shared/analysis.ts`): its name if printed, `unit` g or ml, `servingG`, `scoops` per serving, `servingsPerPack`, and the `perServing` and `per100` columns, each null when not printed. A photo with no readable label is `not_food`. Label reads count toward the same daily quota.
 
 Status codes: 200, 400, 401, 413, 422 for `not_food`, 429 for `daily_limit` and `busy`, 502, 504.
 
@@ -395,6 +417,8 @@ Resolution, in `server/vision/resolve.ts`:
 - Otherwise `per100` comes from `est_per_100g` and `source` is `estimate`. Clamp kcal to 0 through 900 and each macro to 0 through 100. If kcal differs from `4p + 4c + 9f` by more than 25 percent, recompute kcal from the macros.
 - Item totals are `per100` times grams over 100, rounded to whole kcal and one decimal for macros.
 
+**Label reading (B1, F22)**, in `server/vision/label.ts`: the same provider with `label: true`, its own system prompt and schema (`labelOutput`, also the response schema). The model copies printed numbers only and returns null for anything not printed: `per_serving` and `per_100` columns of kcal, kJ, protein, total carbohydrate and total fat, the serving size, scoops per serving, servings per pack, the unit and the printed name; it knows the Thai label terms. `toLabel` takes kcal from kJ (4.184, SCIENCE S19) when only kilojoules are printed, a missing macro as 0, drops a per 100 column past 1,000 kcal, and answers `not_food` when no column has energy. The mock provider answers `label-snack` (or the fixture a test names: `label-whey`, `not-label`).
+
 On the device before upload: draw the capture to a canvas at 1024 px on the longest edge, export JPEG at quality 0.8, which also strips location data. Make the 320 px thumbnail at quality 0.7 from the same canvas. Capture uses `<input type="file" accept="image/*" capture="environment">`, the reliable path on iPhone.
 
 ## 9. Food table
@@ -442,6 +466,9 @@ Every muscle has at least four exercises where it is primary. A unit test checks
 - **Units.** Stored in kg, cm and kcal. `units.ts` converts for display only.
 - **Numbers.** `format.ts` formats every number: grouping for kcal, one decimal for kg, no trailing zeros.
 
+- **Barcodes (B1, F22).** `src/lib/barcode.ts` checks the GS1 check digit and turns any read or typed code into the product id. `src/lib/scanner.ts` reads with the browser's `BarcodeDetector` when it supports EAN-13, EAN-8, UPC-A and UPC-E (Chrome on Android), otherwise with zxing-cpp compiled to WebAssembly through the `barcode-detector` ponyfill (3.2.3, MIT, on `zxing-wasm` 3.1.6, MIT; a unit test keeps the two versions matched). Both load when the scanner opens; the 947 KB WebAssembly (414 KB gzip) is served from the site and cached by the service worker on first use, not precached. The camera is `getUserMedia` with the rear camera; denial, no camera, a page that is not secure and a camera in use each have their own words and fall back to typing on the number pad. The light shows only where the track reports `torch`.
+- **Open Food Facts (B1).** `src/lib/data/off.ts` reads `world.openfoodfacts.org/api/v2/product/<code>` straight from the browser with a short `fields` list and `X-User-Agent: Ontrack/<version> (https://ontrack-black.vercel.app)`, 8 s timeout. `findProduct` asks the user's products first. On the mock backend the same path is answered from `tests/fixtures/off/` under `/__mock/off`.
+
 ## 12. PWA
 
 Port watermelon's vite-plugin-pwa setup. Manifest: name and short name Ontrack, `display: standalone`, start URL and scope `/`, background and theme colour from the canvas token with a dark variant through `theme-color` meta tags, icons generated from `design/brand/app-icon.svg` by `pnpm icons`. Register with a prompt: when a new worker is waiting, show the update toast. Navigation falls back to `index.html`. `/api/` is never cached. `scripts/check-pwa.mjs` verifies the manifest, the service worker and an offline reload. Nothing in the interface asks anyone to install the app (D1).
@@ -455,6 +482,7 @@ Port watermelon's vite-plugin-pwa setup. Manifest: name and short name Ontrack, 
 | Unit | `tests/unit/sync-conformance.test.ts` | Section 5 rules against the mock always, and against Supabase when `SUPABASE_TEST_EMAIL` is set |
 | Unit | `tests/unit/resolve.test.ts`, `foods.test.ts`, `data.test.ts` | Vision resolution and clamps, food search ranking, library and template validity |
 | End to end | `tests/e2e/*.spec.ts`, WebKit at 390 by 844, light and dark | One spec per feature F1 to F13 against the mock backend, including offline log then reconnect |
+| Camera | `tests/e2e/camera.spec.ts`, project `camera`, Chromium | A barcode read by a fake camera playing `tests/fixtures/barcodes/scan.y4m`, with the browser's reader and with the WebAssembly reader (B1). Full CI only |
 | Screens | `tests/e2e/screens.spec.ts`, project `screens` | Every screen and sheet in its main states, written to `screenshots/` |
 | Stress | project `stress` | Phone sizes in Safari with its toolbars and three text sizes: no overflow, no clipped text, tap targets, sheet actions on screen |
 | Production | project `prod`, run by hand | Sign in with the test account, one write, verify in the database, delete |

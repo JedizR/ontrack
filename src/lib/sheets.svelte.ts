@@ -9,6 +9,8 @@ export const sheets = $state({
   quick: false,
   how: false,
   describe: false,
+  /** the Scan sheet (B1, F22) */
+  scan: false,
   /** what the Review sheet analyses: a photo just taken, or a description */
   review: null as { kind: 'photo'; file: Blob } | { kind: 'text'; text: string } | null,
   /** the session whose menu is open: Skip today */
@@ -24,4 +26,4 @@ export const sheets = $state({
 });
 
 /** The sheets the logging flow owns, loaded together. */
-export const logOpen = () => sheets.add || sheets.search || sheets.quick || sheets.how || sheets.describe || sheets.review !== null || sheets.meal !== null || sheets.session !== null || sheets.supplement !== null;
+export const logOpen = () => sheets.add || sheets.scan || sheets.search || sheets.quick || sheets.how || sheets.describe || sheets.review !== null || sheets.meal !== null || sheets.session !== null || sheets.supplement !== null;

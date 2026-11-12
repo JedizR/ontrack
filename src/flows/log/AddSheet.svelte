@@ -8,6 +8,8 @@
   import Hash from '@lucide/svelte/icons/hash';
   import Camera from '@lucide/svelte/icons/camera';
   import TextIcon from '@lucide/svelte/icons/text';
+  import ScanBarcode from '@lucide/svelte/icons/scan-barcode';
+  import SourceLabel from '$lib/components/SourceLabel.svelte';
   import Bookmark from '@lucide/svelte/icons/bookmark';
   import ChevronRight from '@lucide/svelte/icons/chevron-right';
   import ShakerIcon from '$lib/components/ShakerIcon.svelte';
@@ -60,7 +62,7 @@
     const id = logAgain(m, view.date, stampOn(view.date));
     return () => { deleteMeal(id); };
   }
-  type Way = 'photo' | 'search' | 'describe' | 'quick';
+  type Way = 'photo' | 'scan' | 'search' | 'describe' | 'quick';
   let input = $state<HTMLInputElement>();
   let notice = $state(false);
   $effect(() => { if (!sheets.add) notice = false; });
@@ -83,9 +85,10 @@
     sheets[to] = true;
   };
   // a meal's tile shows how it was logged, as on Today
-  const ICON: Record<Meal['method'], Component<{ size?: number; strokeWidth?: number }>> = { photo: Camera, text: TextIcon, search: SearchIcon, quick: Hash, saved: Bookmark, supplement: ShakerIcon };
+  const ICON: Record<Meal['method'], Component<{ size?: number; strokeWidth?: number }>> = { photo: Camera, text: TextIcon, search: SearchIcon, quick: Hash, saved: Bookmark, supplement: ShakerIcon, barcode: ScanBarcode };
   const WAYS: { key: Way; label: string; line: string; icon: Component<{ size?: number; strokeWidth?: number }> }[] = [
     { key: 'photo', label: t.add.photo, line: t.add.photoLine, icon: Camera },
+    { key: 'scan', label: t.add.scan, line: t.add.scanLine, icon: ScanBarcode },
     { key: 'search', label: t.add.search, line: t.add.searchLine, icon: SearchIcon },
     { key: 'describe', label: t.add.describe, line: t.add.describeLine, icon: TextIcon },
     { key: 'quick', label: t.add.quick, line: t.add.quickLine, icon: Hash },
@@ -112,19 +115,20 @@
       <h3 class="text-heading">{t.supplement.section}</h3>
       <div data-testid="supplements">
         {#each supplements as { id, data: s } (id)}
-          <Row title={s.name} caption={t.supplement.amount(num(s.lastScoops, 1), !!s.lastMix && !noCalories(s))} value={lastKcal(id, s)} onclick={() => supplement(id)} testid="supplement">
+          <Row title={s.name} value={lastKcal(id, s)} onclick={() => supplement(id)} testid="supplement">
+            {#snippet caption()}{t.supplement.amount(num(s.lastScoops, 1), !!s.lastMix && !noCalories(s))}{#if s.typical}, <SourceLabel source="typical" />{/if}{/snippet}
             {#snippet leading()}<div class="bg-surface-2 text-ink-2 grid size-full place-items-center"><ShakerIcon /></div>{/snippet}
           </Row>
         {/each}
       </div>
       <Button variant="plain" size="sm" class="-ml-4 mb-6" onclick={() => supplement(null)} data-testid="supplement-new">{t.supplement.setup}</Button>
     {/if}
-    <!-- Photo is the sheet's main action: the violet 3D face. The others are quiet tiles -->
+    <!-- Photo is the sheet's main action: the violet 3D face, full width. The others are quiet tiles, Scan first (B1) -->
     <div class="grid grid-cols-2 gap-3">
       {#each WAYS as w (w.key)}
         {@const Icon = w.icon}
         {@const main = w.key === 'photo'}
-        <button type="button" class="{main ? 'pill-accent active:pill-accent-down' : 'bg-surface-2 active:bg-surface-3 active:scale-[0.97]'} flex min-h-26 flex-col items-start justify-between gap-2 rounded-md p-4 text-left transition-[transform,background-color,box-shadow] duration-[var(--d-press)]" onclick={() => go(w.key)} data-testid="add-{w.key}">
+        <button type="button" class="{main ? 'pill-accent active:pill-accent-down col-span-2 min-h-20 flex-row items-center' : 'bg-surface-2 active:bg-surface-3 min-h-26 flex-col items-start justify-between active:scale-[0.97]'} flex gap-3 rounded-md p-4 text-left transition-[transform,background-color,box-shadow] duration-[var(--d-press)]" onclick={() => go(w.key)} data-testid="add-{w.key}">
           <span class="{main ? 'bg-on-accent/20' : 'tile'} grid size-10 place-items-center rounded-sm"><Icon size={22} strokeWidth={2} /></span>
           <span>
             <span class="text-body block font-semibold">{w.label}</span>

@@ -57,11 +57,11 @@ export function totals(items: MealItem[]): Totals {
   return t;
 }
 
-/** Where a meal's numbers came from: any estimate makes it an estimate, then any of the user's own makes it Yours; typed
- * numbers only, a quick add. */
-export function mealSource(items: MealItem[]): 'database' | 'estimate' | 'manual' | 'yours' {
-  if (items.some((i) => i.source === 'estimate')) return 'estimate';
-  if (items.some((i) => i.source === 'yours')) return 'yours';
+/** Where a meal's numbers came from: any estimate makes it an estimate, then a supplement's typical values, the user's
+ * own (Yours), a label, Open Food Facts; typed numbers only, a quick add; otherwise the table. */
+export function mealSource(items: MealItem[]): 'database' | 'estimate' | 'manual' | 'yours' | 'off' | 'label' | 'typical' {
+  // the least certain source names the meal
+  for (const s of ['estimate', 'typical', 'yours', 'label', 'off'] as const) if (items.some((i) => i.source === s)) return s;
   return items.length && items.every((i) => i.source === 'manual') ? 'manual' : 'database';
 }
 

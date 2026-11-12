@@ -2,7 +2,7 @@
 import type { Rec } from '../../../shared/records';
 import type { Meta } from './store.svelte';
 
-export const SCHEMA_VERSION = 3;
+export const SCHEMA_VERSION = 4;
 
 /** Each one edits the loaded records and the meta in place. Every record is written back afterwards. */
 export const MIGRATIONS: Record<number, (records: Rec[], meta: Meta) => void> = {
@@ -11,4 +11,6 @@ export const MIGRATIONS: Record<number, (records: Rec[], meta: Meta) => void> = 
   1: (_, meta) => { if (meta.cursor) meta.cursor = new Date(0).toISOString(); },
   // N2 added the `supplement` collection: the same again
   2: (_, meta) => { if (meta.cursor) meta.cursor = new Date(0).toISOString(); },
+  // B1 added the `product` collection: the same again
+  3: (_, meta) => { if (meta.cursor) meta.cursor = new Date(0).toISOString(); },
 };

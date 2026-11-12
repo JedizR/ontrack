@@ -1,0 +1,13 @@
+{
+ "code": "8851234567898",
+ "product": {
+  "code": "8851234567898",
+  "nutriments": {},
+  "product_name": "Green tea, honey lemon",
+  "product_quantity": 420,
+  "product_quantity_unit": "ml",
+  "quantity": "420 ml"
+ },
+ "status": 1,
+ "status_verbose": "product found"
+}

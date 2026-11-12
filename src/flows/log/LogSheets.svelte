@@ -9,6 +9,7 @@
   import DescribeSheet from './DescribeSheet.svelte';
   import ReviewSheet from './ReviewSheet.svelte';
   import SupplementSheet from './SupplementSheet.svelte';
+  import ScanSheet from './ScanSheet.svelte';
 </script>
 
 <AddSheet />
@@ -20,3 +21,4 @@
 <HowSheet />
 <SessionSheet />
 <SupplementSheet />
+<ScanSheet />

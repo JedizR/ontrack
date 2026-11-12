@@ -61,6 +61,8 @@ export default defineConfig({
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/api\//, /^\/__mock\//],
         cleanupOutdatedCaches: true,
+        // the scanner's WebAssembly reader (B1, about 1 MB) is cached the first time the scanner opens, not for everyone
+        runtimeCaching: [{ urlPattern: /\/assets\/.*\.wasm$/, handler: 'CacheFirst', options: { cacheName: 'scanner', expiration: { maxEntries: 2 } } }],
       },
     }),
   ],

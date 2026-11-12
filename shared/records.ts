@@ -3,7 +3,7 @@
 // zod/mini: the same schemas at a fraction of the bundle, because actions.ts ships in the first chunk
 import * as z from 'zod/mini';
 
-export const COLLECTIONS = ['profile', 'plan', 'weight', 'meal', 'saved', 'program', 'slog', 'checkin', 'day', 'food', 'supplement'] as const;
+export const COLLECTIONS = ['profile', 'plan', 'weight', 'meal', 'saved', 'program', 'slog', 'checkin', 'day', 'food', 'supplement', 'product'] as const;
 export type Collection = (typeof COLLECTIONS)[number];
 
 /** The database checks id at 1 to 80 characters and data at 64 KB as jsonb text, which spaces out JSON.stringify's
@@ -87,20 +87,23 @@ export const mealItemSchema = z.object({
   protein: grams,
   carbs: grams,
   fat: grams,
-  /** yours: the user's own numbers for this food (F15) */
-  source: z.enum(['db', 'estimate', 'manual', 'yours']),
+  /** yours: the user's own numbers for this food (F15). off: Open Food Facts, label: read from a pack's label and
+   * confirmed (B1, F22). typical: a supplement still on the table's typical values (B1) */
+  source: z.enum(['db', 'estimate', 'manual', 'yours', 'off', 'label', 'typical']),
   foodId: z.optional(str(0, 80)),
   confidence: z.optional(z.enum(['high', 'medium', 'low'])),
   /** a logged supplement (N2, F21): the supplement it came from and how many scoops */
   supplementId: z.optional(str(1, 80)),
   scoops: z.optional(num(0.5, 10)),
+  /** a scanned product (B1, F22): its barcode, the product's id */
+  barcode: z.optional(str(8, 14)),
 });
 
 export const mealSchema = z.object({
   date,
   at: z.string(),
   title: str(0, 120),
-  method: z.enum(['photo', 'text', 'search', 'quick', 'saved', 'supplement']),
+  method: z.enum(['photo', 'text', 'search', 'quick', 'saved', 'supplement', 'barcode']),
   items: z.array(mealItemSchema).check(z.maxLength(30)),
   thumb: z.optional(z.literal(true)),
   ai: z.optional(z.object({ model: str(0, 80), raw: z.optional(z.unknown()) })),
@@ -150,6 +153,26 @@ export const supplementSchema = z.object({
   perScoop: z.object({ kcal: num(0, 2000), protein: num(0, 1000), carbs: num(0, 1000), fat: num(0, 1000) }),
   lastScoops: num(0.5, 10),
   lastMix: z.optional(z.object({ foodId: str(1, 80), grams: num(1, 1000) })),
+  /** still on the food table's typical values, not the tub's (B1): labelled Typical until set from the tub */
+  typical: z.optional(z.literal(true)),
+});
+
+/** A packaged food by its barcode (B1, F22), kept once the user logs it or confirms its label, so the next scan is
+ * instant and works offline. id: the barcode as 13 digits (UPC-A with a leading 0) or 8 (EAN-8). Values per 100 g, or
+ * per 100 ml for a product measured in ml. off: from Open Food Facts; label: read from the pack's label and confirmed;
+ * yours: typed or changed by the user. `lastG` is where the amount starts next time. Amounts stop at a meal item's
+ * 10,000 g. */
+export const productSchema = z.object({
+  name: str(1, 120),
+  brand: z.optional(str(1, 80)),
+  source: z.enum(['off', 'label', 'yours']),
+  unit: z.enum(['g', 'ml']),
+  per100: z.object({ kcal: num(0, 1000), protein: num(0, 100), carbs: num(0, 100), fat: num(0, 100) }),
+  servingG: z.optional(num(0.1, 5000)),
+  packG: z.optional(num(0.1, 10000)),
+  /** the serving as Open Food Facts prints it ("2 scoops (60 g)"), for a tub set up as a supplement later */
+  serving: z.optional(str(1, 80)),
+  lastG: z.optional(num(0.1, 10000)),
 });
 
 export const SCHEMAS = {
@@ -164,6 +187,7 @@ export const SCHEMAS = {
   day: daySchema,
   food: foodSchema,
   supplement: supplementSchema,
+  product: productSchema,
 } satisfies Record<Collection, z.ZodMiniType>;
 
 export type Profile = z.infer<typeof profileSchema>;
@@ -179,6 +203,7 @@ export type Checkin = z.infer<typeof checkinSchema>;
 export type Day = z.infer<typeof daySchema>;
 export type FoodMemory = z.infer<typeof foodSchema>;
 export type Supplement = z.infer<typeof supplementSchema>;
+export type Product = z.infer<typeof productSchema>;
 export type DataOf = { [C in Collection]: z.infer<(typeof SCHEMAS)[C]> };
 
 /** Deterministic ids for one-per-user and one-per-day records, so two devices converge instead of duplicating. */

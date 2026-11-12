@@ -8,6 +8,7 @@ import { bumpUsage, type Usage } from '../quota.js';
 import { visionProvider, type VisionInput, type VisionProvider } from '../vision/provider.js';
 import { modelOutput } from '../vision/schema.js';
 import { MAX_ITEMS, resolveItems } from '../vision/resolve.js';
+import { labelOutput, toLabel } from '../vision/label.js';
 import { analyzeRequest, MAX_BODY_BYTES, type AnalyzeError } from '../../shared/analysis.js';
 
 export type Deps = {
@@ -58,7 +59,7 @@ export async function analyze(request: Request, deps: Deps = liveDeps()): Promis
   try { parsed = analyzeRequest.safeParse(JSON.parse(text)); } catch { return fail('bad_request'); }
   if (!parsed.success) return fail('bad_request');
   const req = parsed.data;
-  const image = req.kind === 'photo' ? new Uint8Array(Buffer.from(req.image, 'base64')) : undefined;
+  const image = req.kind !== 'text' ? new Uint8Array(Buffer.from(req.image, 'base64')) : undefined;
   if (image && !(image[0] === 0xff && image[1] === 0xd8)) return fail('bad_request'); // not a JPEG
 
   // the server's UTC day, so a phone cannot pick dates to multiply its quota (it resets at 07:00 in Thailand)
@@ -69,7 +70,7 @@ export async function analyze(request: Request, deps: Deps = liveDeps()): Promis
   if (usage.total > deps.cap) return fail('busy');
 
   const provider = await deps.provider();
-  const input: VisionInput = req.kind === 'photo' ? { image, hint: req.hint, locale: req.locale } : { text: req.text, locale: req.locale };
+  const input: VisionInput = req.kind === 'photo' ? { image, hint: req.hint, locale: req.locale } : req.kind === 'label' ? { image, label: true, locale: req.locale } : { text: req.text, locale: req.locale };
   const started = Date.now();
   let raw: unknown;
   for (let attempt = 1; ; attempt++) {
@@ -86,6 +87,17 @@ export async function analyze(request: Request, deps: Deps = liveDeps()): Promis
     }
   }
 
+  if (req.kind === 'label') {
+    const read = labelOutput.safeParse(raw);
+    if (!read.success) {
+      console.error('label reply did not match the schema', { model: provider.model, ms: Date.now() - started });
+      return fail('provider_error');
+    }
+    const label = toLabel(read.data);
+    if (!label) return fail('not_food', { usage: quota });
+    console.info('analyze', { kind: req.kind, model: provider.model, ms: Date.now() - started });
+    return json(200, { ok: true, label, model: provider.model, usage: quota });
+  }
   const out = modelOutput.safeParse(raw);
   if (!out.success) {
     console.error('analyze reply did not match the schema', { model: provider.model, ms: Date.now() - started });

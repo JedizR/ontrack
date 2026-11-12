@@ -1,6 +1,7 @@
 <!-- DESIGN.md section 7, Sheet (vaul Drawer): grabber, title in Heading beside a 44 close button, a back chevron when the
      sheet has a step, content that scrolls under a hairline, the main action pinned to the bottom above the safe area.
-     Opaque: no glass in the content layer. Opens to content height, at most 92 percent of the visible height. -->
+     Opaque: no glass in the content layer. Opens to content height, at most 92 percent of the visible height. A long
+     title (a scanned product's name) wraps to a second line. -->
 <script lang="ts">
   import type { Snippet } from 'svelte';
   import * as Drawer from '$lib/components/ui/drawer';
@@ -47,7 +48,7 @@
       {#if onback}
         <button class="{icon} text-ink" aria-label={backLabel} onclick={onback} data-testid="sheet-back"><ChevronLeft size={24} strokeWidth={2} /></button>
       {/if}
-      <Drawer.Title class="text-heading min-w-0 flex-1 truncate py-1 text-left">{title}</Drawer.Title>
+      <Drawer.Title class="text-heading line-clamp-2 min-w-0 flex-1 py-1 text-left break-words">{title}</Drawer.Title>
       <button class="{icon} text-ink-2" aria-label={t.sheet.close} onclick={() => { open = false; onclose?.(); }}>
         <X size={24} strokeWidth={2} />
       </button>

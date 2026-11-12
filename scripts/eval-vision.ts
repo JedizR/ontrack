@@ -1,6 +1,7 @@
 // Runs a folder of meal photos through the vision provider as /api/analyze would (resize to 1024 px JPEG at 0.8, the
 // model, the schema check, resolution against the food table) and prints what came back with the time each took.
 //   pnpm eval:vision <photo folder> [<output folder for the raw replies>]
+//   pnpm eval:vision --label <folder of nutrition label photos>   (B1: the label reader, printed values only)
 // shortcut: resizes with macOS `sips`; the evaluation runs on the owner's Mac, not in CI
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
@@ -9,8 +10,10 @@ import { join } from 'node:path';
 import { visionProvider } from '../server/vision/provider.ts';
 import { modelOutput } from '../server/vision/schema.ts';
 import { resolveItems } from '../server/vision/resolve.ts';
+import { labelOutput, toLabel } from '../server/vision/label.ts';
 
-const [dir, out] = process.argv.slice(2);
+const label = process.argv.includes('--label');
+const [dir, out] = process.argv.slice(2).filter((a) => a !== '--label');
 if (!dir) throw new Error('usage: pnpm eval:vision <photo folder> [<output folder>]');
 if (out) mkdirSync(out, { recursive: true });
 const tmp = mkdtempSync(join(tmpdir(), 'ontrack-eval-'));
@@ -25,12 +28,14 @@ for (const f of readdirSync(dir).filter((n) => /\.(jpe?g|png|heic)$/i.test(n)).s
     execFileSync('sips', ['-Z', '1024', '-s', 'format', 'jpeg', '-s', 'formatOptions', '80', join(dir, f), '--out', jpeg], { stdio: 'ignore' });
     const image = new Uint8Array(readFileSync(jpeg));
     const started = Date.now();
-    const raw = await provider.analyze({ image, locale: 'en', signal: AbortSignal.timeout(60_000) });
+    const raw = await provider.analyze({ image, locale: 'en', signal: AbortSignal.timeout(60_000), ...(label ? { label: true as const } : {}) });
     const ms = Date.now() - started;
     times.push(ms);
     if (out) writeFileSync(join(out, `${f}.json`), JSON.stringify(raw, null, 2));
+    const read = label ? labelOutput.safeParse(raw) : null;
     const parsed = modelOutput.safeParse(raw);
-    if (!parsed.success) line = `reply does not match the schema`;
+    if (read) line = read.success ? JSON.stringify(toLabel(read.data) ?? 'not a label') : 'reply does not match the label schema';
+    else if (!parsed.success) line = `reply does not match the schema`;
     else if (!parsed.data.is_food) line = 'not food';
     else {
       const items = resolveItems(parsed.data.items);

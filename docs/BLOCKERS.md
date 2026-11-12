@@ -6,6 +6,17 @@ Everything that needs you, in one place. Newest first within each section.
 
 Each entry: what is blocked, what Claude tried, the exact steps for you, and what to tell Claude afterwards.
 
+### B1: the label reader against Gemini (today's free requests were spent)
+
+- **Blocked:** reading real nutrition labels with `gemini-3.6-flash`. Built and tested on the mock (fixtures `label-snack`, `label-whey`, `not-label`), but not yet run live: the free key's 20 requests a day were already spent when B1 tried three label photos. Gemini answered 503 "high demand" twice, then the daily 429, with about 20 hours to the reset (07:00 in Bangkok on 13 November).
+- **Tried:** the production model twice; `gemini-3.7-flash` (refuses minimal thinking); `gemini-3.5-flash`, which counted against 3.6's quota. Nothing was billed.
+- **Your steps:** after 07:00 Bangkok time, on the Mac: `pnpm eval:vision --label <folder>` with three label photos. The ones B1 picked, all CC BY-SA 3.0 on Wikimedia Commons: "SunnyD Nutrition Facts 01.jpg" (US, per serving), "Nutrition Information Panel.jpg" (kJ and per 100 g) and "HK food drink Longevity brand Sweetened Milk Mar-2014 nutrition information a.jpg" (Hong Kong). Or photograph three packs from your kitchen, a Thai one among them. Each line prints what the model read: compare the serving size and the calories, protein, carbs and fat with the label; anything not printed should be null.
+- **Then tell Claude:** "B1 label eval: <paste the output>", and whether any number was wrong.
+
+### B1: a contact address for Open Food Facts (optional)
+
+- Open Food Facts asks apps to name themselves with a contact email. Ontrack sends `X-User-Agent: Ontrack/<version> (https://ontrack-black.vercel.app)` and no email, because Claude does not put your address in requests to outside services. If you want one added, tell Claude: "Add <address> to the Open Food Facts user agent".
+
 ### N1: a Thai food composition table Ontrack may use (optional now)
 
 - **Update, 12 November 2026:** the owner decided Ontrack is a class proof of concept that will not launch publicly, so N3 takes Thai values from Thai pages and the owner's finds instead. The email below is needed only if Ontrack is ever made public.
@@ -18,6 +29,15 @@ Each entry: what is blocked, what Claude tried, the exact steps for you, and wha
 ## Needs your eyes
 
 Each entry: what to look at (URL or screenshot paths), what to look for, and which milestone it belongs to.
+
+### B1: scan ten packaged foods, and set your whey from the tub
+
+- **Where:** the pull request's Vercel preview (https, so the camera can open) in Safari on the iPhone, and in Chrome on an Android phone if you have one. Screenshots: `screenshots/scan/` after `pnpm screenshots -- --grep scan` (the Add sheet, the camera, typing with wrong digits and with the camera denied, finding, a product from Open Food Facts and its credit, a new product, reading, the Label step and its error, a product from its label, Today with it, a photo that is not a label, offline; light and dark, 390, SE and Pro Max), and `screenshots/supplements/source-whey-*`, `amount-typical-*`, `add-typical-*`. A few are on branch `pr-assets`, folder `b1/`.
+- **Scan ten packaged foods** at home or in a 7-Eleven: the plus, Scan, hold the pack up. Most Thai products should be in Open Food Facts; for one that is not, Photograph the label and check the numbers it read. Scan one of them again with the phone offline.
+- **Look for:** how fast the camera opens and reads on the iPhone (the first open loads about 400 KB); Safari's camera prompt (it may ask again on each visit); whether the framing guide fits real barcodes; the light, which shows only where the camera has one (likely not in Safari); serving chips and the amount in ml for drinks; the source label (Open Food Facts, Label, Yours) on Today.
+- **Set your whey from the tub:** Supplements, Add a supplement, Whey protein, Scan the tub (or Photograph the label). Check the scoop and the numbers per scoop against the tub. A supplement on "Use typical values for now" shows Typical with "Set it from your tub".
+- **Decide:** whether Scan should also be the violet main tile instead of Photo; whether a lookup you do not log should still be kept; whether products need a "Use default values" like foods.
+- **Also seen by the design critic, from before B1 (for M9):** on the SE, Today's training card caption "60 min. Adds 240 kcal" wraps to a second line (`screenshots/scan/today-light-se.png`).
 
 ### N2: your own whey from the tub, and the morning shake for a few days
 
