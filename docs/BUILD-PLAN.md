@@ -1,6 +1,6 @@
 # Ontrack: build plan
 
-Ten milestones and seven the owner added (D1, N1, N2, T1, O1, L1, S1), each built in its own fresh context: a session when the owner is present, a subagent in an unattended run. Each has a goal, what to read, the steps, a gate that proves it is done, and what the owner checks. Start and finish every milestone with the `milestone` skill. In an unattended run, owner checks are recorded in `docs/BLOCKERS.md` and never hold up the build.
+Ten milestones and nine the owner added (D1, N1, N2, B1, N3, T1, O1, L1, S1), each built in its own fresh context: a session when the owner is present, a subagent in an unattended run. Each has a goal, what to read, the steps, a gate that proves it is done, and what the owner checks. Start and finish every milestone with the `milestone` skill. In an unattended run, owner checks are recorded in `docs/BLOCKERS.md` and never hold up the build.
 
 | | Milestone | Outcome | Owner is needed for |
 | --- | --- | --- | --- |
@@ -15,13 +15,15 @@ Ten milestones and seven the owner added (D1, N1, N2, T1, O1, L1, S1), each buil
 | M8 | Progress and check-ins | Trends and the weekly correction | A review with seeded data |
 | N1 | Thai foods and remembered nutrition | Thai dishes from a published table, corrections remembered | Logging five usual Thai meals |
 | N2 | Supplements | Whey, creatine and the like logged by scoop in three taps | Logging the morning shake for a few days |
+| B1 | Barcode scanning | Scan a packaged food and log it exactly | Scanning ten packaged foods |
+| N3 | Thai nutrition from Thai sources | Thai dishes with numbers from Thai pages and the owner's finds | Sending Thai nutrient facts they find |
 | T1 | Gain pace and hybrid training | A faster gain pace, strength and cardio planned together, training on Progress | The friends who asked trying it |
 | O1 | Onboarding redesign | Engaging, least effort onboarding that personalizes the app | Doing it cold, timed |
 | L1 | Landing page | A page for signed-out visitors | Scrolling it on the iPhone |
 | S1 | Friends, profiles and the food map | Friends, a profile with an optional program, shared meal photos on a map | A second account as a friend |
 | M9 | Hardening and release | Settings, export, accessibility, speed, security, production | Full device check |
 
-After M8 the order is N1, N2, T1, O1, L1, S1, then M9. It follows the owner's MoSCoW and RICE prioritization: N1, N2, T1 and L1 are Should, with N2 the highest RICE score of the features not yet built, (high value for little effort), S1 is Could, and M9 hardens everything last. O1 comes after N2 and T1 so onboarding can personalize with supplements, the faster pace and hybrid templates, and before L1 because the landing page leads into it.
+After M8 the order is N1, N2, B1, N3, T1, O1, L1, S1, then M9. It follows the owner's MoSCoW and RICE prioritization: B1 is Must (the owner made barcode scanning a main feature); N1, N2, N3, T1 and L1 are Should, with N2 the highest RICE score of the features not yet built, (high value for little effort), S1 is Could, and M9 hardens everything last. O1 comes after N2 and T1 so onboarding can personalize with supplements, the faster pace and hybrid templates, and before L1 because the landing page leads into it.
 
 Order: the look is settled before any screen is built (M1), and the logic is settled before any screen needs it (M2, M3). With the owner present, no screen work past M1 starts before he approves the gallery. In an unattended run a clean rubric pass stands in for that approval and the gallery goes on his review list.
 
@@ -161,6 +163,34 @@ Read: `docs/PRD.md` F5 and F21, `docs/SCREENS.md` sections 6 and 7, `docs/DESIGN
 Gate: end to end tests: set up whey from its label, then log 2 scoops in three taps from the plus and see Today update; log creatine as taken; edit and delete with undo; log offline. Conformance green on both backends. `verify-ui` passes, with the design critic judging against OneFin.
 Owner checks: set up your own whey from the tub and log your morning shake for a few days.
 
+## B1 Barcode scanning
+
+Why: the owner made barcode scanning a main feature. Much of what Thai users eat is packaged, a lot of it from convenience stores, and a barcode is the fastest exact log there is.
+
+Read: `docs/PRD.md` F5, F15 and F22, `docs/SCREENS.md` section 7, `docs/TECH-SPEC.md` sections 3, 5, 7 and 8. For ideas only (it has no licence, so copy no code): https://github.com/rezahedi/NutriScan, which scans with the browser's `BarcodeDetector`, looks products up in Open Food Facts then USDA, and caches each product so it is fetched once.
+
+1. UX first, in `docs/SCREENS.md`: scan from the Add sheet in one tap; the camera view with a framing guide, the torch where the browser allows it, and typing the number; the found, not found, unreadable, offline and camera denied states; the product sheet with serving choices and live calories; Add. OneFin design, real icons, words chosen to get the tap.
+2. Scanning: the browser's `BarcodeDetector` where it exists (Chrome on Android), otherwise a lazily loaded WebAssembly decoder for Safari (for example the `barcode-detector` polyfill on zxing-wasm; check its licence and size). A lazy chunk, so the initial JavaScript budget holds.
+3. Lookup: the user's saved products first (a synced per user collection keyed by barcode, so it works offline), then Open Food Facts (free, no key; follow its API rules on identifying the app and rate limits, and credit it under the ODbL). If a product is unknown or lacks nutrition, "Photograph the label" sends the panel to the vision provider with a prompt that reads printed values and never estimates; the user confirms, and the product is saved. A shared server side cache of Open Food Facts lookups is optional; decide from the call volume.
+4. Source labels: Open Food Facts, Label, Yours.
+
+Gate: end to end tests on the mock: a known barcode fixture logs in the fewest taps; an unknown one goes through a label photo fixture, is saved, and scans again offline; camera denied falls back to typing. Unit tests for check digits, Open Food Facts parsing and the label reader's schema, plus the decoder reading barcodes from fixture images. Conformance green on both backends. `verify-ui` passes. Live camera scanning goes on the owner's list, since the test browser has no camera.
+Owner checks: scan ten packaged foods at home or in a convenience store.
+
+## N3 Thai nutrition from Thai sources
+
+Why: N1 found no Thai source whose terms allow distribution, so its Thai dishes come from Singapore and USDA data. Ontrack is a class proof of concept that will not launch publicly, and the owner wants the closest Thai numbers there are: Thai government, university and hospital pages found with Thai keywords, and values the owner sends. Record this reasoning and each source's terms in `docs/DECISIONS.md`.
+
+Read: `docs/DECISIONS.md` (N1), `docs/EVAL-NOTES.md` (N1), `docs/TECH-SPEC.md` section 9, `scripts/build-foods.ts`.
+
+1. Search in Thai, for example "พลังงาน ต่อ 100 กรัม ผัดกะเพรา", "ตารางคุณค่าทางโภชนาการอาหารไทย", "แคลอรี่ อาหารจานเดียว กรมอนามัย", with WebSearch and WebFetch. Use the owner's browser through `yab exec` only for pages that need a real browser. Prefer the Department of Health, INMU and Thai university or hospital pages, and record each page's URL, publisher and date.
+2. Save each source page as a snapshot in `data/thai/` with a checksum; a parser extracts the values and `pnpm foods:build` reads them, so nobody types a nutrient value. Values the owner sends go in `data/thai/owner/` with where they found them.
+3. Fill the gaps N1 listed first (khao soi, massaman, red and panang curry, tom kha, som tam, larb, nam tok, kai yang, moo ping, pad see ew, khao kha moo, Thai desserts), then common street food and convenience store dishes: at least 60 dishes that have no table entry today. Thai script aliases; the interface stays English.
+4. Where a Thai source and an existing entry disagree, prefer the Thai source and list differences over 20 percent in `docs/EVAL-NOTES.md`.
+
+Gate: the build reads every Thai value from a snapshot, every Thai row cites its page, the N1 evaluation reruns within the free quota with the match rate reported, and tests pass.
+Owner checks: send any Thai nutrient facts you find, and judge five dishes you eat often.
+
 ## T1 Gain pace and hybrid training
 
 From the owner's friends: a way for skinny people to gain weight faster in a healthy way, training analysis and suggestions, and support for people who do both strength and cardio. The analysis and suggestions exist since M7; T1 adds the rest.
@@ -217,7 +247,7 @@ Owner checks: make a second account a friend, share three meals from different p
 
 1. Settings in full, exports, The science, Report a problem.
 2. Privacy and Terms as plain language drafts in `public/`, marked for the owner's review.
-3. Gain mode easy adds, the finish day control, and anything cut from earlier milestones and recorded in `docs/STATE.md`. Privacy and Terms cover sharing, location and friends.
+3. Gain mode easy adds, the finish day control, in-app reminders (F23, no push), and anything cut from earlier milestones and recorded in `docs/STATE.md`. Privacy and Terms cover sharing, location, friends and barcode lookups.
 4. Accessibility pass against `docs/DESIGN.md` section 12. The stress matrix over every screen.
 5. Speed: bundle report against the budgets in the PRD, lazy chunks confirmed, start time measured with a year of seeded data.
 6. Offline pass: every feature in airplane mode.
@@ -229,4 +259,4 @@ Owner checks, on the iPhone, installed: sign in, onboard, log by every method, w
 
 ## After v1
 
-Thai language. Barcode scanning. Set by set logging. Push reminders. A dietitian's review of the guardrails and copy before any public launch.
+Set by set logging. Not planned: a Thai language interface (English only, for the class), push notifications (not possible from an iPhone browser tab without install), and a dietitian's review (Ontrack is a class proof of concept and is not launched publicly; accuracy comes from checked sources).

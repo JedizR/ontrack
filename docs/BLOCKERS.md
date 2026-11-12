@@ -6,7 +6,9 @@ Everything that needs you, in one place. Newest first within each section.
 
 Each entry: what is blocked, what Claude tried, the exact steps for you, and what to tell Claude afterwards.
 
-### N1: a Thai food composition table Ontrack may use
+### N1: a Thai food composition table Ontrack may use (optional now)
+
+- **Update, 12 November 2026:** the owner decided Ontrack is a class proof of concept that will not launch publicly, so N3 takes Thai values from Thai pages and the owner's finds instead. The email below is needed only if Ontrack is ever made public.
 
 - **Blocked:** nutrition from a Thai source. N1 ships 138 Thai foods from SG FoodID (Singapore) and USDA FNDDS, but dishes those tables lack stay model estimates: khao soi, massaman, red and panang curry, beef green curry, tom kha, som tam, larb, nam tok, kai yang, moo ping, pad see ew, khao kha moo and most Thai desserts (`docs/EVAL-NOTES.md`, N1).
 - **Tried:** the three Thai sources and their terms (`docs/DECISIONS.md`, N1). The INMU Thai Food Composition Database (online version 3, August 2025, 313 dishes) lets non-commercial users use the data, but asks that reproducing or distributing it be applied for by email, and it has no downloadable file. The Department of Health's 2018 table is a scanned PDF whose website forbids distribution without permission. The ASEAN database has 29 Thai dishes under INMU's terms. Asking permission means sending email, which Claude may not do.

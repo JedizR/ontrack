@@ -4,6 +4,8 @@
 
 Ontrack tells you how much to eat for the body you are training for, and keeps that number honest. You tell it how you train and what you want. It sets a daily calorie and protein target from published equations, raises the target on training days, and corrects itself every week from your own weigh-ins and food log. Logging a meal takes one photo. It is built first for people who struggle to gain weight: for them the target is a floor to reach, not a ceiling to stay under.
 
+Ontrack is a proof of concept for a product management class, built as close to a real product as we can. It will not be launched publicly. The interface is English only, because the class is taught in English; Thai dishes have English names, with Thai script as search aliases.
+
 ## 2. Who it is for
 
 | Person | Situation | What they need from Ontrack |
@@ -27,9 +29,9 @@ Everyone trains or intends to. Ontrack is not for people under 18, during pregna
 
 | Differentiator | What v1 ships | What comes later |
 | --- | --- | --- |
-| Camera logging, better for Thai food | Photo to itemised meal in one step. The model identifies components and grams. A bundled table supplies nutrition when there is a match: USDA for general foods, a published Thai food composition source for Thai dishes, with Thai aliases. Values the user corrected are remembered. Everything else is labelled an estimate. A one tap "cooked with oil" correction. Every analysis is kept so it can become an evaluation set | Thai language, and an accuracy loop measured on real photos |
+| Camera logging, better for Thai food | Photo to itemised meal in one step. The model identifies components and grams. A bundled table supplies nutrition when there is a match: USDA for general foods, a published Thai food composition source for Thai dishes, with Thai aliases. Values the user corrected are remembered. Everything else is labelled an estimate. A one tap "cooked with oil" correction. Every analysis is kept so it can become an evaluation set | An accuracy loop measured on real photos |
 | Your training makes the target accurate | A weekly program (days, type, duration, intensity, optional exercises). Exercise energy is computed per session from Compendium MET values and added to that day's target. Program analysis with recommendations from the literature. A weekly check-in that measures real maintenance from weigh-ins and intake and corrects the target | Set by set logging, strength trends, wearable import through a native shell |
-| Works for skinny people building muscle | Gain mode: the target is a floor, progress fills toward it, going a little over is still on track. Evening "easy adds" when behind. A protein floor. Gain rate tracked against a lean bulk band. The target rises when weight is flat | Push reminders, meal plans |
+| Works for skinny people building muscle | Gain mode: the target is a floor, progress fills toward it, going a little over is still on track. Evening "easy adds" when behind. A protein floor. Gain rate tracked against a lean bulk band. The target rises when weight is flat | Meal plans |
 
 ## 5. Features and acceptance criteria
 
@@ -149,9 +151,20 @@ IDs are stable. Tests and commits refer to them.
 - A supplement with no calories, such as creatine, is logged as taken and shown compactly, without a 0 kcal line.
 - Ontrack does not recommend supplements or doses.
 
+### F22 Barcode scanning
+- A main feature (owner's call). From the plus button, one tap opens the camera in the browser and reads EAN-13, EAN-8, UPC-A and UPC-E barcodes. If the camera cannot read it, the number can be typed on the phone's number pad.
+- Lookup order: products this user saved before (synced, works offline), then Open Food Facts. A found product opens a sheet with serving choices (servings or grams) and live calories, then Add.
+- If the product is unknown or has no nutrition, "Photograph the label" lets the model read the nutrition panel (it reads printed values, it does not estimate). The user confirms the values, and the product is saved for that barcode, so the next scan is instant, offline included.
+- Source labels say Open Food Facts, Label or Yours. Open Food Facts is credited where its data is shown.
+- Camera denied, offline, not found and unreadable each have their own wording and a way forward.
+
+### F23 In-app reminders
+- Gentle reminders inside the app, shown when it is opened: nothing logged by a set time, no weigh-in for three days, a check-in due, and the evening easy adds (F10). Each can be turned off in Settings.
+- No push notifications, for the reason in section 6. No streaks, no guilt words.
+
 ## 6. Not in v1
 
-In priority order for later: Thai language. Barcode scanning. Set by set workout logging and strength trends. Push reminders. Apple sign-in. Water and micronutrients. Meal plans and recipes. Coach features, a public feed, likes and comments. Payments. Native wrappers and Health data import.
+Not planned: a Thai language interface (the app is English only), and push notifications (an iPhone browser tab cannot receive them without installing the app, and a native app needs a paid Apple developer account). In priority order for later: set by set workout logging and strength trends. Apple sign-in. Water and micronutrients. Meal plans and recipes. Coach features, a public feed, likes and comments. Payments. Native wrappers and Health data import.
 
 ## 7. Guardrails
 
@@ -186,5 +199,5 @@ Ontrack gives general wellness guidance, not medical advice, and says so at onbo
 | Photo calories are wrong for mixed dishes and hidden oil | Label estimates honestly, make correction fast, and rely on the weekly check-in as the safety net, because it corrects the target from outcomes rather than from logged calories alone |
 | Google sign-in misbehaves in Safari | Test on a real iPhone at the M3 gate. Email code is the fallback |
 | Free tiers change or pause | A daily keep-alive, a provider interface for vision, portable handlers, a JSON export |
-| The app nudges someone toward harmful restriction | The guardrails in section 7, reviewed by a dietitian before public launch |
+| The app nudges someone toward harmful restriction | The guardrails in section 7, each built from a checked source. Ontrack is a class proof of concept and is not launched publicly, so there is no dietitian review |
 | A science constant is wrong | Nothing ships as verified without a checked primary source. Provisional values are labelled in the app |
