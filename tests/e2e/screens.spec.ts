@@ -307,6 +307,7 @@ for (const theme of ['light', 'dark'] as const) {
       // SCREENS.md section 8, Train: no exercises listed, the Session sheet and picker, recommendations with a source,
       // Templates and the confirm, a template's analysis, and no program at all
       test('train', async ({ page }) => {
+        test.slow(); // about twenty states, past 30 s on CI
         const settled = (id: string) => expect(page.getByTestId(id)).toHaveCSS('transform', 'none');
         const top = (id: string) => page.getByTestId(id).evaluate((el) => scrollTo(0, el.getBoundingClientRect().top + scrollY - 60));
         await open(page);
@@ -752,7 +753,8 @@ for (const theme of ['light', 'dark'] as const) {
         await page.getByTestId('meal-sheet').waitFor({ state: 'detached' });
         await expect(page.getByRole('button', { name: 'Undo' })).toBeHidden({ timeout: 8000 });
         await openMap(page);
-        await expect(page.getByTestId('pin')).toHaveCount(4);
+        // the fitted zoom differs by width, so groups split differently: the shot needs pins, not a count
+        await expect(page.getByTestId('pin').first()).toBeVisible();
         await tiles();
         await shot(page, 'friends', 'map');
         await raise(page);

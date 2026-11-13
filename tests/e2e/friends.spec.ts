@@ -22,6 +22,7 @@ const pins = (page: Page) => page.getByTestId('pin');
 const toast = (page: Page, text: string) => expect(page.locator('[data-sonner-toast]').filter({ hasText: text })).toBeVisible();
 
 test('two friends: request, accept, share, see the pin, open it, unshare, remove', { tag: '@smoke' }, async ({ browser }) => {
+  test.slow(); // two phones and a server round trip for each step: past 30 s on CI
   const s = space('friends');
   const setup = await browser.newPage();
   await person(setup, s, EMAIL, { handle: 'nan_eats', name: 'Nan' });

@@ -87,7 +87,8 @@ test.describe('reduced motion', () => {
         .filter((el) => { const cs = getComputedStyle(el); return cs.opacity !== '1' || cs.scale !== 'none' || cs.filter !== 'none'; })
         .map((el) => el.textContent?.trim().slice(0, 20)),
     }));
-    expect(await still()).toEqual({ animations: 0, hidden: [] });
+    // polled: the page's first frame can still list animations that end at once under reduced motion
+    await expect.poll(still).toEqual({ animations: 0, hidden: [] });
     await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
     await toLanding(page);
     expect(await still()).toEqual({ animations: 0, hidden: [] });
