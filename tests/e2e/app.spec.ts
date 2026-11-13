@@ -165,7 +165,9 @@ test('the theme and text size change from the gallery and are remembered', async
 // D2's gate: every button is flat. No gradient, no bevel and no glow on a button, the face that fills it (Button's inner
 // span) or their ::before and ::after; a soft drop that falls below the button, or a hairline ring, is all the depth a
 // button may have. Smaller things inside a button are content, not its face: that is how Today's hero card, a button
-// holding the screen's one haze panel, passes (DESIGN.md section 6).
+// holding the screen's one haze panel, passes (DESIGN.md section 6). U1b, the owner's request: the screen's one featured
+// card (`data-featured`, the Add sheet's Photo) may fill with the feature gradient, and nothing else; a second featured
+// card on the screen fails, and so does a bevel or glow on it.
 const unflat = (page: import('@playwright/test').Page) => page.evaluate(() => {
   const layers = (v: string) => (v === 'none' ? [] : v.split(/,(?![^(]*\))/));
   const glow = (layer: string) => {
@@ -179,6 +181,8 @@ const unflat = (page: import('@playwright/test').Page) => page.evaluate(() => {
   };
   const bad: string[] = [];
   let checked = 0;
+  const featured = [...document.querySelectorAll<HTMLElement>('[data-featured]')].filter((e) => e.getBoundingClientRect().width);
+  if (featured.length > 1) bad.push(`${featured.length} featured cards`);
   for (const btn of document.querySelectorAll<HTMLElement>('button, [role="button"]')) {
     const box = btn.getBoundingClientRect();
     if (!box.width || !box.height) continue;
@@ -190,7 +194,8 @@ const unflat = (page: import('@playwright/test').Page) => page.evaluate(() => {
     for (const f of faces) for (const pseudo of [null, '::before', '::after']) {
       const cs = getComputedStyle(f, pseudo);
       if (pseudo && cs.content === 'none') continue;
-      if (cs.backgroundImage !== 'none' || cs.textShadow !== 'none' || layers(cs.boxShadow).some(glow))
+      const fill = cs.backgroundImage !== 'none' && !(f === featured[0] && !pseudo && /^linear-gradient|^radial-gradient/.test(cs.backgroundImage));
+      if (fill || cs.textShadow !== 'none' || layers(cs.boxShadow).some(glow))
         bad.push(`${btn.getAttribute('aria-label') ?? btn.textContent?.trim().slice(0, 30)}${pseudo ?? ''}: ${cs.backgroundImage} ${cs.boxShadow}`);
     }
   }
@@ -202,9 +207,10 @@ test('no gradient, bevel or glow on any button in the gallery, on Today and in t
   await expect(page.locator('[data-section="buttons"]')).toBeVisible();
   // the check itself catches D1's 3D pill, a violet glow and a bevel drawn in a pseudo-element, and lets a soft drop through
   await page.evaluate(() => {
-    const add = (style: string, label: string, before = '') => {
+    const add = (style: string, label: string, before = '', featured = false) => {
       const b = document.createElement('button');
       b.setAttribute('aria-label', label);
+      if (featured) b.dataset.featured = '';
       b.style.cssText = `width: 80px; height: 44px; ${style}`;
       if (before) {
         b.className = label.replace(/ /g, '-');
@@ -217,9 +223,13 @@ test('no gradient, bevel or glow on any button in the gallery, on Today and in t
     add('box-shadow: 0 0 24px rgba(98, 98, 254, 0.6)', 'probe glow');
     add('', 'probe rim', 'position: absolute; inset: 0; background: linear-gradient(#fff, transparent)');
     add('background: #121214; box-shadow: 0 6px 14px rgba(18, 18, 20, 0.12)', 'probe flat');
+    add('background: linear-gradient(#5b4ff5, #381ac9)', 'probe featured', '', true);
   });
   const probes = (await unflat(page)).bad.filter((b) => b.startsWith('probe')).map((b) => b.split(': ')[0]);
   expect(probes).toEqual(['probe gradient', 'probe bevel', 'probe glow', 'probe rim::before']);
+  // a second featured card on the screen is one too many
+  await page.evaluate(() => document.querySelector('[aria-label="probe flat"]')!.setAttribute('data-featured', ''));
+  expect((await unflat(page)).bad).toContain('2 featured cards');
   await page.reload();
   await expect(page.locator('[data-section="buttons"]')).toBeVisible();
   const gallery = await unflat(page);
