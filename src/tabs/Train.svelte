@@ -6,6 +6,7 @@
   import GripVertical from '@lucide/svelte/icons/grip-vertical';
   import Plus from '@lucide/svelte/icons/plus';
   import { t } from '$lib/i18n';
+  import { collapse } from '$lib/haptics';
   import Card from '$lib/components/Card.svelte';
   import Facts from '$lib/components/Facts.svelte';
   import Button from '$lib/components/Button.svelte';
@@ -94,7 +95,7 @@
 
   // rows are 64 high: a 48 day tile and 8 above and below; the hairline starts where the text does
   const hairline = '[&+&]:before:bg-line [&+&]:before:absolute [&+&]:before:top-0 [&+&]:before:right-0 [&+&]:before:left-16 [&+&]:before:h-px';
-  const pressable = 'active:bg-surface-2 -ml-6 flex min-h-16 min-w-0 flex-1 items-center gap-4 py-2 pl-6 text-left transition-colors duration-[var(--d-press)]';
+  const pressable = 'bleed active:bg-surface-2 -ml-6 flex min-h-16 min-w-0 flex-1 items-center gap-4 py-2 pl-6 text-left transition-colors duration-[var(--d-press)]';
 </script>
 
 <!-- one sentence and its Why, which shows the source in place -->
@@ -105,7 +106,7 @@
       <Button variant="plain" size="sm" class="-mr-4" aria-expanded={why === id} onclick={() => (why = why === id ? null : id)} data-testid="rec-why">{t.train.why}</Button>
     </div>
     {#if why === id}
-      <p class="text-caption text-ink-2 mt-1" data-testid="rec-source">{source === 'OT' ? t.plan.assumption : SOURCES[source]?.cite}</p>
+      <p class="text-caption text-ink-2 pt-1" data-testid="rec-source" in:collapse out:collapse={{ leave: true }}>{source === 'OT' ? t.plan.assumption : SOURCES[source]?.cite}</p>
     {/if}
   </div>
 {/snippet}

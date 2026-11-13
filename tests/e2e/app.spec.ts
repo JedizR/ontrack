@@ -1,6 +1,6 @@
 // The shell: header, three tabs, the dock. Runs in the light and dark projects (WebKit, 390 by 844).
 import { test, expect } from '@playwright/test';
-import { MEALS, open, openFresh, swipeAt, wheelType, withPrefs } from './helpers';
+import { MEALS, open, openFresh, swipeAt, unnested, wheelType, withPrefs } from './helpers';
 
 const title = (page: import('@playwright/test').Page) => page.getByRole('heading', { level: 1 });
 
@@ -278,50 +278,41 @@ test('no gradient, bevel or glow on any button on the landing page', async ({ pa
   expect(landing.checked).toBeGreaterThanOrEqual(6);
 });
 
-// U1b, the owner's corners (feedback 2, 5, 8): a filled shape 8 or less inside a filled shape's corner, the same gap on
-// both sides, has the outer radius less the gap, so the two curves run parallel (DESIGN.md section 6).
-const unnested = (page: import('@playwright/test').Page) => page.evaluate(() => {
-  const filled = (e: Element) => {
-    const cs = getComputedStyle(e);
-    const r = e.getBoundingClientRect();
-    return r.width > 0 && r.height > 0 && cs.visibility !== 'hidden' && (cs.backgroundImage !== 'none' || !/rgba\([^)]*, 0\)|transparent/.test(cs.backgroundColor));
-  };
-  const radius = (e: Element, corner: string) => {
-    const r = e.getBoundingClientRect();
-    return Math.min(parseFloat(getComputedStyle(e).getPropertyValue(`border-${corner}-radius`)) || 0, r.width / 2, r.height / 2);
-  };
-  const bad: string[] = [];
-  let checked = 0;
-  const shapes = [...document.querySelectorAll('body *')].filter(filled);
-  for (const outer of shapes) {
-    const o = outer.getBoundingClientRect();
-    for (const inner of shapes) {
-      if (inner === outer || !outer.contains(inner)) continue;
-      const i = inner.getBoundingClientRect();
-      for (const [corner, gx, gy] of [['top-left', i.left - o.left, i.top - o.top], ['top-right', o.right - i.right, i.top - o.top], ['bottom-left', i.left - o.left, o.bottom - i.bottom], ['bottom-right', o.right - i.right, o.bottom - i.bottom]] as const) {
-        const R = radius(outer, corner);
-        if (R < 12 || gx < 0 || gx > 10 || Math.abs(gx - gy) > 1) continue; // 8, and a 1 px edge or two
-        checked++;
-        const want = Math.max(0, R - gx);
-        const got = radius(inner, corner);
-        if (Math.abs(got - want) > 1.5) bad.push(`${inner.getAttribute('data-testid') ?? inner.className.toString().slice(0, 40)} ${corner}: ${got} in ${R} at ${gx}, want ${want}`);
-      }
-    }
-  }
-  return { checked, bad };
-});
-
-test('corners nest on Today and Progress', async ({ page }) => {
+test('corners nest on every tab, a sheet, a toast and a pressed row', async ({ page }) => {
   await open(page, '/', MEALS);
   await expect(page.getByTestId('hero')).toBeVisible();
-  // the check catches the stat tiles as the owner saw them: radius 24, 8 inside a radius 48 card
-  await page.evaluate(() => document.body.insertAdjacentHTML('beforeend', '<div data-testid="probe-card" style="position:absolute;top:0;width:200px;height:200px;padding:8px;border-radius:48px;background:#fff"><div data-testid="probe-tile" style="height:100%;border-radius:24px;background:#eee"></div></div>'));
-  expect((await unnested(page)).bad.filter((b) => b.startsWith('probe'))).toHaveLength(4);
-  await page.getByTestId('probe-card').evaluate((e) => e.remove());
+  // the check catches the stat tiles as the owner saw them (radius 24, 8 inside a radius 48 card), and U2's pressed row
+  // whose grey is a square cut by the card's curve (flush with the sides, 4 below the top)
+  await page.evaluate(() => document.body.insertAdjacentHTML('beforeend', '<div data-testid="probe-card" style="position:absolute;top:0;width:200px;height:200px;padding:8px;border-radius:48px;background:#fff"><div data-testid="probe-tile" style="height:100%;border-radius:24px;background:#eee"></div></div><style>.probe-row:active{background:#eee}</style><div data-testid="probe-list" style="position:absolute;top:0;width:200px;padding:4px 0;border-radius:32px;overflow:hidden;background:#fff"><button data-testid="probe-row" class="probe-row" style="display:block;width:100%;height:64px"></button></div>'));
+  const probes = (await unnested(page)).bad.filter((b) => b.startsWith('probe'));
+  expect(probes.filter((b) => b.startsWith('probe-tile'))).toHaveLength(4);
+  expect(probes.filter((b) => b.startsWith('probe-row'))).toHaveLength(4);
+  await page.evaluate(() => document.querySelectorAll('[data-testid^="probe"], style:last-of-type').forEach((e) => e.remove()));
   const today = await unnested(page);
   expect(today.bad).toEqual([]);
   expect(today.checked).toBeGreaterThanOrEqual(5); // the haze's two top corners, the tiles' two outer ones, the dock's pill
-  await page.getByTestId('tab-2').click();
-  await expect(page.getByTestId('progress-weight')).toBeVisible();
-  expect((await unnested(page)).bad).toEqual([]);
+  // the dock's pill, 8 inside the dock on every side (U2, the owner's screenshot): 48 high at radius 24 in a 64 pill
+  const pill = await page.getByTestId('dock-pill').evaluate((p) => {
+    const d = p.parentElement!.getBoundingClientRect(), r = p.getBoundingClientRect();
+    return [r.top - d.top, d.bottom - r.bottom, r.left - d.left, r.height, parseFloat(getComputedStyle(p).borderTopLeftRadius) >= r.height / 2];
+  });
+  expect(pill).toEqual([8, 8, 8, 48, true]);
+  for (const [tab, id] of [['tab-1', 'tab-train'], ['tab-2', 'progress-weight']]) {
+    await page.getByTestId(tab).click();
+    await expect(page.getByTestId(id)).toBeVisible();
+    expect((await unnested(page)).bad, tab).toEqual([]);
+  }
+  await page.getByTestId('tab-0').click();
+  // the pill slides back with a spring; measure it at rest
+  await expect.poll(() => page.getByTestId('dock-pill').evaluate((p) => p.getAnimations().length)).toBe(0);
+  await page.getByTestId('add').click();
+  await expect(page.getByTestId('add-sheet')).toHaveCSS('transform', 'none');
+  expect((await unnested(page)).bad, 'the Add sheet').toEqual([]);
+  await page.keyboard.press('Escape');
+  await page.getByTestId('add-sheet').waitFor({ state: 'detached' });
+  // a toast holding Undo: radius 24, Undo 8 inside at 16
+  const row = (await page.getByTestId('meal').first().boundingBox())!;
+  await swipeAt(page, -260, { x: row.x + row.width - 40, y: row.y + row.height / 2 });
+  await expect(page.getByRole('button', { name: 'Undo' })).toBeVisible();
+  expect((await unnested(page)).bad, 'the toast').toEqual([]);
 });

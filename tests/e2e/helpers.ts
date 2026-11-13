@@ -265,3 +265,81 @@ export async function onboard(page: Page, a: Answers) {
   const goal = a.goal === 'weight' ? 'gain' : a.goal;
   if (a.pace !== undefined && goal !== 'maintain' && goal !== 'recomp') await page.getByTestId('plan-pace').getByRole('radio', { name: PACE[goal][a.pace as 0.5] }).click();
 }
+
+/**
+ * DESIGN.md section 6, corners nest (U1b, U2), measured on whatever is on screen:
+ * - a shape 10 or less inside another's rounded corner sits the same gap from both edges and has the outer radius less
+ *   the gap, so the two curves run parallel (a full pill in a pill does by itself);
+ * - at any gap, no shape's corner reaches past the curve of a corner it sits in, unless that parent clips it.
+ * A shape is anything drawn: a fill, a picture or a border, and a fill that only shows while pressed (a row's grey). A
+ * fill the same as its parent's, with no edge or shadow, shows no corner; one that exactly fills a parent which clips
+ * takes the parent's shape, and one inside something else that clips is that thing's to answer for. The landing page
+ * is L4's.
+ */
+export const unnested = (page: Page) => page.evaluate(() => {
+  const clear = (c: string) => /rgba\([^)]*, 0\)|transparent/.test(c);
+  const pressedSel: string[] = [];
+  const walk = (rules: CSSRuleList) => {
+    for (const r of rules) {
+      if (r instanceof CSSStyleRule && r.selectorText.includes(':active') && (r.style.backgroundColor || r.style.background)) pressedSel.push(r.selectorText.replaceAll(':active', ''));
+      if ('cssRules' in r) walk((r as CSSGroupingRule).cssRules);
+    }
+  };
+  for (const sheet of document.styleSheets) { try { walk(sheet.cssRules); } catch { /* another origin's sheet */ } }
+  const pressable = (e: Element) => pressedSel.some((sel) => { try { return e.matches(sel); } catch { return false; } });
+  const name = (e: Element) => e.getAttribute('data-testid') ?? `${e.tagName.toLowerCase()}.${e.className.toString().slice(0, 40)}`;
+  type Shape = { e: Element; r: DOMRect; radii: number[]; clips: boolean; fill: string; edge: boolean; pressed: boolean };
+  const CORNERS = ['top-left', 'top-right', 'bottom-right', 'bottom-left'];
+  const shapes: Shape[] = [];
+  for (const e of document.querySelectorAll('body *')) {
+    if (e.closest('[data-testid="landing"]')) continue;
+    const cs = getComputedStyle(e);
+    const r = e.getBoundingClientRect();
+    if (!r.width || !r.height || cs.visibility === 'hidden' || cs.opacity === '0') continue;
+    const edge = (parseFloat(cs.borderTopWidth) > 0 && !clear(cs.borderTopColor)) || cs.boxShadow !== 'none';
+    const filled = cs.backgroundImage !== 'none' || !clear(cs.backgroundColor) || (parseFloat(cs.borderTopWidth) > 0 && !clear(cs.borderTopColor));
+    const pressed = !filled && pressable(e);
+    if (!filled && !pressed) continue;
+    const p = e.parentElement!;
+    const b = p.getBoundingClientRect();
+    if (getComputedStyle(p).overflow !== 'visible' && Math.abs(r.left - b.left) + Math.abs(r.top - b.top) + Math.abs(r.right - b.right) + Math.abs(r.bottom - b.bottom) < 1) continue;
+    const radii = CORNERS.map((c) => Math.min(parseFloat(cs.getPropertyValue(`border-${c}-radius`)) || 0, r.width / 2, r.height / 2));
+    shapes.push({ e, r, radii, clips: cs.overflow !== 'visible', fill: `${cs.backgroundColor} ${cs.backgroundImage}`, edge, pressed });
+  }
+  const bad: string[] = [];
+  let checked = 0;
+  for (const outer of shapes) {
+    const o = outer.r;
+    for (const inner of shapes) {
+      if (inner === outer || outer.pressed || !outer.e.contains(inner.e)) continue;
+      // something between them that clips (a sheet's scrolling list) decides what shows of the inner shape
+      let between = inner.e.parentElement;
+      while (between && between !== outer.e && getComputedStyle(between).overflow === 'visible') between = between.parentElement;
+      if (between !== outer.e) continue;
+      if (!inner.pressed && !inner.edge && inner.fill === outer.fill) continue;
+      const i = inner.r;
+      // per corner: the gaps to the two edges, and which way is out (sx, sy)
+      const gaps = [[i.left - o.left, i.top - o.top, -1, -1], [o.right - i.right, i.top - o.top, 1, -1], [o.right - i.right, o.bottom - i.bottom, 1, 1], [i.left - o.left, o.bottom - i.bottom, -1, 1]];
+      gaps.forEach(([gx, gy, sx, sy], k) => {
+        const R = outer.radii[k];
+        if (R < 12 || gx < -0.5 || gy < -0.5 || gx >= R || gy >= R) return; // only shapes in a rounded corner
+        const r = inner.radii[k];
+        if (!outer.clips) {
+          // the inner corner's curve, sampled, stays inside the outer's
+          const cx = sx < 0 ? o.left + R : o.right - R, cy = sy < 0 ? o.top + R : o.bottom - R;
+          const ix = sx < 0 ? i.left + r : i.right - r, iy = sy < 0 ? i.top + r : i.bottom - r;
+          for (let a = 0; a <= 8; a++) {
+            const t = (a / 8) * (Math.PI / 2);
+            const px = ix + sx * r * Math.cos(t), py = iy + sy * r * Math.sin(t);
+            if ((px - cx) * sx > 0 && (py - cy) * sy > 0 && Math.hypot(px - cx, py - cy) > R + 0.75) { bad.push(`${name(inner.e)} ${CORNERS[k]}: reaches past the ${R} corner of ${name(outer.e)}`); return; }
+          }
+        }
+        if (gx > 10 || gy > 10 || (outer.clips && gx < 0.5 && gy < 0.5)) return;
+        checked++;
+        if (Math.abs(gx - gy) > 1) bad.push(`${name(inner.e)} ${CORNERS[k]}: gaps ${Math.round(gx)} and ${Math.round(gy)} in ${name(outer.e)}`);
+        else if (Math.abs(r - Math.max(0, R - gx)) > 1.5) bad.push(`${name(inner.e)} ${CORNERS[k]}: ${Math.round(r)} in ${Math.round(R)} at ${Math.round(gx)}, want ${Math.round(Math.max(0, R - gx))}`);
+      });
+    }
+  }
+  return { checked, bad: [...new Set(bad)] };
+});

@@ -123,7 +123,8 @@
       </div>
       <div class="px-4 pt-4 pb-4">
         {#if trendNow != null && points.length > 1}
-          <TrendChart {points} {span} {band} from={shortDate(from)} to={shortDate(today)} label={t.progress.chart(shortDate(from), shortDate(today), num(inUnit(trendNow), 1))} />
+          <!-- U2: a new range draws its line again, as on arrival -->
+          {#key range}<TrendChart {points} {span} {band} from={shortDate(from)} to={shortDate(today)} label={t.progress.chart(shortDate(from), shortDate(today), num(inUnit(trendNow), 1))} />{/key}
         {/if}
         <Button class="mt-4 first:mt-0" onclick={() => weighIn(today)} data-testid="progress-log-weight">{t.progress.logWeight}</Button>
       </div>
@@ -152,7 +153,7 @@
         <p class="text-display mt-2" data-testid="progress-intake-avg"><Count value={mean(complete.map((d) => d.intake))} from={0} /></p>
         <p class="text-caption text-ink-2 mt-1">{t.after.kcalWeekAvg}</p>
         <div class="mt-4">
-          <WeekBars weeks={bars} from={shortDate(weeks[0].start)} to={shortDate(today)} label={t.progress.bars(num(weeks.length))} />
+          {#key range}<WeekBars weeks={bars} from={shortDate(weeks[0].start)} to={shortDate(today)} label={t.progress.bars(num(weeks.length))} />{/key}
         </div>
         <p class="text-caption text-ink-2 mt-2">{t.progress.intakeLine}</p>
         <p class="text-callout mt-3" data-testid="progress-protein"><Facts facts={[t.progress.protein(num(Math.round(mean(complete.map((d) => d.protein))))), t.progress.proteinTarget(num(plan.proteinG))]} rest="text-ink-2" /></p>
@@ -185,7 +186,7 @@
         <p class="text-display mt-2" data-testid="progress-sessions-done"><Count value={training.done} from={0} /></p>
         <p class="text-caption text-ink-2 mt-1">{t.after.ofPlanned(num(training.planned))}</p>
         <div class="mt-4">
-          <WeekBars weeks={sessionBars} from={shortDate(weeks[0].start)} to={shortDate(today)} label={t.progress.sessionBars(num(weeks.length))} />
+          {#key range}<WeekBars weeks={sessionBars} from={shortDate(weeks[0].start)} to={shortDate(today)} label={t.progress.sessionBars(num(weeks.length))} />{/key}
         </div>
         <p class="text-caption text-ink-2 mt-2">{t.progress.sessionsLine}</p>
         <div class="border-line mt-4 flex flex-col gap-4 border-t pt-4">

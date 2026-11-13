@@ -72,7 +72,7 @@
   {#each lines as l, i}
     {@const it = items[i]}
     <div class="border-line border-t py-3 first:border-t-0" data-testid="meal-item">
-      <button type="button" class="active:bg-surface-2 -mx-6 flex w-[calc(100%+var(--inset)*2)] items-start gap-3 px-6 py-1 text-left transition-colors duration-[var(--d-press)]" aria-expanded={opened === i} onclick={() => { opened = opened === i ? null : i; correcting = null; }}>
+      <button type="button" class="bleed active:bg-surface-2 -mx-6 flex w-[calc(100%+var(--inset)*2)] items-start gap-3 px-6 py-1 text-left transition-colors duration-[var(--d-press)]" aria-expanded={opened === i} onclick={() => { opened = opened === i ? null : i; correcting = null; }}>
         <span class="min-w-0 flex-1">
           <span class="text-body line-clamp-2 block font-semibold">{it.name}</span>
           <span class="text-caption text-ink-2 block"><SourceLabel source={mealSource([it])} /></span>

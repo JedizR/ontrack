@@ -20,7 +20,7 @@
       type="button"
       role="radio"
       aria-checked={on}
-      class="active:bg-surface-2 -mx-6 flex w-[calc(100%+var(--inset)*2)] items-center px-6 text-left transition-colors duration-[var(--d-press)]"
+      class="bleed active:bg-surface-2 -mx-6 flex w-[calc(100%+var(--inset)*2)] items-center px-6 text-left transition-colors duration-[var(--d-press)]"
       onclick={() => { if (!on) { haptic(); onchange(o.value); } }}
     >
       <span class="border-line flex min-h-14 min-w-0 flex-1 items-center gap-3 py-2 [*+*>&]:border-t">

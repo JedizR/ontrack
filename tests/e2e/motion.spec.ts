@@ -127,6 +127,32 @@ test('a finished session ticks off; the week pill and the dock pill move to what
   await settled(page);
 });
 
+// U2: a change on the same page moves rather than snaps
+test('a range slides its ink segment and redraws the chart; a sheet\'s next step slides in, and Back slides it out', async ({ page }) => {
+  await open(page, '/', MEALS);
+  await page.getByTestId('tab-2').click();
+  await settled(page);
+  const range = page.getByRole('radiogroup', { name: 'Range' });
+  await range.getByRole('radio').nth(2).click();
+  // the one ink segment travels to the pick, and the bars grow again for the new range
+  await expect.poll(() => running(page), { timeout: 500, intervals: [16] }).toContainEqual(expect.stringMatching(/transform on segment-pill/));
+  await settled(page);
+  const [p, r] = [(await range.getByTestId('segment-pill').boundingBox())!, (await range.getByRole('radio').nth(2).boundingBox())!];
+  expect(Math.abs(p.x - r.x) + Math.abs(p.width - r.width)).toBeLessThanOrEqual(1);
+
+  await page.getByTestId('tab-0').click();
+  await page.getByTestId('add').click();
+  await page.getByTestId('add-search').click();
+  await page.getByTestId('search-field').fill('rice');
+  await page.getByTestId('result').first().click();
+  await expect(page.getByTestId('portion')).toBeVisible();
+  await expect.poll(() => running(page), { timeout: 500, intervals: [16] }).toContainEqual(expect.stringMatching(/svelte on/));
+  await settled(page);
+  await page.getByTestId('sheet-back').click();
+  await expect(page.getByTestId('search-field')).toBeVisible();
+  await settled(page);
+});
+
 test('a photo is read under a sweeping light with its steps in words, which stop when the answer comes', async ({ page }) => {
   await withPrefs(page, { photoOk: true });
   const s = await open(page);
@@ -165,7 +191,17 @@ test.describe('reduced motion', () => {
     await now();
     await page.getByTestId('tab-2').click();
     await now();
+    await page.getByRole('radiogroup', { name: 'Range' }).getByRole('radio').nth(2).click();
+    await now();
     await page.getByTestId('tab-0').click();
+    await page.getByTestId('add').click();
+    await page.getByTestId('add-search').click();
+    await page.getByTestId('search-field').fill('rice');
+    await page.getByTestId('result').first().click();
+    await expect(page.getByTestId('portion')).toBeVisible();
+    await now();
+    await page.keyboard.press('Escape');
+    await page.getByTestId('search-sheet').waitFor({ state: 'detached' });
     // while a photo is read: the words, no sweep and no pulsing skeleton
     await page.route('**/api/analyze', async (route) => { await new Promise((ok) => setTimeout(ok, 3000)); await route.continue(); });
     await takePhoto(page);

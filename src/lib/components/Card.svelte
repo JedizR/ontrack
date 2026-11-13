@@ -22,6 +22,7 @@
 
 <section
   class="shadow-card {hero ? 'bg-surface rounded-xl p-2' : list ? 'bg-surface overflow-hidden rounded-lg px-6 py-1' : 'bg-surface rounded-lg p-6'} {cls}"
+  data-list={list || undefined}
   {...rest}
 >
   {@render children()}

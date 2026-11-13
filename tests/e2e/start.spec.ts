@@ -65,27 +65,66 @@ async function measure(page: Page, browser: string) {
   console.log(JSON.stringify({ task: 'start with a year', browser, records: records.length, medianMs: runs[3], runs }));
 }
 
-/** PRD section 8, tap to visible response: each tap's Event Timing duration (input to the next paint), Chromium only. */
+/** PRD section 8, tap to visible response: each tap's Event Timing duration (input to the next paint), Chromium only.
+ * U2: named per tap, so the slow one shows. */
 async function taps(page: Page) {
   await page.evaluate(() => {
-    const w = window as unknown as { taps: Record<number, number> };
-    w.taps = {};
+    const w = window as unknown as { tap: number };
+    w.tap = 0;
     new PerformanceObserver((l) => {
-      for (const e of l.getEntries() as PerformanceEventTiming[]) if (e.interactionId) w.taps[e.interactionId] = Math.max(w.taps[e.interactionId] ?? 0, e.duration);
+      for (const e of l.getEntries() as PerformanceEventTiming[]) if (e.interactionId) w.tap = Math.max(w.tap, e.duration);
     }).observe({ type: 'event', durationThreshold: 16, buffered: false } as PerformanceObserverInit);
   });
-  // the tabs (Train and Progress load on their first tap), the Add sheet, Search, and a day in the week
-  for (const id of ['tab-1', 'tab-2', 'tab-0', 'add', 'add-search']) {
-    await page.getByTestId(id).click();
+  const ms: Record<string, number> = {};
+  const tap = async (name: string, act: () => Promise<void>) => {
+    await page.evaluate(() => ((window as unknown as { tap: number }).tap = 0));
+    await act();
     await page.waitForTimeout(600);
-  }
+    // under 16 ms is not reported: the tap answered within a frame
+    ms[name] = Math.max(16, await page.evaluate(() => (window as unknown as { tap: number }).tap));
+  };
+  // the tabs (Train and Progress load on their first tap), the Add sheet, Search, and a day in the week
+  for (const id of ['tab-1', 'tab-2', 'tab-0', 'add', 'add-search']) await tap(id, () => page.getByTestId(id).click());
   await page.keyboard.press('Escape');
   await page.waitForTimeout(600);
-  await page.getByRole('button', { name: /^Monday/ }).first().click();
-  await page.waitForTimeout(600);
-  const ms = Object.values(await page.evaluate(() => (window as unknown as { taps: Record<number, number> }).taps)).sort((a, b) => a - b);
-  // durations under 16 ms are not reported: those taps answered within a frame
-  console.log(JSON.stringify({ task: 'tap to next paint', browser: 'chromium, 4x CPU', taps: 7, over16ms: ms, maxMs: ms.at(-1) ?? 16 }));
+  await tap('week day', () => page.getByRole('button', { name: /^Monday/ }).first().click());
+  await tap('tab-2 again', () => page.getByTestId('tab-2').click());
+  await tap('range', () => page.getByRole('radio', { name: '3 months' }).click());
+  console.log(JSON.stringify({ task: 'tap to next paint', browser: 'chromium, 4x CPU', ms, maxMs: Math.max(...Object.values(ms)) }));
+}
+
+/** U2: scrolling Today and Progress with a year of data, the page moved one step a frame, as a finger would: frame times
+ * and long tasks. Then the same without the blur behind the dock and the photo gradients, to see what they cost. */
+async function scroll(page: Page) {
+  const pass = () => page.evaluate(async () => {
+    const long: number[] = [];
+    const o = new PerformanceObserver((l) => l.getEntries().forEach((e) => long.push(e.duration)));
+    o.observe({ type: 'longtask' });
+    const frames: number[] = [];
+    const frame = () => new Promise<number>(requestAnimationFrame);
+    let last = await frame();
+    const step = async (y: number) => { scrollTo(0, y); const t = await frame(); frames.push(t - last); last = t; };
+    const max = document.documentElement.scrollHeight - innerHeight;
+    for (let y = 0; y <= max; y += 24) await step(y);
+    for (let y = max; y >= 0; y -= 24) await step(y);
+    o.disconnect();
+    frames.sort((a, b) => a - b);
+    const at = (q: number) => Math.round(frames[Math.min(frames.length - 1, Math.floor(frames.length * q))]);
+    return { frames: frames.length, p50: at(0.5), p95: at(0.95), over33ms: frames.filter((f) => f > 33.4).length, longTasks: long.length, longMs: Math.round(long.reduce((a, b) => a + b, 0)) };
+  });
+  for (const [tab, name] of [['tab-0', 'Today'], ['tab-2', 'Progress']]) {
+    await page.getByTestId(tab).click();
+    await page.waitForTimeout(1000);
+    console.log(JSON.stringify({ task: `scroll ${name}`, browser: 'chromium, 4x CPU', ...(await pass()) }));
+    const plain = await page.evaluateHandle(() => {
+      const s = document.createElement('style');
+      s.textContent = '* { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; background-image: none !important }';
+      document.head.append(s);
+      return s;
+    });
+    console.log(JSON.stringify({ task: `scroll ${name}, no blur or gradients`, browser: 'chromium, 4x CPU', ...(await pass()) }));
+    await plain.evaluate((s) => s.remove());
+  }
 }
 
 test('start with a year of data, WebKit', async ({ page }) => {
@@ -102,5 +141,6 @@ test('start with a year of data, Chromium at a 4x slower CPU', async ({ baseURL 
   await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 });
   await measure(page, 'chromium, 4x CPU');
   await taps(page);
+  await scroll(page);
   await browser.close();
 });
