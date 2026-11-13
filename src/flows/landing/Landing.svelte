@@ -4,7 +4,6 @@
      footer. Every feature shows a real screen of the app (tests/e2e/landing-shots.spec.ts). Build your plan starts
      onboarding, Sign in opens the sign in sheet. A lazy chunk; motion follows MOTION.md and stops for reduced motion. -->
 <script lang="ts">
-  import ArrowUp from '@lucide/svelte/icons/arrow-up';
   import BookOpen from '@lucide/svelte/icons/book-open';
   import Camera from '@lucide/svelte/icons/camera';
   import Check from '@lucide/svelte/icons/check';
@@ -21,10 +20,11 @@
   import { SOURCES } from '$lib/data/sources';
   import { today, yearOf } from '$lib/model/dates';
   import { prefs, topColour } from '$lib/prefs.svelte';
+  import { bend, lens } from './glass';
   import { sheets } from '$lib/sheets.svelte';
-  import { reducedMotion } from '$lib/haptics';
   import { t } from '$lib/i18n';
   import { fresh, step } from '../onboarding/draft';
+  import Footer from './Footer.svelte';
   import Phone from './Phone.svelte';
   import { inview, onscreen } from './inview';
   import todayShot from './shots/today.webp';
@@ -89,17 +89,16 @@
   const FRIENDS = [UserPlus, MapPin, Lock].map((icon, i) => ({ icon, ...L.friends.points[i] }));
   // each number on the page cites the constant's own source, so the cards cannot drift from the engine
   const SOURCED = [
-    { label: L.sources.resting, source: SOURCES[C.mifflin.source]?.short, wash: '[background:var(--wash-ink)] text-on-night' },
-    { label: L.sources.training, source: SOURCES[C.metStrength.source]?.short, wash: '[background:var(--wash-blue)] text-on-night' },
-    { label: L.sources.gain, source: SOURCES[C.gainPace.source]?.short, wash: '[background:var(--wash-magenta)] text-on-night' },
-    { label: L.sources.thai, source: L.sources.thaiSource, wash: '[background:var(--wash-lavender)] text-night' },
+    { label: L.sources.resting, source: SOURCES[C.mifflin.source]?.short, wash: '[--lens:var(--wash-ink)] text-on-night' },
+    { label: L.sources.training, source: SOURCES[C.metStrength.source]?.short, wash: '[--lens:var(--wash-blue)] text-on-night' },
+    { label: L.sources.gain, source: SOURCES[C.gainPace.source]?.short, wash: '[--lens:var(--wash-magenta)] text-on-night' },
+    { label: L.sources.thai, source: L.sources.thaiSource, wash: '[--lens:var(--wash-lavender)] text-night' },
   ];
 
   // the floating Build your plan: once the hero's action has scrolled away, until the closing call is on screen
   let heroAction = $state(true);
   let closing = $state(false);
   const floating = $derived(!heroAction && !closing);
-  const top = () => scrollTo({ top: 0, behavior: reducedMotion() ? 'auto' : 'smooth' });
   // the status bar continues the hero's sky while the landing page shows (U1b)
   $effect(() => {
     topColour('--sky-top');
@@ -121,13 +120,16 @@
   </div>
 {/snippet}
 
-<div class="bg-surface text-ink relative min-h-svh overflow-x-clip" data-testid="landing">
-  <!-- the bar: OneFin's floating bar in Liquid Glass (L2), with the wordmark and the way back in -->
-  <header class="bar fixed inset-x-0 top-0 z-30 px-4 pt-[calc(env(safe-area-inset-top)+8px)]">
-    <!-- U1b: Sign in (sm, 36) sits 8 inside the 52 high bar on three sides, so its 16 corners nest in the bar's 24 -->
+<div class="bg-surface text-ink relative min-h-svh overflow-x-clip" data-testid="landing" use:bend>
+  <!-- the bar: OneFin's floating bar in Liquid Glass (L2), with the wordmark and the way back in. L3: it starts below the
+       status bar rather than padding under it, so nothing fixed touches the top edge and Safari 26 shows the page there
+       (the hero's sky) instead of filling the bar with a colour sampled from a fixed header -->
+  <header class="bar fixed inset-x-0 top-[calc(env(safe-area-inset-top)+8px)] z-30 px-4">
+    <!-- U1b: Sign in (sm, 36) sits 8 inside the 52 high bar on three sides, so its 16 corners nest in the bar's 24. L3,
+         the owner: the ink pill -->
     <nav class="liquid-bar mx-auto flex h-13 max-w-[1200px] items-center justify-between rounded-md pr-2 pl-5" aria-label={t.app.name}>
       <Wordmark class="h-5 w-fit" />
-      <Button variant="neutral" size="sm" onclick={signin} data-testid="landing-signin">{L.signin}</Button>
+      <Button variant="primary" size="sm" onclick={signin} data-testid="landing-signin">{L.signin}</Button>
     </nav>
   </header>
 
@@ -180,7 +182,7 @@
 
     <!-- 01 Logging: light grey cards (pick 01), the first the one featured card on the feature photo gradient (pick 02, L2),
          each a real screen -->
-    <section class="px-4 pt-8 pb-24" data-testid="landing-log">
+    <section class="px-4 pt-8 pb-24" id="logging" tabindex="-1" data-testid="landing-log">
       {@render head('01', L.log.tag, L.log.title, L.log.lead)}
       <div class="mx-auto mt-12 grid max-w-[1200px] gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {#each LOG as c, i (i)}
@@ -195,7 +197,7 @@
     </section>
 
     <!-- 02 Training: a dark section with a violet glow (pick 06, 12); dark cards hold lavender panels and settle as they come -->
-    <section class="px-2 sm:px-4" data-testid="landing-train">
+    <section class="px-2 sm:px-4" id="training" tabindex="-1" data-testid="landing-train">
       <div data-theme="dark" class="bg-canvas text-ink relative isolate overflow-clip rounded-xl px-4 pt-20 pb-24">
         <div class="glow absolute inset-x-0 bottom-0 -z-10 h-3/4 translate-y-1/2" aria-hidden="true"></div>
         {@render head('02', L.train.tag, L.train.title, L.train.lead)}
@@ -219,7 +221,7 @@
     </section>
 
     <!-- 03 Check-in: a lavender photo gradient with rings and tilted glass cards (pick 07, glass-02), and its 1-2-3 stepper -->
-    <section class="px-4 pt-24 pb-28" data-testid="landing-checkin">
+    <section class="px-4 pt-24 pb-28" id="check-in" tabindex="-1" data-testid="landing-checkin">
       {@render head('03', L.checkin.tag, L.checkin.title, L.checkin.lead)}
       <div class="mx-auto mt-12 grid max-w-[1100px] items-center gap-10 lg:grid-cols-2 lg:gap-16">
         <div class="grained text-night relative isolate flex justify-center overflow-clip rounded-xl px-6 pt-12 [background:var(--grad-lavender)]">
@@ -251,7 +253,7 @@
     </section>
 
     <!-- 04 Friends (S1b): the food map in a phone, uncropped so its friends panel shows, beside what is shared and what never is -->
-    <section class="px-4 pb-28" data-testid="landing-friends">
+    <section class="px-4 pb-28" id="friends" tabindex="-1" data-testid="landing-friends">
       {@render head('04', L.friends.tag, L.friends.title, L.friends.lead)}
       <div class="mx-auto mt-12 grid max-w-[1100px] items-center gap-12 lg:grid-cols-2 lg:gap-16">
         <Phone src={mapShot} alt={L.alt.map} class="mx-auto w-[min(100%,260px)]" />
@@ -272,12 +274,14 @@
 
     <!-- the dark run to the end: 05 Sources on colour-washed cards (pick 10), the closing call, then the footer -->
     <div data-theme="dark" class="bg-canvas text-ink relative isolate overflow-clip rounded-t-xl">
-      <section class="px-4 pt-24 pb-16" data-testid="landing-sources">
+      <section class="px-4 pt-24 pb-16" id="sources" tabindex="-1" data-testid="landing-sources">
         {@render head('05', L.sources.tag, L.sources.title, L.sources.lead)}
         <div class="mx-auto mt-12 grid max-w-[1200px] gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {#each SOURCED as c, i (i)}
-            <article class="settle grained flex min-h-52 flex-col justify-between gap-8 rounded-lg p-6 {c.wash}" style:--tilt="{i % 2 ? 3 : -3}deg">
-              <span class="grid size-12 place-items-center rounded-sm {i === 3 ? 'bg-accent text-on-accent' : 'liquid'}" aria-hidden="true"><BookOpen size={22} /></span>
+            <article class="settle grained relative flex min-h-52 flex-col justify-between gap-8 rounded-lg p-6 [background:var(--lens)] {c.wash}" style:--tilt="{i % 2 ? 3 : -3}deg" data-lens>
+              <span class="relative isolate grid size-12 place-items-center rounded-sm {i === 3 ? 'bg-accent text-on-accent' : 'liquid'}" aria-hidden="true">
+                {#if i !== 3}<span class="lens" use:lens></span>{/if}<BookOpen size={22} />
+              </span>
               <div>
                 <p class="text-callout font-medium opacity-80">{c.label}</p>
                 <p class="text-lead mt-1 text-balance">{c.source}</p>
@@ -294,8 +298,8 @@
         <h2 class="text-poster flex flex-col items-center">
           {#each L.cta.words as w, i (i)}<span class="slide block {i === 1 ? 'text-on-accent-soft' : ''}" style:--from="{[-40, -70, -25][i]}vw">{w}</span>{/each}
         </h2>
-        <div class="feature text-on-accent relative mx-auto mt-10 flex max-w-[34rem] flex-col items-center rounded-xl px-6 py-10">
-          <span class="liquid mb-6 grid size-16 place-items-center rounded-md [&>svg]:size-11" aria-hidden="true">{@html mark}</span>
+        <div class="feature text-on-accent relative mx-auto mt-10 flex max-w-[34rem] flex-col items-center rounded-xl px-6 py-10 [--lens:var(--grad-feature)]" data-lens>
+          <span class="liquid relative isolate mb-6 grid size-16 place-items-center rounded-md [&>svg]:size-11" aria-hidden="true"><span class="lens" use:lens></span>{@html mark}</span>
           <p class="text-lead max-w-[24rem] text-pretty">{L.cta.line}</p>
           <Button variant="primary" size="lg" onclick={start} class="mt-6" data-testid="landing-start-end">{L.start}</Button>
           <p class="text-caption mt-1">{L.noAccount}</p>
@@ -303,35 +307,8 @@
         <p class="text-body text-ink-2 mt-6">{L.cta.account} <button type="button" class="tap text-accent-ink active:bg-surface-2 min-h-11 rounded-xs px-1 font-semibold" onclick={signin}>{L.signin}</button></p>
       </section>
 
-      <!-- the footer (pick 09, glass-01): the giant wordmark over the violet glow, the back to top tile, glass panels -->
-      <footer class="relative px-2 pt-16 sm:px-4">
-        <div class="text-accent-ink mx-auto max-w-[1200px] px-2 opacity-40" aria-hidden="true"><Wordmark class="aspect-[61/10] w-full" /></div>
-        <div class="relative z-10 -mt-6 flex justify-center">
-          <button type="button" class="glass tap text-ink active:bg-surface-2 grid size-12 place-items-center rounded-sm" onclick={top} aria-label={L.footer.top}><ArrowUp size={22} /></button>
-        </div>
-        <div class="relative mt-4">
-          <!-- the glow rises from where the panels begin (the owner's footer-glow-bug): its brightest middle on their top
-               edge, spreading behind them and up into the wordmark, the canvas at every edge so it shows no seam -->
-          <div class="glow absolute -inset-x-2 top-0 sm:-inset-x-4 -z-10 h-[clamp(18rem,40vw,36rem)] -translate-y-1/2" data-testid="landing-glow" aria-hidden="true"></div>
-        <div class="liquid rise-in mx-auto max-w-[1200px] rounded-t-sheet p-2 pb-0" use:inview={0.05} data-reveal data-testid="landing-panels">
-          <div class="grid gap-2 md:grid-cols-2">
-            <div class="liquid-violet text-on-night rounded-lg p-6">
-              <h2 class="text-heading">{L.footer.start}</h2>
-              <ul class="mt-4 flex flex-col items-start">
-                <li><button type="button" class="tap text-body active:bg-on-night/15 -mx-2 min-h-11 rounded-xs px-2 font-medium" onclick={start}>{L.start}</button></li>
-                <li><button type="button" class="tap text-body active:bg-on-night/15 -mx-2 min-h-11 rounded-xs px-2 font-medium" onclick={signin}>{L.signin}</button></li>
-              </ul>
-            </div>
-            <div class="liquid-violet text-on-night rounded-lg p-6">
-              <h2 class="text-heading">{L.footer.know}</h2>
-              <p class="text-body mt-4">{t.screening.disclaimer}</p>
-              <p class="text-body mt-2">{L.footer.concept}</p>
-            </div>
-          </div>
-          <p class="text-caption text-ink-2 flex items-center justify-center px-4 pt-5 pb-[max(20px,env(safe-area-inset-bottom))]">{L.footer.year}</p>
-        </div>
-        </div>
-      </footer>
+      <!-- the footer (pick 09, glass-01): a teaser that opens with a pull past the end (L3) -->
+      <Footer onstart={start} onsignin={signin} />
       </div>
     </div>
   </main>
@@ -345,17 +322,12 @@
 </div>
 
 <style>
-  /* the dark sections' glow: brightest at its middle, faded to nothing at every edge by an elliptical mask, so neither
-     the grain nor the colour ever starts at a line (the owner's footer-glow-bug) */
-  .glow {
-    background: var(--glow);
-    background-blend-mode: soft-light, normal, normal;
-    mask-image: radial-gradient(closest-side, black 40%, transparent);
-  }
   /* every tap has a pressed state (PRD section 8, DESIGN.md section 10): the fill steps in the markup, and the face scales
      to 0.97 over --d-press when motion is welcome */
   .tap { transition: background-color var(--d-press), scale var(--d-press); }
   @media (prefers-reduced-motion: no-preference) { .tap:active { scale: 0.97; } }
+  /* L3: the footer's Learn links scroll to these and focus them; the bar (8 + 52) and 8 more stay clear */
+  section[id] { scroll-margin-top: calc(env(safe-area-inset-top) + var(--spacing) * 17); outline: none; }
   /* the lead sits on the sky's violet top: full ink, not ink-2, keeps it at 4.5 to 1 */
   .hero-lead { color: var(--ink); }
 
@@ -385,7 +357,7 @@
     .bob { animation: bob 5s ease-in-out infinite alternate both; animation-delay: var(--d); }
     @keyframes bob { from { translate: 0 6px; } to { translate: 0 -6px; } }
 
-    /* recipe B, triggered once in view: M10 cards scale in, M9 headline words blur in, stickers pop, the footer rises */
+    /* recipe B, triggered once in view: M10 cards scale in, M9 headline words blur in, stickers pop (the footer rises in Footer.svelte) */
     .card { transition: opacity 0.5s var(--ease-out), scale 0.98s var(--spring-appear); transition-delay: calc(var(--i) * 0.1s); }
     .card:not([data-inview]) { opacity: 0; scale: 0.5; }
     .words .w { transition: opacity 0.45s var(--ease-out), translate 0.45s var(--ease-out), filter 0.45s var(--ease-out); transition-delay: calc(var(--i) * 70ms); }
@@ -393,8 +365,6 @@
     .sticker > span { transition: opacity 0.3s var(--ease-out), scale 1.36s var(--spring-pop); }
     .sticker > span + span { transition-delay: 0.12s; }
     .sticker:not([data-inview]) > span { opacity: 0; scale: 0.4; }
-    .rise-in { transition: translate 1.15s var(--spring-reveal), opacity 0.6s var(--ease-out); }
-    .rise-in:not([data-inview]) { translate: 0 64px; opacity: 0; }
     .step { transition: opacity 0.5s var(--ease-out), translate 0.6s var(--spring-appear); }
     .step:not([data-inview]) { opacity: 0.3; translate: 0 16px; }
     .step .dot { transition: background-color 0.42s var(--spring-default), color 0.42s var(--spring-default); }
