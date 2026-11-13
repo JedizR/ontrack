@@ -60,6 +60,12 @@ describe('tokens only', () => {
   });
 });
 
+describe('the keyboard never pans the page', () => {
+  // scrollIntoView scrolls every ancestor, iOS's visual viewport too: with the keyboard up it pushed a sheet's header off
+  // screen (the owner's iPhone, 13 November). Scroll the one list that needs it instead (Sheet.svelte's onfocusin).
+  test.each(src)('%s calls no scrollIntoView', (f) => expect(readFileSync(f, 'utf8').replace(/<!--[\s\S]*?-->/g, '')).not.toMatch(/\.scrollIntoView\(/));
+});
+
 describe('the server boundary is a directory', () => {
   test.each(src)('%s imports nothing from server/ or api/', (f) => {
     expect(readFileSync(f, 'utf8')).not.toMatch(/from\s+['"][./]*(server|api)\//);
