@@ -1,10 +1,12 @@
 // The landing page's phone screens (L1): real screens of the app on the mock backend, in the light theme, as a 390 by
 // 844 iPhone shows them, as WebP (cwebp, from Homebrew's webp). Run after a change to the look, commit the images, and
 // update t.landing.alt where a number changed:
-//   LANDING_SHOTS=1 pnpm exec playwright test --project=shots
+//   LANDING_SHOTS=1 E2E_REAL_TILES=1 pnpm exec playwright test --project=shots
+// (E2E_REAL_TILES draws the food map with OpenFreeMap's real tiles, so the map shot needs the network)
 import { execFileSync } from 'node:child_process';
 import { expect, test, type Page } from '@playwright/test';
 import { MEALS, SUPPLEMENTS, open, openSeeded, vision, withPrefs } from './helpers';
+import { openMap, scene } from './social';
 
 test.skip(!process.env.LANDING_SHOTS, 'writes src/flows/landing/shots/; set LANDING_SHOTS=1');
 test.use({ colorScheme: 'light', viewport: { width: 390, height: 844 }, deviceScaleFactor: 1.6 });
@@ -90,4 +92,13 @@ test('progress and check-in', async ({ page }) => {
   await page.getByTestId('tab-2').click();
   await expect(page.getByTestId('tab-progress')).toBeVisible();
   await shot(page, 'progress');
+});
+
+// S1b: Nan's food map around Bangkok, the friends panel lowered
+test('map', async ({ page }) => {
+  await scene(page);
+  await openMap(page);
+  await expect(page.getByTestId('pin').first()).toBeVisible();
+  await page.waitForTimeout(3000); // the tiles draw
+  await shot(page, 'map');
 });

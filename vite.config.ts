@@ -56,8 +56,9 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,woff2,png,svg,ico,webmanifest}'],
-        // the gallery chunk exists on previews only and is never needed offline
-        globIgnores: ['**/Gallery-*'],
+        // the gallery chunk exists on previews only and is never needed offline; MapLibre (S1b, about 1.6 MB with its
+        // worker) loads when the map first opens, and the map needs the network for its tiles anyway
+        globIgnores: ['**/Gallery-*', '**/maplibre-gl-*'],
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/api\//, /^\/__mock\//],
         cleanupOutdatedCaches: true,

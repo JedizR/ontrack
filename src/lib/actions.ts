@@ -324,6 +324,8 @@ export const friendProgram = (userId: string) => online((b) => b.social.program(
 /** Shared meals inside a map box (the map's bounds as they come), yours and your friends', newest first: the pins to
  * group with `clusterPins`. */
 export const mapMeals = (box: Box) => online((b) => b.social.sharedIn(wrapBox(box)));
+/** Sends what is waiting now rather than after the usual pause: a new profile must reach the server before a request. */
+export const syncNow = () => sync.run();
 /** A shared meal's or a profile's photo, fetched each time: a friend's photo is never kept on this phone. */
 export const sharedPhoto = (path: string) => online((b) => b.social.photo(path));
 /**

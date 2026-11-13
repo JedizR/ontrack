@@ -21,6 +21,10 @@ export const sheets = $state({
   meal: null as string | null,
   /** the date of the check-in open in the Check-in sheet: today's, or a stored one */
   checkin: null as string | null,
+  /** the food map and friends (S1b), full screen over the tab */
+  friends: false,
+  /** Your profile, over the map; `then` runs once it is saved (a friend request waiting for a profile) */
+  profile: null as { then?: () => void } | null,
   /** Search picks an item for the open meal instead of logging one (Replace, Add an item) */
   pick: null as ((item: MealItem) => void) | null,
 });

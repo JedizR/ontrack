@@ -2,6 +2,24 @@
 
 Changes to a doc's decision, and choices made on the owner's behalf. Newest first, one line each: what, why.
 
+## S1b
+
+Friends, profiles and the food map, the screen half, 12 to 13 November 2026. Unattended; decided on the owner's behalf from his request and the Instagram map he sent:
+- **Social lives behind one map button in the header, not in the dock.** A fourth tab would shrink each tab to about 60 px beside the plus on the SE and truncate the labels, for something used a few times a week while logging happens several times a day. Under the avatar it would take two taps and stay hidden. In the header it is one tap from every tab, the dock stays as it is, and the map is the home of friends, as Instagram's map holds its friend search. A violet badge counts requests waiting (badges are a brand use in the owner's picks; DESIGN.md section 4 now lists them).
+- **The map is a full screen layer over the shell, not a tab or a route.** Back returns to the tab, as Instagram's map returns to the inbox. The friends panel is a bottom sheet inside it that never blocks the map, and the profile, friend and meal photo sheets open over it.
+- **OpenFreeMap's Positron (light) and Dark styles.** Free, no key, no registration, commercial use allowed, no stated rate limit for map views (openfreemap.org and its terms, read 12 November 2026). Attribution is required and MapLibre shows it from the tiles. Quiet grey grounds leave the colour to the photos and to Ontrack's violet; Liberty's coloured map would compete with both. MapLibre GL JS 6.16.0 (BSD-3-Clause), pinned.
+- **The map chunk is not precached.** MapLibre is about 1.6 MB with its worker. It loads when the map first opens and the browser keeps it; the map needs the network for tiles anyway, so offline shows a plain message instead.
+- **Pins are Ontrack buttons placed over the map,** moved with `map.project` as the map moves, not MapLibre markers or a symbol layer: each gets an accessible name ("Nan, Pad kra pao, and 3 more"), a 56 px target and the house styles. Avatars get a violet ring, Ontrack's echo of Instagram's story ring (a brand use, added to DESIGN.md section 4). "+N more" is a small glass chip, since it sits over the map.
+- **One query for the whole world when the map opens,** newest 500 (a commented shortcut: query the box as the map moves once friends share more). Your own shared meals come from the phone, so they show at once and before they sync; the server's copy of the same meal is dropped.
+- **A cluster opens its meals in one sheet, paged,** instead of zooming in: meals shared from one spot share one rounded position and would never separate.
+- **The location sentence comes once per phone, before the first prompt** (`prefs.locationOk`): in the Review sheet as a caption with "Use my location", on the map as a card with Continue. After that the switch asks at once. A photo with its own location never prompts.
+- **Sharing a logged meal uses where the phone is now,** worded so ("Placed where you are now"). The photo's location is read at capture only, and keeping it for every meal in case it is shared later would store places the user never chose to share. Sharing from the Review sheet is the way to use where the photo was taken.
+- **The Meal sheet's switch acts at once,** with a toast, not on Save changes: sharing is a separate act from correcting the items, and a switch that waits reads as broken. The sheet's copy follows it, so Save changes keeps it.
+- **A shared photo stays the 320 px thumbnail** (S1a). The meal photo sheet shows it at full width, as the Meal sheet already does for your own meals; a larger copy would double the storage and the deleting M9 must do. On the owner's list to judge on the phone.
+- **Requests from search:** Add without a profile opens Your profile, then sends the request once the profile has synced (the server only knows people with a published profile). Decline needs no confirm (the other person can ask again); Remove friend has a confirm step, since undoing it needs the other person's yes.
+- **The landing section is 04 Friends, after Check-in and before Sources** (BUILD-PLAN S1 step 6): the dark run to the end stays whole, and the three points answer the worry a food map raises (who sees it, where) before the sources. Its shot uses OpenFreeMap's real tiles (`E2E_REAL_TILES=1`), 80 KB against about 30 KB for the others, since the map's labels blur at lower quality; it loads lazily like the rest.
+- **Words:** no counts of friends or pins as goals, no "you have no friends", no "don't miss out". Empty states say what will appear and how (DESIGN.md section 2).
+
 ## U1a
 
 Onboarding feel, 13 November 2026. Unattended; from the owner's iPhone pass (feedback 8, 9, 10). The owner's calls, recorded as asked:

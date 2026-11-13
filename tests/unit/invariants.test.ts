@@ -21,7 +21,8 @@ describe('copy rules', () => {
   test.each(strings(en))('%s: %s', (path, s) => {
     expect(s).not.toMatch(/[–—·!]/); // en dash, em dash, middle dot, exclamation mark
     // sentence case starts with a capital, except captions that continue a number ("620" then "to go")
-    if (!path.startsWith('after.')) expect(s[0]).toBe(s[0].toUpperCase());
+    // and the example handle, since handles are lowercase
+    if (!path.startsWith('after.') && path !== 'social.handleHint') expect(s[0]).toBe(s[0].toUpperCase());
   });
 });
 

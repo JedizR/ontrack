@@ -2,6 +2,7 @@
 //   pnpm exec playwright test --project=stress   -> screenshots/stress/<device>/*.png
 import { devices, expect, test, type Page } from '@playwright/test';
 import { MEALS, SUPPLEMENTS, fieldFill, open, openSeeded, signIn, takePhoto, wheelType, withPrefs } from './helpers';
+import { openMap, raise, scene } from './social';
 
 const DEVICES = [
   // phones in Safari with its toolbars showing: what a browser tab gets
@@ -30,8 +31,9 @@ const overflow = (page: Page) => page.evaluate(() => {
   return bad.slice(0, 5);
 });
 
-/** Visible tap targets smaller than 44 px in either direction. */
+/** Visible tap targets smaller than 44 px in either direction. The map's credit line (S1b) is text links, as OpenFreeMap asks. */
 const smallTargets = (page: Page) => page.evaluate(() => [...document.querySelectorAll<HTMLElement>('button, a[href], input, [role="radio"], [role="switch"]')]
+  .filter((el) => !el.closest('.maplibregl-ctrl-attrib'))
   .filter((el) => { const r = el.getBoundingClientRect(); const s = getComputedStyle(el); return r.width > 0 && r.height > 0 && s.visibility !== 'hidden' && s.opacity !== '0' && (r.width < 43.5 || r.height < 43.5); }) // sub-pixel layout can draw a 44 px box at 43.9
   .map((el) => `${(el.getAttribute('aria-label') || el.textContent || el.tagName).trim().slice(0, 24)} ${Math.round(el.getBoundingClientRect().width)}x${Math.round(el.getBoundingClientRect().height)}`));
 
@@ -359,6 +361,54 @@ for (const d of PHONES) {
     test('progress holds at the largest text', async ({ page }) => {
       await withPrefs(page, { theme: 'light', fontSize: 'xl' });
       await walkProgress(page, `screenshots/fonts/${d.name}-xl/progress`);
+    });
+  });
+}
+
+/** S1b: the food map, the raised friends panel, a pin's meals, a friend and your profile. Without WebGL the map says so and the rest still holds. */
+async function walkFriends(page: Page, dir: string) {
+  const sheet = async (id: string, name: string, action?: string) => {
+    await expect(page.getByTestId(id)).toHaveCSS('transform', 'none');
+    if (action && page.viewportSize()!.height > page.viewportSize()!.width) await expect(page.getByTestId(action)).toBeInViewport({ ratio: 1 });
+    await checkPage(page, name, dir);
+  };
+  await scene(page);
+  await checkPage(page, 'today-badge', dir);
+  await openMap(page);
+  await checkPage(page, 'map', dir);
+  const pins = await page.getByTestId('pin').count();
+  if (pins) {
+    await page.getByTestId('pin').first().click();
+    await sheet('pin-sheet', 'pin');
+    await page.keyboard.press('Escape');
+    await page.getByTestId('pin-sheet').waitFor({ state: 'detached' });
+  }
+  await raise(page);
+  await page.waitForTimeout(450);
+  await checkPage(page, 'panel', dir);
+  await page.getByTestId('friend-list').getByTestId('friend').first().click();
+  await sheet('friend-sheet', 'friend');
+  await page.getByTestId('friend-remove').click();
+  await sheet('friend-sheet', 'friend-remove', 'friend-remove-confirm');
+  await page.keyboard.press('Escape');
+  await page.getByTestId('friend-sheet').waitFor({ state: 'detached' });
+  await page.getByTestId('panel-me').click();
+  await sheet('profile-sheet', 'profile', 'profile-save');
+}
+for (const d of DEVICES.filter((x) => x.mobile)) {
+  test.describe(d.name, () => {
+    test.use({ viewport: { width: d.width, height: d.height }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
+    test('friends layout holds', async ({ page }) => {
+      await walkFriends(page, `screenshots/stress/${d.name}/friends`);
+    });
+  });
+}
+for (const d of PHONES) {
+  test.describe(`font xl ${d.name}`, () => {
+    test.use({ viewport: { width: d.width, height: d.height }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
+    test('friends hold at the largest text', async ({ page }) => {
+      await withPrefs(page, { theme: 'light', fontSize: 'xl' });
+      await walkFriends(page, `screenshots/fonts/${d.name}-xl/friends`);
     });
   });
 }

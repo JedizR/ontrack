@@ -9,8 +9,8 @@ export const FONT_SCALE = { m: 1, l: 1.15, xl: 1.3 } as const;
 // index.html reads the same key and fields before first paint
 export const PREFS_KEY = 'ot-ui';
 
-interface Saved { theme: Theme; fontSize: FontSize; tab: Tab; lastUser: string | null; lastEmail: string | null; draft: Draft | null; photoOk: boolean; firstDay: string | null; suggestOff: boolean }
-const DEFAULTS: Saved = { theme: 'system', fontSize: 'system', tab: 0, lastUser: null, lastEmail: null, draft: null, photoOk: false, firstDay: null, suggestOff: false };
+interface Saved { theme: Theme; fontSize: FontSize; tab: Tab; lastUser: string | null; lastEmail: string | null; draft: Draft | null; photoOk: boolean; firstDay: string | null; suggestOff: boolean; locationOk: boolean }
+const DEFAULTS: Saved = { theme: 'system', fontSize: 'system', tab: 0, lastUser: null, lastEmail: null, draft: null, photoOk: false, firstDay: null, suggestOff: false, locationOk: false };
 const load = (): Saved => {
   try { return { ...DEFAULTS, ...JSON.parse(localStorage.getItem(PREFS_KEY) ?? '{}') }; }
   catch { return { ...DEFAULTS }; }
@@ -43,6 +43,9 @@ class Prefs {
   /** "Not now" on Train's suggested program (O1) */
   get suggestOff() { return this.#s.suggestOff; }
   set suggestOff(v: boolean) { this.#s.suggestOff = v; this.#save(); }
+  /** the one sentence about location was shown before the first location prompt (S1b, F17) */
+  get locationOk() { return this.#s.locationOk; }
+  set locationOk(v: boolean) { this.#s.locationOk = v; this.#save(); }
   #save() { try { localStorage.setItem(PREFS_KEY, JSON.stringify($state.snapshot(this.#s))); } catch { /* private mode */ } }
 }
 

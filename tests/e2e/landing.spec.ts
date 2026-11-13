@@ -3,7 +3,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { open, openFresh, seedAccount, signIn, space, startPlan, toLanding, useSpace, withPrefs, choose } from './helpers';
 
-const SECTIONS = ['landing-hero', 'landing-statement', 'landing-log', 'landing-train', 'landing-checkin', 'landing-sources', 'landing-cta'];
+const SECTIONS = ['landing-hero', 'landing-statement', 'landing-log', 'landing-train', 'landing-checkin', 'landing-friends', 'landing-sources', 'landing-cta'];
 
 /** Marks the window if the landing page is ever on screen, even for a moment. */
 const watchForLanding = (page: Page) => page.addInitScript(() => {
@@ -19,7 +19,7 @@ test('a new visitor sees the landing page, and Build your plan starts onboarding
   for (const id of SECTIONS) await expect(page.getByTestId(id)).toBeAttached();
   // every feature shows a real screen of the app, each described
   const shots = page.getByTestId('landing').locator('img');
-  await expect(shots).toHaveCount(8);
+  await expect(shots).toHaveCount(9);
   for (const alt of await shots.evaluateAll((imgs) => imgs.map((i) => i.getAttribute('alt') ?? ''))) expect(alt.length).toBeGreaterThan(20);
   // the browser is the app: nothing asks to install it
   expect(await page.getByTestId('landing').innerText()).not.toMatch(/install|home screen|download|app store/i);
@@ -87,7 +87,8 @@ test.describe('reduced motion', () => {
         .filter((el) => { const cs = getComputedStyle(el); return cs.opacity !== '1' || cs.scale !== 'none' || cs.filter !== 'none'; })
         .map((el) => el.textContent?.trim().slice(0, 20)),
     }));
-    expect(await still()).toEqual({ animations: 0, hidden: [] });
+    // polled: the page's first frame can still list animations that end at once under reduced motion
+    await expect.poll(still).toEqual({ animations: 0, hidden: [] });
     await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
     await toLanding(page);
     expect(await still()).toEqual({ animations: 0, hidden: [] });

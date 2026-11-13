@@ -1,7 +1,7 @@
 // The food map's positions (S1, F17): GPS read from a photo's Exif, rounded to about 100 m, pins grouped by zoom.
 import { readFileSync } from 'node:fs';
-import { expect, test } from 'vitest';
-import { clusterPins, photoPosition, roundPosition, wrapBox, type Position } from '../../src/lib/geo';
+import { afterEach, describe, expect, test, vi } from 'vitest';
+import { clusterPins, currentPosition, photoPosition, roundPosition, wrapBox, type Position } from '../../src/lib/geo';
 
 /** A JPEG's start, an APP1 Exif segment whose TIFF block has a GPS directory, and its end. dms: degrees, minutes, seconds. */
 function jpegWithGps(lat: number[], latRef: string, lng: number[], lngRef: string, le: boolean) {
@@ -79,4 +79,34 @@ test('a map box comes back inside -180 to 180: panned round the world, wider tha
   expect(wrapBox(box(460, 461))).toEqual(box(100, 101));
   expect(wrapBox(box(-200, 200))).toEqual(box(-180, 180));
   expect(wrapBox(box(-180, 180))).toEqual(box(-180, 180));
+});
+
+describe('currentPosition', () => {
+  const stub = (geolocation: Partial<Geolocation> | undefined) => vi.stubGlobal('navigator', { geolocation });
+  afterEach(() => vi.unstubAllGlobals());
+
+  test('reads one fix, never a watch, without high accuracy', async () => {
+    const get = vi.fn((ok: PositionCallback, _fail?: PositionErrorCallback | null, _options?: PositionOptions) => ok({ coords: { latitude: 13.7563, longitude: 100.5018 } } as GeolocationPosition));
+    const watch = vi.fn();
+    stub({ getCurrentPosition: get, watchPosition: watch });
+    expect(await currentPosition()).toEqual({ lat: 13.7563, lng: 100.5018 });
+    expect(get).toHaveBeenCalledTimes(1);
+    expect(get.mock.calls[0][2]).toMatchObject({ enableHighAccuracy: false });
+    expect(watch).not.toHaveBeenCalled();
+  });
+
+  test('a refusal is denied, a timeout or no fix is unavailable', async () => {
+    const failWith = (code: number) => stub({ getCurrentPosition: (_ok: PositionCallback, fail?: PositionErrorCallback | null) => fail?.({ code } as GeolocationPositionError) });
+    failWith(1);
+    expect(await currentPosition()).toBe('denied');
+    failWith(2);
+    expect(await currentPosition()).toBe('unavailable');
+    failWith(3);
+    expect(await currentPosition()).toBe('unavailable');
+  });
+
+  test('no location service is unavailable', async () => {
+    stub(undefined);
+    expect(await currentPosition()).toBe('unavailable');
+  });
 });

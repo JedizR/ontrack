@@ -2,6 +2,7 @@
 //   pnpm screenshots -- --grep "shell"
 import { expect, test, type Page } from '@playwright/test';
 import { EMAIL, MEALS, SUPPLEMENTS, TODAY, fieldFill, onboard, open, openFresh, openSeeded, seedAccount, signIn, takePhoto, vision, wheelType, withPrefs } from './helpers';
+import { openMap, quietTiles, raise, scene } from './social';
 
 const SECTIONS = ['prefs', 'buttons', 'track', 'hero', 'rows', 'chips', 'sheets', 'wheel', 'week', 'feedback', 'states'];
 
@@ -142,6 +143,16 @@ for (const theme of ['light', 'dark'] as const) {
           await shot(page, 'landing', `scroll-${String(i).padStart(2, '0')}`);
         }
         await page.screenshot({ path: `screenshots/landing/full-${theme}-${d.name}.png`, fullPage: true });
+      });
+
+      // S1b: the landing's 04 Friends section whole, at rest (reduced motion shows each reveal's end state)
+      test('landing friends', async ({ page }) => {
+        await page.emulateMedia({ reducedMotion: 'reduce' });
+        await openFresh(page);
+        const section = page.getByTestId('landing-friends');
+        await section.scrollIntoViewIfNeeded();
+        await expect(section.locator('img')).toHaveJSProperty('complete', true);
+        await section.screenshot({ path: `screenshots/landing/friends-${theme}-${d.name}.png` });
       });
 
       // SCREENS.md section 4: every question and its guardrail screens, Your plan
@@ -296,6 +307,7 @@ for (const theme of ['light', 'dark'] as const) {
       // SCREENS.md section 8, Train: no exercises listed, the Session sheet and picker, recommendations with a source,
       // Templates and the confirm, a template's analysis, and no program at all
       test('train', async ({ page }) => {
+        test.slow(); // about twenty states, past 30 s on CI
         const settled = (id: string) => expect(page.getByTestId(id)).toHaveCSS('transform', 'none');
         const top = (id: string) => page.getByTestId(id).evaluate((el) => scrollTo(0, el.getBoundingClientRect().top + scrollY - 60));
         await open(page);
@@ -707,6 +719,109 @@ for (const theme of ['light', 'dark'] as const) {
         await page.getByTestId('tab-2').click();
         await top('progress-checkins');
         await shot(page, 'progress', 'checkin-stored');
+      });
+
+      // SCREENS.md section 13 (S1b): the map button's badge, the map, the friends panel, search, a pin, a friend, your
+      // profile, Share to map in the Review and Meal sheets, and the map offline. E2E_REAL_TILES=1 draws OpenFreeMap's tiles
+      test('friends', async ({ page, context }) => {
+        test.slow();
+        const settled = (id: string) => expect(page.getByTestId(id)).toHaveCSS('transform', 'none');
+        const tiles = () => page.waitForTimeout(process.env.E2E_REAL_TILES ? 3000 : 300);
+        await context.grantPermissions(['geolocation']);
+        await context.setGeolocation({ latitude: 13.7466, longitude: 100.5393 });
+        const s = await scene(page);
+        await expect(page.getByTestId('friends-badge')).toHaveText('1');
+        await shot(page, 'friends', 'today-badge');
+        // Share to map in the Review sheet, then the Meal sheet's switch
+        await vision(page, s, { fixture: 'basil-pork' });
+        await takePhoto(page, true);
+        await expect(page.getByTestId('meal-item')).toHaveCount(3);
+        await page.getByTestId('review-share-switch').click();
+        await page.getByTestId('review-share').scrollIntoViewIfNeeded();
+        await settled('review-sheet');
+        await shot(page, 'friends', 'review-ask');
+        await page.getByTestId('review-share-locate').click();
+        await expect(page.getByTestId('review-share-note')).toHaveText('Placed where you are now, rounded to about 100 m.');
+        await shot(page, 'friends', 'review-shared');
+        await page.getByTestId('review-add').click();
+        await expect(page.getByTestId('review-sheet')).toBeHidden();
+        await page.getByTestId('meal').first().getByRole('button').click();
+        await settled('meal-sheet');
+        await page.getByTestId('meal-share').scrollIntoViewIfNeeded();
+        await shot(page, 'friends', 'meal-share');
+        await page.keyboard.press('Escape');
+        await page.getByTestId('meal-sheet').waitFor({ state: 'detached' });
+        await expect(page.getByRole('button', { name: 'Undo' })).toBeHidden({ timeout: 8000 });
+        await openMap(page);
+        // the fitted zoom differs by width, so groups split differently: the shot needs pins, not a count
+        await expect(page.getByTestId('pin').first()).toBeVisible();
+        await tiles();
+        await shot(page, 'friends', 'map');
+        await raise(page);
+        await shot(page, 'friends', 'panel');
+        await page.getByTestId('friend-search').fill('t');
+        await expect(page.getByTestId('search-results')).toBeVisible();
+        await shot(page, 'friends', 'search');
+        await page.getByTestId('friend-search').fill('zz');
+        await expect(page.getByTestId('search-none')).toBeVisible();
+        await shot(page, 'friends', 'search-none');
+        await page.getByTestId('friend-search').fill('');
+        await page.getByTestId('friend-list').getByTestId('friend').filter({ hasText: 'Rin' }).click();
+        await settled('friend-sheet');
+        await shot(page, 'friends', 'friend');
+        await page.getByTestId('friend-remove').click();
+        await shot(page, 'friends', 'friend-remove');
+        await page.keyboard.press('Escape');
+        await page.getByTestId('friend-sheet').waitFor({ state: 'detached' });
+        await page.getByTestId('friend-list').getByTestId('friend').filter({ hasText: 'Kai' }).click();
+        await expect(page.getByTestId('friend-program-hidden')).toBeVisible();
+        await settled('friend-sheet');
+        await shot(page, 'friends', 'friend-private');
+        await page.keyboard.press('Escape');
+        await page.getByTestId('friend-sheet').waitFor({ state: 'detached' });
+        await page.getByTestId('panel-me').click();
+        await settled('profile-sheet');
+        await shot(page, 'friends', 'profile');
+        await page.keyboard.press('Escape');
+        await page.getByTestId('profile-sheet').waitFor({ state: 'detached' });
+        await page.getByTestId('map-fit').click();
+        await expect(page.getByTestId('friends-panel')).toHaveAttribute('data-raised', 'false');
+        await page.getByRole('button', { name: /^Rin, Khao man kai/ }).click();
+        await settled('pin-sheet');
+        await expect(page.getByTestId('pin-sheet').getByTestId('shared-photo')).toBeVisible();
+        await shot(page, 'friends', 'pin');
+        await page.keyboard.press('Escape');
+        await page.getByTestId('pin-sheet').waitFor({ state: 'detached' });
+        // located once already, by the Review sheet: no note this time
+        await page.getByTestId('map-locate').click();
+        await expect(page.getByTestId('map-here')).toBeVisible();
+        await tiles();
+        await shot(page, 'friends', 'here');
+        await page.getByTestId('map-back').click();
+
+
+        // no connection
+        await context.setOffline(true);
+        await page.getByTestId('friends').click();
+        await expect(page.getByTestId('map-message')).toBeVisible();
+        await shot(page, 'friends', 'offline');
+        await context.setOffline(false);
+      });
+
+      // a new account's first visit: no profile, nothing shared
+      test('friends empty', async ({ page }) => {
+        await quietTiles(page);
+        await open(page);
+        await openMap(page);
+        await shot(page, 'friends', 'empty');
+        await page.getByTestId('map-locate').click();
+        await shot(page, 'friends', 'locate-note');
+        await page.getByRole('button', { name: 'Not now' }).click();
+        await raise(page);
+        await shot(page, 'friends', 'empty-raised');
+        await page.getByTestId('panel-setup-open').click();
+        await expect(page.getByTestId('profile-sheet')).toHaveCSS('transform', 'none');
+        await shot(page, 'friends', 'profile-setup');
       });
 
       // Today composed from the real components
