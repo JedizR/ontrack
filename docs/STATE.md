@@ -44,8 +44,8 @@ Status is one of: not started, in progress, shipped, shipped with cuts, blocked.
 | S1 | Friends, profiles and the food map (owner, after L1) | in progress | | F16, F17. Friends by request, optional program on the profile, opt-in meal photos on a map at rounded photo locations. Split: S1a data, S1b screens |
 | S1a | Friends data, S1's data half (alongside T1a) | shipped | PR #25, merged, `v0.8.8` | Visibility suite green on the mock and on live Supabase; `0005_social.sql` and `0006_publish_upsert.sql` pushed, advisors unchanged. No screens: S1b builds them on the notes below |
 | S1b | Friends screens, S1's screen half | in progress | branch `s1b-social-screens`, pushed, no PR | Wave 1. Handoff in the branch's copy of this file |
-| U1 | Feel and polish (owner's iPhone pass, 13 November) | not started | | UI about 70 percent, UX about 30 percent done in the owner's view. Split: U1a onboarding, U1b the look, U1c motion and feel |
-| U1a | Onboarding feel | not started | | Wave 1. No auto-advance, clear selection, two more goals, Building your plan |
+| U1 | Feel and polish (owner's iPhone pass, 13 November) | in progress | | UI about 70 percent, UX about 30 percent done in the owner's view. Split: U1a onboarding, U1b the look, U1c motion and feel |
+| U1a | Onboarding feel | shipped | PR #32, merged, `v0.8.11` | Gate green on the mock: select then Continue on every choice step, Gain weight (vector J) and Lose fat and build muscle (vector K), Building your plan (skipped under reduced motion). Gain user 12 to 19 gestures, modelled 118 to 135 s; cut 13 to 19, 114 to 130 s. Two critic rounds, a code review. Cold onboarding per new goal: on the owner's list |
 | U1b | The look, app wide | not started | | Wave 2. Nested corners and padding, dark contrast, dock, header fades, dividers, status bar |
 | U1c | Motion and feel, app wide | not started | | Wave 3. Motion tokens, tap feedback, moving numbers, iOS swipe, progress, satisfaction, the UX walk |
 | M9 | Hardening and release | not started | | Split: M9a features, M9b hardening |
@@ -63,6 +63,12 @@ Status is one of: not started, in progress, shipped, shipped with cuts, blocked.
 - Vision: real. `/api/analyze` with `gemini-3.6-flash`, minimal thinking. Vercel holds `VISION_PROVIDER=gemini`, `GEMINI_MODEL`, and `GEMINI_API_KEY` (the development key, free tier: 20 requests a day per model) for production and preview, plus `VITE_BACKEND=supabase`, the Supabase URL and keys, and `CRON_SECRET`. The key's file is `~/.config/ontrack/gemini-api-key`; `scripts/live-env.sh` reads it for `dev:live` and `eval:vision`.
 
 ## Notes for the next milestone
+
+U1a (onboarding feel; decisions in `docs/DECISIONS.md` under U1a):
+- A tap calls `set`; Continue is `cta(onclick, ready)` in `Onboarding.svelte`. The draft's `aim` (`AIMS` in `draft.ts`) sits beside the engine goal; plans store only the goal. `Building.svelte` plays once a visit (`built`). Tests: `choose(page, testid)` in helpers; testids `build-row`, `build-mark`, `goal-more`. Science: SCIENCE.md section 6 "Goals as asked", vectors J and K, S26.
+- For U1b: a picked answer is `bg-ink` with a `bg-accent text-on-accent` tile; keep 3:1 against the page if selected states change. From daily movement on, the footer holds the number-so-far card plus Continue, which is tall on the SE.
+- For U1c: Building's beats (450 ms per row, 2.15 s total) are local to `Building.svelte`, and the reveal has no motion yet; both are candidates for the motion tokens. Choices, the day chips and screening already call `haptic` on select.
+- For M9a: Settings' goal must read a recomp plan as `lose` at 0.25 with 2.0 g/kg protein, and a Gain weight plan as `gain` at 0.75. The aim is not stored.
 
 L1 (landing page; spec `docs/SCREENS.md` section 3, look `docs/DESIGN.md` section 13, decisions under L1):
 - Code: `src/flows/landing/Landing.svelte` (one page, its own lazy chunk), `Phone.svelte` (a real screen in a CSS phone, `crop` shows the top share), `inview.ts` (`inview` sets `data-inview` once; `onscreen` reports in and out). Words under `t.landing`. App shows it where the draft is at 'welcome' (`landing` in `App.svelte`); Welcome and `t.welcome` are gone. Build your plan sets the draft to `step(d, year, 1)` from 'welcome', keeping earlier answers.

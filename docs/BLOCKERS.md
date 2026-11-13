@@ -23,6 +23,11 @@ Each entry: what is blocked, what Claude tried, the exact steps for you, and wha
 
 Each entry: what to look at (URL or screenshot paths), what to look for, and which milestone it belongs to.
 
+### U1a: onboarding feel, once per new goal
+
+- **Where:** https://ontrack-black.vercel.app in Safari. Screenshot 10 of your iPhone pass shows a "How fast?" step from before O1, so the phone probably had an old copy cached: close Ontrack in Safari and open it again first. Videos: branch `pr-assets`, `u1/u1a-onboarding-light.webm` and `u1/u1a-onboarding-dark.webm`.
+- **Look for:** a tap only selects and Continue moves on; the picked card's violet tile reads in light and dark (the glyph is white; say if you want light purple); "Not what you're looking for?" then Gain weight (under BMI 20 Faster is already picked) and Lose fat and build muscle (no pace control, about 0.2 kg a week); whether Building your plan feels right at about 2 seconds.
+
 ### L1: scroll the landing page on your iPhone in Safari
 
 - **Where:** the pull request's Vercel preview in Safari on the iPhone, signed out (a private tab), and on a Mac browser. Screenshots: `screenshots/landing/` after `pnpm screenshots -- --grep landing` (each view as you scroll, every phone size, light and dark, and `desktop`), and the scroll-through in the pull request.
