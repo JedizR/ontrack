@@ -6,12 +6,18 @@ Everything that needs you, in one place. Newest first within each section.
 
 Each entry: what is blocked, what Claude tried, the exact steps for you, and what to tell Claude afterwards.
 
-### M9a: Privacy and Terms, and the support Gmail
+### M9a: the support Gmail's app password
 
-- **Blocked:** publishing the Privacy and Terms drafts as final; Report a problem's recipient; sign-in codes from the product's own address.
-- **Decided:** the product address is `team.ontrackapp@gmail.com` (owner, 13 November).
-- **Steps for you:** create that Gmail, turn on 2-Step Verification, create an app password for Mail and save it to `~/.config/ontrack/smtp-app-password` (never in a chat). Read https://ontrack-black.vercel.app/privacy.html and /terms.html (`public/privacy.html`, `public/terms.html`) and check the Gemini free tier paragraph, written from memory.
-- **Then tell Claude:** "the support Gmail is ready" and "Privacy and Terms are approved". Claude then points Supabase's SMTP at it with the sender name Ontrack, sets `VITE_SUPPORT_EMAIL`, fills the placeholders, and sends a test code.
+- **Blocked:** sign-in codes from the product's own address (they still come from your own Gmail).
+- **Done:** the address is `hello.ontrackapp@gmail.com` (owner, 13 November). Privacy and Terms approved by the owner on 13 November and published with that address; `VITE_SUPPORT_EMAIL` set in Vercel.
+- **Steps for you:** create the Gmail, turn on 2-Step Verification (Google Account, Security), open https://myaccount.google.com/apppasswords, create one named "Ontrack", copy the 16 letters, then in Terminal run `pbpaste | tr -d ' ' > ~/.config/ontrack/smtp-app-password && chmod 600 ~/.config/ontrack/smtp-app-password`. Never paste it in a chat.
+- **Then tell Claude:** "the support Gmail is ready". Claude points Supabase's SMTP at it with the sender name Ontrack and sends a test code.
+
+### Optional: Gemini's paid tier on your Google Developer Program credits
+
+- **Now:** Ontrack runs on Gemini's free tier with the Flash-Lite fallback (`v0.8.15`), which is enough for the class demo.
+- **If you want it:** your billing account holds seven Google Developer Program credits of 337.77 baht each (about 2,364 baht, about 68 USD), scoped to all of Google Cloud, ending between February and October 2027. Linking that billing account to the Gemini key's project moves the whole project to the paid tier: higher limits, fewer "high demand" refusals, and Google does not use the photos to improve its products. At roughly 0.1 to 0.4 baht a photo the credits last thousands of photos. Every request is then billed (no free allowance on a billed project), and anything past the credits goes to your card.
+- **Steps for you:** in Google Cloud, Billing, link "My Billing Account" to the project shown for the key at https://aistudio.google.com/apikey; add a budget of 300 baht on that project with alerts at 50, 90 and 100 percent. Then tell Claude "Gemini billing is on": Claude lowers the app's daily cap to match, and updates the Privacy paragraph about the free tier.
 
 ### B1: a contact address for Open Food Facts (optional)
 
