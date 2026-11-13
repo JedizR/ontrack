@@ -26,8 +26,8 @@
     >
       {#if o.icon}
         {@const Icon = o.icon}
-        <!-- picked, the tile turns violet with a light glyph, so the choice reads in both themes (U1a) -->
-        <span class="grid size-10 flex-none place-items-center rounded-sm transition-colors duration-[var(--d-ui)] {on ? 'bg-accent text-on-accent' : 'tile'}" aria-hidden="true"><Icon size={22} strokeWidth={2} /></span>
+        <!-- picked, the tile turns violet with a lavender glyph, so the choice reads in both themes (U1a, U1c) -->
+        <span class="grid size-10 flex-none place-items-center rounded-sm transition-colors duration-[var(--d-ui)] {on ? 'bg-accent text-on-accent-pick' : 'tile'}" aria-hidden="true"><Icon size={22} strokeWidth={2} /></span>
       {/if}
       <span class="min-w-0 flex-1">
         <span class="text-body block font-semibold">{o.title}</span>

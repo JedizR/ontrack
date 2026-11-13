@@ -32,6 +32,7 @@
   --color-progress: var(--progress);
   --color-accent-press: var(--accent-press);
   --color-on-accent: var(--on-accent);
+  --color-on-accent-pick: var(--on-accent-pick);
   --color-accent-soft: var(--accent-soft);
   --color-on-accent-soft: var(--on-accent-soft);
   --color-success: var(--success);

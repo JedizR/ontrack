@@ -52,6 +52,8 @@ const STATES: [string, string][] = [
   ['control-edge', 'surface'], ['control-edge', 'canvas'], ['surface', 'control-edge'], ['surface', 'ink'],
   // the dock's selected tab: a violet icon and label on its grey pill and on the bar
   ['accent-ink', 'surface-2'], ['accent-ink', 'bar-solid'],
+  // a picked choice's icon: a lavender glyph on its violet tile (U1c, the owner)
+  ['on-accent-pick', 'accent'],
   // the stepper's keys and the dock's plus, on a card or the page
   ['action', 'surface'], ['action', 'canvas'],
 ];
