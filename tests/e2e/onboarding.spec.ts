@@ -263,7 +263,7 @@ test('maintain with lifting and cardio: no pace, no experience question, and Tra
 
   // five days of both, under a year of lifting assumed: the three day hybrid
   await page.getByTestId('tab-1').click();
-  await expect(page.getByTestId('train-suggest').getByRole('heading')).toHaveText('Full body and cardio 3 days');
+  await expect(page.getByTestId('train-suggest').getByRole('heading')).toHaveText('Suggested for your week, Full body and cardio 3 days');
   await expect(page.getByTestId('train-suggest')).toContainText('Fits 3 days a week.');
   await page.getByTestId('suggest-use').click();
   await expect.poll(() => record(page, 'program', 'program')).toMatchObject({ name: 'Full body and cardio 3 days' });
@@ -277,7 +277,7 @@ test('gaining on cardio alone: Train adds the two strength sessions to the week,
   await page.getByTestId('plan-save').click();
   await signIn(page);
   await page.getByTestId('tab-1').click();
-  await expect(page.getByTestId('train-suggest').getByRole('heading')).toHaveText('Minimal 2 days');
+  await expect(page.getByTestId('train-suggest').getByRole('heading')).toHaveText('Suggested for your week, Minimal 2 days');
   await expect(page.getByTestId('train-suggest')).toContainText('Adds the two strength sessions a week that health guidelines advise.');
   await page.getByTestId('suggest-use').click();
   await expect.poll(async () => ((await record(page, 'program', 'program')) as { sessions: { type: string }[] }).sessions.map((s) => s.type).sort())

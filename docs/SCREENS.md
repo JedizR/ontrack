@@ -224,7 +224,7 @@ The common case, the morning shake: plus, the Whey row, Add. Three taps when the
 2. Weight card, the screen's hero (D2): on its haze panel the current trend weight in Display with lighter decimals, "trend" as its caption, and "0.3 percent a week. Target 0.5"; below the panel the chart (weigh-ins as dots, the trend as a line, the target rate as a faint band) and a neutral button "Log weight".
 3. Maintenance card, once measured: "2,120 kcal" in Display, "Measured from your last 3 weeks", and the formula estimate beside it for comparison.
 4. Intake card: bars for weekly average calories with the target as a line, and average protein beneath.
-5. Consistency card: the last four weeks as rows of seven dots, filled in `--success-ink` for on track days, with a count per week.
+5. Consistency card: the on track days of the last four weeks in Display (U3) over "Days on track in the last four weeks", then the four weeks as rows of seven dots, filled in `--success-ink` for on track days, with a count per week.
 6. Training card (PRD F20), for the selected period: sessions done in Display with "of 16 planned sessions done", bars for sessions done each week with what was planned as a line (green once a week's plan is done), then two rows with a small track: "Strength sessions", "2.8 a week on average. Target 2", and "Cardio", "40 of 150 to 300 minutes a week on average". A session counts once it is marked done on Today.
 7. "Check-ins" list: date, the change made or kept, opening the stored check-in.
 8. "History": opens a month list where any day opens in the Today view.

@@ -193,7 +193,7 @@
         <Row title={social.name} caption={t.social.handle(social.handle)} leading={me} onclick={() => { sheets.profile = {}; }} testid="panel-me" />
       {:else}
         <div data-testid="panel-setup">
-          <CardHead title={t.social.setup} line={t.social.setupLine} />
+          <CardHead level={3} title={t.social.setup} line={t.social.setupLine} />
           <Button class="mt-3" onclick={() => { sheets.profile = {}; }} data-testid="panel-setup-open">{t.social.setupAction}</Button>
         </div>
       {/if}

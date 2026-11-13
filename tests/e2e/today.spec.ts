@@ -141,7 +141,7 @@ test('the weigh-in prompt shows after three days and goes once you weigh in', as
   // the seeded weigh-in on TODAY is deleted; the last one left is four days old
   await open(page, '/', [{ collection: 'weight', id: `weight:${TODAY}`, updatedAt: 2, deleted: true, data: { date: TODAY, kg: 60 } }, { collection: 'weight', id: 'weight:2026-11-07', updatedAt: 1, data: { date: '2026-11-07', kg: 60.4 } }]);
   const card = page.getByTestId('weigh-card');
-  await expect(card.getByRole('heading')).toHaveText('Time for a new one');
+  await expect(card.getByRole('heading')).toHaveText('Weigh-in, Time for a new one');
   await expect(card).toContainText('Your last one was 4 days ago');
   await card.getByTestId('weigh-open').click();
   // the wheel starts at the last weigh-in

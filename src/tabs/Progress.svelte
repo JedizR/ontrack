@@ -164,8 +164,10 @@
     </Card>
 
     <Card aria-label={t.progress.consistency} data-testid="progress-consistency">
+      <!-- U3: a summary card leads with its figure, the on track days of the four weeks, its line as the caption -->
       <p class="text-eyebrow text-ink-2">{t.progress.consistency}</p>
-      <p class="text-callout text-ink-2 mt-1">{t.progress.consistencyLine}</p>
+      <p class="text-display mt-2" data-testid="progress-consistency-days"><Count value={four.reduce((n, w) => n + w.onTrack, 0)} from={0} /></p>
+      <p class="text-caption text-ink-2 mt-1">{t.progress.consistencyLine}</p>
       <div class="mt-4 flex flex-col gap-4">
         {#each four as w, i (w.start)}
           <div role="img" aria-label={t.progress.weekOnTrack(t.progress.weeksAgo[i], num(w.onTrack))} data-testid="consistency-week">

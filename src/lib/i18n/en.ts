@@ -607,7 +607,7 @@ export const en = {
   firstDay: {
     title: 'Getting started',
     // U3: the card's status and why, under the title as its eyebrow
-    left: (n: number) => (n === 1 ? 'One step to go' : 'Two steps to go'),
+    left: (n: number) => (n === 2 ? 'Two steps to go' : 'One step to go'),
     line: 'Your first check-in reads from your meals and weigh-ins.',
     saved: 'Plan saved',
     meal: 'Log a meal',

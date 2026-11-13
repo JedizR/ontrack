@@ -138,7 +138,7 @@
           <p class="text-callout text-ink-2 min-w-0 flex-1">{t.train.adds(num(Math.round(perDay)))}</p>
           <Button size="sm" onclick={() => (templates = true)} data-testid="train-change">{t.train.change}</Button>
         </div>
-        {#if pending}<p class="text-callout mt-2 font-semibold" data-testid="train-pending">{t.train.fromTomorrow}</p>{/if}
+        {#if pending}<p class="text-body mt-2" data-testid="train-pending">{t.train.fromTomorrow}</p>{/if}
       {:else}
         <EmptyState text={t.today.noProgram} action={t.train.pick} onaction={() => (templates = true)} />
       {/if}
@@ -200,7 +200,7 @@
       <h2 class="text-heading mt-2">{t.train.analysis}</h2>
       {#if analysis.hasExercises}
         <Card aria-label={t.train.balance} data-testid="train-balance">
-          <CardHead title={t.train.balance} line={t.train.balanceLine(num(V.setsRange), num(V.setsHigh))} />
+          <CardHead level={3} title={t.train.balance} line={t.train.balanceLine(num(V.setsRange), num(V.setsHigh))} />
           <div class="mt-4 flex flex-col gap-3">
             {#each muscles as m (m)}
               {@const sets = analysis.muscles[m].sets}
@@ -238,7 +238,7 @@
 
       {#if analysis.hybrid.length}
         <Card list aria-label={t.train.hybrid} data-testid="train-hybrid">
-          <CardHead class="pt-5 pb-4" title={t.train.hybrid} line={t.train.hybridLine} />
+          <CardHead level={3} class="pt-5 pb-4" title={t.train.hybrid} line={t.train.hybridLine} />
           <div class="border-line border-t">
             {#each analysis.hybrid as p (p.kind)}{@render point(`hybrid-${p.kind}`, hybridSentence(p), p.source, 'hybrid-point')}{/each}
           </div>
