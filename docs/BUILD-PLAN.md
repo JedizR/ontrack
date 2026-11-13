@@ -23,6 +23,7 @@ Ten milestones and eleven the owner added (D1, N1, N2, B1, D2, N3, T1, O1, L1, S
 | L1 | Landing page | A page for signed-out visitors | Scrolling it on the iPhone |
 | S1 | Friends, profiles and the food map | Friends, a profile with an optional program, shared meal photos on a map | A second account as a friend |
 | U1 | Feel and polish | The owner's iPhone pass fixed, and motion, feedback and satisfaction app wide | Using it for a day on the iPhone |
+| L2 | Landing glass and photo gradients | Liquid glass throughout the landing page, gradients made from photos, a real iPhone 16 frame | Looking at it on desktop and on the iPhone |
 | M9 | Hardening and release | Settings, export, accessibility, speed, security, production | Full device check |
 
 After M8 the order is N1, N2, B1, D2, N3, T1, O1, L1, S1, then M9. D2 comes straight after B1 so every later screen is built on the refined look. It follows the owner's MoSCoW and RICE prioritization: B1 is Must (the owner made barcode scanning a main feature); N1, N2, N3, T1 and L1 are Should, with N2 the highest RICE score of the features not yet built, (high value for little effort), S1 is Could, and M9 hardens everything last. O1 comes after N2 and T1 so onboarding can personalize with supplements, the faster pace and hybrid templates, and before L1 because the landing page leads into it.
@@ -34,7 +35,7 @@ After S1 the order is U1, then M9, in lanes (worktrees, `docs/WORKFLOW.md` secti
 | 1 | S1b, and U1a | Onboarding shares no screen with the social screens |
 | 2 | U1b, and M9a | U1b changes the shared look; M9a's new Settings screens take it through the shared components |
 | 3 | U1c | Motion and feel go over every screen once they all exist, Settings included |
-| 4 | M9b | Hardening measures the app as it ships, then `v1.0.0` |
+| 4 | M9b, and L2 | Hardening measures the app as it ships, then `v1.0.0`; L2 (the owner's desktop pass) touches only the landing page, and M9b re-measures after it merges |
 
 U1 comes before the release because the owner judged the UI about 70 percent and the UX about 30 percent done on the iPhone (13 November): too few good feelings. M9 is split because its features (M9a) and its hardening (M9b) are different work, and only M9b has to be last.
 
@@ -99,6 +100,20 @@ Owner checks: the same screens on the iPhone, light and dark.
 
 Gate: end to end tests that each animation reaches its end state and that reduced motion leaves none running; the start time and the initial JavaScript budget hold; short videos of the eight tasks (Playwright, light and dark) on `pr-assets` under `u1/` for the owner.
 Owner checks: use it for a day on the iPhone. Does it feel good?
+
+## L2 Landing glass and photo gradients (the owner's desktop pass, 13 November)
+
+The owner liked the landing page on desktop but saw too little glass and a plain gradient. References in `/Users/admin/destination/ontrack-design/feedback/2026-11-13-landing/`: `landing-01.png` (the page now), `glass-01` to `glass-05` (OneFin's glass mixed with solid elements: the footer's glass panels over a glow, glass cards and chips around a ring, the invoice's frosted chips over a gradient header, a glass chip on a photo, glass percentage chips on a donut), `photogradient-ui.png` (the tool's controls: gradient type, warp shape, warp, warp size, noise, colours), `pad-krapao-fried-eggs.avif` (the meal photo to use).
+
+1. Gradients made from photos, not CSS ramps: make the hero and section backgrounds with https://photogradient.com/ (from a photo, or colours set by hand from the brand palette; warp, positions and a little grain), exported as images. If the site cannot be driven, generate the same kind of warped mesh gradient with grain with a script in `scripts/`. Keep assets small (WebP; the grain as a tiny tiling overlay if that is lighter).
+2. Glass throughout, mixed with solid elements as in the references: the nav, floating chips, feature cards over the gradients, the footer's panels. The material follows the "iOS 26 Liquid Glass (Community)" file in Figma (through the Figma MCP): blur, light edge, specular rim, tint. A solid fallback without `backdrop-filter`; text on glass keeps 4.5:1.
+3. The phone: frame the app with the iPhone 16 from "iPhone 16 and 16 Plus Mockups (Community)" in Figma, top part only, with its status bar and Dynamic Island, so the app no longer touches the top of the phone.
+4. The meal photo in every mockup is the owner's pad kra pao with fried eggs.
+
+If the Figma MCP cannot open a community file without its link, record "Needs your action: the two Figma links" and build from the published dimensions meanwhile.
+
+Gate: `landing.spec.ts` and reduced motion green; initial JavaScript unchanged (the landing is lazy); the landing chunk and its images within a budget stated in the pull request; screenshots at 1440 desktop and 390 phone, light and dark; one critic round against the references.
+Owner checks: the landing on desktop and on the iPhone.
 
 ## M9 Hardening and release
 
