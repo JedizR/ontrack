@@ -22,7 +22,7 @@
   const LEN = 2 * Math.PI * R;
 </script>
 
-<section class="flex min-h-svh flex-col justify-center px-6 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]" aria-label={t.onboarding.building} data-testid="building">
+<section class="flex min-h-svh flex-col justify-center px-4 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]" aria-label={t.onboarding.building} data-testid="building">
   <div class="relative size-16" aria-hidden="true">
     <svg viewBox="0 0 64 64" class="size-16 -rotate-90">
       <circle cx="32" cy="32" r={R} fill="none" stroke-width="4" class="stroke-track" />

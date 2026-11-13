@@ -54,7 +54,7 @@ test('a hardgainer watches the number build, tunes the pace and saves the plan i
 
   // Building your plan names the engine's work, ticks it off and ends in a check, then Your plan counts up
   await expect(page.getByTestId('building')).toBeVisible();
-  await expect(page.getByTestId('build-row')).toHaveText(['Energy you use each day', 'Targets for training and rest days', 'Protein for your goal']);
+  await expect(page.getByTestId('build-row')).toHaveText(['Energy you use each day', 'Targets for training days', 'Protein for this goal']);
   await expect(page.getByTestId('build-row').last()).toHaveAttribute('data-done', 'true');
   await expect(page.getByTestId('your-plan')).toBeVisible();
 
@@ -255,7 +255,7 @@ test('maintain with lifting and cardio: no pace, no experience question, and Tra
   await expect(page.getByTestId('step-kind')).toBeVisible();
   await expect(page.getByTestId('step-count')).toHaveText('Step 8 of 8');
   await choose(page, 'choice-both');
-  await expect(page.getByTestId('building')).toHaveCount(0); // it played once this visit
+  await expect(page.getByTestId('your-plan')).toBeVisible({ timeout: 1000 }); // Building your plan played once this visit
   await page.getByTestId('plan-save').click();
   await signIn(page);
   await expect.poll(() => record(page, 'program', 'program')).toMatchObject({ sessions: [{ type: 'strength' }, { type: 'cardio' }, { type: 'strength' }, { type: 'cardio' }, { type: 'strength' }] });
@@ -302,6 +302,15 @@ test('an eating disorder is advised against tracking and can leave setup', async
   await expect(page.getByTestId('continue')).toBeEnabled(); // a tick enables Continue
   await page.getByTestId('screen-eatingDisorder').click();
   await expect(page.getByTestId('continue')).toBeDisabled();
+  await page.getByTestId('screen-eatingDisorder').click();
+  await expect(page.getByTestId('screen-none')).toHaveAttribute('aria-checked', 'false');
+  // None of these apply unticks like any checkbox, and a tick takes it back
+  await page.getByTestId('screen-eatingDisorder').click();
+  await page.getByTestId('screen-none').click();
+  await expect(page.getByTestId('screen-none')).toHaveAttribute('aria-checked', 'true');
+  await page.getByTestId('screen-none').click();
+  await expect(page.getByTestId('continue')).toBeDisabled();
+  await page.getByTestId('screen-none').click();
   await page.getByTestId('screen-eatingDisorder').click();
   await expect(page.getByTestId('screen-none')).toHaveAttribute('aria-checked', 'false');
   await page.getByTestId('continue').click();

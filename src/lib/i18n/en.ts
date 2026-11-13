@@ -389,9 +389,9 @@ export const en = {
     /** U1a: the short screen before Your plan; each row names work the engine does */
     building: 'Building your plan',
     buildEnergy: 'Energy you use each day',
-    buildDays: 'Targets for training and rest days',
+    buildDays: 'Targets for training days',
     buildEvery: 'One target for every day',
-    buildProtein: 'Protein for your goal',
+    buildProtein: 'Protein for this goal',
     built: 'Your plan is ready',
     back: 'Back',
     continue: 'Continue',

@@ -143,13 +143,14 @@
   function tick(k: keyof Screening) {
     haptic();
     ticks[k] = !ticks[k];
-    // a tick takes back "None of these apply"
-    if (d.screening && !flagged(d)) set({ screening: undefined });
+    // a tick takes back the saved answer, "None of these apply" included; Continue saves the ticks
+    if (d.screening) set({ screening: undefined });
   }
   function tickNone() {
     haptic();
     ticks = { ...NONE };
-    set({ screening: { ...NONE } });
+    // a second tap unticks it, as any checkbox
+    set({ screening: none ? undefined : { ...NONE } });
   }
 
   // ----- birth year: a wheel from the answer, or from a 25 year old; Continue saves it -----

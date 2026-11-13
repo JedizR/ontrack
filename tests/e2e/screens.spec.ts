@@ -194,8 +194,9 @@ for (const theme of ['light', 'dark'] as const) {
         await go('days-3'); await go('continue');
         await at('step-kind', 'kind');
         await go('choice-lifting'); await go('continue');
+        // straight away: the screen is gone 2.15 s after it opens
         await page.getByTestId('build-row').nth(1).and(page.locator('[data-done="true"]')).waitFor();
-        await at('building', 'building');
+        await page.screenshot({ path: `screenshots/onboarding/building-${theme}-${d.name}.png` });
         await at('your-plan', 'plan-lose');
         await page.getByTestId('plan-pace').getByRole('radio', { name: 'Faster' }).click();
         await shot(page, 'onboarding', 'plan-lose-faster');
