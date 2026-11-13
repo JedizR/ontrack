@@ -96,13 +96,15 @@ Matches `/gallery/today`.
 1. Header: "Today", sync mark, avatar opening Settings.
 2. Week strip. Tapping a day shows that day. Viewing a past day changes the title to its date and adds a "Back to today" chip.
 3. Hero card (D2: OneFin's "Withdraw" card): on its haze panel, calories eaten in Hero style, "of 2,460 kcal", and on the right the counterpart. Under it the track, then "Training day" or "Rest day" as a glass chip on the left and "On track from 2,340" on the right. Below the panel, protein, carbs and fat as three grey stat tiles with small tracks. Tapping the card opens How it is calculated.
-4. Cards that appear when relevant, at most one at a time, in this priority: weekly check-in ready, easy adds (gain mode in the evening), weigh-in prompt, update notice.
+4. Cards that appear when relevant, at most one at a time, in this priority: weekly check-in ready, easy adds (gain mode in the evening), weigh-in prompt, Getting started (O1), nothing logged yet. Each reminder card can be turned off in Settings (F23).
+   - **Easy adds** (F10, M9a): with a gain goal, after 18:00, while more than 25 percent of the day's target is left and the day is not finished. Title "620 kcal to go", line "These three cover it, about a third each." Three rows: the food, its grams as the caption, and "Add 210 kcal" (a small button) that logs it at once with an undo toast. The foods are the user's own calorie dense foods from recent meals first, then peanut butter, trail mix and a granola bar; oils never.
+   - **Nothing logged yet** (F23): from the set time (13:00 by default) on a day with nothing logged. "Nothing logged yet today", "Log a meal with the plus button", and "Add a meal" opening the Add sheet.
 5. Training card: session name, "Strength, 60 min. Adds 240 kcal", and a "Done" button. After Done: a check mark and "Undo". A long press or the row's menu offers "Skip today". On a rest day: "Rest day" with no button. With no program: "Add your training to sharpen your target".
 6. "Meals" heading with the count, then the list, newest first. Each row opens the Meal sheet. Swipe left to delete, with an undo toast.
    - A supplement with calories (N2, F21) is a row like a meal: the shaker tile, its name, "07:30, 2 scoops with milk", and its calories. An entry logged on typical values ends its caption with the source label Typical (B1).
    - A scanned product (B1, F22) is a row with the barcode tile, the product's name, "12:40, Open Food Facts" (or Label, or Yours), and its calories. It opens the Meal sheet, like any meal. The row opens the Supplement sheet's amount step in edit mode; swipe left deletes it with an undo toast, "Whey protein deleted".
    - Supplements with no calories (creatine) are not rows and show no 0 kcal. At the end of the card, under a hairline, the word "Taken" in Caption and one chip per supplement taken that day, a check before its name. A chip opens the same edit step. The count beside the heading counts rows only.
-7. At the end of the list after 20:00, a plain button: "Finish day".
+7. At the end of the list after 20:00, and on any past day, a plain button: "Finish day". It marks the day complete for the check-in (SCIENCE.md section 10) and turns into the line "Day finished. It counts toward your check-in." with a plain "Reopen". A finished day shows no easy adds or nothing logged card.
 
 Counterpart on the right of the hero, by goal: gain shows "620 to go" until the zone, then "On track". Lose and maintain show "620 left" until the zone, then "On track". Past the zone all goals show "240 over" in plain ink.
 
@@ -210,6 +212,7 @@ The common case, the morning shake: plus, the Whey row, Add. Three taps when the
    - A cardio row: minutes this week against 150 to 300.
    - Lifting and cardio card, only when a day has both a strength and a cardio session (PRD F20): "Lifting and cardio" with "On days with both", then up to three points as rows, each one sentence naming its weekdays and "Why", which opens the source. Lift before cardio ("On Monday, Wednesday and Friday, lift before your cardio, as strength gains more in that order"). Leave 6 hours or more between them, "if you can". On a day that trains legs, cycle rather than run.
 5. With a program that has no exercises: the muscle card is replaced by "List your exercises to see muscle balance" and a button.
+6. Lifting experience, asked in context (M9a): for someone not gaining whose week has a strength or circuit session, a card under the summary, "How long have you lifted consistently?", with the three onboarding answers as chips and the line "Sets the volume Ontrack suggests. Change it any time in Settings." A tap selects (no choice moves on by itself), "Save" keeps it and the card goes; it is asked once per phone.
 
 **Session sheet.** Name, type as chips, minutes with a stepper in fives, intensity as a three way segmented control with one line describing each level, the calories this session adds, the exercise list with sets and reps steppers, "Add exercise", "Delete session".
 **Exercise picker.** Search field, muscle chips, rows with primary muscles as a caption.
@@ -245,17 +248,23 @@ Opens from the card on Today or from Progress. Three steps in one sheet, each wi
 
 ## 11. Settings
 
-A sheet with grouped rows, each opening a page inside the sheet.
+A sheet from the avatar (M9a), the rows on the sheet itself in groups, each under a Caption heading. A switch, a segmented choice or a time sits in its row and saves on the tap, so most settings take one tap; only edits that need room open a page inside the sheet (a back chevron returns). Nothing advances on its own: picking a choice on a page selects it, and the page's pinned action, or Back, finishes.
 
-- **You:** profile (sex for the equation, birth year, height, body fat), goal and pace (re-runs the plan and shows the new target before saving), units.
-- **Targets:** same target every day, check-in day, How it is calculated.
-- **Display:** theme, text size.
-- **Data:** export all data, export meals as CSV, sync status with "Sync now".
-- **About:** The science, Privacy, Terms, Report a problem, version.
-- **Account:** email, Sign out, Delete account (typed confirmation, in the danger style).
+- **You:** Profile (page), Goal and pace (page), Units as a segmented control (Metric, Imperial).
+  - **Profile page:** sex for the equation (segmented, the onboarding words), birth year, height and body fat (rows that open the wheel sheet; body fat has Clear), daily movement (four choice rows, the onboarding words), lifting experience (segmented). Under them the new target, "From tomorrow: 2,460 kcal on training days, 2,240 on rest days" (or "2,300 kcal every day"), and the pinned "Use the new target", disabled until something changed. A change that moves no number saves with "Save changes".
+  - **Goal and pace page:** the goal (Lose fat, Maintain, Build muscle; the guardrails of section 4 decide which show, and a screening answer leaves "Your plan keeps your weight steady" instead), the pace for it as a segmented control with its line ("About 0.3 kg a week"; the faster gain pace adds "A faster gain, with more of it as fat" and Being checked). A faster gain pace chosen earlier stays offered while it is the plan's, so stepping down is one tap. The same new target line and pinned action as Profile.
+- **Targets:** "Same target every day" (a switch; off, training days get more), Check-in day (a row with the day, opening a page of seven rows with a check), How it is calculated (opens the breakdown for the day in view).
+- **Reminders** (F23), with the line "Cards on Today when you open Ontrack. No notifications.": Nothing logged yet (a switch, and when on a Time row, 13:00 by default), No weigh-in for 3 days, Check-in due, Evening easy adds (caption "When gaining, after 18:00"). All on by default. Off hides the card on Today; the check-in stays on Progress.
+- **Food:** "Thai dishes first" (a switch; caption "In search results". It starts on when the phone's languages include Thai).
+- **Display:** theme (System, Light, Dark) and text size (System, Default, Large, Larger) as segmented controls.
+- **Data:** Export all data (caption "Every record, as JSON"), Export meals (caption "One line per food, as CSV"), each through the share sheet or a download. Backup: its state as the caption and "Sync now" beside it while changes wait.
+- **About:** The science (page), Privacy and Terms (open the pages in `public/` in a new tab), Report a problem (an email with the version and device filled in), and the version as a caption.
+- **Account:** email, Profile for friends (opens the friends profile, S1b), Sign out, and Delete account as a quiet danger link opening its page (typed confirmation, in the danger style).
 
-**The science** lists each equation and constant with its plain name, value, citation, and status.
+**The science** (page): a line saying where the numbers come from, then each group of `src/lib/data/science.ts` under a Caption heading, one row per constant: its plain name, its value with the unit, and as the caption the source's short name and its status (Verified, Working assumption, Being checked). A row opens its full citation in place. Then the food tables, each credited (INMU's Thai FCD, SG FoodID with its terms link, USDA SR Legacy and FNDDS, Open Food Facts under ODbL).
 **How it is calculated** is the plan breakdown for the day being viewed.
+
+States: offline (exports and every setting work; Sync now waits and the backup caption says offline), nothing to export (the files still hold the profile and plan), a failed share (the file downloads instead).
 
 ## 12. System states
 
