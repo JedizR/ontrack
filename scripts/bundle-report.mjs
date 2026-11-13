@@ -17,8 +17,10 @@ const leaked = [];
 for (const [what, re] of Object.entries(named)) {
   const first = initial.some((f) => has(re, f.slice('/assets/'.length)));
   const later = lazy.some((f) => has(re, f));
-  console.log(`${what.padEnd(9)} ${first ? 'IN THE FIRST LOAD' : later ? 'lazy' : 'not found, fix the pattern'}`);
-  if (first || !later) leaked.push(what);
+  // a mock build (VITE_BACKEND=mock, as in CI) leaves supabase-js out altogether
+  const absent = what === 'Supabase' && process.env.VITE_BACKEND === 'mock';
+  console.log(`${what.padEnd(9)} ${first ? 'IN THE FIRST LOAD' : later ? 'lazy' : absent ? 'not in a mock build' : 'not found, fix the pattern'}`);
+  if (first || (!later && !absent)) leaked.push(what);
 }
 // a server key, a private key, or a Supabase JWT whose role is not anon (the anon key is public by design)
 const SECRET = /AIza[0-9A-Za-z_-]{35}|sb_secret_[A-Za-z0-9_-]{16,}|-----BEGIN [A-Z ]*PRIVATE KEY-----/;
