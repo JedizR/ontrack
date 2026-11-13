@@ -33,6 +33,12 @@ Under 20 percent: white rice 130 to 136, boiled egg 155 to 138, fried rice 174 t
 
 **The N1 photo evaluation rerun (13 November):** one of eight photos ran before the free key answered 429 to the other seven, still 429 when retried one at a time 30 seconds apart, so the day's requests were spent (production shares this key). Photo 1, crispy pork kra pao with rice: 720 kcal, white rice 200 g from the table, the crispy pork kra pao 160 g as an estimate (no table entry, as expected), 3.5 s. The full rerun moves to M9b, which puts the production key in place.
 
+## Flash-Lite as the fallback, 13 November 2026
+
+With `gemini-3.6-flash`'s free day spent (429), `gemini-3.5-flash-lite` still answered on the same key: it has its own free daily quota (about 500 requests against 3.6 Flash's 20, per third-party summaries of Google's rate-limit page; not confirmed on Google's page). On the eight Thai photos it answered five (three were 503 "high demand", transient) in a median 3.5 s, and every item it named came from the table: khao man kai, green curry (matched to the pork entry; beef has none), massaman beef and rice, pad thai with shrimp, mango sticky rice, and khao soi kai on a later run. N1's 3.6 Flash pass took 7 of 13 items from the table. Portions were not checked against weighed meals.
+
+So `GEMINI_FALLBACK_MODEL` (`gemini-3.5-flash-lite`) takes a photo when the main model answers 429 or 503 (`server/vision/gemini.ts`), and the analysis records the model that answered. The daily reset may be midnight Pacific (15:00 or 16:00 Bangkok) rather than 07:00 Bangkok as assumed earlier; unconfirmed.
+
 ## B1, 13 November 2026: the label reader live
 
 `pnpm eval:vision --label` on the three Wikimedia Commons label photos with `gemini-3.6-flash`, checked by eye against each photo:
