@@ -17,9 +17,10 @@ import { foodKey, per100Of, type Food } from '$lib/data/foods';
 import { supplementItems } from '$lib/model/supplements';
 import { productItem } from '$lib/model/products';
 import { fetchOff } from '$lib/data/off';
+import { allJson, mealsCsv } from '$lib/model/export';
 import { avatarPhoto, preparePhoto } from '$lib/photo';
 import type { AnalyzeRequest, AnalyzeResponse, LabelResponse } from '../../shared/analysis';
-import { foodSchema, ids, productSchema, recSchema, SCHEMAS, socialSchema, type Checkin, type Collection, type DataOf, type Meal, type MealItem, type Plan, type Product, type Profile, type Program, type Saved, type SessionLog, type Supplement, type Weight } from '../../shared/records';
+import { COLLECTIONS, foodSchema, ids, productSchema, recSchema, SCHEMAS, socialSchema, type Checkin, type Collection, type DataOf, type Meal, type MealItem, type Plan, type Product, type Profile, type Program, type Saved, type SessionLog, type Supplement, type Weight } from '../../shared/records';
 
 const uid = () => crypto.randomUUID();
 /** a plain copy of the store's proxy, for undo */
@@ -221,6 +222,39 @@ export function finishOnboarding(r: { profile: Profile; program: Program; plan: 
   logWeight(r.weight.date, r.weight.kg);
   saveProfile(r.profile); // last: a profile is what tells the app onboarding is done
 }
+// ----- settings (M9a) -----
+/** A Settings edit: the profile, and the plan from tomorrow when the edit moves a number (`nextPlan` in model/replan). */
+export function saveSettings(profile: Profile, next?: Plan) {
+  SCHEMAS.profile.parse(profile);
+  if (next) savePlan(SCHEMAS.plan.parse(next) as Plan);
+  saveProfile(profile);
+}
+/** Sends what is waiting now rather than after the usual pause (Settings' Sync now). */
+export const syncNow = () => sync.run();
+/** Every record this account holds, as a JSON file to share or save (F12). Photos stay out. */
+export function exportAll() {
+  const records = Object.fromEntries(COLLECTIONS.map((c) => [c, db.live(c).map(({ id, updatedAt, data }) => ({ id, updatedAt, data }))]));
+  return shareFile(`ontrack-${today()}.json`, 'application/json', allJson(records, { version: __APP_VERSION__, exportedAt: new Date().toISOString() }));
+}
+/** Meals as CSV, one line per food (F12). */
+export const exportMeals = () => shareFile(`ontrack-meals-${today()}.csv`, 'text/csv', mealsCsv(db.live('meal').map((r) => r.data)));
+/** The share sheet where the browser can share files (iPhone Safari), else a download. Call it straight from a tap. */
+async function shareFile(name: string, type: string, text: string): Promise<'shared' | 'saved' | 'cancelled'> {
+  const file = new File([text], name, { type });
+  if (navigator.canShare?.({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file] });
+      return 'shared';
+    } catch (e) {
+      if ((e as Error).name === 'AbortError') return 'cancelled';
+    }
+  }
+  const url = URL.createObjectURL(file);
+  Object.assign(document.createElement('a'), { href: url, download: name }).click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  return 'saved';
+}
+
 export const closeDay = (date: string) => write('day', ids.day(date), { date, closed: true });
 export const reopenDay = (date: string) => write('day', ids.day(date), { date });
 
