@@ -14,15 +14,12 @@ const watchForLanding = (page: Page) => page.addInitScript(() => {
 });
 const flashed = (page: Page) => page.evaluate(() => (window as unknown as { flashed?: boolean }).flashed ?? false);
 
-/** L3: to the end of the page, where the footer's teaser is. A pull counts only once the page has rested at the end. */
+/** To the end of the page, where the footer is. */
 async function toEnd(page: Page) {
   await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
   await page.waitForTimeout(300);
   expect(await page.evaluate(() => innerHeight + scrollY >= document.documentElement.scrollHeight - 2)).toBe(true);
 }
-/** Scroll intent past the end, as a wheel or trackpad sends it. */
-const wheel = (page: Page, ...deltas: number[]) => page.evaluate((ds) => ds.forEach((d) => dispatchEvent(new WheelEvent('wheel', { deltaY: d }))), deltas);
-
 test('a new visitor sees the landing page, and Build your plan starts onboarding', { tag: '@smoke' }, async ({ page }) => {
   await openFresh(page);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Eat for the body you are training for.');
@@ -33,8 +30,11 @@ test('a new visitor sees the landing page, and Build your plan starts onboarding
   for (const alt of await shots.evaluateAll((imgs) => imgs.map((i) => i.getAttribute('alt') ?? ''))) expect(alt.length).toBeGreaterThan(20);
   // the browser is the app: nothing asks to install it
   expect(await page.getByTestId('landing').innerText()).not.toMatch(/install|home screen|download|app store/i);
-  // motion plays when it is welcome
+  // motion plays when it is welcome; L4: a loop runs only while its section is on screen
   expect(await page.evaluate(() => document.getAnimations().length)).toBeGreaterThan(0);
+  const play = (sel: string) => page.evaluate((s) => getComputedStyle(document.querySelector(s)!).animationPlayState, sel);
+  await expect.poll(() => play('[data-testid="landing-hero"] .bob')).toBe('running');
+  expect(await play('[data-testid="landing-friends"] .wiggle')).toBe('paused');
 
   await startPlan(page);
   await expect(page.getByTestId('landing')).toHaveCount(0);
@@ -88,45 +88,6 @@ test('a visitor with a draft skips it, back on the question they left', async ({
 
 test.describe('reduced motion', () => {
   test.use({ reducedMotion: 'reduce' });
-  // L2, the owner's footer-glow-bug, and L3's footer: the glow's middle sits on the wordmark's foot, below the end of the
-  // page while the footer is closed, behind the opened panel's upper part; its edges fade, so no edge of it shows
-  test('the footer glow rises from the wordmark', async ({ page }) => {
-    await openFresh(page);
-    await toEnd(page);
-    const glow = page.getByTestId('landing-glow');
-    const mark = page.getByTestId('landing-footer').locator('svg').first();
-    const mid = async () => { const g = (await glow.boundingBox())!; return g.y + g.height / 2; };
-    const foot = async () => { const m = (await mark.boundingBox())!; return m.y + m.height; };
-    expect(Math.abs((await mid()) - (await foot()))).toBeLessThanOrEqual(2);
-    expect(await mid()).toBeGreaterThan(await page.evaluate(() => innerHeight));
-    expect(await glow.evaluate((e) => getComputedStyle(e).backgroundImage)).toMatch(/glow-?[\w-]*\.webp/);
-    await page.getByTestId('landing-more-open').evaluate((b: HTMLElement) => b.click());
-    await expect(page.getByTestId('landing-panels')).toBeInViewport();
-    const panel = (await page.getByTestId('landing-panels').boundingBox())!;
-    expect(await mid()).toBeGreaterThan(panel.y);
-    expect(Math.abs((await mid()) - (await foot()))).toBeLessThanOrEqual(2);
-  });
-  // L3, the bend Safari can draw: each lens draws the gradient behind its glass exactly where that gradient is
-  test('the lenses line up with the gradients behind the glass', async ({ page }) => {
-    await openFresh(page);
-    await toEnd(page);
-    const off = await page.evaluate(() => [...document.querySelectorAll<HTMLElement>('[data-testid="landing"] .lens')].map((l) => {
-      const src = (l.parentElement!.closest('[data-lens]') ?? document.querySelector('[data-testid="landing-glow"]'))!.getBoundingClientRect();
-      const box = l.getBoundingClientRect(), cs = getComputedStyle(l, '::before');
-      return [box.left + parseFloat(cs.left) - src.left, box.top + parseFloat(cs.top) - src.top, parseFloat(cs.width) - src.width].map((v) => Math.round(Math.abs(v)));
-    }));
-    expect(off.length).toBe(7);
-    for (const o of off) expect(Math.max(...o)).toBeLessThanOrEqual(1);
-  });
-  test('a pull at the end opens the footer at once, with no rubber band', async ({ page }) => {
-    await openFresh(page);
-    await toEnd(page);
-    const footer = page.getByTestId('landing-footer');
-    await wheel(page, 10);
-    await expect(footer).toHaveAttribute('data-open');
-    expect(await footer.evaluate((f) => f.style.translate)).toBe('');
-    await expect(page.getByTestId('landing-panels')).toBeInViewport();
-  });
   test('everything shows at once, without animation', async ({ page }) => {
     await openFresh(page);
     const still = () => page.evaluate(() => ({
@@ -141,7 +102,8 @@ test.describe('reduced motion', () => {
     await expect.poll(still, { timeout: 15_000 }).toEqual({ animations: 0, hidden: [] });
     await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
     await toLanding(page);
-    expect(await still()).toEqual({ animations: 0, hidden: [] });
+    // L4: the bar turns dark over the dark run at once; app.css's 0.01 ms transitions still list for a frame
+    await expect.poll(still, { timeout: 5000 }).toEqual({ animations: 0, hidden: [] });
   });
 });
 
@@ -200,82 +162,109 @@ test('the photo gradients keep their words readable', async ({ page }) => {
   }
 });
 
-// L3, the owner's footer in two states: the page ends on the teaser; a pull past the end resists, then opens it; it
-// closes once it has left the screen, so it has to be pulled open again
-test.describe('the footer', () => {
-  test('a short pull springs back, a long one opens it, and leaving closes it', async ({ page }) => {
-    await openFresh(page);
-    await toEnd(page);
-    const footer = page.getByTestId('landing-footer');
-    await expect(footer).not.toHaveAttribute('data-open');
-    await expect(page.getByTestId('landing-panels')).not.toBeInViewport();
-    // the teaser follows a third of the pull, then springs back when it stops short
-    await wheel(page, 60);
-    expect(await footer.evaluate((f) => f.style.translate)).toBe('0px -20px');
-    await expect(footer).not.toHaveAttribute('data-pulling');
-    await expect(footer).not.toHaveAttribute('data-open');
-    expect(await footer.evaluate((f) => f.style.translate)).toBe('');
-    // past 120 px it gives way, and the page scrolls to show it
-    await wheel(page, 50, 50, 50);
-    await expect(footer).toHaveAttribute('data-open');
-    await expect(page.getByTestId('landing-panels')).toBeInViewport();
-    // up the page until it has left the screen: closed again, and the page ends on the teaser
-    await page.getByTestId('landing-cta').evaluate((e) => e.scrollIntoView());
-    await page.evaluate(() => scrollBy(0, -innerHeight));
-    await expect(footer).not.toHaveAttribute('data-open');
-    await toEnd(page);
-    await expect(page.getByTestId('landing-panels')).not.toBeInViewport();
-  });
-  test('More about Ontrack opens it for a keyboard, and so does focus moving in', async ({ page }) => {
-    await openFresh(page);
-    const footer = page.getByTestId('landing-footer');
-    const more = page.getByRole('button', { name: 'More about Ontrack' });
-    await more.focus();
-    await expect(more).toBeInViewport();
-    await page.keyboard.press('Enter');
-    await expect(footer).toHaveAttribute('data-open');
-    await expect(page.getByTestId('landing-panels').getByRole('button', { name: 'Build your plan' })).toBeFocused();
-    await expect(page.getByTestId('landing-panels')).toBeInViewport();
-    // a Learn link takes focus to its section, and the footer, now off screen, closes
-    await page.getByTestId('landing-panels').getByRole('button', { name: 'Training' }).click();
-    await expect(page.locator('#training')).toBeFocused();
-    await expect(footer).not.toHaveAttribute('data-open');
-    await page.getByTestId('landing-panels').getByRole('link', { name: 'Privacy' }).focus();
-    await expect(footer).toHaveAttribute('data-open');
-  });
-});
-
-// L3: a sheet over the page takes the wheel; once it has closed, the pull works again
-test('a pull behind the sign in sheet does not open the footer', async ({ page }) => {
+// L4, the owner: a normal footer, no pull to open. At the end of the page it is all there: the four lanes with their
+// links; a Learn link takes focus to its section, and Back to top goes to the top
+test('the footer is all on the page, and its links go where they say', async ({ page }) => {
   await openFresh(page);
   await toEnd(page);
-  await page.getByTestId('landing-cta').getByRole('button', { name: 'Sign in' }).click();
+  const footer = page.getByTestId('landing-footer');
+  for (const lane of ['Start', 'Learn', 'Good to know', 'Contact and legal']) await expect(footer.getByRole('heading', { name: lane })).toBeVisible();
+  await expect(footer.getByRole('link', { name: 'Privacy' })).toBeInViewport();
+  await footer.getByRole('button', { name: 'Training' }).click();
+  await expect(page.locator('#training')).toBeFocused();
+  await expect(page.locator('#training')).toBeInViewport();
+  await toEnd(page);
+  await page.getByTestId('landing-top').click();
+  await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
+  await toEnd(page);
+  await footer.getByRole('button', { name: 'Sign in' }).click();
   await expect(page.getByTestId('signin-sheet')).toBeVisible();
-  await page.waitForTimeout(300);
-  await wheel(page, 100, 100);
-  await expect(page.getByTestId('landing-footer')).not.toHaveAttribute('data-open');
-  await page.keyboard.press('Escape');
-  await expect(page.getByTestId('signin-sheet')).toBeHidden();
-  await toEnd(page);
-  await wheel(page, 100, 100);
-  await expect(page.getByTestId('landing-footer')).toHaveAttribute('data-open');
 });
 
-// L3, the owner's white bar: Safari 26 takes the status bar's colour from the page (the body's background over the
-// root's) and from anything fixed at the top edge. On the landing both backgrounds are the sky's top and the bar starts
-// below the status bar, in the same place as before; the app keeps its canvas
-test('the status bar continues the sky, and the bar keeps its place', async ({ page }) => {
+// L4, the owner's bars (DECISIONS L4, from WebKit's source): Safari 26 fills its top or bottom bar with a solid colour only
+// for a fixed or sticky element at the middle of that edge, 4 px in, so nothing fixed is ever there, the floating action
+// included; and it draws its own soft edge, and the strips above and below the page, in the page's background (the
+// body's over the root's), so both follow the section under the top of the screen. The app keeps its canvas
+test('nothing fixed touches the bars, and the page takes the colour of the section at the top', async ({ page }) => {
   await openFresh(page);
-  const colour = (token: string) => page.evaluate((v) => { const d = document.createElement('i'); d.style.color = `var(${v})`; document.body.append(d); const c = getComputedStyle(d).color; d.remove(); return c; }, token);
-  const page_ = () => page.evaluate(() => [document.documentElement, document.body].map((e) => getComputedStyle(e).backgroundColor));
+  const colour = (token: string, scope = 'body') => page.evaluate(([v, s]) => { const d = document.createElement('i'); d.style.color = `var(${v})`; document.querySelector(s)!.append(d); const c = getComputedStyle(d).color; d.remove(); return c; }, [token, scope]);
+  const bg = () => page.evaluate(() => [document.documentElement, document.body].map((e) => getComputedStyle(e).backgroundColor));
+  // anything fixed or sticky at the middle of the top or the bottom edge, 6 px in (WebKit samples 4 px in, a strip to 6)
+  const atEdges = () => page.evaluate(() => [6, innerHeight - 6].flatMap((y) => document.elementsFromPoint(innerWidth / 2, y)
+    .filter((el) => { for (let e: Element | null = el; e; e = e.parentElement) if (/fixed|sticky/.test(getComputedStyle(e).position)) return true; return false; })
+    .map((el) => `${y}: ${el.tagName.toLowerCase()}.${String(el.className).slice(0, 30)}`)));
+  const to = async (id: string) => {
+    await page.evaluate((id) => { const el = document.querySelector(`[data-testid="${id}"]`)!; scrollTo(0, el.getBoundingClientRect().top + scrollY + 200); }, id);
+    await page.waitForTimeout(150);
+  };
   const sky = await colour('--sky-top');
-  expect(await page_()).toEqual([sky, sky]);
-  // once the bar has dropped in (M1): its box starts 8 below the top, where its glass did before
+  await expect.poll(bg).toEqual([sky, sky]);
+  expect(await atEdges()).toEqual([]);
+  await to('landing-log');
+  await expect(page.getByTestId('landing-float')).toHaveAttribute('data-shown');
+  const surface = await colour('--surface');
+  await expect.poll(bg).toEqual([surface, surface]);
+  expect(await atEdges()).toEqual([]);
+  // the floating action is the ink pill on light, and the white one over a dark section (ink means act, white on dark)
+  await expect(page.getByTestId('landing-float')).not.toHaveAttribute('data-theme');
+  await page.evaluate(() => { const el = document.querySelector('[data-testid="landing-train"]')!; scrollTo(0, el.getBoundingClientRect().top + scrollY + 400); });
+  await expect(page.getByTestId('landing-float')).toHaveAttribute('data-theme', 'dark');
+  // a dark section in the light theme: its own canvas, and the bar turns dark over it
+  await to('landing-sources');
+  const night = await colour('--canvas', '[data-testid="landing-sources"]');
+  await expect.poll(bg).toEqual([night, night]);
+  await expect(page.getByTestId('landing').locator('header')).toHaveAttribute('data-theme', 'dark');
+  expect(await atEdges()).toEqual([]);
+  await toEnd(page);
+  await expect.poll(bg).toEqual([night, night]);
+  expect(await atEdges()).toEqual([]);
+  // the bar: 8 below the top as before; the owner: Sign in is the ink pill, in a bar no wider than a phone
   const bar = page.getByTestId('landing').locator('header');
   await expect.poll(() => bar.evaluate((h) => [h.getBoundingClientRect().top, h.querySelector('nav')!.getBoundingClientRect().top])).toEqual([8, 8]);
-  // the owner: Sign in is the ink pill
-  expect(await page.getByTestId('landing-signin').evaluate((b) => getComputedStyle(b.querySelector('span') ?? b).backgroundColor)).toBe(await colour('--action'));
+  await page.evaluate(() => scrollTo(0, 0));
+  const ink = await colour('--action');
+  await expect.poll(() => page.getByTestId('landing-signin').evaluate((b) => getComputedStyle(b.querySelector('span') ?? b).backgroundColor)).toBe(ink);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  expect(await page.getByTestId('landing-bar').evaluate((n) => n.getBoundingClientRect().width)).toBe(430);
+  await page.setViewportSize({ width: 390, height: 664 });
   await startPlan(page);
   const canvas = await colour('--canvas');
-  expect(await page_()).toEqual([canvas, canvas]);
+  expect(await bg()).toEqual([canvas, canvas]);
+});
+
+// L4 and U2, the owner's corners: a box inside a rounded box, near its corner, has the corner the outer one leaves it
+// (the outer radius less the inset), so the two curves run side by side; checked on every pair on the page at rest
+test('every nested corner on the landing page runs with its outer one', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  for (const width of [390, 1440]) {
+    await page.setViewportSize({ width, height: width < 500 ? 664 : 900 });
+    await openFresh(page);
+    // at rest and untilted: a tilt or a lean only turns a pair, so measure their boxes as laid out
+    await page.addStyleTag({ content: '[data-testid="landing"] * { rotate: none !important; transform: none !important; translate: none !important; scale: none !important; }' });
+    const bad = await page.evaluate(() => {
+      const radius = (el: Element) => { const cs = getComputedStyle(el), r = el.getBoundingClientRect(); return Math.min(parseFloat(cs.borderTopLeftRadius) || 0, r.width / 2, r.height / 2); };
+      const out: string[] = [];
+      for (const el of document.querySelectorAll('[data-testid="landing"] *')) {
+        const r = radius(el);
+        // decoration that floats over a section (aria-hidden) is placed, not nested
+        if (!r || el.closest('svg, [aria-hidden="true"]')) continue;
+        // the nearest rounded box around it that is drawn: a fill, an image or a clip
+        let a = el.parentElement;
+        for (; a && a.matches('[data-testid="landing"] *'); a = a.parentElement) {
+          const cs = getComputedStyle(a);
+          if (radius(a) && (cs.backgroundColor !== 'rgba(0, 0, 0, 0)' || cs.backgroundImage !== 'none' || cs.overflow !== 'visible' || /liquid/.test(String(a.className)))) break;
+        }
+        if (!a || !a.matches('[data-testid="landing"] *')) continue;
+        const ra = radius(a), o = a.getBoundingClientRect(), b = el.getBoundingClientRect();
+        // each corner of the inner box that sits inside the outer box's corner curve, inset alike on both sides
+        for (const [dx, dy] of [[b.left - o.left, b.top - o.top], [o.right - b.right, b.top - o.top], [b.left - o.left, o.bottom - b.bottom], [o.right - b.right, o.bottom - b.bottom]]) {
+          if (dx < 0 || dy < 0 || dx >= ra || dy >= ra || Math.abs(dx - dy) > 2) continue;
+          const want = ra - dx;
+          if (Math.abs(r - want) > 2) out.push(`${el.tagName.toLowerCase()}.${String(el.className).slice(0, 40)} ${Math.round(r)} in ${Math.round(ra)} at ${Math.round(dx)}: want ${Math.round(want)}`);
+        }
+      }
+      return [...new Set(out)];
+    });
+    expect(bad, `at ${width}`).toEqual([]);
+  }
 });

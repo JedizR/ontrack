@@ -23,11 +23,34 @@ const preloadFonts = (): Plugin => ({
   },
 });
 
+// L4: a first visit opens on the landing page, a lazy chunk found only once the app has started, whose largest paint is
+// the hero's phone shot, found only once the landing has. index.html preloads these on a first visit only (so the app's
+// first load stays as it was, `pnpm bundle`); this gives it their built paths
+const HERO_SHOT = 'src/flows/landing/shots/today.webp';
+const preloadLanding = (): Plugin => ({
+  name: 'preload-landing',
+  transformIndexHtml: {
+    order: 'post',
+    handler: (html, ctx) => {
+      const out = Object.values(ctx.bundle ?? {});
+      const shot = out.find((a) => a.type === 'asset' && a.originalFileNames.some((f) => f.endsWith(HERO_SHOT)));
+      const chunk = out.find((c) => c.type === 'chunk' && c.facadeModuleId?.endsWith('/flows/landing/Landing.svelte'));
+      const list: string[][] = [['preload', `/${shot ? shot.fileName : HERO_SHOT}`, 'image']];
+      if (chunk?.type === 'chunk') {
+        for (const f of [chunk.fileName, ...chunk.imports]) if (!html.includes(`/${f}"`)) list.push(['modulepreload', `/${f}`]);
+        for (const f of chunk.viteMetadata?.importedCss ?? []) list.push(['preload', `/${f}`, 'style']);
+      }
+      return html.replace('%LANDING_PRELOADS%', JSON.stringify(list));
+    },
+  },
+});
+
 export default defineConfig({
   plugins: [
     tailwindcss(),
     svelte(),
     preloadFonts(),
+    preloadLanding(),
     mockBackend(),
     devApi(),
     VitePWA({

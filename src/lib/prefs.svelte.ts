@@ -98,14 +98,15 @@ export function applyTheme() {
 // hero's sky. theme-color for Safari up to 18, and the page's background for Safari 26, which samples it instead. L3: the
 // body's as well as the root's, since Safari blends the body's background over the root's and the body's canvas showed
 // as the owner's white bar
-let top = '--canvas';
-export function topColour(token = '--canvas') {
+// L4: or a function giving the colour, for the landing page, whose colour follows the section at the top of the screen
+let top: string | (() => string) = '--canvas';
+export function topColour(token: string | (() => string) = '--canvas') {
   top = token;
   paintTop();
 }
 function paintTop() {
   const root = document.documentElement;
-  const colour = getComputedStyle(root).getPropertyValue(top).trim();
+  const colour = typeof top === 'function' ? top() : getComputedStyle(root).getPropertyValue(top).trim();
   if (!colour) return;
   document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.setAttribute('content', colour));
   root.style.backgroundColor = document.body.style.backgroundColor = top === '--canvas' ? '' : colour;

@@ -95,8 +95,6 @@ export const en = {
       concept: 'A proof of concept for a product management class, for adults who train.',
       top: 'Back to top',
       year: 'Ontrack 2026',
-      /** L3: the footer opens with a pull past the end of the page, or with this button (keyboards, screen readers) */
-      more: 'More about Ontrack',
       learn: 'Learn',
       contact: 'Contact and legal',
     },

@@ -127,9 +127,10 @@ test('words on the landing washes, panels and sky', () => {
   for (const c of stops('grad-sky', css.indexOf('[data-theme="dark"] {'))) expect(ratio(parse(dark.ink), c), 'dark grad-sky').toBeGreaterThanOrEqual(4.5);
   for (const c of stops('grad-sky', css.indexOf('[data-theme="dark"] {'))) expect(ratio(parse(dark['accent-ink']), c), 'dark grad-sky violet').toBeGreaterThanOrEqual(3);
   for (const w of ['wash-ink', 'wash-steel', 'wash-clay']) for (const c of stops(w)) expect(ratio(parse(light['on-night']), c), w).toBeGreaterThanOrEqual(4.5);
-  // L2: white words on the footer's violet glass at the glow's brightest (P1: coral deepened), night words on the white glass
-  // chips over the darkest thing behind them (the phone's bezel); the photo gradients themselves are measured in landing.spec.ts
-  expect(ratio(parse(light['on-night']), over(parse(light['liquid-violet']), parse('#9c5e57'))), 'liquid-violet').toBeGreaterThanOrEqual(4.5);
-  expect(ratio(parse(light.night), over(parse(light['liquid-white']), parse(light.night))), 'liquid-white').toBeGreaterThanOrEqual(4.5);
+  // L4: words on the bar's regular glass over the darkest thing that can pass under it, unblurred: night in the light
+  // scheme, white in the dark one, which the bar takes over the dark sections; the photo gradients themselves are measured
+  // in landing.spec.ts
+  expect(ratio(parse(light.ink), over(parse(light['liquid-fill']), parse(light.night))), 'liquid-fill').toBeGreaterThanOrEqual(4.5);
+  expect(ratio(parse(dark.ink), over(parse(dark['liquid-fill']), parse('#ffffff'))), 'dark liquid-fill').toBeGreaterThanOrEqual(4.5);
   for (const c of stops('wash-sand')) expect(ratio(parse(light.night), c), 'wash-sand').toBeGreaterThanOrEqual(4.5);
 });

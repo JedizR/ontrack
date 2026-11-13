@@ -155,16 +155,12 @@ for (const theme of ['light', 'dark'] as const) {
         await section.screenshot({ path: `screenshots/landing/friends-${theme}-${d.name}.png` });
       });
 
-      // L3: the footer's two states, at rest: the teaser the page ends on, then opened (its top, then its foot)
+      // L4: the footer, at rest: its top, then the end of the page
       test('landing footer', async ({ page }) => {
         await page.emulateMedia({ reducedMotion: 'reduce' });
         await openFresh(page);
-        await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
-        await shot(page, 'landing', 'footer-teaser');
-        await page.getByTestId('landing-more-open').evaluate((b: HTMLElement) => b.click());
-        await expect(page.getByTestId('landing-footer')).toHaveAttribute('data-open');
-        await page.evaluate(() => (document.activeElement as HTMLElement).blur());
-        await shot(page, 'landing', 'footer-open');
+        await page.getByTestId('landing-footer').evaluate((f) => scrollTo(0, f.getBoundingClientRect().top + scrollY - 80));
+        await shot(page, 'landing', 'footer-top');
         await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
         await shot(page, 'landing', 'footer-end');
       });

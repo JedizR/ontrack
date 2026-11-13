@@ -5,9 +5,10 @@
      of the phone, fading into what is behind it. -->
 <script lang="ts">
   import { t } from '$lib/i18n';
+  import { TALL, screenShare } from './shots';
   let { src, alt, crop = 1, eager = false, class: cls = '' }: { src: string; alt: string; crop?: number; eager?: boolean; class?: string } = $props();
-  // the phone's height in cqw: the bezel twice (4.2), the status bar (12.6) and the 390 by 844 screen at 91.6 wide
-  const tall = 8.4 + 12.6 + (91.6 * 844) / 390;
+  // L4: the screenshot is stored cut to the share of the screen that shows (shots.ts), and its box takes that shape
+  const h = $derived(Math.round(844 * screenShare(crop)));
   const loading = $derived(eager ? 'eager' : 'lazy');
   // the status bar continues the screen's own top: the colour of its first rows, read once the screenshot has loaded
   let top = $state<string>();
@@ -21,7 +22,7 @@
   }
 </script>
 
-<div class="@container {cls} {crop < 1 ? 'overflow-clip [mask-image:linear-gradient(to_bottom,black_75%,transparent)]' : ''}" style:aspect-ratio={crop < 1 ? `100 / ${(tall * crop).toFixed(1)}` : undefined}>
+<div class="@container {cls} {crop < 1 ? 'overflow-clip [mask-image:linear-gradient(to_bottom,black_75%,transparent)]' : ''}" style:aspect-ratio={crop < 1 ? `100 / ${(TALL * crop).toFixed(1)}` : undefined}>
   <div class="bg-night ring-line-strong rounded-[17cqw] p-[4.2cqw] ring-1 ring-inset">
     <div class="bg-surface-2 overflow-clip rounded-[12.8cqw]">
       <div class="text-night relative h-[12.6cqw]" style:background-color={top} aria-hidden="true">
@@ -34,8 +35,8 @@
           <rect x="44" y="1.5" width="22" height="10" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.4" /><rect x="46" y="3.5" width="18" height="6" rx="1.5" /><rect x="67" y="4.8" width="1.6" height="3.4" rx="0.8" fill-opacity="0.4" />
         </svg>
       </div>
-      <!-- the screenshots are a 390 by 844 phone at 1.6 times: the size gives the box its shape before they load -->
-      <img {src} {alt} width="390" height="844" {loading} fetchpriority={eager ? 'high' : 'auto'} decoding="async" onload={sample} class="block h-auto w-full" />
+      <!-- the screenshots are a 390 by 844 phone at 1.6 times, cut to what shows: the size gives the box its shape before they load -->
+      <img {src} {alt} width="390" height={h} {loading} fetchpriority={eager ? 'high' : 'auto'} decoding="async" onload={sample} class="block h-auto w-full" />
     </div>
   </div>
 </div>
