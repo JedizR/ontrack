@@ -43,6 +43,8 @@ export default defineConfig({
     },
     // O1's tap and time measure, printed for the pull request; not part of any gate
     { name: 'measure', testMatch: /measure\.spec\.ts/, use: { ...phone, colorScheme: 'light' } },
+    // U1c's eight main tasks, counted and timed; TASK_VIDEO=1 films them in light and dark. Not part of any gate
+    { name: 'tasks', testMatch: /tasks\.spec\.ts/, use: { ...phone, video: process.env.TASK_VIDEO ? 'on' : 'off' } },
     // the landing page's phone screens (L1): writes images only with LANDING_SHOTS=1
     { name: 'shots', testMatch: /landing-shots\.spec\.ts/, use: { ...phone } },
     // layout only, no touch input: Chromium, viewports set per describe
