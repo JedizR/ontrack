@@ -29,6 +29,11 @@ Each entry: what is blocked, what Claude tried, the exact steps for you, and wha
 
 Each entry: what to look at (URL or screenshot paths), what to look for, and which milestone it belongs to.
 
+### U1b: the look on your iPhone, light and dark
+
+- **Where:** https://ontrack-black.vercel.app (close the tab and reopen it so the phone drops its cached copy). Before and after shots of your ten cases: branch `pr-assets`, `u1/u1b/`.
+- **Look for:** Today's hero corners and padding and the stat tiles' bottom corners; in dark, the picked day (white pill, today ringed), "Back to today" and the dock's edge; the dock's grey pill with violet. Progress: WEIGHT clear of the corner. Your plan: the protein tile's corners. Add sheet: Photo's gradient. Any sheet scrolled: the fade under its title. Landing: the status bar violet, not black.
+
 ### M9a: Settings, easy adds, reminders and The science on your iPhone
 
 - **Settings:** open it from the avatar. In Goal and pace, change the pace, check the "From tomorrow" target, tap Use the new target. Switch theme and text size. Export all data through the share sheet.

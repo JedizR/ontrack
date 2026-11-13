@@ -7,7 +7,7 @@ Handoff note between contexts. Read first, update last. Keep it under one screen
 The conductor role and its rules are in `STARTING_PROMPT.md`; the final report it describes is still the goal. The waves and their reasons are in `docs/BUILD-PLAN.md` after the table.
 
 1. **Wave 1:** S1b and U1a: both shipped (`v0.8.12`, `v0.8.11`).
-2. **Wave 2:** U1b and M9a, side by side. M9a shipped (`v0.8.13`).
+2. **Wave 2:** U1b and M9a, side by side. M9a shipped (`v0.8.13`), U1b shipped (`v0.8.14`).
 3. **Wave 3:** U1c.
 4. **Wave 4:** M9b, then `v1.0.0`.
 5. **The final report:** the milestone table, the last lines of a passing `pnpm verify` on `main`, the full `docs/BLOCKERS.md`, the production URL https://ontrack-black.vercel.app, and the three things the owner should do first.
@@ -45,7 +45,7 @@ Status is one of: not started, in progress, shipped, shipped with cuts, blocked.
 | S1b | Friends screens, S1's screen half | shipped | PR #31, merged, `v0.8.12` | verify and full CI green; initial JS 90.2 KB gzip (MapLibre lazy, 298 KB). Two critic rounds, a code review (9 findings, all fixed). Landing 04 Friends. Live visibility suite: S1a's run stands. No map gesture videos |
 | U1 | Feel and polish (owner's iPhone pass, 13 November) | in progress | | UI about 70 percent, UX about 30 percent done in the owner's view. Split: U1a onboarding, U1b the look, U1c motion and feel |
 | U1a | Onboarding feel | shipped | PR #32, merged, `v0.8.11` | Gate green on the mock: select then Continue on every choice step, Gain weight (vector J) and Lose fat and build muscle (vector K), Building your plan (skipped under reduced motion). Gain user 12 to 19 gestures, modelled 118 to 135 s; cut 13 to 19, 114 to 130 s. Two critic rounds, a code review. Cold onboarding per new goal: on the owner's list |
-| U1b | The look, app wide | not started | | Wave 2. Nested corners and padding, dark contrast, dock, header fades, dividers, status bar |
+| U1b | The look, app wide | shipped | PR #34, merged, `v0.8.14` | Gate green on the mock: contrast test (3 to 1 for selected states and shape-only controls, both themes), corners nest e2e, the sweep allowing one featured gradient, stress 66 green. Two critic rounds, a code review. Rebased on M9a. Status bar colour untestable without Safari 26: on the owner's list |
 | U1c | Motion and feel, app wide | not started | | Wave 3. Motion tokens, tap feedback, moving numbers, iOS swipe, progress, satisfaction, the UX walk |
 | M9 | Hardening and release | in progress | | Split: M9a features (shipped), M9b hardening |
 | M9a | Settings and the last features | shipped | PR #33, merged, `v0.8.13` | Gate green on the mock: settings.spec 16 tests, stress matrix with Settings' pages, conformance on mock and live (36 of 36). Two critic rounds, a code review (one known limit: same target every day and sex recalculate past days). The console error did not reproduce in three runs; imperial height is one wheel of inches; Report a problem needs `VITE_SUPPORT_EMAIL` |
@@ -62,6 +62,11 @@ Status is one of: not started, in progress, shipped, shipped with cuts, blocked.
 - Vision: real. `/api/analyze` with `gemini-3.6-flash`, minimal thinking. Vercel holds `VISION_PROVIDER=gemini`, `GEMINI_MODEL`, and `GEMINI_API_KEY` (the development key, free tier: 20 requests a day per model) for production and preview, plus `VITE_BACKEND=supabase`, the Supabase URL and keys, and `CRON_SECRET`. The key's file is `~/.config/ontrack/gemini-api-key`; `scripts/live-env.sh` reads it for `dev:live` and `eval:vision`.
 
 ## Notes for the next milestone
+
+U1b (the look; rules in DESIGN.md sections 4 rule 7, 6, 7 and rubric 16 to 21; decisions under U1b):
+- New pieces: `Facts.svelte` (`rest` sets the lighter step), Row's `unit`, `--control-edge`, `--grad-feature` with `data-featured` (Photo and Scan the tub), `fade-under` and `fade-over`, `--sky-top` with `topColour()` in prefs. Every calorie row shows "kcal".
+- For U1c: motion candidates are the dock pill moving between tabs, the week's ink pill between days, the fades (`data-scrolled`, opacity over `--d-ui`) and the featured card's press (`active:brightness-90`).
+- For M9b: new screens pass `contrast.test.ts` and "corners nest" by using tokens and shared components. `topColour()` is untested on a real Safari 26. At the largest text the dock label may sit about 1 px past its pill.
 
 M9a (Settings and the last features; decisions in `docs/DECISIONS.md` under M9a):
 - Settings: `src/settings/SettingsSheet.svelte` (still `sheets.account`, testid `account-sheet`) with pages `PlanPage`, `Science` (`src/lib/data/science.ts`) and `Options`. Saving goes through `saveSettings(profile, plan?)`; `src/lib/model/replan.ts` holds `nextPlan`, `moves`, `targetsOf`, `pacesFor`. Plan edits start tomorrow; a goal, pace or baseline edit restarts the check-in count (`baselineFrom`).
