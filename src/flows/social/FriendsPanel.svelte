@@ -127,7 +127,7 @@
   <div bind:clientHeight={head} class="flex-none pb-[max(16px,env(safe-area-inset-bottom))]">
     <button
       type="button"
-      class="flex h-8 w-full touch-none items-start justify-center pt-2"
+      class="flex h-11 w-full touch-none items-start justify-center pt-2"
       aria-label={raised ? t.social.lower : t.social.raise}
       aria-expanded={raised}
       onpointerdown={down}
