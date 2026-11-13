@@ -7,7 +7,7 @@ Handoff note between contexts. Read first, update last. Keep it under one screen
 The conductor role and its rules are in `STARTING_PROMPT.md`; the final report it describes is still the goal. The waves and their reasons are in `docs/BUILD-PLAN.md` after the table.
 
 1. **Wave 1:** S1b and U1a: both shipped (`v0.8.12`, `v0.8.11`).
-2. **Wave 2:** U1b and M9a, side by side. M9a shipped (`v0.8.13`), U1b shipped (`v0.8.14`). The Gemini Flash-Lite fallback shipped as `v0.8.15` (PR #36, `docs/EVAL-NOTES.md`).
+2. **Wave 2:** U1b and M9a, side by side. M9a shipped (`v0.8.13`), U1b shipped (`v0.8.14`). The Gemini Flash-Lite fallback shipped as `v0.8.15` (PR #36, `docs/EVAL-NOTES.md`). Support Gmail, paid Gemini and the 150 a day cap shipped as `v0.8.16` (PR #38).
 3. **Wave 3:** U1c.
 4. **Wave 4:** M9b, then `v1.0.0`.
 5. **The final report:** the milestone table, the last lines of a passing `pnpm verify` on `main`, the full `docs/BLOCKERS.md`, the production URL https://ontrack-black.vercel.app, and the three things the owner should do first.

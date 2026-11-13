@@ -11,11 +11,10 @@ Each entry: what is blocked, what Claude tried, the exact steps for you, and wha
 - **Done:** the product address is `team.ontrackapp@gmail.com` (owner, 13 November). Privacy and Terms are approved and carry it; `VITE_SUPPORT_EMAIL` is set in Vercel; Supabase sends sign-in codes from it as "Ontrack" (declared in `supabase/config.toml`, the app password from `~/.config/ontrack/smtp-app-password`). A test code to that inbox was accepted on 13 November; that sign-in also created an unconfirmed account for the address.
 - **Your step, if you like:** look in that inbox for the Ontrack code (and its spam folder), so we know Gmail delivers it.
 
-### Optional: Gemini's paid tier on your Google Developer Program credits
+### Gemini's paid tier: check the credits are used
 
-- **Now:** Ontrack runs on Gemini's free tier with the Flash-Lite fallback (`v0.8.15`), which is enough for the class demo.
-- **If you want it:** your billing account holds seven Google Developer Program credits of 337.77 baht each (about 2,364 baht, about 68 USD), scoped to all of Google Cloud, ending between February and October 2027. Linking that billing account to the Gemini key's project moves the whole project to the paid tier: higher limits, fewer "high demand" refusals, and Google does not use the photos to improve its products. At roughly 0.1 to 0.4 baht a photo the credits last thousands of photos. Every request is then billed (no free allowance on a billed project), and anything past the credits goes to your card.
-- **Steps for you:** in Google Cloud, Billing, link "My Billing Account" to the project shown for the key at https://aistudio.google.com/apikey; add a budget of 300 baht on that project with alerts at 50, 90 and 100 percent. Then tell Claude "Gemini billing is on": Claude lowers the app's daily cap to match, and updates the Privacy paragraph about the free tier.
+- **Done (13 November):** the owner linked billing (a 150 baht prepayment). Fifteen concurrent requests to `gemini-3.6-flash` all answered, which the free tier refuses, so the key is on the paid tier. The app's daily cap is 150 photos (`AI_DAILY_GLOBAL_CAP`), about 60 baht a day at most. Privacy now describes the paid tier.
+- **Your step:** after about a day, Google Cloud, Billing, Credits: the Google Developer Program credits' remaining value should drop while the 150 baht prepayment does not. If the prepayment drops instead, tell Claude; the fix is in the billing account, not the app.
 
 ### B1: a contact address for Open Food Facts (optional)
 
