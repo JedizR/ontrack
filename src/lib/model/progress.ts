@@ -12,12 +12,19 @@ import type { Collection, DataOf, Meal, Plan, Profile, Session, SessionLog, Weig
 type PlanRec = { updatedAt: number; data: Plan };
 
 /**
- * When the plan in effect on `date` last had its baseline set: the newest onboarding or check-in plan by then. A
- * program change (an `edit` plan) keeps the baseline and moves only exercise energy, so it does not restart the count.
+ * When the plan in effect on `date` last had its baseline set: the newest onboarding or check-in plan by then, or an
+ * `edit` plan that changed the goal, the pace or the baseline (Settings, M9a). A program change keeps all three and moves
+ * only exercise energy, so it does not restart the count.
  */
 export function baselineFrom(plans: PlanRec[], date: string): string | undefined {
-  const from = plans.map((p) => p.data).filter((p) => p.effectiveFrom <= date);
-  return (from.filter((p) => p.source !== 'edit').map((p) => p.effectiveFrom).sort().at(-1)) ?? from.map((p) => p.effectiveFrom).sort()[0];
+  const order = [...plans].sort((a, b) => a.data.effectiveFrom.localeCompare(b.data.effectiveFrom) || a.updatedAt - b.updatedAt)
+    .map((p) => p.data).filter((p) => p.effectiveFrom <= date);
+  let from: string | undefined;
+  order.forEach((p, i) => {
+    const prev = order[i - 1];
+    if (!prev || p.source !== 'edit' || p.goal !== prev.goal || p.ratePctPerWeek !== prev.ratePctPerWeek || p.baseline !== prev.baseline) from = p.effectiveFrom;
+  });
+  return from;
 }
 /** Due on the chosen weekday once that plan has been in effect 14 days, the day itself included. */
 export function checkinDueOn(plans: PlanRec[], checkinWeekday: number, date: string) {

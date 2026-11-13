@@ -1,5 +1,6 @@
 // Per-device state, not synced: theme, text size, last tab, the last signed in user, the onboarding draft, whether
-// the photo notice has been seen, the day this phone saved the plan, and a dismissed program suggestion.
+// the photo notice has been seen, the day this phone saved the plan, a dismissed program suggestion, and (M9a) the
+// reminder cards, Thai dishes first, and whether Train asked the lifting experience.
 import type { Draft } from '../flows/onboarding/draft';
 export type Theme = 'system' | 'light' | 'dark';
 /** system follows the device text size, mapped onto one of the three levels */
@@ -9,8 +10,13 @@ export const FONT_SCALE = { m: 1, l: 1.15, xl: 1.3 } as const;
 // index.html reads the same key and fields before first paint
 export const PREFS_KEY = 'ot-ui';
 
-interface Saved { theme: Theme; fontSize: FontSize; tab: Tab; lastUser: string | null; lastEmail: string | null; draft: Draft | null; photoOk: boolean; firstDay: string | null; suggestOff: boolean; locationOk: boolean }
-const DEFAULTS: Saved = { theme: 'system', fontSize: 'system', tab: 0, lastUser: null, lastEmail: null, draft: null, photoOk: false, firstDay: null, suggestOff: false, locationOk: false };
+/** F23: which reminder cards Today shows, and from what time the nothing logged card does */
+export type Remind = { meal: boolean; mealAt: string; weigh: boolean; checkin: boolean; easy: boolean };
+interface Saved { theme: Theme; fontSize: FontSize; tab: Tab; lastUser: string | null; lastEmail: string | null; draft: Draft | null; photoOk: boolean; firstDay: string | null; suggestOff: boolean; locationOk: boolean; remind: Remind; thai: boolean | null; liftAsked: boolean }
+const DEFAULTS: Saved = {
+  theme: 'system', fontSize: 'system', tab: 0, lastUser: null, lastEmail: null, draft: null, photoOk: false, firstDay: null, suggestOff: false, locationOk: false,
+  remind: { meal: true, mealAt: '13:00', weigh: true, checkin: true, easy: true }, thai: null, liftAsked: false,
+};
 const load = (): Saved => {
   try { return { ...DEFAULTS, ...JSON.parse(localStorage.getItem(PREFS_KEY) ?? '{}') }; }
   catch { return { ...DEFAULTS }; }
@@ -46,6 +52,15 @@ class Prefs {
   /** the one sentence about location was shown before the first location prompt (S1b, F17) */
   get locationOk() { return this.#s.locationOk; }
   set locationOk(v: boolean) { this.#s.locationOk = v; this.#save(); }
+  /** the reminder cards (F23): set one field at a time, `prefs.remind = { ...prefs.remind, meal: false }` */
+  get remind(): Remind { return { ...DEFAULTS.remind, ...this.#s.remind }; }
+  set remind(v: Remind) { this.#s.remind = v; this.#save(); }
+  /** Thai dishes first in search: null follows the phone's languages */
+  get thai() { return this.#s.thai; }
+  set thai(v: boolean | null) { this.#s.thai = v; this.#save(); }
+  /** Train asked the lifting experience in context (M9a), once per phone and account */
+  get liftAsked() { return this.#s.liftAsked; }
+  set liftAsked(v: boolean) { this.#s.liftAsked = v; this.#save(); }
   #save() { try { localStorage.setItem(PREFS_KEY, JSON.stringify($state.snapshot(this.#s))); } catch { /* private mode */ } }
 }
 

@@ -84,6 +84,15 @@ describe('due', () => {
   test('a program change does not restart the count', () => {
     expect(checkinDueOn([plan('2026-10-28', 'onboarding'), plan('2026-11-06', 'edit')], 2, '2026-11-11')).toBe(true);
   });
+  test('a goal, pace or baseline changed in Settings restarts it (M9a)', () => {
+    const was = { updatedAt: 1, data: { effectiveFrom: '2026-10-28', source: 'onboarding', goal: 'gain', ratePctPerWeek: 0.5, baseline: 1900 } as Plan };
+    const edit = (d: Partial<Plan>) => ({ updatedAt: 2, data: { ...was.data, effectiveFrom: '2026-11-06', source: 'edit', ...d } as Plan });
+    expect(checkinDueOn([was, edit({ eeeByWeekday: [0, 0, 0, 0, 0, 0, 0] })], 2, '2026-11-11')).toBe(true); // a program change
+    expect(checkinDueOn([was, edit({ goal: 'lose' })], 2, '2026-11-11')).toBe(false);
+    expect(checkinDueOn([was, edit({ ratePctPerWeek: 0.25 })], 2, '2026-11-11')).toBe(false);
+    expect(checkinDueOn([was, edit({ baseline: 2000 })], 2, '2026-11-11')).toBe(false);
+    expect(checkinDueOn([was, edit({ goal: 'lose' })], 2, '2026-11-25')).toBe(true); // 20 days after the change
+  });
 });
 
 describe('the training card (F20)', () => {

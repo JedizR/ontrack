@@ -58,6 +58,8 @@ export const C = {
   floor: k({ female: 1200, male: 1500, unspecified: 1350 }, 'kcal/day', 'S14', 'assumption',
     'The guide recommends 1,000 to 1,200 for women and 1,200 to 1,600 for men on a low calorie diet; Ontrack keeps the higher floors'),
   targetStep: k(10, 'kcal', 'OT', 'assumption', 'Targets are rounded to this step'),
+  // Gain mode's easy adds (PRD F10): offered from this hour while more than this share of the day's target is left
+  easyAdds: k({ fromHour: 18, minShare: 0.25 }, 'hour of the day, and share of the day target left', 'OT', 'assumption', 'PRD F10'),
 
   // Macros, section 8
   atwater: k({ protein: 4, carbs: 4, fat: 9 }, 'kcal/g', 'S19', 'verified'),
@@ -90,6 +92,7 @@ export const C = {
   minSpanDays: k(14, 'days', 'OT', 'assumption'),
   completeMinItems: k(2, 'logged items', 'OT', 'assumption'),
   completeMinShare: k(0.5, 'share of the day target', 'OT', 'assumption'),
+  finishDayHour: k(20, 'hour of the day', 'OT', 'assumption', 'Finish day shows on today from this hour, and on any past day'),
   minCompleteDays: k(10, 'days', 'OT', 'assumption'),
   checkinEveryDays: k(14, 'days since the plan started or changed', 'OT', 'assumption'),
   rateOnlyClamp: k(100, 'kcal/day', 'OT', 'assumption'),

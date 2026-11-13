@@ -121,6 +121,9 @@ export function createSupabaseBackend(sb: SupabaseClient, settingsUrl?: string, 
     async getThumb(mealId) {
       return download(`${await userId()}/${mealId}.jpg`);
     },
+    async dropThumb(mealId) {
+      check(await sb.storage.from(BUCKET).remove([`${await userId()}/${mealId}.jpg`]));
+    },
     async accessToken() {
       return (await current().catch(() => null))?.access_token ?? null;
     },

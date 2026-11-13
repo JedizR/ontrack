@@ -83,6 +83,9 @@ export function createMockBackend(opts: { base?: string; fetch?: typeof fetch; s
     async getThumb(mealId) {
       return (await call(`/thumb/${encodeURIComponent(mealId)}`))?.blob() ?? null;
     },
+    async dropThumb(mealId) {
+      await call(`/thumb/${encodeURIComponent(mealId)}`, { method: 'DELETE' });
+    },
     async accessToken() {
       return current?.token ?? null;
     },

@@ -201,6 +201,10 @@ export function createMockServer() {
         space.thumbs.set(k, await req.arrayBuffer());
         return json(200, { ok: true });
       }
+      if (req.method === 'DELETE') {
+        space.thumbs.delete(k);
+        return json(200, { ok: true });
+      }
       const bytes = space.thumbs.get(k);
       return bytes ? new Response(bytes, { headers: { 'Content-Type': 'image/jpeg' } }) : fail(404, 'not_found');
     }

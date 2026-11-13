@@ -31,6 +31,8 @@ export interface Backend {
   pull(cursor: string | null): Promise<{ records: Rec[]; cursor: string }>;
   putThumb(mealId: string, blob: Blob): Promise<void>;
   getThumb(mealId: string): Promise<Blob | null>;
+  /** a deleted meal's thumbnail or a replaced profile photo (M9a); deleting one that is gone succeeds */
+  dropThumb(mealId: string): Promise<void>;
   accessToken(): Promise<string | null>; // for /api calls
   /**
    * Friends and the food map (S1). Your own profile and shares are records (collection `social`, a meal's `share`)

@@ -18,13 +18,13 @@ export const SCIENCE: { group: ScienceGroup; keys: (keyof typeof C)[] }[] = [
     group: 'pace',
     keys: ['kcalPerKg', 'losePace', 'gainPace', 'gainPaceFaster', 'fasterGainMaxBmi', 'fasterPaceMinBmi', 'deficitCap', 'surplusCap', 'surplusCapAdvanced'],
   },
-  { group: 'targets', keys: ['floor', 'targetStep'] },
+  { group: 'targets', keys: ['floor', 'targetStep', 'easyAdds'] },
   { group: 'macros', keys: ['atwater', 'kjPerKcal', 'proteinPerKg', 'proteinRefBmi', 'fatShare', 'fatMinPerKg', 'fatFloorPerKg'] },
   { group: 'foodChecks', keys: ['estimateKcalMax', 'estimateKcalTolerance', 'tableKcalTolerance', 'derivedCarbsMin'] },
   { group: 'onTrack', keys: ['onTrackBand', 'proteinOnTrack'] },
   {
     group: 'checkin',
-    keys: ['trendSmoothing', 'rateWindowDays', 'minWeighIns', 'minSpanDays', 'completeMinItems', 'completeMinShare', 'minCompleteDays',
+    keys: ['trendSmoothing', 'rateWindowDays', 'minWeighIns', 'minSpanDays', 'completeMinItems', 'completeMinShare', 'finishDayHour', 'minCompleteDays',
       'checkinEveryDays', 'rateOnlyClamp', 'onTrackChange', 'observedWeight', 'tdeeClamp', 'moveClamp', 'adherence'],
   },
   {

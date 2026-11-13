@@ -45,7 +45,13 @@ export const saveProgram = (p: Program) => write('program', ids.program(), p);
 export const logWeight = (date: string, kg: number) => write('weight', ids.weight(date), { date, kg });
 export const deleteWeight = (date: string) => remove('weight', ids.weight(date));
 export const saveMeal = (m: Meal, id: string = uid()) => write('meal', id, m).id;
-export const deleteMeal = (id: string) => remove('meal', id);
+/** Deletes a meal; its thumbnail leaves storage once Undo has had its time (M9a, the sync round). Returns the undo. */
+export function deleteMeal(id: string) {
+  const had = db.get('meal', id)?.thumb;
+  const undo = remove('meal', id);
+  if (had) void db.dropThumb(id);
+  return undo;
+}
 export const saveMealThumb = (mealId: string, jpeg: Blob) => db.saveThumb(mealId, jpeg);
 export const saveSaved = (s: Saved, id: string = uid()) => write('saved', id, s).id;
 export const deleteSaved = (id: string) => remove('saved', id);
@@ -308,6 +314,7 @@ export async function saveSocial(p: { handle: string; name: string; showProgram:
     await saveMealThumb(name, square);
   }
   write('social', ids.social(), { ...data, ...(name ? { photo: name } : {}) });
+  if (was?.photo && was.photo !== name) void db.dropThumb(was.photo); // a replaced or removed picture leaves storage (M9a)
   return 'ok';
 }
 export const handleFree = (typed: string) => online((b) => b.social.handleFree(handleOf(typed)));
@@ -381,6 +388,7 @@ export async function signOut(force = false): Promise<'ok' | 'unsent'> {
     // the account's first days and its dismissed suggestion (O1) are not the next account's
     prefs.firstDay = null;
     prefs.suggestOff = false;
+    prefs.liftAsked = false;
     location.reload();
   }
   return 'ok';
