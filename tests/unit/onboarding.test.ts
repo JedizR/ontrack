@@ -2,7 +2,7 @@
 // becomes (SCREENS.md section 4, PRD section 7). Vector A of docs/SCIENCE.md is the hardgainer below.
 import { describe, expect, test } from 'vitest';
 import { SCHEMAS } from '../../shared/records';
-import { plan, type PlanNumbers } from '../../src/lib/model/engine';
+import { dayMacros, dayTarget, plan, type PlanNumbers } from '../../src/lib/model/engine';
 import { kgPerWeek, targetParts, targetWith, trainingDayEee } from '../../src/lib/model/day';
 import { cmToFtIn, ftInToCm, kgToLb, lbToKg } from '../../src/lib/model/units';
 import { weekdayOf } from '../../src/lib/model/dates';
@@ -166,6 +166,9 @@ describe('the two goals behind "Not what you\'re looking for?" (U1a, SCIENCE.md 
     expect(p).toMatchObject({ goal: 'lose', ratePctPerWeek: 0.25, proteinG: 140, fatG: 49, flags: [] });
     expect(p.delta).toBeCloseTo(-192.5, 9); // under the 500 kcal a day at which lean mass gains stopped (S26)
     expect([training, rest]).toEqual([1930, 1650]);
+    const even = dayTarget(p, { sex: 'female', mode: 'even', weekday: 0 });
+    expect(even).toBe(1770);
+    expect([training, rest, even].map((x) => dayMacros(p, x).carbsG)).toEqual([232, 162, 192]);
     expect(kgPerWeek(p, 'female', 'matched')).toBeCloseTo(0.175, 3);
     expect(paceChoices(K, YEAR)).toMatchObject({ options: [], why: null, picked: 0.25 });
     // a pace left from Lose fat does not carry over

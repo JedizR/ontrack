@@ -27,6 +27,7 @@ const on = (t: Record<string, string>, fg: string, bg: string) => {
 
 // [text, background, bar]. "lavender" is the hero haze's strongest stop, lavender at 75 percent over white.
 const PAIRS: [string, string, number][] = [
+  // ink on canvas is also a picked onboarding answer's fill against the page (U1a, WCAG 1.4.11)
   ['ink', 'canvas', 4.5], ['ink', 'surface', 4.5], ['ink', 'surface-2', 4.5], ['ink', 'accent-soft', 4.5],
   ['ink-2', 'canvas', 4.5], ['ink-2', 'surface', 4.5], ['ink-2', 'surface-2', 4.5],
   ['ink-3', 'surface', 3],

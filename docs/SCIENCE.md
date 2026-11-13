@@ -61,6 +61,10 @@ Intensity bands (S5, S13): light 1.6 to 2.9 METs, moderate 3.0 to 5.9, vigorous 
 
 Sources for the bands: S7 for gaining, S9 for losing.
 
+**Goals as asked (U1a).** Onboarding offers five goals; the engine still has three, and the two behind "Not what you're looking for?" each add one rule in the onboarding draft (`AIMS` in `src/flows/onboarding/draft.ts`), no constant and no stored field:
+- **Gain weight** (for lean people) is `gain` leading with the faster gain pace (0.75, provisional, S20) wherever `paceOptions` offers it: under BMI 20 and not to advanced lifters. Elsewhere it is the gain goal's own default with the line saying why. The other paces stay on Your plan, and the surplus cap still applies (vector J).
+- **Lose fat and build muscle** is `lose` held at the gentle pace (0.25), the smallest deficit the engine has (about 10 percent under maintenance), with the cut's protein, 2.0 g per kg (S8, S9, S10). No pace is offered. A meta-regression found that lean mass gains from resistance training stopped at a deficit of about 500 kcal a day (S26); the gentle pace stays under it up to about 180 kg of body weight, and above that the plan is a slow cut. Recomposition was seen in studies both under and over maintenance, with protein above 2.0 g per kg (S26). Below BMI 18.5 it keeps the weight steady, as Lose fat does (vector K). Stored as a `lose` plan, so the check-in steers it like any cut.
+
 **The faster gain pace (T1, PRD F19).** No source recommends gaining faster than 0.5 percent a week, for lean people or anyone (S7, read again in T1; a search for a rate for underweight adults without an eating disorder found none, see `docs/DECISIONS.md` under T1a). So the pace is **provisional** and the app labels it so. Its rate, 0.75, is the middle of the 0.7 to 0.8 percent a week that the large surplus group of a trial aimed for (S20). That trial and another (S20) found the extra gain was mostly fat, which is what the pace's words say. Who may choose it: BMI under 20 (an assumption: thin people put 60 to 70 percent of an overfeeding gain into lean tissue against 30 to 40 percent in obese people, S21, but no source gives a cut), and not advanced lifters (S7 gives novice and intermediate lifters the 10 to 20 percent surplus band and says larger surpluses may suit novices; advanced lifters get 5 to 10 percent). The 20 percent surplus cap below still applies and binds first for most lean, seated people (vector H); the protein target and the strength recommendation of PRD F10 are unchanged.
 
 - `lose`: `delta = -min(wanted, 0.25 * tdeeAvg)`. Flag `deficitCap` if the cap applied.
@@ -178,6 +182,13 @@ Check-in by rate alone (fewer than 10 complete days): gaining 0.614 percent a we
 Matched: training days 3250, rest days 3010. Even: 3150.
 Protein 108 g. Fat 88 g. Carbs: training 507 g, rest 447 g, even 482 g.
 
+**J. Gain weight (U1a).** Vector A answered as Gain weight: BMI 19.59 and a beginner, so the faster pace leads and the plan is vector H (training days 2530, rest days 2290, protein 108 g, `surplusCap`). At 67 kg (BMI 21.9) it is the standard pace with `noFasterGain`; for an advanced lifter, lean with `leanOnly`.
+
+**K. Lose fat and build muscle (U1a).** Female, 30, 165 cm, 70 kg, `light`, strength moderate 60 min on 3 days (the onboarding defaults), lose at 0.25.
+BMI 25.71. BMR 1420.25. Baseline 1846.325. EEE per session 280, weekly 840. tdeeAvg 1966.325. Wanted 192.5, cap 491.58, delta -192.5.
+Matched: training days 1930, rest days 1650. Even: 1770. About 0.2 kg a week.
+Protein 140 g. Fat 49 g. Carbs: training 232 g, rest 162 g, even 192 g. Flags none. The same person at maintenance trains on 2130 with 112 g of protein; Lose fat's steady pace, 1740.
+
 ## 14. Sources (verdicts in `docs/SOURCES.md`)
 
 | Id | Claim used | Citation to check |
@@ -207,6 +218,7 @@ Protein 108 g. Fat 88 g. Carbs: training 507 g, rest 447 g, even 482 g.
 | S23 | 6 hours between lifting and cardio, or separate days | Robineau J, et al. J Strength Cond Res. 2016;30(3):672-683. Also Sale DG, et al. Med Sci Sports Exerc. 1990;22(3):348-356 |
 | S24 | Interference within one session | Schumann M, et al. Sports Med. 2022;52(3):601-612 |
 | S25 | Cycling rather than running on leg days | Wilson JM, et al. J Strength Cond Res. 2012;26(8):2293-2307 |
+| S26 | Lean mass gains stop at a deficit of about 500 kcal a day; recomposition with high protein | Murphy C, Koehler K. Scand J Med Sci Sports. 2022;32(1):125-137. Also Barakat C, et al. Strength Cond J. 2020;42(5):7-21 |
 
 ## 15. What the app says about certainty
 
