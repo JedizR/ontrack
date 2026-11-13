@@ -75,7 +75,7 @@ Full height flow. A thin track at the top with "Step n of N", where N counts onl
 - Primary: "Save this plan". Signed out, Caption under it: "Sign in next with Google or an email code. No password needed."
 
 **What the answers change after onboarding.**
-- Today, first days: a "Getting started" card with three rows: Plan saved (ticked), Log a meal (opens Add), Weigh in tomorrow morning (from the next day it opens the weigh-in). It shows on the plan's first two days, on the phone that saved it, until both are done. No streaks.
+- Today, first days: a "Getting started" card (its eyebrow, U3; the title is the status, "Two steps to go" then "One step to go", and the line "Your first check-in reads from your meals and weigh-ins.") with three rows: Plan saved (ticked), Log a meal (opens Add), Weigh in tomorrow morning (from the next day it opens the weigh-in). It shows on the plan's first two days, on the phone that saved it, until both are done. No streaks.
 - Train: while the program has no exercises listed, a card "Suggested for your week" (its eyebrow, U3) names the template that fits the days, the kind and the experience as its title, "Upper lower 4 days", then "Fits 4 days a week." and who it suits, with "Use this program" and "Not now".
 - Add: with no supplements yet, a lifter's entry row reads "Have a shake most days? Set up your tub once, then log it in three taps." The setup lists whey and mass gainer first for a gain goal. Ontrack never recommends a supplement.
 - Search: when the phone's languages include Thai, Thai dishes rank first among equal matches, and Describe's example is a Thai meal.

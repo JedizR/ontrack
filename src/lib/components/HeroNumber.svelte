@@ -31,13 +31,13 @@
 <div class="flex items-end justify-between gap-4">
   <div class="min-w-0">
     <div class="text-hero" data-testid="hero-value"><Count {value} /></div>
-    <div class="text-callout text-ink-2 mt-1">{caption}</div>
+    <div class="text-caption text-ink-2 mt-1">{caption}</div>
   </div>
   <div class="text-right">
     <!-- reaching the zone: the words turn green and a check pops in beside them (U1c) -->
     <div class="text-heading num flex items-center justify-end gap-1 font-semibold normal-case {reached ? 'text-success-ink' : ''}">
       {#key scope}{#if reached}<span class="inline-grid" in:pop data-testid="hero-reached"><Check size={24} strokeWidth={2.75} aria-hidden="true" /></span>{/if}{/key}{side}
     </div>
-    {#if sideCaption}<div class="text-callout text-ink-2 mt-1">{sideCaption}</div>{/if}
+    {#if sideCaption}<div class="text-caption text-ink-2 mt-1">{sideCaption}</div>{/if}
   </div>
 </div>

@@ -606,6 +606,9 @@ export const en = {
   /** O1: Today's first days, on the phone that saved the plan */
   firstDay: {
     title: 'Getting started',
+    // U3: the card's status and why, under the title as its eyebrow
+    left: (n: number) => (n === 1 ? 'One step to go' : 'Two steps to go'),
+    line: 'Your first check-in reads from your meals and weigh-ins.',
     saved: 'Plan saved',
     meal: 'Log a meal',
     weighTomorrow: 'Weigh in tomorrow morning',

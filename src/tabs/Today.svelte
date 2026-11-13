@@ -262,7 +262,7 @@
       <!-- SCREENS.md section 4, after onboarding: a true head start (the plan is saved), then the two first habits -->
       {@const tomorrow = view.today === startDay}
       <div in:collapse out:collapse={{ leave: true }}><Card data-testid="first-day" {...rise(2)}>
-        <CardHead title={t.firstDay.title} />
+        <CardHead eyebrow={t.firstDay.title} title={t.firstDay.left(2 - +mealDone - +weighDone)} line={t.firstDay.line} />
         <ul class="mt-2 -mb-2 flex flex-col">
           {@render step(t.firstDay.saved, true)}
           {@render step(t.firstDay.meal, mealDone, () => (sheets.add = true), 'first-meal')}

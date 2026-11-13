@@ -138,7 +138,7 @@
           <p class="text-callout text-ink-2 min-w-0 flex-1">{t.train.adds(num(Math.round(perDay)))}</p>
           <Button size="sm" onclick={() => (templates = true)} data-testid="train-change">{t.train.change}</Button>
         </div>
-        {#if pending}<p class="text-callout mt-2" data-testid="train-pending">{t.train.fromTomorrow}</p>{/if}
+        {#if pending}<p class="text-callout mt-2 font-semibold" data-testid="train-pending">{t.train.fromTomorrow}</p>{/if}
       {:else}
         <EmptyState text={t.today.noProgram} action={t.train.pick} onaction={() => (templates = true)} />
       {/if}
