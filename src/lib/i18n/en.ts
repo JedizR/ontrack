@@ -387,8 +387,8 @@ export const en = {
     offline: 'You are offline. Connect to the internet to sign in.',
     rateLimited: 'Too many tries for now. Wait a few minutes, then send a new code.',
     failed: 'Sign in did not work. Try again in a moment.',
-    /** M9a: the small print, as one sentence around two links */
-    legal: ['By signing in you accept the ', 'Terms', ' and the ', 'Privacy', ' notice.'],
+    /** M9a: the small print, with Terms and Privacy as links under it */
+    legal: 'By signing in you accept the Terms and the Privacy notice.',
   },
   account: {
     title: 'Account',

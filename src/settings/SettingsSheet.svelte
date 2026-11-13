@@ -174,10 +174,11 @@
     {@render heading(t.settings.display)}
     <div>
       {#snippet theme()}<Segmented label={t.prefs.theme} bind:value={() => prefs.theme, (v) => (prefs.theme = v)} options={THEMES} />{/snippet}
-      {#snippet size()}<Segmented label={t.prefs.textSize} bind:value={() => prefs.fontSize, (v) => (prefs.fontSize = v)} options={SIZES} />{/snippet}
       {@render choice(t.prefs.theme, theme)}
-      {@render choice(t.prefs.textSize, size)}
     </div>
+    <!-- four sizes do not fit a segmented control at the largest text on the SE: rows, as the other longer choices -->
+    <h4 class="text-body mt-3 font-semibold">{t.prefs.textSize}</h4>
+    <Options label={t.prefs.textSize} value={prefs.fontSize} onchange={(v) => (prefs.fontSize = v)} options={SIZES} testid="set-text-size" />
 
     {@render heading(t.settings.data)}
     <div>

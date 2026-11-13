@@ -256,7 +256,7 @@ A sheet from the avatar (M9a), the rows on the sheet itself in groups, each unde
 - **Targets:** "Same target every day" (a switch; off, training days get more), Check-in day (a row with the day, opening a page of seven rows with a check), How it is calculated (opens the breakdown for the day in view).
 - **Reminders** (F23), with the line "Cards on Today when you open Ontrack. No notifications.": Nothing logged yet (a switch, and when on a Time row, 13:00 by default), No weigh-in for 3 days, Check-in due, Evening easy adds (caption "When gaining, after 18:00"). All on by default. Off hides the card on Today; the check-in stays on Progress.
 - **Food:** "Thai dishes first" (a switch; caption "In search results". It starts on when the phone's languages include Thai).
-- **Display:** theme (System, Light, Dark) and text size (System, Default, Large, Larger) as segmented controls.
+- **Display:** theme (System, Light, Dark) as a segmented control, and text size (System, Default, Large, Larger) as rows with a check, since four do not fit a segmented control at the largest text on the SE.
 - **Data:** Export all data (caption "Every record, as JSON"), Export meals (caption "One line per food, as CSV"), each through the share sheet or a download. Backup: its state as the caption and "Sync now" beside it while changes wait.
 - **About:** The science (page), Privacy and Terms (open the pages in `public/` in a new tab), Report a problem (an email with the version and device filled in), and the version as a caption.
 - **Account:** email, Profile for friends (opens the friends profile, S1b), Sign out, and Delete account as a quiet danger link opening its page (typed confirmation, in the danger style).

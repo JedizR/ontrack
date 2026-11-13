@@ -160,11 +160,15 @@
     </div>
   {/if}
 
-  <!-- SCREENS.md section 5: small print linking to Privacy and Terms (M9a); inline links keep 44 to tap through their padding -->
-  {@const [a, terms, b, privacy, c] = t.signin.legal}
-  <p class="text-caption text-ink-2 mt-4" data-testid="signin-legal">
-    {a}<a href="/terms.html" target="_blank" rel="noopener" class="text-accent-ink py-3 underline">{terms}</a>{b}<a href="/privacy.html" target="_blank" rel="noopener" class="text-accent-ink py-3 underline">{privacy}</a>{c}
-  </p>
+  <!-- SCREENS.md section 5: small print linking to Terms and Privacy (M9a), the links as plain actions 44 high -->
+  <div class="mt-4" data-testid="signin-legal">
+    <p class="text-caption text-ink-2">{t.signin.legal}</p>
+    <div class="-ml-4 flex flex-wrap">
+      {#each [['/terms.html', t.settings.terms], ['/privacy.html', t.settings.privacy]] as [href, label] (href)}
+        <a {href} target="_blank" rel="noopener" class="text-callout text-accent-ink active:bg-surface-2 inline-flex min-h-11 items-center rounded-sm px-4 font-semibold transition-colors duration-[var(--d-press)]">{label}</a>
+      {/each}
+    </div>
+  </div>
 
   {#snippet footer()}
     {#if step === 'email'}

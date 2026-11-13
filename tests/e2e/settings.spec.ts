@@ -154,7 +154,7 @@ test('the sign in sheet carries the small print', async ({ page }) => {
   await openFresh(page);
   await page.getByTestId('landing-signin').click();
   const legal = page.getByTestId('signin-legal');
-  await expect(legal).toHaveText('By signing in you accept the Terms and the Privacy notice.');
+  await expect(legal.getByText('By signing in you accept the Terms and the Privacy notice.')).toBeVisible();
   await expect(legal.getByRole('link', { name: 'Terms' })).toHaveAttribute('href', '/terms.html');
   await expect(legal.getByRole('link', { name: 'Privacy' })).toHaveAttribute('href', '/privacy.html');
 });
