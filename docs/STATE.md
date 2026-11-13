@@ -9,8 +9,8 @@ The conductor role and its rules are in `STARTING_PROMPT.md`; the final report i
 1. **Wave 1:** S1b and U1a: both shipped (`v0.8.12`, `v0.8.11`).
 2. **Wave 2:** U1b and M9a, side by side. M9a shipped (`v0.8.13`), U1b shipped (`v0.8.14`). The Gemini Flash-Lite fallback shipped as `v0.8.15` (PR #36, `docs/EVAL-NOTES.md`). Support Gmail, paid Gemini and the 150 a day cap shipped as `v0.8.16` (PR #38).
 3. **Wave 3:** U1c shipped (`v0.8.17`).
-4. **Wave 4:** M9b shipped as `v1.0.0`, the keyboard fix as `v1.0.1`, L2 as `v1.1.0`, L3 as `v1.2.0`.
-5. **The final report:** the milestone table, the last lines of a passing `pnpm verify` on `main`, the full `docs/BLOCKERS.md`, the production URL https://ontrack-black.vercel.app, and the three things the owner should do first.
+4. **Wave 4:** M9b shipped as `v1.0.0`, the keyboard fix as `v1.0.1`, L2 as `v1.1.0`, L3 as `v1.2.0`, the bundle check's env fix as `v1.2.1`.
+5. **The final report** (delivered 13 November, after `v1.2.1`): the milestone table, the last lines of a passing `pnpm verify` on `main`, the full `docs/BLOCKERS.md`, the production URL https://ontrack-black.vercel.app, and the three things the owner should do first.
 
 Lanes are worktrees with `E2E_PORT` (`docs/WORKFLOW.md`). A worker in a lane does not edit this file or `docs/BLOCKERS.md`: it puts "For STATE" (its row note and notes for the next milestone) and "For BLOCKERS" sections in its pull request, and the conductor applies them on merge. Quick CI is about 4 to 16 minutes; add `full-ci` for data, sync, sign-in or RLS changes. The deferred Gemini checks ran on 13 November (`docs/EVAL-NOTES.md`).
 
