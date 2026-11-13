@@ -2,6 +2,22 @@
 
 Changes to a doc's decision, and choices made on the owner's behalf. Newest first, one line each: what, why.
 
+## L2
+
+Landing glass and photo gradients, 13 November 2026, unattended. The owner's desktop pass: more of OneFin's glass, gradients made from photos with a little grain, an iPhone 16 frame, the owner's pad kra pao, and the footer glow bug.
+- **The gradients were made on photogradient.com, driven through Yab's CLI.** Claude in Chrome was not connected; a Yab agent tab set the seven colours, the size and the noise, and clicked Download (13 exports). Settings for all: Sharp Bezier, the site's default Smooth Noise warp (the owner's screenshot used Voronoi), warp 0.4, warp size 1, noise 0; each one's colours, in the site's order, are in the header of `scripts/gradients.sh`, which turns the exports into WebP. Why: the owner asked for that tool by name; a generator was the fallback and was not needed.
+- **Grain is one shared tile, not baked into each image.** A 256 px tile of the site's own noise (seven mid greys at noise 0.15, 11 KB), laid over each gradient with soft-light at 128 CSS px. Why: noise baked in costs tens of kilobytes per image and blurs when an image is scaled; the tile stays crisp at any size, and the smooth gradients compress to 2 to 9 KB each.
+- **All gradients moved, the app's too** (the owner's scope addition): the hero haze and the featured card in light and dark, the landing sky in light and dark, the glow, the check-in's field and the four source washes. Wired through the same tokens with the CSS gradient beneath as the fallback, so no app component changed. Words on them are measured on the images in `landing.spec.ts` (8 px blocks, 4.5 to 1; 3 to 1 for the hero's large violet words); the CSS stops stay in `contrast.test.ts`.
+- **The app's gradients are precached, the landing page's are not**, and none is inlined as a data URL (`vite.config.ts`). Why: the app's show offline on Today; the landing page is only for a first visit online, like its phone shots.
+- **The sweep lets the featured card's fill start with an image** (`url(`) as well as a CSS gradient. Why: its photo gradient is still the one allowed fill; every other button is checked as before.
+- **The Figma files were not reachable.** The MCP needs a file key and the two community files ("iPhone 16 and 16 Plus Mockups", "iOS 26 Liquid Glass") have none without the owner's links. The phone uses the iPhone 16's published sizes; the glass follows Apple's description of Liquid Glass and callstack/liquid-glass's parameters (regular and clear, tint, interactive), built in CSS. Only the regular style is used: clear glass needs a dimming layer for words.
+- **No refraction.** Safari draws no SVG displacement inside `backdrop-filter`, so the glass is blur, saturation, tint and a rim, which looks the same in Safari and Chrome.
+- **The glow is masked to nothing at every edge** and its middle sits on the footer panels' top edge. Why: the owner's footer-glow-bug; an image whose edge colour merely matches the page still shows where the grain starts.
+- **The bar and the floating action's tray keep the dock's fill under the liquid rim** (`liquid-bar`). Why: the critic found the clear dark glass let the closing call's white pill wash out the wordmark.
+- **The status bar repeats the top of each screen**, stretched and blurred, rather than a fixed colour. Why: the sheets' dimmed tops and the map need their own colour, and it stays right when the shots are retaken.
+- **The pad kra pao is in the photo shot and on every food map pin** in the landing shots (`tests/fixtures/krapao.jpg`, from the owner's AVIF), without the hue turn the map tests use. Why: the owner asked for that dish in every mockup, and a hue-turned egg looks wrong.
+- **Not done:** the side buttons of the iPhone frame (the crop would cut them), the interactive press highlight on glass (the only glass button, back to top, keeps `glass` and its press scale), refraction.
+
 ## U1c
 
 Motion and feel, app wide, 13 November 2026. Unattended; the owner judged the UX about 30 percent for lack of "good feelings". The rules are DESIGN.md section 10; the choices behind them:

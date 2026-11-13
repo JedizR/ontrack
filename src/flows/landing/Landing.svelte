@@ -125,7 +125,7 @@
   <!-- the bar: OneFin's floating bar in Liquid Glass (L2), with the wordmark and the way back in -->
   <header class="bar fixed inset-x-0 top-0 z-30 px-4 pt-[calc(env(safe-area-inset-top)+8px)]">
     <!-- U1b: Sign in (sm, 36) sits 8 inside the 52 high bar on three sides, so its 16 corners nest in the bar's 24 -->
-    <nav class="liquid mx-auto flex h-13 max-w-[1200px] items-center justify-between rounded-md pr-2 pl-5" aria-label={t.app.name}>
+    <nav class="liquid-bar mx-auto flex h-13 max-w-[1200px] items-center justify-between rounded-md pr-2 pl-5" aria-label={t.app.name}>
       <Wordmark class="h-5 w-fit" />
       <Button variant="neutral" size="sm" onclick={signin} data-testid="landing-signin">{L.signin}</Button>
     </nav>
@@ -197,7 +197,7 @@
     <!-- 02 Training: a dark section with a violet glow (pick 06, 12); dark cards hold lavender panels and settle as they come -->
     <section class="px-2 sm:px-4" data-testid="landing-train">
       <div data-theme="dark" class="bg-canvas text-ink relative isolate overflow-clip rounded-xl px-4 pt-20 pb-24">
-        <div class="grained absolute inset-x-0 bottom-0 -z-10 h-3/4 translate-y-1/2 [background:var(--glow)]" aria-hidden="true"></div>
+        <div class="glow absolute inset-x-0 bottom-0 -z-10 h-3/4 translate-y-1/2" aria-hidden="true"></div>
         {@render head('02', L.train.tag, L.train.title, L.train.lead)}
         <div class="mx-auto mt-12 grid max-w-[1000px] gap-4 md:grid-cols-2 md:gap-6">
           {#each TRAIN as c, i (i)}
@@ -312,7 +312,7 @@
         <div class="relative mt-4">
           <!-- the glow rises from where the panels begin (the owner's footer-glow-bug): its brightest middle on their top
                edge, spreading behind them and up into the wordmark, the canvas at every edge so it shows no seam -->
-          <div class="grained absolute -inset-x-4 top-0 -z-10 h-[clamp(18rem,40vw,36rem)] -translate-y-1/2 [background:var(--glow)]" data-testid="landing-glow" aria-hidden="true"></div>
+          <div class="glow absolute -inset-x-4 top-0 -z-10 h-[clamp(18rem,40vw,36rem)] -translate-y-1/2" data-testid="landing-glow" aria-hidden="true"></div>
         <div class="liquid rise-in mx-auto max-w-[1200px] rounded-t-sheet p-2 pb-0" use:inview={0.05} data-reveal data-testid="landing-panels">
           <div class="grid gap-2 md:grid-cols-2">
             <div class="liquid-violet text-on-night rounded-lg p-6">
@@ -338,13 +338,20 @@
 
   <!-- Build your plan, floating once the hero's action has gone by: the ink pill on the dock's glass -->
   <div class="float-cta fixed inset-x-0 bottom-0 z-30 px-4 pb-[max(12px,env(safe-area-inset-bottom))]" data-shown={floating || undefined} inert={!floating} data-testid="landing-float">
-    <div class="liquid mx-auto max-w-sm rounded-md p-1">
+    <div class="liquid-bar mx-auto max-w-sm rounded-md p-1">
       <Button variant="primary" size="lg" full onclick={start}>{L.start}</Button>
     </div>
   </div>
 </div>
 
 <style>
+  /* the dark sections' glow: brightest at its middle, faded to nothing at every edge by an elliptical mask, so neither
+     the grain nor the colour ever starts at a line (the owner's footer-glow-bug) */
+  .glow {
+    background: var(--glow);
+    background-blend-mode: soft-light, normal;
+    mask-image: radial-gradient(closest-side, black 40%, transparent);
+  }
   /* the lead sits on the sky's violet top: full ink, not ink-2, keeps it at 4.5 to 1 */
   .hero-lead { color: var(--ink); }
 

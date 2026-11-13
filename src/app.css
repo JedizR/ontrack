@@ -202,6 +202,13 @@
   background: var(--liquid-violet);
   @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { background: var(--liquid-violet-solid); }
 }
+/* the material on a bar that content scrolls under (the landing's bar and its floating action): the dock's fill, so words
+   on it hold 4.5 to 1 over anything, with the liquid rim */
+@utility liquid-bar {
+  @apply liquid;
+  background: var(--bar-bg);
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { background: var(--bar-solid); }
+}
 /* white in both themes: night words on it, over the phones' light screens and the lavender field */
 @utility liquid-white {
   @apply liquid;
