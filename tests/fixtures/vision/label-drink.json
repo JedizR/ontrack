@@ -1,0 +1,16 @@
+{
+  "is_label": true,
+  "name": "Orange drink",
+  "unit": "ml",
+  "serving_size": 240,
+  "scoops_per_serving": null,
+  "servings_per_pack": 1,
+  "per_serving": {
+    "kcal": 80,
+    "kj": null,
+    "protein_g": null,
+    "carbs_g": null,
+    "fat_g": 0
+  },
+  "per_100": null
+}

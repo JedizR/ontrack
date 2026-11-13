@@ -91,9 +91,9 @@ export const saveSupplement = (s: Supplement, id: string = uid()) => write('supp
 /** Removes a supplement; what was logged from it keeps its numbers. Returns the undo. */
 export const removeSupplement = (id: string) => remove('supplement', id);
 /**
- * A supplement logged on a day, or a logged one changed (`mealId`, keeping its day and time). Its items come from the
- * supplement's current label. A new entry's amount and mix become the next start; correcting an old entry leaves the
- * start alone. Returns the undo: the entry gone (or as it was) and the last amount and mix back.
+ * A supplement logged on a day, or a logged one changed (`mealId`, keeping its day, at the time given). Its items come
+ * from the supplement's current label. A new entry's amount and mix become the next start; correcting an old entry
+ * leaves the start alone. Returns the undo: the entry gone (or as it was) and the last amount and mix back.
  */
 export function logSupplement(id: string, scoops: number, milk: { food: Food; grams: number } | null, date: string, at: string, mealId?: string) {
   const s = db.get('supplement', id);
@@ -102,7 +102,7 @@ export function logSupplement(id: string, scoops: number, milk: { food: Food; gr
   const before = mealId ? db.get('meal', mealId) : undefined;
   const old = before && copy(before);
   const items = supplementItems(id, s, scoops, milk ? { ...milk, mine: db.get('food', milk.food.id)?.per100 } : undefined);
-  const newId = saveMeal({ ...(old ?? { date, at, method: 'supplement' as const }), title: s.name, items }, mealId);
+  const newId = saveMeal({ ...(old ?? { date, method: 'supplement' as const }), at, title: s.name, items }, mealId);
   const { lastMix: _, ...rest } = was;
   if (!mealId) saveSupplement({ ...rest, lastScoops: scoops, ...(milk ? { lastMix: { foodId: milk.food.id, grams: milk.grams } } : {}) }, id);
   return () => {
@@ -132,9 +132,10 @@ export type Found =
   | { kind: 'found'; code: string; product: Product }
   | { kind: 'empty'; code: string; name: string; brand?: string }
   | { kind: 'missing' | 'offline' | 'failed'; code: string };
-/** The user's saved product first, at once and offline too, then Open Food Facts. Never throws. */
-export async function findProduct(code: string): Promise<Found> {
-  const mine = db.get('product', code);
+/** The user's saved product first, at once and offline too, then Open Food Facts; `fresh` asks Open Food Facts only, for
+ * Use default values (F15). Never throws. */
+export async function findProduct(code: string, fresh = false): Promise<Found> {
+  const mine = fresh ? undefined : db.get('product', code);
   if (mine) return { kind: 'found', code, product: copy(mine) };
   if (!navigator.onLine) return { kind: 'offline', code };
   try {

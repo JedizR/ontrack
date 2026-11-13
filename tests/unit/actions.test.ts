@@ -136,10 +136,11 @@ test('supplements: two scoops with milk become the day\'s items; the last amount
   expect(entry.data).toMatchObject({ date: '2026-11-12', title: 'Whey', items: [{ kcal: 240, protein: 48, scoops: 2, supplementId: id }, { foodId: 'milk-whole', grams: 300, kcal: 183 }] });
   expect(db.get('supplement', id)).toMatchObject({ lastScoops: 2, lastMix: { foodId: 'milk-whole', grams: 300 } });
 
-  // corrected later: the same day and time, water now, from the current label; the next start stays the last logged
+  // corrected later: the same day at the time given (M9a), water now, from the current label; the next start stays the
+  // last logged
   saveSupplement({ ...db.get('supplement', id)!, perScoop: { ...whey.perScoop, kcal: 130 } }, id);
-  const back = logSupplement(id, 1, null, '2026-11-20', 'ignored', entry.id)!;
-  expect(db.get('meal', entry.id)).toMatchObject({ date: '2026-11-12', at: '2026-11-12T00:30:00.000Z', items: [{ kcal: 130, scoops: 1 }] });
+  const back = logSupplement(id, 1, null, '2026-11-20', '2026-11-12T01:15:00.000Z', entry.id)!;
+  expect(db.get('meal', entry.id)).toMatchObject({ date: '2026-11-12', at: '2026-11-12T01:15:00.000Z', items: [{ kcal: 130, scoops: 1 }] });
   expect(db.get('meal', entry.id)!.items).toHaveLength(1);
   expect(db.get('supplement', id)).toMatchObject({ lastScoops: 2, lastMix: { foodId: 'milk-whole', grams: 300 } });
   back();
@@ -188,6 +189,8 @@ test('products (B1): the saved one first, then Open Food Facts; logging keeps it
     rememberFoods([{ ...meal.data.items[0], kcal: 500 }]);
     expect(db.get('product', '8850987101021')).toMatchObject({ source: 'yours', per100: { kcal: 454.55 } });
     expect(db.get('food', foodKey(meal.data.items[0]))).toBeUndefined();
+    // Use default values (F15, M9a) asks Open Food Facts past the user's product
+    expect(await findProduct('8850987101021', true)).toMatchObject({ kind: 'found', product: { source: 'off', per100: { kcal: 472.73 } } });
   } finally {
     vi.unstubAllGlobals();
   }

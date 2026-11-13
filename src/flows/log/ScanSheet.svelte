@@ -1,7 +1,8 @@
 <!-- SCREENS.md section 7, Scan sheet (B1, F22): the camera or the typed number, then the product from the user's products
      or Open Food Facts with live calories, portion chips and the amount, Add. A product Open Food Facts does not have, or
      has without nutrition, is read from a photo of its label (printed values only) or typed, confirmed on the Label step
-     and kept for the next scan. -->
+     and kept for the next scan. A macro the photo did not show stays empty until typed (M9a). A product with the user's
+     numbers (Yours) has Use default values: Open Food Facts' numbers for its barcode again (F15, M9a). -->
 <script lang="ts">
   import { untrack } from 'svelte';
   import Sheet from '$lib/components/Sheet.svelte';
@@ -16,7 +17,7 @@
   import { view } from '$lib/view.svelte';
   import { findProduct, logProduct, readLabel, saveProduct, undoToast, type Found, type LabelResult } from '$lib/actions';
   import { OFF_SOURCE } from '$lib/data/sources';
-  import { MAX_AMOUNT, ZERO, labelProblem, per100From, portionsOf, scaleTo, startOf, type Macros } from '$lib/model/products';
+  import { MAX_AMOUNT, ZERO, labelProblem, per100From, portionsOf, scaleTo, startOf, type LabelMacros, type Macros } from '$lib/model/products';
   import { stampOn, today } from '$lib/model/dates';
   import { num } from '$lib/model/format';
   import { haptic } from '$lib/haptics';
@@ -39,13 +40,15 @@
   let name = $state('');
   let unit = $state<'g' | 'ml'>('g');
   let servingG = $state(0);
-  let values = $state<Macros>({ ...ZERO });
+  let values = $state<LabelMacros>({ ...ZERO });
   let packG = $state<number | undefined>();
   /** what the photo read, to tell Label (kept as read) from Yours (changed) */
   let read = $state<string | null>(null);
   let correcting = $state(false);
   let failure = $state<Exclude<LabelResult, { ok: true }>['error'] | null>(null);
   let limit = $state(0);
+  /** why Use default values left the user's numbers: no connection, no answer, or Open Food Facts has none */
+  let stuck = $state<'offline' | 'failed' | 'none' | null>(null);
   let input = $state<HTMLInputElement>();
   /** the photo notice, before the first photo sent to Gemini (shared with the Photo tile) */
   let notice = $state(false);
@@ -66,6 +69,7 @@
   async function look(c: string) {
     const me = ++ask;
     code = c;
+    stuck = null;
     step = 'finding';
     const r = await findProduct(c);
     if (me !== ask) return; // closed, gone back or scanned again meanwhile
@@ -84,7 +88,7 @@
   }
 
   /** The Label step, empty or with numbers to confirm. */
-  function toLabel(o: { unit?: 'g' | 'ml'; servingG?: number; values?: Macros; packG?: number; name?: string } = {}, fromPhoto = false) {
+  function toLabel(o: { unit?: 'g' | 'ml'; servingG?: number; values?: LabelMacros; packG?: number; name?: string } = {}, fromPhoto = false) {
     name = o.name || (found?.kind === 'empty' ? found.name : '');
     unit = o.unit ?? 'g';
     servingG = o.servingG ?? 0;
@@ -139,7 +143,7 @@
       ...(keep.brand ? { brand: keep.brand } : {}),
       source: read !== null && read === snapshot() ? 'label' : 'yours',
       unit,
-      per100: per100From(values, servingG),
+      per100: per100From(values, servingG) as Macros, // no problem, so every macro is filled in
       servingG,
       ...(packG ? { packG } : {}),
       ...(keep.lastG ? { lastG: keep.lastG } : {}),
@@ -148,7 +152,20 @@
     product = p;
     grams = startOf(p);
     correcting = false;
+    stuck = null;
     step = 'product';
+  }
+  /** Use default values (F15): Open Food Facts' numbers for the barcode in place of the user's, keeping their name and
+   * last amount. Without a connection, or with nothing in Open Food Facts, the user's numbers stay and the sheet says why. */
+  async function useDefault() {
+    const me = ++ask;
+    stuck = null;
+    const r = await findProduct(code, true);
+    if (me !== ask || !product) return;
+    if (r.kind !== 'found') return void (stuck = r.kind === 'offline' || r.kind === 'failed' ? r.kind : 'none');
+    const p: Product = { ...r.product, name: product.name, ...(product.lastG ? { lastG: product.lastG } : {}) };
+    saveProduct(p, code);
+    product = p;
   }
 
   function add() {
@@ -249,7 +266,13 @@
         <span class="text-body font-semibold">{t.scan.amount}</span>
         <Stepper bind:value={grams} step={10} min={1} max={MAX_AMOUNT} unit={unitWord(u)} label={u === 'ml' ? t.after.millilitres : t.after.grams} testid="product-grams" />
       </div>
-      <Button variant="plain" size="sm" class="-my-2 -ml-4 self-start" onclick={correct} data-testid="product-correct">{t.scan.correct}</Button>
+      <div class="-my-2 -ml-4 flex flex-wrap self-start">
+        <Button variant="plain" size="sm" onclick={correct} data-testid="product-correct">{t.scan.correct}</Button>
+        {#if product.source === 'yours'}<Button variant="plain" size="sm" onclick={useDefault} data-testid="product-default">{t.meal.useDefault}</Button>{/if}
+      </div>
+      {#if stuck && product.source === 'yours'}
+        <p class="text-callout text-ink-2" role="alert" data-testid="product-default-failed">{stuck === 'offline' ? t.scan.defaultOffline : stuck === 'failed' ? t.scan.defaultFailed : t.scan.noDefault}</p>
+      {/if}
       {#if product.source === 'off'}
         <p class="text-caption text-ink-2" data-testid="product-cite">
           {t.search.from(OFF_SOURCE.name)}
@@ -305,7 +328,7 @@
       </div>
       <p class="text-caption text-ink-2">{t.scan.check}</p>
       {#if problem && (problem !== 'serving' || values.kcal || values.protein || values.carbs || values.fat)}
-        <p class="text-callout text-attention" role="alert" data-testid="label-problem">{problem === 'heavy' ? t.scan.heavy : problem === 'kcal' ? t.scan.tooMuch : t.scan.noServing}</p>
+        <p class="text-callout text-attention" role="alert" data-testid="label-problem">{problem === 'heavy' ? t.scan.heavy : problem === 'kcal' ? t.scan.tooMuch : problem === 'missing' ? t.scan.fillIn(values) : t.scan.noServing}</p>
       {/if}
     </div>
   {/if}

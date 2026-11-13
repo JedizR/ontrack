@@ -7,7 +7,9 @@
      fill the Label step from the serving and the scoops in it; typical values come second, and a supplement still on them
      says Typical, with one quiet way to set it from the tub.
      O1 (owner, after N2): the Label step follows the label: the serving as printed, the scoops in it and the values per
-     serving; Ontrack keeps one scoop. Milk is set in millilitres and kept in grams through the milk's cup in the table. -->
+     serving; Ontrack keeps one scoop. Milk is set in millilitres and kept in grams through the milk's cup in the table.
+     M9a: a macro the label photo did not show stays empty until typed, and a logged entry's time is edited on its
+     amount step, as the Meal sheet does. -->
 <script lang="ts">
   import { untrack } from 'svelte';
   import { toast } from 'svelte-sonner';
@@ -30,9 +32,9 @@
   import { loadFoods, type Food } from '$lib/data/foods';
   import { FOOD_SOURCES } from '$lib/data/sources';
   import { GLASS_ML, MAX_MILK_G, MAX_SCOOPS, MILKS, PRESET_FOOD, fromServing, kindsFor, mlOf, gramsOf, noCalories, oneScoop, perScoopOf, scoopOf, scoopsIn, supplementItems, type Kind } from '$lib/model/supplements';
-  import { per100From } from '$lib/model/products';
+  import { per100From, type LabelMacros } from '$lib/model/products';
   import { planFor, totals } from '$lib/model/day';
-  import { stampOn, today } from '$lib/model/dates';
+  import { atTime, stampOn, timeOf, today } from '$lib/model/dates';
   import { num } from '$lib/model/format';
   import { haptic } from '$lib/haptics';
   import { t } from '$lib/i18n';
@@ -72,17 +74,19 @@
   let per = $state(1);
   let preset = $state<Food | undefined>();
   /** values per 100 g from the tub (scanned or read) that the values per scoop follow, like a preset's */
-  let base = $state<Values | undefined>();
+  let base = $state<LabelMacros | undefined>();
   /** where the Label step's numbers came from, for its line on why */
   let origin = $state<'typical' | 'off' | 'label' | 'typed'>('typed');
-  /** the user's values for a serving; null while a preset's follow the serving */
-  let own = $state<Values | null>(null);
+  /** the user's values for a serving; null while a preset's follow the serving. A macro the label did not show is null */
+  let own = $state<LabelMacros | null>(null);
   /** the scoops the user takes, the first amount logged */
   let usual = $state(1);
   // the amount step
   let scoops = $state(1);
   let mix = $state<string | null>(null);
   let milkG = $state(0);
+  /** a logged entry's time, HH:MM */
+  let time = $state('');
 
   let foods = $state<Food[] | null>(null);
   let failed = $state(false);
@@ -102,14 +106,16 @@
 
   const s = $derived(id ? db.get('supplement', id) : undefined);
   const values = $derived(own ?? perScoopOf(preset ?? (base && { per100: base }), servingG));
-  /** what the supplement keeps: one scoop */
-  const kept = $derived(oneScoop(servingG, per, values));
+  /** a macro still to fill in from the label */
+  const missing = $derived(values.protein === null || values.carbs === null || values.fat === null);
+  /** what the supplement keeps: one scoop, once every value is there */
+  const kept = $derived(missing ? null : oneScoop(servingG, per, values as Values));
   /** still the table's typical values, untouched (B1) */
   const typical = $derived(origin === 'typical' && own === null && !!(preset || base));
-  const heavy = $derived(servingG > 0 && values.protein + values.carbs + values.fat > servingG);
+  const heavy = $derived(servingG > 0 && (values.protein ?? 0) + (values.carbs ?? 0) + (values.fat ?? 0) > servingG);
   const named = $derived(name.trim().length > 0);
   /** a scanned or read serving can give a scoop or values the record cannot hold; Save waits for them to be fixed */
-  const savable = $derived(named && !heavy && supplementSchema.safeParse({ name: name.trim(), kind, ...kept, lastScoops: usual }).success);
+  const savable = $derived(named && !heavy && !!kept && supplementSchema.safeParse({ name: name.trim(), kind, ...kept, lastScoops: usual }).success);
   // gain puts whey and mass gainer first (O1); the list never recommends one
   const kinds = $derived(kindsFor(planFor(db.live('plan'), today())?.goal));
 
@@ -126,6 +132,7 @@
     scoops = logged?.items[0]?.scoops ?? sup.lastScoops;
     mix = logged ? (mixed?.foodId ?? null) : (sup.lastMix?.foodId ?? null);
     milkG = (logged ? mixed?.grams : sup.lastMix?.grams) ?? 0;
+    time = logged ? timeOf(logged.at) : '';
     step = 'amount';
   }
 
@@ -158,7 +165,7 @@
     step = 'source';
   }
   /** The Label step with these numbers; `from` says where they came from. */
-  function toLabel(o: { servingG: number; scoops?: number; base?: Values; own: Values | null; preset?: Food }, from: typeof origin) {
+  function toLabel(o: { servingG: number; scoops?: number; base?: LabelMacros; own: LabelMacros | null; preset?: Food }, from: typeof origin) {
     servingG = o.servingG;
     per = o.scoops ?? 1;
     base = o.base;
@@ -235,10 +242,10 @@
     step = 'source';
   }
   // a field the user only touched (the stepper sets on blur) leaves a preset following the scoop
-  const setValue = (key: keyof Values, v: number) => { if (values[key] !== v) own = { ...values, [key]: v }; };
+  const setValue = (key: keyof Values, v: number | null) => { if (values[key] !== v) own = { ...values, [key]: v }; };
 
   function save() {
-    if (!savable) return;
+    if (!savable || !kept) return;
     const lastMix = s?.lastMix;
     const data: Supplement = { name: name.trim(), kind, scoopG: kept.scoopG, perScoop: { ...kept.perScoop }, lastScoops: usual, ...(lastMix ? { lastMix: { foodId: lastMix.foodId, grams: lastMix.grams } } : {}), ...(typical ? { typical: true as const } : {}) };
     const isNew = !id;
@@ -269,7 +276,8 @@
     const m = milk ? { food: milk, grams: milkG } : null;
     if (mealId) {
       const logged = db.get('meal', mealId);
-      if (logged) logSupplement(id, scoops, m, logged.date, logged.at, mealId);
+      // an untouched time keeps its seconds, so entries in the same minute keep their order
+      if (logged) logSupplement(id, scoops, m, logged.date, /^\d\d:\d\d$/.test(time) && time !== timeOf(logged.at) ? atTime(logged.date, time) : logged.at, mealId);
       close();
       return void toast(t.toast.changesSaved);
     }
@@ -402,6 +410,8 @@
       </div>
       {#if heavy}
         <p class="text-callout text-attention" role="alert" data-testid="supplement-heavy">{t.supplement.heavy}</p>
+      {:else if missing}
+        <p class="text-callout text-attention" role="alert" data-testid="supplement-missing">{t.scan.fillIn(values)}</p>
       {:else if noCalories({ perScoop: values })}
         <p class="text-callout text-ink-2" data-testid="supplement-zero">{t.supplement.zero}</p>
       {/if}
@@ -457,6 +467,10 @@
         {/if}
       {/if}
       {#if mealId}
+        <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+          <label for="supplement-time" class="text-body font-semibold">{t.meal.time}</label>
+          <input id="supplement-time" type="time" bind:value={time} class="input-field num ml-auto" data-testid="supplement-time" />
+        </div>
         <Button variant="danger" class="-ml-5 self-start" onclick={deleteEntry} data-testid="supplement-delete">{t.supplement.delete}</Button>
       {:else}
         <Button variant="plain" size="sm" class="-my-2 -ml-4 self-start" onclick={editLabel} data-testid="supplement-edit">{t.supplement.edit}</Button>

@@ -2,7 +2,7 @@
 // answer turned into what the app shows. It copies printed values and never estimates; a column the label lacks is null.
 import * as z from 'zod/mini';
 import { V } from '../../src/lib/model/engine/constants.js';
-import type { LabelRead, Macros } from '../../shared/analysis.js';
+import type { LabelMacros, LabelRead } from '../../shared/analysis.js';
 
 export const LABEL_PROMPT = `You read the nutrition facts panel on a food or supplement package for a nutrition log. Reply with JSON only, matching the schema.
 
@@ -37,9 +37,10 @@ const { $schema: _, ...jsonSchema } = z.toJSONSchema(labelOutput);
 export const LABEL_JSON_SCHEMA = jsonSchema;
 
 const r1 = (x: number) => Math.round(x * 10) / 10;
-const grams = (x: number | null) => r1(Math.min(1000, Math.max(0, x ?? 0)));
-/** A column as the app takes it: kcal from kilojoules when only those are printed, a missing macro as 0. */
-function columnOf(c: z.infer<typeof column>): Macros | null {
+const grams = (x: number | null) => (x == null ? null : r1(Math.min(1000, Math.max(0, x))));
+/** A column as the app takes it: kcal from kilojoules when only those are printed, a macro not printed (or cut off in
+ * the photo) as null, so the app asks for it rather than logging 0 (M9a, the SunnyD read in docs/EVAL-NOTES.md). */
+function columnOf(c: z.infer<typeof column>): LabelMacros | null {
   const kcal = c?.kcal ?? (c?.kj != null ? c.kj / V.kjPerKcal : null);
   if (!c || kcal == null || kcal < 0 || kcal > 5000) return null;
   return { kcal: Math.round(kcal), protein: grams(c.protein_g), carbs: grams(c.carbs_g), fat: grams(c.fat_g) };

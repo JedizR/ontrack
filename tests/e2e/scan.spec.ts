@@ -230,3 +230,94 @@ test('F21 (B1): typical values say Typical, with one quiet way to set them from 
   await page.getByTestId('add').click();
   await expect(page.getByTestId('supplement')).not.toContainText('Typical');
 });
+
+test('F22 (M9a): a label photo that does not show protein and carbs leaves them empty, and saving waits for them', async ({ page }) => {
+  const space = await open(page);
+  await camera(page, 'NotFoundError');
+  await page.reload();
+  await vision(page, space, { fixture: 'label-drink' });
+  await scan(page, '8850999220017');
+  await photo(page, 'label-photo', true);
+
+  await expect(page.getByTestId('label-name')).toHaveValue('Orange drink');
+  await expect(page.getByTestId('label-kcal').getByRole('textbox')).toHaveValue('80');
+  await expect(page.getByTestId('label-fat').getByRole('textbox')).toHaveValue('0'); // printed as 0, so 0
+  await expect(page.getByTestId('label-protein').getByRole('textbox')).toHaveValue('');
+  await expect(page.getByTestId('label-carbs').getByRole('textbox')).toHaveValue('');
+  await expect(page.getByTestId('label-problem')).toHaveText('Fill in protein and carbs from the label.');
+  await expect(page.getByTestId('label-save')).toBeDisabled();
+  // an empty value: minus waits, plus starts it at 0
+  const protein = page.getByTestId('label-protein');
+  await expect(protein.getByRole('button', { name: 'Less Protein' })).toBeDisabled();
+  await protein.getByRole('button', { name: 'More Protein' }).click();
+  await expect(protein.getByRole('textbox')).toHaveValue('0');
+  await expect(page.getByTestId('label-problem')).toHaveText('Fill in carbs from the label.');
+  await type(page, 'label-carbs', '20');
+  await expect(page.getByTestId('label-problem')).toHaveCount(0);
+  await page.getByTestId('label-save').click();
+  // filled in by the user, so the numbers are theirs
+  await expect(page.getByTestId('product-source')).toHaveText('Yours');
+  await expect(page.getByTestId('product-kcal')).toHaveText('80');
+  // Open Food Facts has nothing for it to go back to
+  await page.getByTestId('product-default').click();
+  await expect(page.getByTestId('product-default-failed')).toHaveText('Open Food Facts has no values for this product. Your numbers stay.');
+  await expect(page.getByTestId('product-kcal')).toHaveText('80');
+});
+
+test('F21 (M9a): a tub label photo that does not show protein and carbs leaves them empty until typed', async ({ page }) => {
+  const space = await open(page);
+  await vision(page, space, { fixture: 'label-drink' });
+  await page.getByTestId('add').click();
+  await page.getByTestId('supplement-entry').click();
+  await page.getByTestId('kind-other').click();
+  await photo(page, 'tub-photo', true);
+  await expect(page.getByTestId('supplement-label')).toBeVisible();
+  await expect(page.getByTestId('supplement-kcal').getByRole('textbox')).toHaveValue('80');
+  await expect(page.getByTestId('supplement-protein').getByRole('textbox')).toHaveValue('');
+  await expect(page.getByTestId('supplement-carbs').getByRole('textbox')).toHaveValue('');
+  await expect(page.getByTestId('supplement-missing')).toHaveText('Fill in protein and carbs from the label.');
+  await page.getByTestId('supplement-name').fill('Recovery drink');
+  await expect(page.getByTestId('supplement-save')).toBeDisabled();
+  await type(page, 'supplement-protein', '10');
+  await type(page, 'supplement-carbs', '8');
+  await expect(page.getByTestId('supplement-missing')).toHaveCount(0);
+  await page.getByTestId('supplement-save').click();
+  await expect(page.getByTestId('supplement-add')).toHaveText('Add 80 kcal');
+});
+
+test('F15, F22 (M9a): Use default values puts back Open Food Facts numbers on a corrected product, after a connection', async ({ page, context }) => {
+  await camera(page, 'NotFoundError');
+  await open(page);
+  await scan(page, '8850987101021');
+  await expect(page.getByTestId('product-kcal')).toHaveText('260');
+  await expect(page.getByTestId('product-default')).toHaveCount(0); // nothing of the user's to undo
+  await page.getByTestId('product-correct').click();
+  await page.getByTestId('label-name').fill('Mama tom yum');
+  await type(page, 'label-kcal', '300');
+  await page.getByTestId('label-save').click();
+  await expect(page.getByTestId('product-source')).toHaveText('Yours');
+  await expect(page.getByTestId('product-kcal')).toHaveText('300');
+
+  // offline the user's numbers stay, and the sheet says why
+  await context.setOffline(true);
+  await page.getByTestId('product-default').click();
+  await expect(page.getByTestId('product-default-failed')).toHaveText('Going back to the default values needs a connection.');
+  await expect(page.getByTestId('product-kcal')).toHaveText('300');
+  await context.setOffline(false);
+  await page.getByTestId('product-default').click();
+  await expect(page.getByTestId('product-source')).toHaveText('Open Food Facts');
+  await expect(page.getByTestId('product-kcal')).toHaveText('260');
+  await expect(page.getByTestId('product-default')).toHaveCount(0);
+  await expect(page.getByTestId('product-default-failed')).toHaveCount(0);
+  await expect(page.getByTestId('product-cite')).toBeVisible();
+  // the user's name stays; only the numbers go back
+  await expect(sheet(page).locator('[data-slot="drawer-title"]')).toHaveText('Mama tom yum');
+  await page.getByTestId('product-add').click();
+  await expect(hero(page)).toHaveText('260');
+
+  // kept for the next scan, offline too
+  await context.setOffline(true);
+  await scan(page, '8850987101021');
+  await expect(page.getByTestId('product-source')).toHaveText('Open Food Facts');
+  await expect(page.getByTestId('product-kcal')).toHaveText('260');
+});

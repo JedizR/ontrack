@@ -1,21 +1,24 @@
 // Scanned products (B1, F22): what an amount of one puts on the day, its portion chips, and the label step's numbers.
 // Every value comes from Open Food Facts, the pack's label or the user; nothing is estimated.
 import type { MealItem, Product } from '../../../shared/records';
+import type { LabelMacros } from '../../../shared/analysis';
 
 export type Macros = Product['per100'];
+export type { LabelMacros };
 export const ZERO: Macros = { kcal: 0, protein: 0, carbs: 0, fat: 0 };
 const r1 = (n: number) => Math.round(n * 10) / 10;
 const r2 = (n: number) => Math.round(n * 100) / 100;
+const times = (x: number | null, k: number, round: (n: number) => number) => (x === null ? null : round(x * k));
 
-/** Values per 100 g scaled to an amount: whole kcal, macros to one decimal. */
-export const scaleTo = (per100: Macros, grams: number): Macros => {
+/** Values per 100 g scaled to an amount: whole kcal, macros to one decimal. A macro a label left out stays null. */
+export const scaleTo = <M extends LabelMacros>(per100: M, grams: number) => {
   const k = grams / 100;
-  return { kcal: Math.round(per100.kcal * k), protein: r1(per100.protein * k), carbs: r1(per100.carbs * k), fat: r1(per100.fat * k) };
+  return { kcal: Math.round(per100.kcal * k), protein: times(per100.protein, k, r1), carbs: times(per100.carbs, k, r1), fat: times(per100.fat, k, r1) } as M;
 };
 /** Values for an amount back to 100 g, to two decimals so the same amount gives back the same numbers. */
-export const per100From = (v: Macros, grams: number): Macros => {
+export const per100From = <M extends LabelMacros>(v: M, grams: number) => {
   const k = 100 / grams;
-  return { kcal: r2(v.kcal * k), protein: r2(v.protein * k), carbs: r2(v.carbs * k), fat: r2(v.fat * k) };
+  return { kcal: r2(v.kcal * k), protein: times(v.protein, k, r2), carbs: times(v.carbs, k, r2), fat: times(v.fat, k, r2) } as M;
 };
 
 /** The product at an amount, as a meal item that remembers its barcode. */
@@ -33,10 +36,12 @@ export function portionsOf(p: Pick<Product, 'servingG' | 'packG'>) {
 /** Where the amount starts: the last amount logged, else a serving, else the pack, else 100. */
 export const startOf = (p: Pick<Product, 'lastG' | 'servingG' | 'packG'>) => Math.min(MAX_AMOUNT, p.lastG ?? p.servingG ?? p.packG ?? 100);
 
-/** What stops a label from being saved: no serving to weigh the values by, macros heavier than the serving, or more
- * calories than any food has in that weight (pure fat is about 900 kcal in 100 g; past 1,000 is a typo). */
-export function labelProblem(servingG: number, v: Macros): 'serving' | 'heavy' | 'kcal' | null {
+/** What stops a label from being saved: no serving to weigh the values by, a macro not filled in, macros heavier than
+ * the serving, or more calories than any food has in that weight (pure fat is about 900 kcal in 100 g; past 1,000 is a
+ * typo). */
+export function labelProblem(servingG: number, v: LabelMacros): 'serving' | 'missing' | 'heavy' | 'kcal' | null {
   if (!servingG) return 'serving';
+  if (v.protein === null || v.carbs === null || v.fat === null) return 'missing';
   if (v.protein + v.carbs + v.fat > servingG) return 'heavy';
   return (v.kcal * 100) / servingG > 1000 ? 'kcal' : null;
 }

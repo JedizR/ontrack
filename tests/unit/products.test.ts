@@ -9,6 +9,7 @@ import { analyze } from '../../server/handlers/analyze';
 import { fixture, mockProvider } from '../../server/vision/mock';
 import { LABEL_JSON_SCHEMA, labelOutput, toLabel } from '../../server/vision/label';
 import { productSchema, type Product } from '../../shared/records';
+import { t } from '../../src/lib/i18n';
 
 const off = (code: string) => JSON.parse(readFileSync(`tests/fixtures/off/${code}.json`, 'utf8'));
 
@@ -55,12 +56,14 @@ describe('the label reader', () => {
   test('the schema the model is held to has every field and no $schema key', () => {
     expect(Object.keys((LABEL_JSON_SCHEMA as { properties: object }).properties).sort()).toEqual(['is_label', 'name', 'per_100', 'per_serving', 'scoops_per_serving', 'serving_size', 'servings_per_pack', 'unit']);
     expect('$schema' in LABEL_JSON_SCHEMA).toBe(false);
-    for (const f of ['label-snack', 'label-whey', 'not-label']) expect(labelOutput.safeParse(fixture(f)).success).toBe(true);
+    for (const f of ['label-snack', 'label-whey', 'label-drink', 'not-label']) expect(labelOutput.safeParse(fixture(f)).success).toBe(true);
   });
-  test('printed columns pass through; kJ alone becomes kcal; a missing macro is 0', () => {
+  test('printed columns pass through; kJ alone becomes kcal; a macro not printed or cut off is null, never 0', () => {
     expect(toLabel(labelOutput.parse(fixture('label-snack')))).toEqual({ name: 'Rice crackers, seaweed', unit: 'g', servingG: 25, scoops: null, servingsPerPack: 2, perServing: { kcal: 120, protein: 2, carbs: 18, fat: 4.5 }, per100: null });
     const kj = toLabel({ is_label: true, name: '', unit: 'g', serving_size: null, scoops_per_serving: null, servings_per_pack: null, per_serving: null, per_100: { kcal: null, kj: 1674, protein_g: 8, carbs_g: null, fat_g: 20 } });
-    expect(kj?.per100).toEqual({ kcal: 400, protein: 8, carbs: 0, fat: 20 });
+    expect(kj?.per100).toEqual({ kcal: 400, protein: 8, carbs: null, fat: 20 });
+    // M9a: the SunnyD read in docs/EVAL-NOTES.md, a photo cut off below the fat line; a printed 0 stays 0
+    expect(toLabel(labelOutput.parse(fixture('label-drink')))).toEqual({ name: 'Orange drink', unit: 'ml', servingG: 240, scoops: null, servingsPerPack: 1, perServing: { kcal: 80, protein: null, carbs: null, fat: 0 }, per100: null });
   });
   test('no label, or no energy in any column, is not a label', () => {
     expect(toLabel(labelOutput.parse(fixture('not-label')))).toBeNull();
@@ -102,6 +105,14 @@ describe('the product sheet', () => {
     expect(labelProblem(20, v)).toBe('heavy');
     expect(labelProblem(25, { ...v, kcal: 1200 })).toBe('kcal');
     expect(per100From(v, 25)).toEqual({ kcal: 480, protein: 8, carbs: 72, fat: 18 });
+    // M9a: a macro left empty waits for the user, after the serving; scaling keeps it empty
+    const cut = { kcal: 80, protein: null, carbs: null, fat: 0 };
+    expect(labelProblem(240, cut)).toBe('missing');
+    expect(labelProblem(0, cut)).toBe('serving');
+    expect(labelProblem(240, { ...cut, protein: 0, carbs: 20 })).toBeNull();
+    expect(t.scan.fillIn(cut)).toBe('Fill in protein and carbs from the label.');
+    expect(t.scan.fillIn({ ...cut, fat: null })).toBe('Fill in protein, carbs and fat from the label.');
+    expect(scaleTo(per100From(cut, 240), 240)).toEqual(cut);
   });
 });
 
@@ -128,6 +139,11 @@ describe('a supplement from its tub (B1)', () => {
   });
   test('Open Food Facts values per 100 g with its serving', () => {
     expect(fromServing({ per100: { kcal: 395, protein: 79, carbs: 9.9, fat: 4.9 }, servingG: 30.4, scoops: 1 })).toMatchObject({ servingG: 30.4, own: null });
+  });
+  test('a label that did not show a macro leaves it empty in the setup (M9a)', () => {
+    const cut = { kcal: 80, protein: null, carbs: null, fat: 0 };
+    expect(fromServing({ perServing: cut, servingG: 240, scoops: null }).base).toEqual({ kcal: 33.33, protein: null, carbs: null, fat: 0 });
+    expect(fromServing({ perServing: cut, servingG: null }).own).toEqual(cut);
   });
   test("a serving with no weight: the serving's values, its weight unknown", () => {
     expect(fromServing({ perServing: { kcal: 240, protein: 48, carbs: 6, fat: 3 }, servingG: null, scoops: 2 })).toEqual({ servingG: 0, scoops: 2, base: undefined, own: { kcal: 240, protein: 48, carbs: 6, fat: 3 } });

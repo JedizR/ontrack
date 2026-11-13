@@ -1,5 +1,6 @@
 <!-- DESIGN.md section 7, Stepper: minus and plus as 44 px ink rounded squares (grey at a bound) around a number that can also be typed. Holding repeats.
-     A typed number is kept inside min and max but not rounded to the step (125 g stays 125); the buttons go on from it. -->
+     A typed number is kept inside min and max but not rounded to the step (125 g stays 125); the buttons go on from it.
+     A null value is an empty field to fill in (M9a, a label the photo cut off): plus starts it at min, minus waits. -->
 <script lang="ts">
   import Minus from '@lucide/svelte/icons/minus';
   import Plus from '@lucide/svelte/icons/plus';
@@ -16,7 +17,7 @@
     testid,
     column = false,
   }: {
-    value: number;
+    value: number | null;
     step?: number;
     min?: number;
     max?: number;
@@ -32,7 +33,8 @@
   const fit = (v: number) => Math.min(max, Math.max(min, v));
   /** one step, kept inside min and max; false when already at the edge */
   function nudge(d: 1 | -1) {
-    const next = fit(Math.round((value + d * step) * 100) / 100);
+    if (value === null && d === -1) return false;
+    const next = value === null ? fit(min) : fit(Math.round((value + d * step) * 100) / 100);
     if (next === value) return false;
     value = next;
     return true;
@@ -60,10 +62,10 @@
   function typed(el: HTMLInputElement) {
     const v = whole ? Math.round(parseWhole(el.value)) : parse(el.value);
     if (!Number.isNaN(v)) value = fit(v);
-    el.value = String(value);
+    el.value = String(value ?? '');
   }
   // the field is as wide as its number, so the unit follows it; the label keeps room for the longest
-  const longest = $derived(Math.max(String(Number.isFinite(max) ? max : value).length, column ? 4 : 2));
+  const longest = $derived(Math.max(String(Number.isFinite(max) ? max : (value ?? 0)).length, column ? 4 : 2));
   let editing = $state(false);
 </script>
 
@@ -73,7 +75,7 @@
     type="button"
     class="bg-action text-on-action active:bg-action-press disabled:bg-surface-2 disabled:text-ink-3 grid size-11 flex-none place-items-center rounded-sm transition-[transform,background-color] duration-[var(--d-press)] select-none active:scale-[0.97]"
     aria-label={d === 1 ? t.stepper.more(label) : t.stepper.less(label)}
-    disabled={d === 1 ? value >= max : value <= min}
+    disabled={d === 1 ? value !== null && value >= max : value === null || value <= min}
     onpointerdown={(e) => { if (e.button === 0) hold(d); }}
     onpointerup={stop}
     onpointerleave={stop}
@@ -94,9 +96,9 @@
       enterkeyhint="done"
       autocomplete="off"
       aria-label={label}
-      value={String(value)}
+      value={String(value ?? '')}
       class="num h-11 min-w-11 bg-transparent {column || unit ? 'text-right' : 'text-center'} font-semibold outline-none focus-visible:underline"
-      style="width: {(editing || column ? longest : Math.max(String(value).length, 1)) + 0.5}ch; font-size: max(16px, var(--t-heading))"
+      style="width: {(editing || column ? longest : Math.max(String(value ?? '').length, 1)) + 0.5}ch; font-size: max(16px, var(--t-heading))"
       data-vaul-no-drag
       onfocus={(e) => { editing = true; e.currentTarget.select(); }}
       onkeydown={(e) => { if (e.key === 'Enter') e.currentTarget.blur(); }}
