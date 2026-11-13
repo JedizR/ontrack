@@ -127,7 +127,7 @@ Two faces, self hosted from their OFL packages and precached: Roboto Condensed 9
 | 40 | 20 | sheets' tops (24 inside), the haze panel (24 inside), stat tiles' outer corners |
 | 48 | the gap, 8 | the hero card, a shell that holds panels, not text; content set straight in it sits 24 from its edge |
 
-  `tests/e2e/app.spec.ts` "corners nest" checks Today, the Add sheet and Progress in both themes.
+  `tests/e2e/app.spec.ts` "corners nest" checks Today (the hero card, the dock) and Progress in both themes.
 - **Scroll edges fade (U1b).** Content scrolling under the header or a sheet's header fades into the bar's colour over 16 px (`--fade-h`, the `fade-under` utility, shown once scrolled); above a pinned footer it fades the same way (`fade-over`). Never a hard edge or a hairline. The food map's panel fades with a mask.
 - **The status bar continues the top of the screen (U1b).** `topColour()` sets `theme-color` and the root's background (Safari 26 samples it): the landing hero's sky (`--sky-top`) on the landing page, the canvas everywhere else, onboarding included.
 - **Depth.** In light mode cards carry `--shadow-card`, OneFin's soft stats card shadow, and never a border with it. In dark mode cards have no shadow and a 1 px `--line` ring. Things that float (the dock, toasts, a dragged row) have `--shadow-float`. The ink pill and the dock's plus carry `--shadow-action`, a soft drop below them. No button has an inner light, a bevel, a rim, a gradient or a glow (`tests/e2e/app.spec.ts` sweeps every button for them).

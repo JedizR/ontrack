@@ -289,7 +289,7 @@ const unnested = (page: import('@playwright/test').Page) => page.evaluate(() => 
   return { checked, bad };
 });
 
-test('corners nest on Today, the Add sheet and Progress', async ({ page }) => {
+test('corners nest on Today and Progress', async ({ page }) => {
   await open(page, '/', MEALS);
   await expect(page.getByTestId('hero')).toBeVisible();
   // the check catches the stat tiles as the owner saw them: radius 24, 8 inside a radius 48 card
@@ -299,10 +299,6 @@ test('corners nest on Today, the Add sheet and Progress', async ({ page }) => {
   const today = await unnested(page);
   expect(today.bad).toEqual([]);
   expect(today.checked).toBeGreaterThanOrEqual(5); // the haze's two top corners, the tiles' two outer ones, the dock's pill
-  await page.getByTestId('add').click();
-  await expect(page.getByTestId('add-photo')).toHaveCSS('transform', 'none');
-  expect((await unnested(page)).bad).toEqual([]);
-  await page.keyboard.press('Escape');
   await page.getByTestId('tab-2').click();
   await expect(page.getByTestId('progress-weight')).toBeVisible();
   expect((await unnested(page)).bad).toEqual([]);

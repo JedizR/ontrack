@@ -32,7 +32,7 @@
       {@const Icon = item.icon}
       {@const on = tab === i}
       <button
-        class="grid h-12 min-w-0 place-items-center content-center gap-0.5 rounded-full transition-[color,background-color,transform] duration-[var(--d-press)] active:scale-[0.97] {on ? 'bg-surface-2 text-accent-ink' : 'text-ink-2'}"
+        class="grid min-h-12 min-w-0 place-items-center content-center gap-0.5 rounded-full transition-[color,background-color,transform] duration-[var(--d-press)] active:scale-[0.97] {on ? 'bg-surface-2 text-accent-ink' : 'text-ink-2'}"
         aria-current={on ? 'page' : undefined}
         data-testid="tab-{i}"
         onclick={() => onselect(i as Tab)}
