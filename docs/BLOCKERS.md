@@ -6,6 +6,10 @@ Everything that needs you, in one place. Newest first within each section.
 
 Each entry: what is blocked, what Claude tried, the exact steps for you, and what to tell Claude afterwards.
 
+### L2: the two Figma links (optional)
+
+- **Open:** the Figma tools need a file link, so the phone frame and the glass were built from Apple's published sizes and description. Send the links to "iPhone 16 and 16 Plus Mockups (Community)" and "iOS 26 Liquid Glass (Community)" (duplicate them to your drafts first if Figma asks), and Claude compares them with what was built.
+
 ### Gemini's paid tier: check the credits are used
 
 - **Done (13 November):** the owner linked billing (a 150 baht prepayment). Fifteen concurrent requests to `gemini-3.6-flash` all answered, which the free tier refuses, so the key is on the paid tier. The app's daily cap is 150 photos (`AI_DAILY_GLOBAL_CAP`), about 60 baht a day at most. Privacy now describes the paid tier.
@@ -27,6 +31,11 @@ Each entry: what is blocked, what Claude tried, the exact steps for you, and wha
 ## Needs your eyes
 
 Each entry: what to look at (URL or screenshot paths), what to look for, and which milestone it belongs to.
+
+### L2: the landing's glass and the photo gradients
+
+- **Where:** https://ontrack-black.vercel.app signed out, in Safari on the iPhone (light and dark) and on a desktop at 1440. Before and after: branch `pr-assets`, `l2/`.
+- **Look for:** the glass chips over the phone in the hero, the check-in's glass cards, the footer glow rising behind the violet glass panels with no edge, the grain on the hero and on Today's hero card, and the hero's sky and footer on desktop against glass-01.
 
 ### M9b: the final device check, installed on your iPhone
 
