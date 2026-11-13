@@ -6,6 +6,7 @@
 <script lang="ts">
   import { untrack } from 'svelte';
   import Sheet from '$lib/components/Sheet.svelte';
+  import Facts from '$lib/components/Facts.svelte';
   import Row from '$lib/components/Row.svelte';
   import Chip from '$lib/components/Chip.svelte';
   import Button from '$lib/components/Button.svelte';
@@ -99,7 +100,7 @@
           <span class="text-display" data-testid="portion-kcal">{num(item?.kcal ?? 0)}</span>
           <span class="text-heading text-ink-2">{t.after.kcal}</span>
         </div>
-        {#if item}<p class="text-caption text-ink-2 mt-2">{t.search.macros(num(item.protein, 1), num(item.carbs, 1), num(item.fat, 1))}</p>{/if}
+        {#if item}<p class="text-caption text-ink-2 mt-2"><Facts facts={[t.after.proteinN(num(item.protein, 1)), t.after.carbsN(num(item.carbs, 1)), t.after.fatN(num(item.fat, 1))]} /></p>{/if}
         <p class="text-caption text-ink-2 mt-1" data-testid="portion-source"><SourceLabel source={item?.source === 'yours' ? 'yours' : 'database'} /></p>
       </div>
       {#if item?.source === 'yours'}
@@ -148,7 +149,7 @@
     {:else if q.trim()}
       <div class="mt-2" data-testid="results">
         {#each results as f (f.id)}
-          <Row title={f.name} caption={f.portions[0].label} value={kcalFor(f, f.portions[0].grams)} onclick={() => (picked = { food: f, grams: f.portions[0].grams })} testid="result" />
+          <Row title={f.name} caption={f.portions[0].label} value={kcalFor(f, f.portions[0].grams)} unit={t.after.kcal} onclick={() => (picked = { food: f, grams: f.portions[0].grams })} testid="result" />
         {:else}
           <p class="text-callout text-ink-2 mt-3" data-testid="no-results">{t.search.none}</p>
           {#if !sheets.pick}<Button class="mt-2" onclick={quickInstead}>{t.quick.title}</Button>{/if}
@@ -158,7 +159,7 @@
       <h3 class="text-heading mt-5">{t.search.recent}</h3>
       <div data-testid="recent-foods">
         {#each recent as r (r.food.id)}
-          <Row title={r.food.name} caption="{num(r.grams)} {t.after.g}" value={kcalFor(r.food, r.grams)} onclick={() => (picked = { ...r })} testid="result" />
+          <Row title={r.food.name} caption="{num(r.grams)} {t.after.g}" value={kcalFor(r.food, r.grams)} unit={t.after.kcal} onclick={() => (picked = { ...r })} testid="result" />
         {/each}
       </div>
     {:else}

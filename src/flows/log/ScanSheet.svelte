@@ -6,6 +6,7 @@
 <script lang="ts">
   import { untrack } from 'svelte';
   import Sheet from '$lib/components/Sheet.svelte';
+  import Facts from '$lib/components/Facts.svelte';
   import Chip from '$lib/components/Chip.svelte';
   import Button from '$lib/components/Button.svelte';
   import Stepper from '$lib/components/Stepper.svelte';
@@ -254,7 +255,7 @@
           <span class="text-display" data-testid="product-kcal">{num(item.kcal)}</span>
           <span class="text-heading text-ink-2">{t.after.kcal}</span>
         </div>
-        <p class="text-caption text-ink-2 mt-2">{t.search.macros(num(item.protein, 1), num(item.carbs, 1), num(item.fat, 1))}</p>
+        <p class="text-caption text-ink-2 mt-2"><Facts facts={[t.after.proteinN(num(item.protein, 1)), t.after.carbsN(num(item.carbs, 1)), t.after.fatN(num(item.fat, 1))]} /></p>
         <p class="text-caption text-ink-2 mt-1" data-testid="product-source"><SourceLabel source={product.source} /></p>
       </div>
       <div class="-mx-6 flex gap-2 overflow-x-auto px-6" role="group" aria-label={t.search.portion}>

@@ -20,7 +20,7 @@
   import { C } from '$lib/model/engine';
   import { SOURCES } from '$lib/data/sources';
   import { today, yearOf } from '$lib/model/dates';
-  import { prefs } from '$lib/prefs.svelte';
+  import { prefs, topColour } from '$lib/prefs.svelte';
   import { sheets } from '$lib/sheets.svelte';
   import { reducedMotion } from '$lib/haptics';
   import { t } from '$lib/i18n';
@@ -100,6 +100,11 @@
   let closing = $state(false);
   const floating = $derived(!heroAction && !closing);
   const top = () => scrollTo({ top: 0, behavior: reducedMotion() ? 'auto' : 'smooth' });
+  // the status bar continues the hero's sky while the landing page shows (U1b)
+  $effect(() => {
+    topColour('--sky-top');
+    return () => topColour();
+  });
 </script>
 
 {#snippet head(n: string, tag: string, title: string, lead: string)}
@@ -119,9 +124,10 @@
 <div class="bg-surface text-ink relative min-h-svh overflow-x-clip" data-testid="landing">
   <!-- the bar: OneFin's floating glass bar with the wordmark and the way back in -->
   <header class="bar fixed inset-x-0 top-0 z-30 px-4 pt-[calc(env(safe-area-inset-top)+8px)]">
-    <nav class="glass-bar shadow-float mx-auto flex h-16 max-w-[1200px] items-center justify-between rounded-control pr-2 pl-5" aria-label={t.app.name}>
+    <!-- U1b: Sign in sits 8 inside the bar on three sides, so its 16 corners nest in the bar's 24 -->
+    <nav class="glass-bar shadow-float mx-auto flex h-16 max-w-[1200px] items-center justify-between rounded-md pr-2 pl-5" aria-label={t.app.name}>
       <Wordmark class="h-5 w-fit" />
-      <Button variant="neutral" size="sm" onclick={signin} data-testid="landing-signin">{L.signin}</Button>
+      <Button variant="neutral" onclick={signin} data-testid="landing-signin">{L.signin}</Button>
     </nav>
   </header>
 

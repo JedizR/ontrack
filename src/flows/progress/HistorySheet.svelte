@@ -41,7 +41,7 @@
     <h3 class="text-eyebrow text-ink-2 {i ? 'mt-6' : ''}">{m.title}</h3>
     <div class="mt-1">
       {#each m.days as d (d.date)}
-        <Row title={dayTitle(d.date)} value={d.items ? num(Math.round(d.intake)) : undefined} onclick={() => show(d.date)} testid="history-day">
+        <Row title={dayTitle(d.date)} value={d.items ? num(Math.round(d.intake)) : undefined} unit={t.after.kcal} onclick={() => show(d.date)} testid="history-day">
           {#snippet caption()}
             {#if d.onTrack}<span class="text-success-ink">{t.today.onTrack}</span>{:else if d.items}{t.checkin.target(num(d.target))}{:else}{t.history.nothing}{/if}
           {/snippet}

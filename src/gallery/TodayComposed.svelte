@@ -4,6 +4,7 @@
   import TrainIcon from '$lib/components/TrainIcon.svelte';
   import Card from '$lib/components/Card.svelte';
   import Row from '$lib/components/Row.svelte';
+  import Facts from '$lib/components/Facts.svelte';
   import Track from '$lib/components/Track.svelte';
   import HeroNumber from '$lib/components/HeroNumber.svelte';
   import WeekStrip from '$lib/components/WeekStrip.svelte';
@@ -27,7 +28,7 @@
   <WeekStrip days={WEEK} today={TODAY} {selected} onselect={(d) => (selected = d)} />
 
   <Card hero aria-label={t.today.calories} data-testid="hero">
-    <div class="haze rounded-sheet p-4">
+    <div class="haze rounded-t-sheet rounded-b-md p-6">
       <HeroNumber value={eaten} caption={t.after.ofKcal(num(target))} side={num(target - eaten)} sideCaption={t.after.toGo} />
       <div class="mt-4"><Track hero value={eaten} {target} {zone} label="{num(eaten)} {t.after.ofKcal(num(target))}" /></div>
       <div class="text-caption text-ink-2 mt-3 flex items-center justify-between gap-4">
@@ -37,7 +38,7 @@
     </div>
     <div class="mt-2 grid grid-cols-3 gap-2">
       {#each MACROS as m (m.label)}
-        <div class="bg-surface-2 flex min-w-0 flex-col rounded-md px-4 pt-3 pb-4">
+        <div class="bg-surface-2 flex min-w-0 flex-col rounded-md px-4 pt-3 pb-5 first:rounded-bl-sheet last:rounded-br-sheet">
           <div class="text-caption text-ink-2">{m.label}</div>
           <div class="text-body num font-semibold">{m.value}{' '}<span class="text-caption text-ink-2 block font-medium whitespace-nowrap">{t.after.ofGrams(num(m.target))}</span></div>
           <div class="mt-auto pt-2"><Track value={m.value} target={m.target} zone={m.zone} label="{m.label} {m.value} {t.after.ofGrams(num(m.target))}" /></div>
@@ -47,7 +48,8 @@
   </Card>
 
   <Card list aria-label={t.today.training}>
-    <Row title="Push day" caption={t.today.session('Strength', '60', '240')} wrap>
+    <Row title="Push day" wrap>
+      {#snippet caption()}<Facts facts={['Strength', t.after.minN('60'), t.after.kcalN('240')]} />{/snippet}
       {#snippet leading()}<div class="tile grid size-full place-items-center"><TrainIcon /></div>{/snippet}
       {#snippet trailing()}<Button size="sm">{t.today.done}</Button>{/snippet}
     </Row>
@@ -59,9 +61,10 @@
   </div>
   <Card list aria-label={t.today.meals}>
     {#each MEALS as m (m.name)}
-      <Row title={m.name} value={num(m.kcal)}>
+      {#snippet src()}<SourceLabel source={m.source} />{/snippet}
+      <Row title={m.name} value={num(m.kcal)} unit={t.after.kcal}>
         {#snippet leading()}<img src={m.photo} alt="" class="size-full object-cover" />{/snippet}
-        {#snippet caption()}{m.time}, <SourceLabel source={m.source} />{/snippet}
+        {#snippet caption()}<Facts facts={[m.time, src]} />{/snippet}
       </Row>
     {/each}
   </Card>

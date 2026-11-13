@@ -7,6 +7,7 @@
   import Plus from '@lucide/svelte/icons/plus';
   import { t } from '$lib/i18n';
   import Card from '$lib/components/Card.svelte';
+  import Facts from '$lib/components/Facts.svelte';
   import Button from '$lib/components/Button.svelte';
   import Track from '$lib/components/Track.svelte';
   import EmptyState from '$lib/components/EmptyState.svelte';
@@ -161,7 +162,7 @@
               {#if i}<span class="size-12 flex-none"></span>{:else}{@render day(d)}{/if}
               <span class="min-w-0 flex-1">
                 <span class="text-body line-clamp-2 block font-semibold">{s.name}</span>
-                <span class="text-caption text-ink-2 block">{t.train.line(t.train.types[s.type], num(s.minutes))}</span>
+                <span class="text-caption text-ink-2 block"><Facts facts={[t.train.types[s.type], t.after.minN(num(s.minutes))]} /></span>
               </span>
             </button>
             <button

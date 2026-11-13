@@ -17,6 +17,7 @@
   import ScanBarcode from '@lucide/svelte/icons/scan-barcode';
   import Camera from '@lucide/svelte/icons/camera';
   import Skeleton from '$lib/components/Skeleton.svelte';
+  import Facts from '$lib/components/Facts.svelte';
   import SourceLabel from '$lib/components/SourceLabel.svelte';
   import Scanner from './Scanner.svelte';
   import Sheet from '$lib/components/Sheet.svelte';
@@ -348,9 +349,9 @@
   {:else if step === 'source'}
     <div class="flex flex-col gap-4" data-testid="supplement-source">
       <p class="text-body">{t.supplement.tubLine}</p>
-      <!-- the tub first: Scan is the step's featured way, the one solid violet card, as on the Add sheet -->
+      <!-- the tub first: Scan is the step's featured way, the one violet featured card, as on the Add sheet (U1b) -->
       <div class="grid grid-cols-2 gap-3">
-        <button type="button" class="bg-accent text-on-accent active:bg-accent-press active:scale-[0.97] {tiles}" onclick={scanTub} data-testid="tub-scan">
+        <button type="button" class="feature text-on-accent active:brightness-90 active:scale-[0.97] {tiles}" onclick={scanTub} data-featured data-testid="tub-scan">
           <span class="bg-on-accent/20 grid size-10 place-items-center rounded-sm"><ScanBarcode size={22} strokeWidth={2} /></span>
           <span><span class="text-body block font-semibold">{t.supplement.scanTub}</span><span class="text-caption block">{t.supplement.scanTubLine}</span></span>
         </button>
@@ -434,7 +435,7 @@
             <span class="text-display" data-testid="supplement-kcal">{num(sum.kcal)}</span>
             <span class="text-heading text-ink-2">{t.after.kcal}</span>
           </div>
-          <p class="text-caption text-ink-2 mt-2" data-testid="supplement-macros">{t.search.macros(num(sum.protein, 1), num(sum.carbs, 1), num(sum.fat, 1))}</p>
+          <p class="text-caption text-ink-2 mt-2" data-testid="supplement-macros"><Facts facts={[t.after.proteinN(num(sum.protein, 1)), t.after.carbsN(num(sum.carbs, 1)), t.after.fatN(num(sum.fat, 1))]} /></p>
         </div>
         {#if s.typical && !mealId}
           <!-- the one quiet nudge (B1): gone once it is set from the tub -->

@@ -255,3 +255,55 @@ test('no gradient, bevel or glow on any button on the landing page', async ({ pa
   expect(landing.bad).toEqual([]);
   expect(landing.checked).toBeGreaterThanOrEqual(6);
 });
+
+// U1b, the owner's corners (feedback 2, 5, 8): a filled shape 8 or less inside a filled shape's corner, the same gap on
+// both sides, has the outer radius less the gap, so the two curves run parallel (DESIGN.md section 6).
+const unnested = (page: import('@playwright/test').Page) => page.evaluate(() => {
+  const filled = (e: Element) => {
+    const cs = getComputedStyle(e);
+    const r = e.getBoundingClientRect();
+    return r.width > 0 && r.height > 0 && cs.visibility !== 'hidden' && (cs.backgroundImage !== 'none' || !/rgba\([^)]*, 0\)|transparent/.test(cs.backgroundColor));
+  };
+  const radius = (e: Element, corner: string) => {
+    const r = e.getBoundingClientRect();
+    return Math.min(parseFloat(getComputedStyle(e).getPropertyValue(`border-${corner}-radius`)) || 0, r.width / 2, r.height / 2);
+  };
+  const bad: string[] = [];
+  let checked = 0;
+  const shapes = [...document.querySelectorAll('body *')].filter(filled);
+  for (const outer of shapes) {
+    const o = outer.getBoundingClientRect();
+    for (const inner of shapes) {
+      if (inner === outer || !outer.contains(inner)) continue;
+      const i = inner.getBoundingClientRect();
+      for (const [corner, gx, gy] of [['top-left', i.left - o.left, i.top - o.top], ['top-right', o.right - i.right, i.top - o.top], ['bottom-left', i.left - o.left, o.bottom - i.bottom], ['bottom-right', o.right - i.right, o.bottom - i.bottom]] as const) {
+        const R = radius(outer, corner);
+        if (R < 12 || gx < 0 || gx > 10 || Math.abs(gx - gy) > 1) continue; // 8, and a 1 px edge or two
+        checked++;
+        const want = Math.max(0, R - gx);
+        const got = radius(inner, corner);
+        if (Math.abs(got - want) > 1.5) bad.push(`${inner.getAttribute('data-testid') ?? inner.className.toString().slice(0, 40)} ${corner}: ${got} in ${R} at ${gx}, want ${want}`);
+      }
+    }
+  }
+  return { checked, bad };
+});
+
+test('corners nest on Today, the Add sheet and Progress', async ({ page }) => {
+  await open(page, '/', MEALS);
+  await expect(page.getByTestId('hero')).toBeVisible();
+  // the check catches the stat tiles as the owner saw them: radius 24, 8 inside a radius 48 card
+  await page.evaluate(() => document.body.insertAdjacentHTML('beforeend', '<div data-testid="probe-card" style="position:absolute;top:0;width:200px;height:200px;padding:8px;border-radius:48px;background:#fff"><div data-testid="probe-tile" style="height:100%;border-radius:24px;background:#eee"></div></div>'));
+  expect((await unnested(page)).bad.filter((b) => b.startsWith('probe'))).toHaveLength(4);
+  await page.getByTestId('probe-card').evaluate((e) => e.remove());
+  const today = await unnested(page);
+  expect(today.bad).toEqual([]);
+  expect(today.checked).toBeGreaterThanOrEqual(5); // the haze's two top corners, the tiles' two outer ones, the dock's pill
+  await page.getByTestId('add').click();
+  await expect(page.getByTestId('add-photo')).toHaveCSS('transform', 'none');
+  expect((await unnested(page)).bad).toEqual([]);
+  await page.keyboard.press('Escape');
+  await page.getByTestId('tab-2').click();
+  await expect(page.getByTestId('progress-weight')).toBeVisible();
+  expect((await unnested(page)).bad).toEqual([]);
+});

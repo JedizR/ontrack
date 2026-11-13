@@ -5,6 +5,7 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
   import Button from '$lib/components/Button.svelte';
+  import Facts from '$lib/components/Facts.svelte';
   import Chip from '$lib/components/Chip.svelte';
   import Stepper from '$lib/components/Stepper.svelte';
   import SourceLabel from '$lib/components/SourceLabel.svelte';
@@ -76,7 +77,7 @@
           <span class="text-body line-clamp-2 block font-semibold">{it.name}</span>
           <span class="text-caption text-ink-2 block"><SourceLabel source={mealSource([it])} /></span>
         </span>
-        <span class="text-body num flex-none font-semibold">{num(it.kcal)}</span>
+        <span class="text-body num flex-none font-semibold">{num(it.kcal)}<span class="text-caption text-ink-2 font-medium">{' '}{t.after.kcal}</span></span>
       </button>
       {#if l.base.grams}
         <div class="mt-2">
@@ -102,7 +103,7 @@
               <p class="text-caption text-ink-2">{t.meal.remembered}</p>
             </div>
           {:else}
-            <p class="text-caption text-ink-2">{t.search.macros(num(it.protein, 1), num(it.carbs, 1), num(it.fat, 1))}</p>
+            <p class="text-caption text-ink-2"><Facts facts={[t.after.proteinN(num(it.protein, 1)), t.after.carbsN(num(it.carbs, 1)), t.after.fatN(num(it.fat, 1))]} /></p>
           {/if}
           <div class="flex flex-wrap gap-2">
             <Button size="sm" onclick={() => pick(i)}>{t.meal.replace}</Button>

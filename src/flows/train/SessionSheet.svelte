@@ -5,6 +5,7 @@
   import Sheet from '$lib/components/Sheet.svelte';
   import Button from '$lib/components/Button.svelte';
   import Chip from '$lib/components/Chip.svelte';
+  import Segmented from '$lib/components/Segmented.svelte';
   import Stepper from '$lib/components/Stepper.svelte';
   import { toast } from 'svelte-sonner';
   import { changeProgram, undoToast } from '$lib/actions';
@@ -108,17 +109,13 @@
         <span class={label}>{t.train.minutes}</span>
         <Stepper bind:value={s.minutes} min={5} max={MAX.minutes} step={5} label={t.train.minutes} />
       </div>
-      <!-- chips, not a segmented control, as in onboarding: three options clip in one at the largest text on the SE -->
+      <!-- SCREENS.md section 8: a three way segmented control (U1b); the longest label fits at the largest text on the SE -->
       <div class="flex flex-col gap-3">
         <span class={label}>{t.train.intensity}</span>
-        <div class="flex flex-wrap gap-2" role="group" aria-label={t.train.intensity}>
-          {#each INTENSITIES as i (i)}
-            <Chip selected={s.intensity === i} onclick={() => (s.intensity = i)}>{t.train.intensities[i]}</Chip>
-          {/each}
-        </div>
+        <Segmented bind:value={s.intensity} label={t.train.intensity} options={INTENSITIES.map((i) => ({ value: i, label: t.train.intensities[i] }))} />
         <p class="text-caption text-ink-2">{t.train.intensityLines[s.intensity]}</p>
       </div>
-      <p class="text-heading" data-testid="session-kcal">{t.train.sessionAdds(num(Math.round(sessionKcal(s, weightKg))))}</p>
+      <p class="text-body font-semibold" data-testid="session-kcal">{t.train.sessionAdds(num(Math.round(sessionKcal(s, weightKg))))}</p>
 
       <div>
         <h3 class="text-heading">{t.train.exercises}</h3>

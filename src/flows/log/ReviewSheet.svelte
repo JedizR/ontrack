@@ -5,6 +5,7 @@
 <script lang="ts">
   import { untrack } from 'svelte';
   import Sheet from '$lib/components/Sheet.svelte';
+  import Facts from '$lib/components/Facts.svelte';
   import Button from '$lib/components/Button.svelte';
   import Segmented from '$lib/components/Segmented.svelte';
   import Switch from '$lib/components/Switch.svelte';
@@ -156,7 +157,7 @@
 
 {#snippet footer()}
   <div class="flex items-center gap-3">
-    <p class="text-body num min-w-0 flex-1 font-semibold" data-testid="review-total">{t.meal.total(num(Math.round(sum.kcal)), num(Math.round(sum.protein)))}</p>
+    <p class="text-body num min-w-0 flex-1 font-semibold" data-testid="review-total"><Facts facts={[t.after.kcalN(num(Math.round(sum.kcal))), t.after.proteinN(num(Math.round(sum.protein)))]} rest="text-ink-2" /></p>
     <span class="text-callout text-ink-2 flex-none" aria-hidden="true">{t.review.saveMeal}</span>
     <Switch bind:checked={keep} label={t.review.saveMeal} testid="review-keep" />
   </div>

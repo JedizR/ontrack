@@ -54,7 +54,7 @@
   </div>
 
   {#if footer}
-    <div class="bg-canvas sticky bottom-0 z-10 -mx-4 flex flex-col gap-1 px-4 pt-3 pb-[max(16px,env(safe-area-inset-bottom))] shadow-[0_-1px_0_var(--line)]">
+    <div class="fade-over bg-canvas sticky bottom-0 z-10 -mx-4 flex flex-col gap-1 px-4 pt-3 pb-[max(16px,env(safe-area-inset-bottom))]">
       {@render footer()}
     </div>
   {/if}

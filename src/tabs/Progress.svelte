@@ -104,7 +104,8 @@
 
     <!-- the screen's hero (OneFin's stats cards): the trend and its rate on the one haze panel, the chart on solid white -->
     <Card hero aria-label={t.progress.weight} data-testid="progress-weight">
-      <div class="haze rounded-sheet p-4">
+      <!-- U1b: 24 inside the 40 corners, so the eyebrow clears the curve (the owner, feedback 5) -->
+      <div class="haze rounded-sheet p-6">
         <p class="text-eyebrow text-ink-2">{t.progress.weight}</p>
         <!-- a trend needs two weigh-ins in view; with fewer, the card is its empty state -->
         {#if trendNow != null && points.length > 1}
@@ -116,7 +117,7 @@
           {rate != null ? t.progress.rate(num(rate, 1), num(targetRate, 1)) : t.progress.needWeighIns(num(V.minWeighIns), num(V.minSpanDays / U.daysPerWeek))}
         </p>
       </div>
-      <div class="px-4 pt-4 pb-2">
+      <div class="px-4 pt-4 pb-4">
         {#if trendNow != null && points.length > 1}
           <TrendChart {points} {span} {band} from={shortDate(from)} to={shortDate(today)} label={t.progress.chart(shortDate(from), shortDate(today), num(inUnit(trendNow), 1))} />
         {/if}
