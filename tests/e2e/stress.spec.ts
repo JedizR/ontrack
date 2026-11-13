@@ -246,8 +246,11 @@ for (const d of PHONES) {
   }
 }
 
-/** Today with meals and every logging sheet, with a check at each: the main action is on screen without scrolling. */
-async function walkLogging(page: Page, dir: string) {
+/** Today with meals and every logging sheet, with a check at each: the main action is on screen without scrolling.
+ * In two parts, each its own test: fourteen sheets sliding in and out, each checked and shot, are more than one test's
+ * 30 s on a CI runner. */
+const LOGGING = ['Add, supplements and Scan', 'Search, Quick add, a meal and a photo'] as const;
+async function walkLogging(page: Page, dir: string, part: (typeof LOGGING)[number]) {
   const sheet = async (id: string, name: string, action?: string) => {
     await expect(page.getByTestId(id)).toHaveCSS('transform', 'none'); // the sheet has finished sliding up
     if (action && page.viewportSize()!.height > page.viewportSize()!.width) await expect(page.getByTestId(action)).toBeInViewport({ ratio: 1 });
@@ -258,34 +261,37 @@ async function walkLogging(page: Page, dir: string) {
     await page.getByTestId(id).waitFor({ state: 'detached' });
   };
   await open(page, '/', [...MEALS, ...SUPPLEMENTS]);
-  await checkPage(page, 'today-meals', dir);
-  await page.getByTestId('add').click();
-  await sheet('add-sheet', 'add');
-  // supplements (N2): the amount with milk, the label, and the kinds
-  await page.getByTestId('supplement').filter({ hasText: 'Whey' }).click();
-  await expect(page.getByTestId('supplement-milk')).toBeVisible();
-  await sheet('supplement-sheet', 'supplement-amount', 'supplement-add');
-  await page.getByTestId('supplement-edit').click();
-  await sheet('supplement-sheet', 'supplement-label', 'supplement-save');
-  await close('supplement-sheet');
-  await page.getByTestId('add').click();
-  await page.getByTestId('supplement-new').click();
-  await sheet('supplement-sheet', 'supplement-kinds');
-  await page.getByTestId('kind-whey').click();
-  await checkPage(page, 'supplement-source', dir);
-  await close('supplement-sheet');
-  // the Scan sheet (B1): no camera here, so the typed number, then the product and its label
-  await page.getByTestId('add').click();
-  await page.getByTestId('add-scan').click();
-  await expect(page.getByTestId('barcode-field')).toBeVisible();
-  await sheet('scan-sheet', 'scan-type', 'barcode-find');
-  await page.getByTestId('barcode-field').fill('8850987101021');
-  await page.getByTestId('barcode-find').click();
-  await expect(page.getByTestId('product')).toBeVisible();
-  await sheet('scan-sheet', 'scan-product', 'product-add');
-  await page.getByTestId('product-correct').click();
-  await sheet('scan-sheet', 'scan-label', 'label-save');
-  await close('scan-sheet');
+  if (part === LOGGING[0]) {
+    await checkPage(page, 'today-meals', dir);
+    await page.getByTestId('add').click();
+    await sheet('add-sheet', 'add');
+    // supplements (N2): the amount with milk, the label, and the kinds
+    await page.getByTestId('supplement').filter({ hasText: 'Whey' }).click();
+    await expect(page.getByTestId('supplement-milk')).toBeVisible();
+    await sheet('supplement-sheet', 'supplement-amount', 'supplement-add');
+    await page.getByTestId('supplement-edit').click();
+    await sheet('supplement-sheet', 'supplement-label', 'supplement-save');
+    await close('supplement-sheet');
+    await page.getByTestId('add').click();
+    await page.getByTestId('supplement-new').click();
+    await sheet('supplement-sheet', 'supplement-kinds');
+    await page.getByTestId('kind-whey').click();
+    await checkPage(page, 'supplement-source', dir);
+    await close('supplement-sheet');
+    // the Scan sheet (B1): no camera here, so the typed number, then the product and its label
+    await page.getByTestId('add').click();
+    await page.getByTestId('add-scan').click();
+    await expect(page.getByTestId('barcode-field')).toBeVisible();
+    await sheet('scan-sheet', 'scan-type', 'barcode-find');
+    await page.getByTestId('barcode-field').fill('8850987101021');
+    await page.getByTestId('barcode-find').click();
+    await expect(page.getByTestId('product')).toBeVisible();
+    await sheet('scan-sheet', 'scan-product', 'product-add');
+    await page.getByTestId('product-correct').click();
+    await sheet('scan-sheet', 'scan-label', 'label-save');
+    await close('scan-sheet');
+    return;
+  }
   await page.getByTestId('add').click();
   await page.getByTestId('add-search').click();
   await page.getByTestId('search-field').fill('chicken');
@@ -313,18 +319,22 @@ async function walkLogging(page: Page, dir: string) {
 for (const d of DEVICES.filter((x) => x.mobile)) {
   test.describe(d.name, () => {
     test.use({ viewport: { width: d.width, height: d.height }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
-    test('logging layout holds', async ({ page }) => {
-      await walkLogging(page, `screenshots/stress/${d.name}/logging`);
-    });
+    for (const part of LOGGING) {
+      test(`logging layout holds: ${part}`, async ({ page }) => {
+        await walkLogging(page, `screenshots/stress/${d.name}/logging`, part);
+      });
+    }
   });
 }
 for (const d of PHONES) {
   test.describe(`font xl ${d.name}`, () => {
     test.use({ viewport: { width: d.width, height: d.height }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
-    test('logging holds at the largest text', async ({ page }) => {
-      await withPrefs(page, { theme: 'light', fontSize: 'xl' });
-      await walkLogging(page, `screenshots/fonts/${d.name}-xl/logging`);
-    });
+    for (const part of LOGGING) {
+      test(`logging holds at the largest text: ${part}`, async ({ page }) => {
+        await withPrefs(page, { theme: 'light', fontSize: 'xl' });
+        await walkLogging(page, `screenshots/fonts/${d.name}-xl/logging`, part);
+      });
+    }
   });
 }
 
