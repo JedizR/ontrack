@@ -32,6 +32,11 @@ Each entry: what is blocked, what Claude tried, the exact steps for you, and wha
 
 Each entry: what to look at (URL or screenshot paths), what to look for, and which milestone it belongs to.
 
+### P1: the new palette and gradients
+
+- **Where:** https://ontrack-black.vercel.app on the iPhone, light and dark (close and reopen the tab). Before and after: branch `pr-assets`, `p1/`.
+- **Look for:** Today's hero, the Add sheet's Photo card, and the landing's hero, 02 Training, 05 Sources and closing call, against your example gradient. Do the dark gradients (slate and rust with violet accents) feel right or too muted? The brand colours sit in every gradient as an accent, as you asked.
+
 ### L3: the top bar, the bending glass and the footer pull, on your iPhone
 
 - **Where:** https://ontrack-black.vercel.app signed out, in Safari (close and reopen the tab). Before and after, and two videos of the pull: branch `pr-assets`, `l3/`.
