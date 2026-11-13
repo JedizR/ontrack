@@ -32,6 +32,14 @@ const slowVision = (page: Page) => VIDEO && page.route('**/api/analyze', async (
 // a breath at the end so the video shows where the task landed
 const settle = (page: Page) => page.waitForTimeout(VIDEO ? 1200 : 0);
 
+// the start: from navigation to Today's number on screen, signed in with a day of meals (run with --repeat-each, take
+// the median; on the dev server it compares two branches, it is not the phone's figure)
+test('start', async ({ page }) => {
+  await open(page, '/', MEALS);
+  await expect(hero(page)).toHaveText('1,840');
+  console.log(JSON.stringify({ task: 'start', ms: Math.round(await page.evaluate(() => performance.now())) }));
+});
+
 for (const theme of VIDEO ? (['light', 'dark'] as const) : (['light'] as const)) {
   test.describe(theme, () => {
     test.use({ colorScheme: theme });

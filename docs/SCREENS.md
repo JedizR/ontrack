@@ -100,7 +100,7 @@ Matches `/gallery/today`.
    - **Easy adds** (F10, M9a): with a gain goal, after 18:00, while more than 25 percent of the day's target is left and the day is not finished. Title "620 kcal to go", line "These three cover it, about a third each." Three rows: the food, its grams as the caption, and "Add 210 kcal" (a small button) that logs it at once with an undo toast. The foods are the user's own calorie dense foods from recent meals first, then peanut butter, trail mix and a granola bar; oils never.
    - **Nothing logged yet** (F23): from the set time (13:00 by default) on a day with nothing logged. "Nothing logged yet today", "Log a meal with the plus button", and "Add a meal" opening the Add sheet.
 5. Training card: session name, "Strength, 60 min. Adds 240 kcal", and a "Done" button. After Done: a check mark and "Undo". A long press or the row's menu offers "Skip today". On a rest day: "Rest day" with no button. With no program: "Add your training to sharpen your target".
-6. "Meals" heading with the count, then the list, newest first. Each row opens the Meal sheet. Swipe left to delete, with an undo toast.
+6. "Meals" heading with the count, then the list, newest first. Each row opens the Meal sheet. Swipe left to delete as in iOS Mail (U1c, DESIGN.md section 10 rule 4): a short swipe leaves the row open on a red Delete button, a long one past half the row deletes; either way an undo toast follows.
    - A supplement with calories (N2, F21) is a row like a meal: the shaker tile, its name, "07:30, 2 scoops with milk", and its calories. An entry logged on typical values ends its caption with the source label Typical (B1).
    - A scanned product (B1, F22) is a row with the barcode tile, the product's name, "12:40, Open Food Facts" (or Label, or Yours), and its calories. It opens the Meal sheet, like any meal. The row opens the Supplement sheet's amount step in edit mode; swipe left deletes it with an undo toast, "Whey protein deleted".
    - Supplements with no calories (creatine) are not rows and show no 0 kcal. At the end of the card, under a hairline, the word "Taken" in Caption and one chip per supplement taken that day, a check before its name. A chip opens the same edit step. The count beside the heading counts rows only.
@@ -120,7 +120,7 @@ States: first day (hero at zero, a row saying "Log your first meal with the plus
 - "Saved": saved meals in the same form.
 
 **Photo.** The tile opens the camera directly. First use shows one screen before the camera: "Your photo is sent to Google's Gemini to identify the food, then discarded. Ontrack keeps only a small thumbnail." with "Continue" and "Not now".
-After capture: the Review sheet opens immediately with the photo at the top and skeleton rows, and the line "Looking at your meal".
+After capture: the Review sheet opens immediately with the photo at the top under a sweeping lavender band, skeleton rows, and the wait in words, one step every 1.6 s: "Looking at your meal" ("Reading what you wrote" for Describe), "Finding each food", "Estimating the grams", "Looking up the food table", the last held until the answer (U1c).
 
 **Review sheet.**
 - The photo, full width, radius 24. The title, editable.

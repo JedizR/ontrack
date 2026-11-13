@@ -238,15 +238,33 @@ The `design-critic` subagent checks screenshots against these, side by side with
 
 ## 10. Motion and feedback
 
-Fixed values from MOTION.md. With reduced motion set, every one becomes an instant change; opacity fades of 150 ms or less may stay.
+Fixed values from MOTION.md, as tokens in `design/tokens.css` (U1c). JavaScript reads the same tokens through `dur()` and `ms()` in `src/lib/haptics.ts`, so there is no second set of numbers. Motion explains a change: where something came from, where it went, that a number moved, that a wait is working. It is never decoration, and it never holds the next tap.
 
-- Presses respond within 100 ms: buttons, icon buttons and cards scale to 0.97 with a fill step (the ink pill to `--action-press`), over 120 ms.
-- State changes (chips, segments, switches, toasts) use OneFin's default spring, 0.4 s with a little bounce (`--spring-default`, 420 ms).
-- Sheets use the vaul spring. Tabs slide from the side they came from; swiping between tabs follows the finger.
-- Values that change tween: numbers count over 400 ms, tracks grow over 420 ms with `--ease-out`.
-- Today's cards fade up 8 px with a 40 ms stagger on the first paint of a session only (`--spring-appear`).
-- Reaching the zone is marked once: the track turns green and a light haptic plays. No confetti.
-- Haptics through the switch technique: light on a logged meal, on reaching a target and on toggles. None on navigation, and none on wheels (iOS gives a scroll none).
+| Token | Value | Used for |
+| --- | --- | --- |
+| `--d-press` | 120 ms | a press: scale 0.97 and a fill step |
+| `--d-fade` | 150 ms | a cross fade (a day's cards, a step's words); the one motion reduced motion may keep |
+| `--d-settle` | 240 ms, `--ease-out` | a dragged row or page settling when the finger lifts; a tab, a Settings page or an onboarding step sliding in |
+| `--d-leave` | 280 ms, `--ease-out` | a row or card leaving: things go faster than they come |
+| `--d-count` | 400 ms, `--ease-out` | a number counting to its value (`Count.svelte`) |
+| `--d-ui` | 420 ms, `--spring-default` | state changes: chips, segments, switches, the dock's and the week's sliding pills |
+| `--d-move` | 420 ms, `--ease-out` | tracks filling, a row or card arriving, bars growing |
+| `--d-pop` | 520 ms, `--spring-pop` | a check popping in: a target reached, a session done, Building's mark |
+| `--d-appear` | 600 ms, `--spring-appear` | first paint and arrival: Today's cards, a check-in step, a chart's line |
+| `--d-beat` | 450 ms | one step of a made-up wait (Building your plan) |
+| `--d-step`, `--d-sweep` | 1.6 s, 1.8 s | a real wait: the words under a photo being read, the sweep across it |
+
+Rules:
+
+1. **Every tap answers within 100 ms.** Buttons, icon buttons, tiles and cards scale to 0.97 with a fill step (the ink pill to `--action-press`); rows take the grey fill. A light haptic on select (chips, segments, choices, switches), on every log (a meal, a supplement, a weigh-in, a session done, a check-in decided), on every delete, and on reaching a target. None on navigation, none on wheels, none on a day picked in the strip.
+2. **One selection, one moving mark.** The dock's grey pill and the week's ink pill slide to what was picked (`--d-ui`, `--spring-default`) rather than one switching off and another on.
+3. **Numbers move; lists move.** A number counts from where it stood (`Count.svelte`): Today's total and macros when a meal is logged, edited or removed, or another day is picked; Progress's figures from nothing on arrival (the weight from where the chart starts, so the change itself moves); the check-in's new target from today's. Tracks fill to their value. A new row grows in (`collapse`, `--d-move`), a removed one collapses (`--d-leave`), carrying the flex gap so nothing jumps. A day picked in the strip swaps its cards in one fade: rows never collapse for a change of day.
+4. **Swipe to delete is iOS Mail's.** The row follows the finger over a red action that fills exactly the space it leaves, full height, under the card's clip and into its padding, so no white edge shows. Let go past half the button and it stays open on Delete (88 wide); past half the row the label jumps to the row's edge, and letting go deletes with a haptic: the row slides out (`--d-settle`), then collapses, and Undo stays 5 s. A tap on an open row closes it; one row is open at a time.
+5. **A wait shows its work.** A photo being read sits under a flat lavender band with a bright edge sweeping down and back (no gradient, section 8), with its steps in words beneath, one every `--d-step`; the last holds until the answer. Skeletons at the final layout's size, never a spinner alone, never a blank sheet.
+6. **Satisfaction, never guilt.** A target reached turns its track green, swells it once with a green ring going out (`reach`), pops a check beside its words (the hero's "On track", the protein tile) and plays one haptic. A session marked done pops its check. Only a change made while looking: a day picked in the strip shows its checks without the pop and plays no haptic. No confetti, no streaks.
+7. **Arrivals are first paints only.** Today's cards fade up 8 px with a 40 ms stagger on the first paint of a session (`appear`); Progress's bars grow and its line draws once on arrival. Coming back to a tab does not replay them.
+8. **Reduced motion: nothing moves, nothing loops.** Every transition and animation collapses to an instant change (the global rule in `app.css`, and `dur()` returns 0 for Svelte's transitions and counts). Anything that loops is not drawn at all (the sweep, the skeleton and sync pulses), since a looping animation at 0 s would still be running. A wait still changes its words. `tests/e2e/motion.spec.ts` proves both: each animation reaches its end, and with reduced motion none is left running.
+9. Sheets use the vaul spring. Swiping between tabs follows the finger.
 
 ## 11. Icons and imagery
 
