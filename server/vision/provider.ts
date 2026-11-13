@@ -13,5 +13,5 @@ export interface VisionProvider {
 /** The provider `VISION_PROVIDER` names. The mock's fixtures load only when it is chosen. */
 export async function visionProvider(): Promise<VisionProvider> {
   if (env('VISION_PROVIDER') === 'mock') return (await import('./mock.js')).mockProvider;
-  return (await import('./gemini.js')).geminiProvider(env('GEMINI_API_KEY'), env('GEMINI_MODEL'));
+  return (await import('./gemini.js')).geminiProvider(env('GEMINI_API_KEY'), env('GEMINI_MODEL'), env('GEMINI_FALLBACK_MODEL'));
 }

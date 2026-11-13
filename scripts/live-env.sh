@@ -15,4 +15,5 @@ GEMINI_KEY_FILE="$HOME/.config/ontrack/gemini-api-key"
 if [ -z "${GEMINI_API_KEY:-}" ] && [ -r "$GEMINI_KEY_FILE" ]; then export GEMINI_API_KEY="$(cat "$GEMINI_KEY_FILE")"; fi
 if [ -n "${GEMINI_API_KEY:-}" ]; then export VISION_PROVIDER="${VISION_PROVIDER:-gemini}"; else export VISION_PROVIDER="${VISION_PROVIDER:-mock}"; fi
 export GEMINI_MODEL="${GEMINI_MODEL:-gemini-3.6-flash}"
+export GEMINI_FALLBACK_MODEL="${GEMINI_FALLBACK_MODEL:-gemini-3.5-flash-lite}"
 exec "$@"
