@@ -32,6 +32,11 @@ Each entry: what is blocked, what Claude tried, the exact steps for you, and wha
 
 Each entry: what to look at (URL or screenshot paths), what to look for, and which milestone it belongs to.
 
+### U2: corners, transitions, the update prompt and speed, on your iPhone
+
+- **Where:** https://ontrack-black.vercel.app in Safari; close and reopen the tab first so the phone drops its old worker. Videos: branch `pr-assets`, `u2/`.
+- **Look for:** the dock's pill, pressing the first and last meal rows, the Progress range, Search then a portion then Back, plan lines that open, switching tabs back and forth. After the next deploy the update prompt shows once, Update reloads, and a refresh shows nothing. Does switching tabs, opening sheets and logging feel faster? The numbers come from a desktop browser at 4x slower CPU, not a phone.
+
 ### L4: the landing rework, on your iPhone and desktop
 
 - **Where:** https://ontrack-black.vercel.app signed out (close and reopen the tab). Scroll videos, phone and desktop, light and dark, and before and after: branch `pr-assets`, `l4/`.
