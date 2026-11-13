@@ -195,17 +195,17 @@
   --grad-call: var(--grain), url(./gradients/call.webp) center / cover no-repeat,
     radial-gradient(90% 120% at 80% 40%, #a95445 0%, transparent 70%),
     radial-gradient(60% 90% at 0% 0%, #486478 0%, transparent 70%), #121214;
-  /* L2: Liquid Glass (iOS 26 "regular"): the fill tints what the blur lifts, the rim catches light top left and, fainter,
-     bottom right. Violet glass for the footer's panels; the solids stand in without blur */
-  --liquid-blur: blur(24px) saturate(180%); /* L3: the owner's "more blurred" (was 14) */
-  --liquid-fill: rgba(255, 255, 255, 0.55);
+  /* L4: Liquid Glass after callstack/liquid-glass, which wraps iOS 26's UIGlassEffect: "regular" blurs and tints what is
+     behind (the bar, which anything scrolls under); "clear" only lifts it, with no frosted fill, where the words already
+     read; both catch the light at the rim, and an interactive one lights up under the finger. The solid stands in
+     without blur */
+  --liquid-blur: blur(14px) saturate(180%);
+  --liquid-clear: blur(6px) saturate(160%) brightness(1.08);
+  --liquid-fill: rgba(255, 255, 255, 0.5);    /* words on it hold 4.5 to 1 over night, unblurred (contrast.test.ts) */
   --liquid-solid: #f3f3fb;
-  --liquid-rim: inset 1px 1px 0 rgba(255, 255, 255, 0.9), inset -1px -1px 0 rgba(255, 255, 255, 0.35);
-  --liquid-violet: rgba(40, 17, 156, 0.6);
-  --liquid-violet-solid: #381ac9;
-  /* clear white glass in both themes, for chips and cards that sit on the phone's light screen or the lavender field */
-  --liquid-white: rgba(255, 255, 255, 0.6);
-  --liquid-white-rim: inset 1px 1px 0 rgba(255, 255, 255, 0.9), inset -1px -1px 0 rgba(255, 255, 255, 0.35);
+  --liquid-rim: inset 0 1px 0 rgba(255, 255, 255, 0.95), inset 1px 0 0 rgba(255, 255, 255, 0.5), inset 0 -1px 0 rgba(255, 255, 255, 0.22), inset 0 0 12px rgba(255, 255, 255, 0.32);
+  --liquid-light: rgba(255, 255, 255, 0.75);
+  --shadow-liquid: 0 2px 6px rgba(8, 7, 49, 0.08), 0 10px 24px rgba(8, 7, 49, 0.1);
   /* the colour-washed cards (pick 10): white words on ink, steel and clay (deepened), night words on sand */
   --wash-ink: var(--grain), url(./gradients/wash-ink.webp) center / cover no-repeat, linear-gradient(160deg, #121214 0%, #364957 60%, #381ac9 100%);
   --wash-steel: var(--grain), url(./gradients/wash-steel.webp) center / cover no-repeat, linear-gradient(160deg, #4a677c 0%, #445d70 50%, #486478 100%);
@@ -269,9 +269,11 @@
   --grad-sky: var(--grain), url(./gradients/sky-dark.webp) center / cover no-repeat,
     radial-gradient(60% 50% at 0% 20%, #381ac9 0%, transparent 70%),
     linear-gradient(180deg, #121214 0%, #3a505f 30%, #364957 55%, #733c33 85%, #121214 100%);
-  --liquid-fill: rgba(255, 255, 255, 0.1);
+  --liquid-fill: rgba(30, 30, 34, 0.62);
   --liquid-solid: #2c2a3c;
-  --liquid-rim: inset 1px 1px 0 rgba(255, 255, 255, 0.4), inset -1px -1px 0 rgba(255, 255, 255, 0.12);
+  --liquid-rim: inset 0 1px 0 rgba(255, 255, 255, 0.4), inset 1px 0 0 rgba(255, 255, 255, 0.18), inset 0 -1px 0 rgba(255, 255, 255, 0.08), inset 0 0 12px rgba(255, 255, 255, 0.08);
+  --liquid-light: rgba(255, 255, 255, 0.4);
+  --shadow-liquid: 0 10px 24px rgba(0, 0, 0, 0.35);
   --sky-top: #343d4c;
 
   --shadow-card: 0 0 0 1px rgba(255, 255, 255, 0.1);                       /* U1b: the ring that sets a card off the page */

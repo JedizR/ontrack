@@ -33,7 +33,7 @@ const overflow = (page: Page) => page.evaluate(() => {
 
 /** Visible tap targets smaller than 44 px in either direction. The map's credit line (S1b) is text links, as OpenFreeMap asks. */
 const smallTargets = (page: Page) => page.evaluate(() => [...document.querySelectorAll<HTMLElement>('button, a[href], input, [role="radio"], [role="switch"]')]
-  // a screen reader only control (the landing footer's More about Ontrack) is a 1 px box until a keyboard reaches it
+  // a screen reader only control is a 1 px box until a keyboard reaches it
   .filter((el) => !el.closest('.maplibregl-ctrl-attrib') && !el.matches('.sr-only'))
   .filter((el) => { const r = el.getBoundingClientRect(); const s = getComputedStyle(el); return r.width > 0 && r.height > 0 && s.visibility !== 'hidden' && s.opacity !== '0' && (r.width < 43.5 || r.height < 43.5); }) // sub-pixel layout can draw a 44 px box at 43.9
   .map((el) => `${(el.getAttribute('aria-label') || el.textContent || el.tagName).trim().slice(0, 24)} ${Math.round(el.getBoundingClientRect().width)}x${Math.round(el.getBoundingClientRect().height)}`));
@@ -122,9 +122,8 @@ async function checkAll(page: Page, dir: string) {
   await page.goto('/');
   await expect(page.getByTestId('landing')).toBeVisible();
   await checkPage(page, 'landing', dir);
-  // L3: this project is Chromium, which bends the backdrop with an SVG filter in place of the blur (glass.ts); WebKit's
-  // lens layer is checked in landing.spec.ts
-  expect(await page.getByTestId('landing').locator('header nav').evaluate((n) => getComputedStyle(n).backdropFilter)).toMatch(/^url\("#bend-\d+"\) saturate/);
+  // L4: the bar's glass is one plain blur, no SVG filter (speed, DECISIONS L4)
+  expect(await page.getByTestId('landing').locator('header .bar-glass').evaluate((n) => getComputedStyle(n).backdropFilter)).toMatch(/^blur\(\d+px\) saturate/);
   await page.getByTestId('landing-signin').click();
   await expect(page.getByTestId('signin-sheet')).toHaveCSS('transform', 'none');
   await expect(page.getByTestId('signin-send')).toBeInViewport({ ratio: 1 });

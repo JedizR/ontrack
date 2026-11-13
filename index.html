@@ -33,6 +33,22 @@
         document.documentElement.dataset.fs = lvl;
       } catch (e) { document.documentElement.dataset.theme = 'light'; }
     </script>
+    <script>
+      // L4: a first visit opens on the landing page (App.svelte's rule before the store opens: no last user, no draft past
+      // the first question), a lazy chunk found only once the app has started, and its largest paint is Today in the
+      // hero's phone, found only once the landing has: fetch them now. A returning visitor fetches nothing more. The list
+      // is the build's (vite.config.ts); on its own, so nothing here can stop the theme above
+      try {
+        var seen = JSON.parse(localStorage.getItem('ot-ui') || '{}');
+        if (!seen.lastUser && (!seen.draft || seen.draft.at === 'welcome')) JSON.parse('%LANDING_PRELOADS%').forEach(function (p) {
+          var l = document.createElement('link');
+          l.rel = p[0]; l.href = p[1];
+          if (p[2]) l.as = p[2];
+          if (p[2] === 'image') l.fetchPriority = 'high'; else l.crossOrigin = '';
+          document.head.appendChild(l);
+        });
+      } catch (e) { /* no storage, or no list: the page loads as before */ }
+    </script>
   </head>
   <body>
     <div id="app"></div>

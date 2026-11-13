@@ -1,0 +1,106 @@
+/* L4, the landing page only (DESIGN.md section 13): Liquid Glass after callstack/liquid-glass, the glow, and the motion
+   the bar, the sections and the footer share. Its own stylesheet in the landing's chunk, so the app never loads it. */
+
+/* Liquid Glass. callstack/liquid-glass wraps iOS 26's UIGlassEffect: `effect` regular, clear or none, a `tintColor`, a
+   `colorScheme`, `interactive`, and a container that merges nearby glass. The web version, light enough for a phone
+   without a GPU: one backdrop filter per glass and no SVG filter, so nothing is redrawn while the page scrolls but the
+   blur itself.
+   - regular: blurs and tints what is behind; for the bar, which anything scrolls under, so its words always read
+   - clear: lifts what is behind (a little blur, more saturation and light) with no frosted fill, for chips and cards
+     whose words already read over what is under them (the owner)
+   - both catch the light at the rim: bright at the top, faint at the foot, an inner glow at the edges
+   - `--liquid-tint` tints either one, as tintColor does; `data-theme` on a glass is its colorScheme */
+.liquid, .liquid-clear {
+  box-shadow: var(--liquid-rim), var(--shadow-liquid);
+  background-color: color-mix(in srgb, var(--liquid-tint, transparent) var(--liquid-tint-share, 0%), var(--liquid-base));
+}
+.liquid {
+  --liquid-base: var(--liquid-fill);
+  -webkit-backdrop-filter: var(--liquid-blur);
+  backdrop-filter: var(--liquid-blur);
+}
+.liquid-clear {
+  --liquid-base: transparent;
+  -webkit-backdrop-filter: var(--liquid-clear);
+  backdrop-filter: var(--liquid-clear);
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .liquid { --liquid-base: var(--liquid-solid); }
+}
+
+/* interactive: the light under the pointer (glass.ts moves it), brighter while pressed; with `liquid-grow` the glass
+   also grows under the finger. A blurred dot that only moves and fades, so it costs no repaint. A glass behind content
+   (the bar's) lights up for its parent's pointer (glass.ts marks the glass). Never clip a glass's parent with rounded corners: that cuts its blur
+   off from the page behind (a backdrop root) */
+.liquid-touch { position: relative; overflow: clip; isolation: isolate; }
+.liquid-touch::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  width: 72px;
+  height: 72px;
+  margin: -36px 0 0 -36px;
+  border-radius: 50%;
+  background: var(--liquid-light);
+  filter: blur(18px);
+  translate: var(--gx, 0) var(--gy, 0);
+  opacity: 0;
+  pointer-events: none;
+}
+@media (hover: hover) { .liquid-touch:hover::after, :hover > .liquid-touch::after { opacity: 0.5; } }
+.liquid-touch[data-pressed]::after { opacity: 1; }
+
+/* the glow of the dark sections: brightest at its middle and faded to nothing at every edge (L2, the owner's glow bug) */
+.glow {
+  background: var(--glow);
+  mask-image: radial-gradient(closest-side, black 40%, transparent);
+}
+
+/* every tap on the page has a pressed state (PRD section 8, DESIGN.md section 10): the fill steps in the markup, and the
+   face scales to 0.97 over --d-press when motion is welcome; the bar's, the sections' and the footer's alike */
+.tap { transition: background-color var(--d-press), scale var(--d-press); }
+
+/* a link whose underline draws in under a mouse */
+.link-line { position: relative; }
+.link-line::after {
+  content: '';
+  position: absolute;
+  inset: auto 0.5rem 0.55rem;
+  height: 1px;
+  background: currentColor;
+  scale: 0 1;
+  transform-origin: left;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .liquid-touch::after { scale: 0.5; transition: opacity 0.35s var(--ease-out), scale 0.6s var(--spring-default); }
+  .liquid-touch[data-pressed]::after { scale: 1.6; }
+  .liquid-grow { transition: scale 0.55s var(--spring-pop); }
+  .liquid-grow[data-pressed] { scale: 1.07; }
+
+  .tap:active { scale: 0.97; }
+  .link-line::after { transition: scale 0.35s var(--ease-out); }
+  @media (hover: hover) { .link-line:hover::after { scale: 1 1; } }
+
+  /* a card leans toward a mouse (glass.ts `lean`) */
+  .lean { transition: transform 0.6s var(--spring-default); }
+  .lean[data-leaning] { transition-duration: 0.15s; transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateY(-4px); }
+
+  /* Ambient loops, small and slow, each on its own period so nothing beats in step. They run only while their section
+     is on screen (`live` in inview.ts sets --play). On `transform`, so they add to a tilt set with rotate or translate */
+  .bob { animation: bob var(--t, 5s) ease-in-out var(--d, 0s) infinite alternate both; }
+  @keyframes bob { from { transform: translateY(var(--bob, 6px)) rotate(calc(var(--spin, 2deg) * -1)); } to { transform: translateY(calc(var(--bob, 6px) * -1)) rotate(var(--spin, 2deg)); } }
+  .float { animation: float var(--t, 7s) ease-in-out var(--d, 0s) infinite both; }
+  @keyframes float { 0%, 100% { transform: none; } 35% { transform: translate(4px, -10px) rotate(-1.2deg); } 70% { transform: translate(-3px, -4px) rotate(0.8deg); } }
+  .breathe { animation: breathe var(--t, 6s) ease-in-out var(--d, 0s) infinite alternate both; }
+  @keyframes breathe { from { transform: scale(0.97); opacity: 0.6; } to { transform: scale(1.04); opacity: 1; } }
+  /* a short wiggle, then still for most of the loop */
+  .wiggle { animation: wiggle var(--t, 6s) ease-in-out var(--d, 0s) infinite both; }
+  @keyframes wiggle { 0%, 12%, 100% { transform: none; } 3% { transform: rotate(-7deg); } 6% { transform: rotate(6deg); } 9% { transform: rotate(-3deg); } }
+  /* after the shorthands above, which would set it back to running */
+  .bob, .float, .breathe, .wiggle { animation-play-state: var(--play, paused); }
+  [data-live] { --play: running; }
+}

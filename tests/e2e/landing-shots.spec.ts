@@ -7,15 +7,17 @@ import { execFileSync } from 'node:child_process';
 import { expect, test, type Page } from '@playwright/test';
 import { MEALS, SUPPLEMENTS, open, openSeeded, vision, withPrefs } from './helpers';
 import { openMap, scene } from './social';
+import { CROP, screenShare } from '../../src/flows/landing/shots';
 
 test.skip(!process.env.LANDING_SHOTS, 'writes src/flows/landing/shots/; set LANDING_SHOTS=1');
 test.use({ colorScheme: 'light', viewport: { width: 390, height: 844 }, deviceScaleFactor: 1.6 });
 
-const shot = async (page: Page, name: string) => {
+// L4: cut to the share of the screen its phone shows (src/flows/landing/shots.ts), so the page loads no more than it draws
+const shot = async (page: Page, name: keyof typeof CROP) => {
   await page.waitForTimeout(500); // sheets and fades settle
   const png = test.info().outputPath(`${name}.png`);
-  await page.screenshot({ path: png });
-  execFileSync('cwebp', ['-quiet', '-q', '82', png, '-o', `src/flows/landing/shots/${name}.webp`]);
+  await page.screenshot({ path: png, clip: { x: 0, y: 0, width: 390, height: Math.round(844 * screenShare(CROP[name])) } });
+  execFileSync('cwebp', ['-quiet', '-q', '80', png, '-o', `src/flows/landing/shots/${name}.webp`]);
 };
 const settled = (page: Page, id: string) => expect(page.getByTestId(id)).toHaveCSS('transform', 'none');
 
