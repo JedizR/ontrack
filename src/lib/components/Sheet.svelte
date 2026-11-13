@@ -53,11 +53,21 @@
         <X size={24} strokeWidth={2} />
       </button>
     </div>
-    <!-- once the keyboard is up, bring the focused field to the middle of what is still visible -->
+    <!-- once the keyboard is up, scroll this list (never the page: scrollIntoView pans iOS's whole viewport and pushes the
+         sheet's header off screen) so a field the keyboard covers sits in the middle of what is still visible -->
     <div
       class="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 pt-3 {footer ? 'pb-4' : 'pb-[max(24px,env(safe-area-inset-bottom))]'}"
       onscroll={(e) => (scrolled = e.currentTarget.scrollTop > 0)}
-      onfocusin={(e) => { const el = e.target as HTMLElement; if (el.matches('input, textarea')) setTimeout(() => el.scrollIntoView({ block: 'center', behavior: 'smooth' }), 350); }}
+      onfocusin={(e) => {
+        const el = e.target as HTMLElement;
+        const list = e.currentTarget;
+        if (!el.matches('input, textarea')) return;
+        setTimeout(() => {
+          const visible = window.visualViewport?.height ?? innerHeight;
+          const { bottom } = el.getBoundingClientRect();
+          if (bottom > visible - 16) list.scrollBy({ top: bottom - visible / 2, behavior: 'smooth' });
+        }, 350);
+      }}
     >
       {@render children()}
     </div>
