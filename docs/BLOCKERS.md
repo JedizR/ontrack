@@ -53,10 +53,9 @@ Each entry: what to look at (URL or screenshot paths), what to look for, and whi
 - **Where:** https://ontrack-black.vercel.app on the iPhone, light and dark (close and reopen the tab). Before and after: branch `pr-assets`, `p1/`.
 - **Look for:** Today's hero, the Add sheet's Photo card, and the landing's hero, 02 Training, 05 Sources and closing call, against your example gradient. Do the dark gradients (slate and rust with violet accents) feel right or too muted? The brand colours sit in every gradient as an accent, as you asked.
 
-### L3: the top bar, the bending glass and the footer pull, on your iPhone
+### L3: superseded by L4
 
-- **Where:** https://ontrack-black.vercel.app signed out, in Safari (close and reopen the tab). Before and after, and two videos of the pull: branch `pr-assets`, `l3/`.
-- **Look for:** at the top, the status bar area shows the hero's sky, not a white bar, and the bar sits where it did; Sign in is the black pill; the glass is more blurred and the footer panels, source chips and mark tile bend the gradient at their edges; at the end of the page, drag up past the end and let go to open the footer (a short drag springs back), and it closes after you scroll back up.
+- Nothing to check. L4 replaced L3's top bar handling, its bending glass and the pull-open footer, at your request; check L4 above instead. Sign in stays the black pill.
 
 ### L2: the landing's glass and the photo gradients
 
