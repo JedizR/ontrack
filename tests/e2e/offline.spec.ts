@@ -23,6 +23,9 @@ async function openAt(page: Page, s: string, onboarded = true) {
   await expect(page.getByTestId('dock')).toBeVisible();
 }
 
+// the dev server has no service worker: this runs only against a build (E2E_BASE_URL)
+test.skip(!process.env.E2E_BASE_URL, 'needs a production build, see the top of the file');
+
 test('airplane mode: a cold start and every feature work offline, and sync within 10 s of reconnecting', async ({ page, context, browser }) => {
   test.slow();
   // no share sheet, so the export is a download; the photo notice already accepted

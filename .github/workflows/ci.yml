@@ -85,6 +85,13 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps webkit chromium
       - run: pnpm exec playwright test --shard=${{ matrix.shard }}/3
+      - name: offline pass against a production build (M9b)
+        if: matrix.shard == 1
+        run: |
+          pnpm build
+          pnpm vite preview --port 5297 --strictPort &
+          sleep 3
+          E2E_BASE_URL=http://localhost:5297 pnpm exec playwright test --project=offline
       - uses: actions/upload-artifact@v7
         if: failure()
         with:

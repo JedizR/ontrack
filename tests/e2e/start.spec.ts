@@ -8,6 +8,9 @@ import { chromium, expect, test, type Page } from '@playwright/test';
 import { SEED, seedAccount } from './helpers';
 import { addDays, weekdayOf } from '../../src/lib/model/dates';
 
+// the dev server has no service worker: this runs only against a build (E2E_BASE_URL)
+test.skip(!process.env.E2E_BASE_URL, 'needs a production build, see the top of the file');
+
 const DAYS = 365;
 const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Bangkok' }).format(new Date());
 const at = (date: string, time: string) => new Date(`${date}T${time}:00+07:00`).toISOString();
