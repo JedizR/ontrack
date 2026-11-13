@@ -19,7 +19,7 @@ test('a new visitor sees the landing page, and Build your plan starts onboarding
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Eat for the body you are training for.');
   for (const id of SECTIONS) await expect(page.getByTestId(id)).toBeAttached();
   // every feature shows a real screen of the app, each described
-  const shots = page.getByTestId('landing').locator('img:not([alt=""])'); // L2: each status bar repeats its screen's top, unnamed
+  const shots = page.getByTestId('landing').locator('img');
   await expect(shots).toHaveCount(9);
   for (const alt of await shots.evaluateAll((imgs) => imgs.map((i) => i.getAttribute('alt') ?? ''))) expect(alt.length).toBeGreaterThan(20);
   // the browser is the app: nothing asks to install it

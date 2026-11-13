@@ -9,16 +9,22 @@
   // the phone's height in cqw: the bezel twice (4.2), the status bar (12.6) and the 390 by 844 screen at 91.6 wide
   const tall = 8.4 + 12.6 + (91.6 * 844) / 390;
   const loading = $derived(eager ? 'eager' : 'lazy');
+  // the status bar continues the screen's own top: the colour of its first rows, read once the screenshot has loaded
+  let top = $state<string>();
+  function sample(e: Event) {
+    const img = e.currentTarget as HTMLImageElement;
+    const g = Object.assign(document.createElement('canvas'), { width: 1, height: 1 }).getContext('2d');
+    if (!g) return;
+    g.drawImage(img, 0, 0, img.naturalWidth, 4, 0, 0, 1, 1);
+    const [r, gr, b] = g.getImageData(0, 0, 1, 1).data;
+    top = `rgb(${r} ${gr} ${b})`;
+  }
 </script>
 
 <div class="@container {cls} {crop < 1 ? 'overflow-clip [mask-image:linear-gradient(to_bottom,black_75%,transparent)]' : ''}" style:aspect-ratio={crop < 1 ? `100 / ${(tall * crop).toFixed(1)}` : undefined}>
   <div class="bg-night ring-line-strong rounded-[17cqw] p-[4.2cqw] ring-1 ring-inset">
     <div class="bg-surface-2 overflow-clip rounded-[12.8cqw]">
-      <!-- the status bar continues the screen's own top: its first rows, stretched and softened -->
-      <div class="text-night relative h-[12.6cqw] overflow-clip" aria-hidden="true">
-        <!-- a transform and a backdrop blur, not scale or filter, so the reduced motion check reads the phone as at rest -->
-        <img {src} alt="" width="390" height="844" {loading} fetchpriority={eager ? 'high' : 'auto'} decoding="async" class="absolute inset-x-0 top-0 h-auto w-full origin-top [transform:scaleY(20)]" />
-        <span class="absolute inset-0 backdrop-blur-[4px]"></span>
+      <div class="text-night relative h-[12.6cqw]" style:background-color={top} aria-hidden="true">
         <span class="num absolute top-[6.9cqw] left-[16cqw] -translate-y-1/2 text-[4cqw] leading-none font-semibold">{t.landing.phoneTime}</span>
         <span class="bg-night absolute top-[2.6cqw] left-1/2 h-[8.7cqw] w-[29.4cqw] -translate-x-1/2 rounded-full"></span>
         <svg viewBox="0 0 70 13" class="absolute top-[6.9cqw] right-[7.5cqw] w-[16.5cqw] -translate-y-1/2" fill="currentColor">
@@ -29,7 +35,7 @@
         </svg>
       </div>
       <!-- the screenshots are a 390 by 844 phone at 1.6 times: the size gives the box its shape before they load -->
-      <img {src} {alt} width="390" height="844" {loading} fetchpriority={eager ? 'high' : 'auto'} decoding="async" class="block h-auto w-full" />
+      <img {src} {alt} width="390" height="844" {loading} fetchpriority={eager ? 'high' : 'auto'} decoding="async" onload={sample} class="block h-auto w-full" />
     </div>
   </div>
 </div>
