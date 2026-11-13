@@ -37,8 +37,10 @@ export async function befriend(page: Page, a: Who, b: Who) {
 
 const at = (date: string, time: string) => new Date(`${date}T${time}:00+07:00`).toISOString();
 const PLATE = readFileSync('tests/fixtures/meal.jpg').toString('base64');
-/** The test plate as a 320 px thumbnail turned round the colour wheel by `hue` degrees, so pins look like different meals. */
+/** The test plate as a 320 px thumbnail turned round the colour wheel by `hue` degrees, so pins look like different meals.
+ *  The landing page's shots (L2) show the owner's pad kra pao on every pin instead, as it is. */
 async function plate(page: Page, hue: number) {
+  if (process.env.LANDING_SHOTS) return readFileSync('tests/fixtures/krapao.jpg');
   if (!hue) return readFileSync('tests/fixtures/meal.jpg');
   const bytes = await page.evaluate(async ([b64, deg]) => {
     const img = new Image();

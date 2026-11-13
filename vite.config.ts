@@ -55,7 +55,8 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,woff2,png,svg,ico,webmanifest}'],
+        // L2: the app's photo gradients and their grain come along offline; the landing page's stay on the network
+        globPatterns: ['**/*.{js,css,html,woff2,png,svg,ico,webmanifest}', '**/{haze,feature,grain}-*.webp'],
         // the gallery chunk exists on previews only and is never needed offline; MapLibre (S1b, about 1.6 MB with its
         // worker) loads when the map first opens, and the map needs the network for its tiles anyway
         globIgnores: ['**/Gallery-*', '**/maplibre-gl-*'],
@@ -75,6 +76,7 @@ export default defineConfig({
     __GALLERY__: JSON.stringify(process.env.VERCEL_ENV !== 'production'),
   },
   resolve: { alias: { $lib: fileURLToPath(new URL('./src/lib', import.meta.url)) } },
-  build: { target: 'es2022' },
+  // L2: the photo gradients stay files, never data URLs inside the one stylesheet every screen loads
+  build: { target: 'es2022', assetsInlineLimit: (file: string) => (file.includes('/design/gradients/') ? false : undefined) },
   test: { include: ['tests/unit/**/*.test.ts'] },
 });

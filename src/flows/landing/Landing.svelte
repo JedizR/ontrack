@@ -89,10 +89,10 @@
   const FRIENDS = [UserPlus, MapPin, Lock].map((icon, i) => ({ icon, ...L.friends.points[i] }));
   // each number on the page cites the constant's own source, so the cards cannot drift from the engine
   const SOURCED = [
-    { label: L.sources.resting, source: SOURCES[C.mifflin.source]?.short, wash: 'bg-(image:--wash-ink) text-on-night' },
-    { label: L.sources.training, source: SOURCES[C.metStrength.source]?.short, wash: 'bg-(image:--wash-blue) text-on-night' },
-    { label: L.sources.gain, source: SOURCES[C.gainPace.source]?.short, wash: 'bg-(image:--wash-magenta) text-on-night' },
-    { label: L.sources.thai, source: L.sources.thaiSource, wash: 'bg-(image:--wash-lavender) text-night' },
+    { label: L.sources.resting, source: SOURCES[C.mifflin.source]?.short, wash: '[background:var(--wash-ink)] text-on-night' },
+    { label: L.sources.training, source: SOURCES[C.metStrength.source]?.short, wash: '[background:var(--wash-blue)] text-on-night' },
+    { label: L.sources.gain, source: SOURCES[C.gainPace.source]?.short, wash: '[background:var(--wash-magenta)] text-on-night' },
+    { label: L.sources.thai, source: L.sources.thaiSource, wash: '[background:var(--wash-lavender)] text-night' },
   ];
 
   // the floating Build your plan: once the hero's action has scrolled away, until the closing call is on screen
@@ -122,19 +122,20 @@
 {/snippet}
 
 <div class="bg-surface text-ink relative min-h-svh overflow-x-clip" data-testid="landing">
-  <!-- the bar: OneFin's floating glass bar with the wordmark and the way back in -->
+  <!-- the bar: OneFin's floating bar in Liquid Glass (L2), with the wordmark and the way back in -->
   <header class="bar fixed inset-x-0 top-0 z-30 px-4 pt-[calc(env(safe-area-inset-top)+8px)]">
     <!-- U1b: Sign in (sm, 36) sits 8 inside the 52 high bar on three sides, so its 16 corners nest in the bar's 24 -->
-    <nav class="glass-bar shadow-float mx-auto flex h-13 max-w-[1200px] items-center justify-between rounded-md pr-2 pl-5" aria-label={t.app.name}>
+    <nav class="liquid-bar mx-auto flex h-13 max-w-[1200px] items-center justify-between rounded-md pr-2 pl-5" aria-label={t.app.name}>
       <Wordmark class="h-5 w-fit" />
       <Button variant="neutral" size="sm" onclick={signin} data-testid="landing-signin">{L.signin}</Button>
     </nav>
   </header>
 
   <main>
-    <!-- the hero: OneFin's sky, the promise word by word, the action popping in, Today rising with two chips -->
+    <!-- the hero: OneFin's sky as a photo gradient with grain (L2), the promise word by word, the action popping in, Today
+         rising in an iPhone 16 with two glass chips -->
     <section class="relative isolate px-4 pt-[calc(env(safe-area-inset-top)+120px)] lg:pt-44" data-testid="landing-hero">
-      <div class="absolute inset-0 -z-10 bg-(image:--grad-sky)" aria-hidden="true"></div>
+      <div class="grained absolute inset-0 -z-10 [background:var(--grad-sky)]" aria-hidden="true"></div>
       <div class="mx-auto grid max-w-[1200px] items-center gap-12 lg:grid-cols-[1.15fr_0.85fr] lg:gap-8">
         <div class="text-center lg:pb-24 lg:text-left">
           <h1 class="text-poster text-balance">
@@ -148,14 +149,15 @@
         </div>
         <div class="relative mx-auto w-[min(70vw,300px)] lg:w-[min(100%,340px)]">
           <div class="rise"><Phone src={todayShot} alt={L.alt.today} eager crop={0.62} /></div>
-          <!-- the chips float over the sky, as OneFin's data cards do (pick 15, 16): glass, tilted, flying in -->
+          <!-- the chips float over the sky and the phone, as OneFin's "Direct pay" and "Paid" (glass-03): white Liquid Glass,
+               tilted, flying in -->
           <div class="drift absolute top-[18%] -left-[12%] z-10" style:--speed="0.12" aria-hidden="true">
-            <span class="bg-on-night text-night shadow-card fly text-callout flex -rotate-6 items-center gap-2 rounded-full py-1 pr-4 pl-1 font-semibold" style:--fx="-120px" style:--fy="-60px" style:--fr="-30deg" style:--d="0.5s">
+            <span class="liquid-white text-night fly text-callout flex -rotate-6 items-center gap-2 rounded-full py-1 pr-4 pl-1 font-semibold" style:--fx="-120px" style:--fy="-60px" style:--fr="-30deg" style:--d="0.5s">
               <i class="bg-accent text-on-accent grid size-8 place-items-center rounded-full"><TrainIcon size={18} /></i>{t.today.trainingDay}
             </span>
           </div>
           <div class="drift absolute top-[48%] -right-[10%] z-10" style:--speed="0.24" aria-hidden="true">
-            <span class="bg-on-night text-night shadow-card fly text-callout flex rotate-[9deg] items-center gap-2 rounded-full py-1 pr-4 pl-1 font-semibold" style:--fx="120px" style:--fy="-80px" style:--fr="30deg" style:--d="0.7s">
+            <span class="liquid-white text-night fly text-callout flex rotate-[9deg] items-center gap-2 rounded-full py-1 pr-4 pl-1 font-semibold" style:--fx="120px" style:--fy="-80px" style:--fr="30deg" style:--d="0.7s">
               <i class="bg-success text-night grid size-8 place-items-center rounded-full"><Check size={16} strokeWidth={3} /></i>{t.today.onTrack}
             </span>
           </div>
@@ -176,12 +178,13 @@
       </p>
     </section>
 
-    <!-- 01 Logging: light grey cards (pick 01), the first the one featured violet card (pick 02), each a real screen -->
+    <!-- 01 Logging: light grey cards (pick 01), the first the one featured card on the feature photo gradient (pick 02, L2),
+         each a real screen -->
     <section class="px-4 pt-8 pb-24" data-testid="landing-log">
       {@render head('01', L.log.tag, L.log.title, L.log.lead)}
       <div class="mx-auto mt-12 grid max-w-[1200px] gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {#each LOG as c, i (i)}
-          <article class="card flex flex-col items-center overflow-clip rounded-xl px-6 pt-8 text-center {i === 0 ? 'bg-accent text-on-accent' : 'bg-surface-2'}" use:inview data-reveal style:--i={i % 2}>
+          <article class="card flex flex-col items-center overflow-clip rounded-xl px-6 pt-8 text-center {i === 0 ? 'feature text-on-accent' : 'bg-surface-2'}" use:inview data-reveal style:--i={i % 2}>
             <h3 class="text-lead">{c.title}</h3>
             <p class="text-callout mt-2 mb-6 max-w-[18rem] {i === 0 ? 'text-on-accent' : 'text-ink-2'}">{c.line}</p>
             <!-- one crop for all four, so the phones start level: enough to reach each sheet's main controls -->
@@ -194,7 +197,7 @@
     <!-- 02 Training: a dark section with a violet glow (pick 06, 12); dark cards hold lavender panels and settle as they come -->
     <section class="px-2 sm:px-4" data-testid="landing-train">
       <div data-theme="dark" class="bg-canvas text-ink relative isolate overflow-clip rounded-xl px-4 pt-20 pb-24">
-        <div class="absolute inset-x-0 bottom-0 -z-10 h-3/4 bg-(image:--glow)" aria-hidden="true"></div>
+        <div class="glow absolute inset-x-0 bottom-0 -z-10 h-3/4 translate-y-1/2" aria-hidden="true"></div>
         {@render head('02', L.train.tag, L.train.title, L.train.lead)}
         <div class="mx-auto mt-12 grid max-w-[1000px] gap-4 md:grid-cols-2 md:gap-6">
           {#each TRAIN as c, i (i)}
@@ -215,20 +218,20 @@
       </div>
     </section>
 
-    <!-- 03 Check-in: a lavender panel with rings and tilted white cards (pick 07), and its 1-2-3 stepper -->
+    <!-- 03 Check-in: a lavender photo gradient with rings and tilted glass cards (pick 07, glass-02), and its 1-2-3 stepper -->
     <section class="px-4 pt-24 pb-28" data-testid="landing-checkin">
       {@render head('03', L.checkin.tag, L.checkin.title, L.checkin.lead)}
       <div class="mx-auto mt-12 grid max-w-[1100px] items-center gap-10 lg:grid-cols-2 lg:gap-16">
-        <div class="bg-lavender text-night relative isolate flex justify-center overflow-clip rounded-xl px-6 pt-12">
+        <div class="grained text-night relative isolate flex justify-center overflow-clip rounded-xl px-6 pt-12 [background:var(--grad-lavender)]">
           {#each [1, 0.72, 0.44] as r (r)}
             <span class="border-on-night/60 absolute top-[38%] left-1/2 -z-10 aspect-square -translate-1/2 rounded-full border" style:width="{r * 100}%" aria-hidden="true"></span>
           {/each}
           <Phone src={checkinShot} alt={L.alt.checkin} crop={0.8} class="w-[min(100%,250px)]" />
           <!-- decoration in the check-in's own words: its first step and what vector F's account hears -->
-          <span class="bg-on-night text-night shadow-card text-callout absolute top-[14%] left-3 max-w-[11rem] -rotate-6 rounded-md px-4 py-3 text-left" aria-hidden="true">
+          <span class="liquid-white text-night text-callout absolute top-[14%] left-3 max-w-[11rem] -rotate-6 rounded-md px-4 py-3 text-left" aria-hidden="true">
             <i class="bg-accent mb-1 block size-2 rounded-full"></i>{t.checkin.steps[0]}
           </span>
-          <span class="bg-on-night text-night shadow-card text-callout absolute right-3 bottom-[18%] max-w-[12rem] rotate-6 rounded-md px-4 py-3 text-left" aria-hidden="true">
+          <span class="liquid-white text-night text-callout absolute right-3 bottom-[18%] max-w-[12rem] rotate-6 rounded-md px-4 py-3 text-left" aria-hidden="true">
             <i class="bg-accent mb-1 block size-2 rounded-full"></i>{t.checkin.pace.gain.raise}
           </span>
         </div>
@@ -273,8 +276,8 @@
         {@render head('05', L.sources.tag, L.sources.title, L.sources.lead)}
         <div class="mx-auto mt-12 grid max-w-[1200px] gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {#each SOURCED as c, i (i)}
-            <article class="settle flex min-h-52 flex-col justify-between gap-8 rounded-lg p-6 {c.wash}" style:--tilt="{i % 2 ? 3 : -3}deg">
-              <span class="grid size-12 place-items-center rounded-sm {i === 3 ? 'bg-accent text-on-accent' : 'bg-on-night/15'}" aria-hidden="true"><BookOpen size={22} /></span>
+            <article class="settle grained flex min-h-52 flex-col justify-between gap-8 rounded-lg p-6 {c.wash}" style:--tilt="{i % 2 ? 3 : -3}deg">
+              <span class="grid size-12 place-items-center rounded-sm {i === 3 ? 'bg-accent text-on-accent' : 'liquid'}" aria-hidden="true"><BookOpen size={22} /></span>
               <div>
                 <p class="text-callout font-medium opacity-80">{c.label}</p>
                 <p class="text-lead mt-1 text-balance">{c.source}</p>
@@ -291,39 +294,42 @@
         <h2 class="text-poster flex flex-col items-center">
           {#each L.cta.words as w, i (i)}<span class="slide block {i === 1 ? 'text-on-accent-soft' : ''}" style:--from="{[-40, -70, -25][i]}vw">{w}</span>{/each}
         </h2>
-        <div class="bg-accent text-on-accent relative mx-auto mt-10 flex max-w-[34rem] flex-col items-center rounded-xl px-6 py-10">
-          <span class="glass mb-6 grid size-16 place-items-center rounded-md [&>svg]:size-11" aria-hidden="true">{@html mark}</span>
+        <div class="feature text-on-accent relative mx-auto mt-10 flex max-w-[34rem] flex-col items-center rounded-xl px-6 py-10">
+          <span class="liquid mb-6 grid size-16 place-items-center rounded-md [&>svg]:size-11" aria-hidden="true">{@html mark}</span>
           <p class="text-lead max-w-[24rem] text-pretty">{L.cta.line}</p>
           <Button variant="primary" size="lg" onclick={start} class="mt-6" data-testid="landing-start-end">{L.start}</Button>
           <p class="text-caption mt-1">{L.noAccount}</p>
         </div>
-        <p class="text-body text-ink-2 mt-6">{L.cta.account} <button type="button" class="text-accent-ink min-h-11 px-1 font-semibold" onclick={signin}>{L.signin}</button></p>
+        <p class="text-body text-ink-2 mt-6">{L.cta.account} <button type="button" class="tap text-accent-ink active:bg-surface-2 min-h-11 rounded-xs px-1 font-semibold" onclick={signin}>{L.signin}</button></p>
       </section>
 
-      <!-- the footer (pick 09): the giant wordmark in the violet glow, the back to top tile, nested violet panels -->
+      <!-- the footer (pick 09, glass-01): the giant wordmark over the violet glow, the back to top tile, glass panels -->
       <footer class="relative px-2 pt-16 sm:px-4">
-        <!-- the glow's brightest point sits at the wordmark's foot: 64 above it, and the wordmark is a sixth of the width -->
-        <div class="absolute inset-x-0 top-0 -z-10 h-[calc(4rem+18vw)] max-h-[22rem] bg-(image:--glow)" aria-hidden="true"></div>
         <div class="text-accent-ink mx-auto max-w-[1200px] px-2 opacity-40" aria-hidden="true"><Wordmark class="aspect-[61/10] w-full" /></div>
         <div class="relative z-10 -mt-6 flex justify-center">
-          <button type="button" class="glass text-ink grid size-12 place-items-center rounded-sm active:scale-[0.97]" onclick={top} aria-label={L.footer.top}><ArrowUp size={22} /></button>
+          <button type="button" class="glass tap text-ink active:bg-surface-2 grid size-12 place-items-center rounded-sm" onclick={top} aria-label={L.footer.top}><ArrowUp size={22} /></button>
         </div>
-        <div class="glass rise-in mx-auto mt-4 max-w-[1200px] rounded-t-sheet p-2 pb-0" use:inview={0.05} data-reveal>
+        <div class="relative mt-4">
+          <!-- the glow rises from where the panels begin (the owner's footer-glow-bug): its brightest middle on their top
+               edge, spreading behind them and up into the wordmark, the canvas at every edge so it shows no seam -->
+          <div class="glow absolute -inset-x-2 top-0 sm:-inset-x-4 -z-10 h-[clamp(18rem,40vw,36rem)] -translate-y-1/2" data-testid="landing-glow" aria-hidden="true"></div>
+        <div class="liquid rise-in mx-auto max-w-[1200px] rounded-t-sheet p-2 pb-0" use:inview={0.05} data-reveal data-testid="landing-panels">
           <div class="grid gap-2 md:grid-cols-2">
-            <div class="text-on-night rounded-lg bg-(image:--grad-panel) p-6">
+            <div class="liquid-violet text-on-night rounded-lg p-6">
               <h2 class="text-heading">{L.footer.start}</h2>
               <ul class="mt-4 flex flex-col items-start">
-                <li><button type="button" class="text-body min-h-11 font-medium" onclick={start}>{L.start}</button></li>
-                <li><button type="button" class="text-body min-h-11 font-medium" onclick={signin}>{L.signin}</button></li>
+                <li><button type="button" class="tap text-body active:bg-on-night/15 -mx-2 min-h-11 rounded-xs px-2 font-medium" onclick={start}>{L.start}</button></li>
+                <li><button type="button" class="tap text-body active:bg-on-night/15 -mx-2 min-h-11 rounded-xs px-2 font-medium" onclick={signin}>{L.signin}</button></li>
               </ul>
             </div>
-            <div class="text-on-night rounded-lg bg-(image:--grad-panel) p-6">
+            <div class="liquid-violet text-on-night rounded-lg p-6">
               <h2 class="text-heading">{L.footer.know}</h2>
               <p class="text-body mt-4">{t.screening.disclaimer}</p>
               <p class="text-body mt-2">{L.footer.concept}</p>
             </div>
           </div>
           <p class="text-caption text-ink-2 flex items-center justify-center px-4 pt-5 pb-[max(20px,env(safe-area-inset-bottom))]">{L.footer.year}</p>
+        </div>
         </div>
       </footer>
       </div>
@@ -332,13 +338,24 @@
 
   <!-- Build your plan, floating once the hero's action has gone by: the ink pill on the dock's glass -->
   <div class="float-cta fixed inset-x-0 bottom-0 z-30 px-4 pb-[max(12px,env(safe-area-inset-bottom))]" data-shown={floating || undefined} inert={!floating} data-testid="landing-float">
-    <div class="glass-bar shadow-float mx-auto max-w-sm rounded-md p-1">
+    <div class="liquid-bar mx-auto max-w-sm rounded-md p-1">
       <Button variant="primary" size="lg" full onclick={start}>{L.start}</Button>
     </div>
   </div>
 </div>
 
 <style>
+  /* the dark sections' glow: brightest at its middle, faded to nothing at every edge by an elliptical mask, so neither
+     the grain nor the colour ever starts at a line (the owner's footer-glow-bug) */
+  .glow {
+    background: var(--glow);
+    background-blend-mode: soft-light, normal, normal;
+    mask-image: radial-gradient(closest-side, black 40%, transparent);
+  }
+  /* every tap has a pressed state (PRD section 8, DESIGN.md section 10): the fill steps in the markup, and the face scales
+     to 0.97 over --d-press when motion is welcome */
+  .tap { transition: background-color var(--d-press), scale var(--d-press); }
+  @media (prefers-reduced-motion: no-preference) { .tap:active { scale: 0.97; } }
   /* the lead sits on the sky's violet top: full ink, not ink-2, keeps it at 4.5 to 1 */
   .hero-lead { color: var(--ink); }
 

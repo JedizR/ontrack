@@ -29,6 +29,8 @@ export const en = {
     signin: 'Sign in',
     start: 'Build your plan',
     noAccount: 'No account until you save it.',
+    /** the time in the phones' status bars, as Apple's own pictures show it */
+    phoneTime: '9:41',
     promise: 'Eat for the body *you are training for.*',
     lead: 'Your daily calories and protein, from published equations and how you train. Raised on training days, and checked against your weigh-ins every week.',
     statement: 'Ontrack builds your target from *how you train*, logs a meal from *one photo*, and corrects it from *your own weigh-ins* every week.',

@@ -159,6 +159,11 @@
 /* The hero's one gradient region: the aurora haze. One per screen, never on a button, row or text. */
 @utility haze {
   background: var(--grad-hero);
+  @apply grained;
+}
+/* L2: the photo gradients' first layer is the shared grain, laid on with soft-light; every layer under it as painted */
+@utility grained {
+  background-blend-mode: soft-light, normal, normal, normal, normal, normal;
 }
 /* A text field: 56 high on surface-2 at radius 16, a 2 px ink ring on focus. */
 @utility input-field {
@@ -179,6 +184,37 @@
   -webkit-backdrop-filter: var(--blur-glass);
   backdrop-filter: var(--blur-glass);
   @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { background: var(--glass-solid); }
+}
+/* L2, the landing page only: Liquid Glass, iOS 26's "regular" material. The blur lifts and saturates what is behind, the
+   fill tints it, the rim catches the light top left and, fainter, bottom right. No refraction: Safari draws no SVG
+   displacement inside backdrop-filter. Never on a button (the rim is an inner light): buttons over it keep `glass`.
+   Without blur the solid fill stands in. */
+@utility liquid {
+  background: var(--liquid-fill);
+  box-shadow: var(--liquid-rim), var(--shadow-glass);
+  -webkit-backdrop-filter: var(--liquid-blur);
+  backdrop-filter: var(--liquid-blur);
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { background: var(--liquid-solid); }
+}
+/* the same material tinted violet, as iOS tints glass: white words on it (contrast.test.ts) */
+@utility liquid-violet {
+  @apply liquid;
+  background: var(--liquid-violet);
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { background: var(--liquid-violet-solid); }
+}
+/* the material on a bar that content scrolls under (the landing's bar and its floating action): the dock's fill, so words
+   on it hold 4.5 to 1 over anything, with the liquid rim */
+@utility liquid-bar {
+  @apply liquid;
+  background: var(--bar-bg);
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { background: var(--bar-solid); }
+}
+/* white in both themes: night words on it, over the phones' light screens and the lavender field */
+@utility liquid-white {
+  @apply liquid;
+  background: var(--liquid-white);
+  box-shadow: var(--liquid-white-rim), var(--shadow-card);
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { background: var(--on-night); }
 }
 /* The dock: glass with more fill, since rows scroll under it. */
 @utility glass-bar {
@@ -219,6 +255,7 @@
 /* U1b, the owner's request: the screen's one featured card (the Add sheet's Photo) */
 @utility feature {
   background: var(--grad-feature);
+  @apply grained;
 }
 /* Fade in and up once, on the first paint of a session (Today's cards). Reduced motion shows the end state. */
 @utility appear {

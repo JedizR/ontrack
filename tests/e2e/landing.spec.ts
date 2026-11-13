@@ -1,5 +1,6 @@
 // L1, PRD F18: the landing page a signed-out visitor with no onboarding draft sees (SCREENS.md section 3). Each test is a
 // fresh browser in its own mock space.
+import { readFileSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';
 import { open, openFresh, seedAccount, signIn, space, startPlan, toLanding, useSpace, withPrefs, choose } from './helpers';
 
@@ -78,6 +79,17 @@ test('a visitor with a draft skips it, back on the question they left', async ({
 
 test.describe('reduced motion', () => {
   test.use({ reducedMotion: 'reduce' });
+  // L2, the owner's footer-glow-bug: the glow is brightest where the panels begin, not inside the wordmark's band, and
+  // runs on behind them, so no edge of it shows
+  test('the footer glow rises from the panels', async ({ page }) => {
+    await openFresh(page);
+    const panels = page.getByTestId('landing-panels');
+    await panels.scrollIntoViewIfNeeded();
+    const glow = (await page.getByTestId('landing-glow').boundingBox())!;
+    const top = (await panels.boundingBox())!.y;
+    expect(Math.abs(glow.y + glow.height / 2 - top)).toBeLessThanOrEqual(2);
+    expect(await page.getByTestId('landing-glow').evaluate((e) => getComputedStyle(e).backgroundImage)).toMatch(/glow-?[\w-]*\.webp/);
+  });
   test('everything shows at once, without animation', async ({ page }) => {
     await openFresh(page);
     const still = () => page.evaluate(() => ({
@@ -87,10 +99,61 @@ test.describe('reduced motion', () => {
         .filter((el) => { const cs = getComputedStyle(el); return cs.opacity !== '1' || cs.scale !== 'none' || cs.filter !== 'none'; })
         .map((el) => el.textContent?.trim().slice(0, 20)),
     }));
-    // polled: the page's first frame can still list animations that end at once under reduced motion
-    await expect.poll(still).toEqual({ animations: 0, hidden: [] });
+    // polled: the page's first frame can still list animations that end at once under reduced motion; CI's runner draws
+    // without a GPU, and L2's glass and grain make that first frame slow there (once 6 s), so it gets 15
+    await expect.poll(still, { timeout: 15_000 }).toEqual({ animations: 0, hidden: [] });
     await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
     await toLanding(page);
     expect(await still()).toEqual({ animations: 0, hidden: [] });
   });
+});
+
+// L2: every photo gradient keeps its words at 4.5 to 1 (3 to 1 for the hero's large violet words), measured on the images
+// themselves in 8 px blocks, as the eye reads through the grain. The CSS gradients beneath are in contrast.test.ts.
+test('the photo gradients keep their words readable', async ({ page }) => {
+  const words = { night: '#121214', ink2: '#525252', success: '#006644', violet: '#381ac9', white: '#ffffff', white80: '#cccccc', violetDark: '#a9a9ff' };
+  const CASES: [string, (keyof typeof words)[], (keyof typeof words)[]][] = [
+    // image, words that need 4.5 to 1, words that need 3 to 1
+    ['haze-light', ['night', 'ink2', 'success'], []],
+    ['haze-dark', ['white', 'white80'], []],
+    ['feature-light', ['white'], []],
+    ['feature-dark', ['white'], []],
+    ['sky-light', ['night'], ['violet']],
+    ['sky-dark', ['white'], ['violetDark']],
+    ['panel', ['night'], []],
+    ['wash-ink', ['white'], []],
+    ['wash-blue', ['white'], []],
+    ['wash-magenta', ['white'], []],
+    ['wash-lavender', ['night'], []],
+  ];
+  await page.goto('about:blank');
+  for (const [name, strong, large] of CASES) {
+    const b64 = readFileSync(`design/gradients/${name}.webp`).toString('base64');
+    const [lo, hi] = await page.evaluate(async (src) => {
+      const img = new Image();
+      img.src = `data:image/webp;base64,${src}`;
+      await img.decode();
+      const w = Math.floor(img.width / 8), h = Math.floor(img.height / 8);
+      const c = Object.assign(document.createElement('canvas'), { width: w, height: h });
+      const g = c.getContext('2d')!;
+      g.imageSmoothingQuality = 'high';
+      g.drawImage(img, 0, 0, w, h);
+      const d = g.getImageData(0, 0, w, h).data;
+      const lin = (v: number) => ((v /= 255) <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4);
+      let lo = 1, hi = 0;
+      for (let i = 0; i < d.length; i += 4) {
+        const l = 0.2126 * lin(d[i]) + 0.7152 * lin(d[i + 1]) + 0.0722 * lin(d[i + 2]);
+        lo = Math.min(lo, l); hi = Math.max(hi, l);
+      }
+      return [lo, hi];
+    }, b64);
+    const lum = (hex: string) => {
+      const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).map((v) => (v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
+      return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    };
+    // the worst block for a word is the one closest to it in lightness
+    const worst = (hex: string) => { const l = lum(hex); if (l >= lo && l <= hi) return 1; return Math.min((Math.max(l, lo) + 0.05) / (Math.min(l, lo) + 0.05), (Math.max(l, hi) + 0.05) / (Math.min(l, hi) + 0.05)); };
+    for (const w of strong) expect(worst(words[w]), `${w} on ${name}`).toBeGreaterThanOrEqual(4.5);
+    for (const w of large) expect(worst(words[w]), `${w} on ${name}`).toBeGreaterThanOrEqual(3);
+  }
 });

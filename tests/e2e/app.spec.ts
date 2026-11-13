@@ -187,7 +187,8 @@ test('the theme and text size change from the gallery and are remembered', async
 // span) or their ::before and ::after; a soft drop that falls below the button, or a hairline ring, is all the depth a
 // button may have. Smaller things inside a button are content, not its face: that is how Today's hero card, a button
 // holding the screen's one haze panel, passes (DESIGN.md section 6). U1b, the owner's request: the screen's one featured
-// card (`data-featured`, the Add sheet's Photo) may fill with the feature gradient, and nothing else; a second featured
+// card (`data-featured`, the Add sheet's Photo) may fill with the feature gradient (L2: its photo gradient under the grain,
+// the CSS one beneath), and nothing else; a second featured
 // card on the screen fails, and so does a bevel or glow on it.
 const unflat = (page: import('@playwright/test').Page) => page.evaluate(() => {
   const layers = (v: string) => (v === 'none' ? [] : v.split(/,(?![^(]*\))/));
@@ -215,7 +216,7 @@ const unflat = (page: import('@playwright/test').Page) => page.evaluate(() => {
     for (const f of faces) for (const pseudo of [null, '::before', '::after']) {
       const cs = getComputedStyle(f, pseudo);
       if (pseudo && cs.content === 'none') continue;
-      const fill = cs.backgroundImage !== 'none' && !(f === featured[0] && !pseudo && /^linear-gradient|^radial-gradient/.test(cs.backgroundImage));
+      const fill = cs.backgroundImage !== 'none' && !(f === featured[0] && !pseudo && /^url\(|^linear-gradient|^radial-gradient/.test(cs.backgroundImage));
       if (fill || cs.textShadow !== 'none' || layers(cs.boxShadow).some(glow))
         bad.push(`${btn.getAttribute('aria-label') ?? btn.textContent?.trim().slice(0, 30)}${pseudo ?? ''}: ${cs.backgroundImage} ${cs.boxShadow}`);
     }
