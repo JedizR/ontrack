@@ -52,7 +52,12 @@ const SCREENS = [['today', 'tab-0'], ['train', 'tab-1'], ['progress', 'tab-2']] 
 /** pages opened by path: the component gallery and Today composed from it */
 const PAGES = [['gallery', '/gallery'], ['today-composed', '/gallery/today']] as const;
 
+/** Every finite animation has ended: a lazy tab that loads slowly under load is still sliding in 40 px after a fixed wait. */
+const settled = (page: Page) => page.evaluate(() =>
+  Promise.all(document.getAnimations().filter((a) => a.effect?.getComputedTiming().endTime !== Infinity).map((a) => a.finished.catch(() => {}))));
+
 async function checkPage(page: Page, name: string, dir: string) {
+  await settled(page);
   expect(await overflow(page), `${name}: horizontal overflow`).toEqual([]);
   const header = page.getByTestId('header');
   if (await header.count()) expect(await header.evaluate((h) => h.scrollWidth - h.clientWidth), `${name}: header`).toBeLessThanOrEqual(1);
