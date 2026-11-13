@@ -24,6 +24,7 @@ Ten milestones and eleven the owner added (D1, N1, N2, B1, D2, N3, T1, O1, L1, S
 | S1 | Friends, profiles and the food map | Friends, a profile with an optional program, shared meal photos on a map | A second account as a friend |
 | U1 | Feel and polish | The owner's iPhone pass fixed, and motion, feedback and satisfaction app wide | Using it for a day on the iPhone |
 | L2 | Landing glass and photo gradients | Liquid glass throughout the landing page, gradients made from photos, a real iPhone 16 frame | Looking at it on desktop and on the iPhone |
+| L3 | Landing glass that bends, and Safari's top bar | Glass that blurs more and warps at its edges, no white bar above the page, an ink Sign in | Looking at it on the iPhone |
 | M9 | Hardening and release | Settings, export, accessibility, speed, security, production | Full device check |
 
 After M8 the order is N1, N2, B1, D2, N3, T1, O1, L1, S1, then M9. D2 comes straight after B1 so every later screen is built on the refined look. It follows the owner's MoSCoW and RICE prioritization: B1 is Must (the owner made barcode scanning a main feature); N1, N2, N3, T1 and L1 are Should, with N2 the highest RICE score of the features not yet built, (high value for little effort), S1 is Could, and M9 hardens everything last. O1 comes after N2 and T1 so onboarding can personalize with supplements, the faster pace and hybrid templates, and before L1 because the landing page leads into it.
@@ -114,6 +115,17 @@ If the Figma MCP cannot open a community file without its link, record "Needs yo
 
 Gate: `landing.spec.ts` and reduced motion green; initial JavaScript unchanged (the landing is lazy); the landing chunk and its images within a budget stated in the pull request; screenshots at 1440 desktop and 390 phone, light and dark; one critic round against the references.
 Owner checks: the landing on desktop and on the iPhone.
+
+## L3 Landing glass that bends, and Safari's top bar (the owner's iPhone pass, 13 November, after L2)
+
+References: `safari-top-white-bar.jpg` in `/Users/admin/destination/ontrack-design/feedback/2026-11-13-landing/`, and L2's pull request screenshots.
+
+1. The landing's top "Sign in" is the ink pill: black with white words (white with ink in dark).
+2. No white bar above the page in Safari on iOS: the status bar area shows the colour at the top of the screen (the hero's sky on the landing, the page elsewhere). Safari 26 ignores `theme-color` and samples the page's own background and what sits at the top, so the page background and the hero extend under the top safe area (`viewport-fit=cover` is set), while the nav keeps its place below the status bar (`env(safe-area-inset-top)`).
+3. Liquid glass that is liquid: more blur, and what is behind warps a little at the glass's edges, as in iOS 26. Safari draws no SVG displacement inside `backdrop-filter`, so over the landing's fixed images (the gradients) draw the bend with a lens layer (the same image, scaled and blurred, aligned to the background and masked to the rim); where the browser supports displacement, use it; elsewhere the stronger blur and rim. Keep it light on the GPU (CI's WebKit has none).
+
+Gate: `landing.spec.ts`, reduced motion and the stress matrix green; the press check covers the landing; screenshots at 390 and 1440, light and dark, against L2's; one critic round.
+Owner checks: the landing in Safari on the iPhone: the top bar, the glass bending at its edges.
 
 ## M9 Hardening and release
 
