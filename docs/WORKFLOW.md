@@ -64,7 +64,7 @@ Prefer a CLI to an MCP server when both can do the job. Keep the list of connect
 2. Look at it in the browser at 390 by 844 through the Playwright CLI while building.
 3. Add its states to `tests/e2e/screens.spec.ts`.
 4. Run the `verify-ui` skill: screenshots, the stress matrix, then the `design-critic` against the rubric.
-5. Fix rule failures. Stop after three rounds.
+5. Fix rule failures. Stop after two rounds.
 6. At the milestone gate the owner looks at it on the iPhone. That is the only check of taste. A passing rubric means no rule is broken, not that it is good.
 
 When the owner sends a screenshot or a recording with a complaint, reproduce it in a test first where possible, then fix it, so it cannot come back.
@@ -74,7 +74,12 @@ When the owner sends a screenshot or a recording with a complaint, reproduce it 
 - Copy and edit instead of reading and retyping. Generate with CLIs.
 - Read the lines you need. Search before opening. Do not re-read a file you have just written.
 - Run one test file while working and the whole suite at the end.
-- Keep images out of the main context. Review screenshots in the critic, and open at most two yourself.
+- Keep images out of the main context. Review screenshots in the critic, and open at most two yourself, downscaled (`sips -Z 900`).
+- The critic sees only the screens a change touched, at 390 in both themes at scale 1. The SE and the largest text are judged by the stress test's numbers, not by eye, unless the stress run flags them.
+- Print the tail of a command, never a whole run: `2>&1 | tail -n 20`.
+- A brief names files, sections and line ranges; it does not paste docs.
+- Watch CI in the background and wait for the notification. Never poll.
+- Shipped milestones' plan sections and notes live in `docs/archive/`. Grep them; do not read them whole.
 - Put procedures in skills and facts in docs, so they load only when used. Keep `CLAUDE.md` short. Run `/doctor` on it at M9 and accept sensible cuts.
 - Do not write planning or summary files beyond `docs/STATE.md` and `docs/DECISIONS.md`.
 - Ask the owner one batched question instead of several small ones.
@@ -99,3 +104,22 @@ Logins and keys (`docs/USER-INPUTS.md` section 1). Design references and the app
 ## 10. Unattended runs
 
 When the owner is away, `STARTING_PROMPT.md` sets the rules and the main session acts as a conductor: each milestone is built by a fresh subagent, one at a time, and the conductor checks, merges and moves on. This is the first case in section 3, since ten milestones would flood one context. Anything that needs the owner goes in `docs/BLOCKERS.md` and the build continues on the fallback. Nothing waits. The run is started with `/goal`, so a separate evaluator keeps it going until the final report is printed.
+
+## 11. What shipping M0 to L1 taught (13 November 2026)
+
+Kept, because it worked:
+- Small milestones with a gate, tagged on merge, so `main` was always deployable and production moved with every merge.
+- Splitting a big milestone into its data or engine half and its screen half (T1a and T1b, S1a and S1b): smaller pull requests, and halves that ran side by side.
+- Mechanical guards instead of review: the invariant tests (no emoji, frozen brand files, no numbers in engine code, no gradient on a button) catch a class of mistakes for no tokens. Prefer a test to a rubric item whenever a rule can be measured.
+- Quick CI on every pull request, full CI on a label, worktree lanes with `E2E_PORT`.
+- Handoffs in `docs/STATE.md`: a pause and two compactions lost nothing.
+
+Changed, because it did not work:
+- Feel was never checked. Screens were judged as still images against written rules, so motion, tap feedback, selection, dark contrast and nested corners only came up on the owner's iPhone. U1 adds rubric items and a contrast test for them; motion gets end state tests; interaction work ships with short Playwright videos for the owner.
+- A default picked for the fewest taps (auto-advance) was not what the owner wanted. An interaction choice the owner has not seen goes into `docs/DECISIONS.md` with its alternative, and onto the owner's list with a video.
+- Docs grew and every worker read them whole: `docs/STATE.md` reached 216 lines against its one screen rule, `docs/BUILD-PLAN.md` 282. Shipped sections and notes now live in `docs/archive/`, and the conductor moves them on each merge.
+- Screenshot review was the largest token cost: every state at three sizes and two themes, up to three critic rounds. Section 6 now limits it.
+- Lanes conflicted in shared docs (O1 against S1a in `docs/STATE.md`). A worker in a lane leaves `docs/STATE.md` and `docs/BLOCKERS.md` to the conductor and puts its notes in the pull request.
+- One check spent the day's free Gemini requests (B1) and held two checks for a day; four fast requests later hit the per-minute limit. An eval runs once per milestone, 30 seconds between photos; tests use fixtures.
+- Bookkeeping slipped: L1's row stayed "in progress" after its merge. The conductor updates the row in the commit that records the tag.
+- Foreground CI watches timed out. Watch in the background.

@@ -6,12 +6,6 @@ Everything that needs you, in one place. Newest first within each section.
 
 Each entry: what is blocked, what Claude tried, the exact steps for you, and what to tell Claude afterwards.
 
-### B1: the label reader against Gemini (today's free requests were spent)
-
-- **Blocked:** reading real nutrition labels with `gemini-3.6-flash`. Built and tested on the mock (fixtures `label-snack`, `label-whey`, `not-label`), but not yet run live: the free key's 20 requests a day were already spent when B1 tried three label photos. Gemini answered 503 "high demand" twice, then the daily 429, with about 20 hours to the reset (07:00 in Bangkok on 13 November).
-- **Tried:** the production model twice; `gemini-3.7-flash` (refuses minimal thinking); `gemini-3.5-flash`, which counted against 3.6's quota. Nothing was billed.
-- **No step for you.** The photos are public (Wikimedia Commons: "SunnyD Nutrition Facts 01.jpg", "Nutrition Information Panel.jpg", "HK food drink Longevity brand Sweetened Milk Mar-2014 nutrition information a.jpg"), so Claude runs `pnpm eval:vision --label <folder>` itself after the 07:00 Bangkok reset, during N3, and records the result here. If you like, photograph three packs from your kitchen, a Thai one among them, and Claude adds them to the check.
-
 ### B1: a contact address for Open Food Facts (optional)
 
 - Open Food Facts asks apps to name themselves with a contact email. Ontrack sends `X-User-Agent: Ontrack/<version> (https://ontrack-black.vercel.app)` and no email, because Claude does not put your address in requests to outside services. If you want one added, tell Claude: "Add <address> to the Open Food Facts user agent".
