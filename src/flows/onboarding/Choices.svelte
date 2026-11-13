@@ -1,5 +1,6 @@
 <!-- Large single choice answers: an optional icon tile, a title, an optional line, an optional number on the right.
-     Cards at radius 24 with the soft card shadow; the picked one is ink filled, as OneFin's selected option is black. -->
+     Cards at radius 24 with the soft card shadow; the picked one is ink filled, as OneFin's selected option is black.
+     A tap selects and never moves on: the step's Continue does (U1a). -->
 <script lang="ts" generics="T extends string | number">
   import type { Component } from 'svelte';
   import { haptic } from '$lib/haptics';
@@ -25,7 +26,8 @@
     >
       {#if o.icon}
         {@const Icon = o.icon}
-        <span class="tile grid size-10 flex-none place-items-center rounded-sm" aria-hidden="true"><Icon size={22} strokeWidth={2} /></span>
+        <!-- picked, the tile turns violet with a light glyph, so the choice reads in both themes (U1a) -->
+        <span class="grid size-10 flex-none place-items-center rounded-sm transition-colors duration-[var(--d-ui)] {on ? 'bg-accent text-on-accent' : 'tile'}" aria-hidden="true"><Icon size={22} strokeWidth={2} /></span>
       {/if}
       <span class="min-w-0 flex-1">
         <span class="text-body block font-semibold">{o.title}</span>
