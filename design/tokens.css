@@ -24,7 +24,8 @@
 
   /* Reached: green marks progress that reached its target. Nothing else is green. */
   --success: #19dba8;           /* the "+20,8%" chip: fills only */
-  --success-ink: #006644;       /* "On track" words and dots. #198669 fails 4.5 to 1 on the hero's lavender (derived) */
+  --success-ink: #006644;       /* "On track" words and dots (derived, darker than #198669 for the hero). On the photo haze
+                                   (P1) only the heading sized reached figure, large text at 3 to 1 */
   --success-soft: #daf9f1;      /* derived: 16 percent of the fill on white */
 
   /* Neutrals */
@@ -35,6 +36,7 @@
   --ink: #121214;               /* Neutral/01 */
   --ink-2: #525252;             /* Neutral/05 */
   --ink-3: #707070;             /* U1b: the step after ink-2, the second fact on a line. 4.5 to 1 on the canvas and cards */
+  --haze-ink-2: rgba(18, 18, 20, 0.73);  /* P1: ink-2 on the photo haze, ink at 73 percent (#525252 on white) */
   --line: rgba(18, 18, 20, 0.08);         /* derived: OneFin draws almost no lines */
   --line-strong: rgba(18, 18, 20, 0.16);  /* derived */
   --track-bg: rgba(18, 18, 20, 0.08);     /* the empty part of a track, on a card or the hero gradient */
@@ -53,21 +55,22 @@
   --blur-scrim: blur(24px);
 
   /* Gradients: one per screen at most, on its hero. Never on a button, a row or text */
-  /* the aurora haze of the Premium card and the stats cards: lavender, blue, pink and cyan over white. No stop is
-     stronger than lavender at 75 percent, so ink, ink-2 and success-ink words pass on it (contrast.test.ts) */
-  /* L2, the owner's request: each gradient is a photo gradient (photogradient.com, scripts/gradients.sh) under the shared
-     grain, laid with soft-light by the utility; the CSS gradient beneath is the fallback and the contrast tests' stops */
+  /* P1, the owner's round 3: every gradient is a photo gradient made on photogradient.com from the palette (section 4),
+     each one its own eight points from the ten colours (the brand's violet or lavender in every one, as depth or an
+     accent), all from the settings of the owner's example (scripts/gradients.sh). The first layer
+     is the site's grain, the CSS gradient beneath is the fallback; words on each are checked on its colours
+     (contrast.test.ts) and on the image (landing.spec.ts) */
   --grain: url(./gradients/grain.webp) 0 0 / 128px;
+  /* the hero haze: the palette's light colours, peach and sand warm at the top left, lavender and mist cool to the right
+     and below. Secondary words on it are ink at 73 percent (the `haze` utility): ink-2 on white, 4.5 to 1 on lavender */
   --grad-hero: var(--grain), url(./gradients/haze-light.webp) center / cover no-repeat,
-    radial-gradient(90% 120% at 100% 0%, rgba(190, 190, 255, 0.75) 0%, transparent 70%),
-    radial-gradient(70% 100% at 0% 0%, rgba(196, 214, 255, 0.7) 0%, transparent 70%),
-    radial-gradient(60% 90% at 85% 110%, rgba(246, 204, 250, 0.6) 0%, transparent 70%),
-    radial-gradient(60% 90% at 5% 110%, rgba(196, 244, 250, 0.6) 0%, transparent 70%), #fbfbff;
-  /* U1b, the owner's request: the screen's one featured card (the Add sheet's Photo) fills with violet lit blue and plum;
-     L2 gives the dark theme (and the landing's dark sections) a deeper photo. White words pass on every stop (contrast.test.ts) */
+    radial-gradient(70% 100% at 0% 0%, #f9bba1 0%, transparent 70%),
+    radial-gradient(70% 120% at 100% 20%, #bebeff 0%, transparent 70%),
+    radial-gradient(60% 90% at 70% 100%, #a7bedb 0%, transparent 70%), #ffffff;
+  /* the screen's one featured card (U1b: the Add sheet's Photo): violet with steel and clay deepened, white words */
   --grad-feature: var(--grain), url(./gradients/feature-light.webp) center / cover no-repeat,
-    radial-gradient(120% 160% at 0% 0%, #5b4ff5 0%, transparent 60%),
-    radial-gradient(90% 160% at 100% 100%, #9233bb 0%, transparent 70%), #381ac9;
+    radial-gradient(90% 120% at 100% 30%, #a95445 0%, transparent 70%),
+    radial-gradient(70% 90% at 50% 0%, #486478 0%, transparent 70%), #381ac9;
 
   /* Depth */
   --shadow-card: 0 4px 8px rgba(8, 7, 49, 0.06), 0 14px 14px rgba(8, 7, 49, 0.05);       /* Stats card */
@@ -161,21 +164,37 @@
   --spring-fly: linear(0, 0.0203, 0.0732, 0.1449, 0.2281, 0.3163, 0.4074, 0.4927, 0.5726, 0.6476, 0.7127, 0.77, 0.8207, 0.8626, 0.8976, 0.9264, 0.9503, 0.9687, 0.983, 0.9941, 1.002, 1.0075, 1.0113, 1.0135, 1.0145, 1.0147, 1.0143, 1.0135, 1.0124, 1.0111, 1.0098, 1.0085, 1.0072, 1.006, 1.005, 1.0041, 1.0032, 1.0025, 1.0019, 1.0014, 1);
   --spring-reveal: linear(0, 0.049, 0.1471, 0.2642, 0.3706, 0.4664, 0.55, 0.6217, 0.6858, 0.7366, 0.7794, 0.8152, 0.8453, 0.8719, 0.8927, 0.9102, 0.9249, 0.9371, 0.9479, 0.9564, 0.9635, 0.9695, 0.9744, 0.9788, 0.9823, 0.9852, 0.9876, 0.9896, 0.9914, 0.9928, 0.994, 0.995, 0.9958, 0.9965, 0.9971, 0.9976, 0.998, 0.9983, 0.9986, 0.9988, 1);
   /* the landing hero's sky at the top, where the status bar continues it (U1b) */
-  --sky-top: #8e90fe;           /* L2: the sky photo's top row at the middle, where a phone shows it */
+  --sky-top: #ced8e2;           /* P1: the sky photo's top row at the middle, where a phone shows it, under its grain */
   /* the same in both themes: the dark sections, the phone's bezel, words on the washes, and the food map's white pin frames */
   --night: #121214;
   --on-night: #ffffff;
-  --lavender: #bebeff;          /* Violet/04: the flat lavender panels of picks 06 and 07, also inside dark sections */
-  /* the hero's sky (OneFin's hero): violet behind the bar, light behind the words (ink and violet pass on it), a violet
-     floor under the phone where the next section's white sheet begins */
+  --lavender: #bebeff;          /* Violet/04: the brand's lavender, also inside dark sections */
+  /* P1, the owner's wider palette (round 3, screenshot 07), the same in both themes. For occasional use: the photo
+     gradients, decoration, illustration and highlights. Never an action, never in place of ink, violet or green, never
+     a state. Words on them are night (contrast.test.ts); white words only on their deepened shades (scripts/gradients.sh) */
+  --sand: #eddecc;
+  --steel: #6c9bbb;
+  --snow: #ffffff;
+  --coral: #f89183;
+  --clay: #e46d58;
+  --peach: #f9bba1;
+  --mist: #a7bedb;
+  --heather: #a69eb4;
+  /* the hero's sky: the whole palette but clay (violet words need 3 to 1), mist and white behind the bar, sand behind
+     the words, coral and heather under the phone */
   --grad-sky: var(--grain), url(./gradients/sky-light.webp) center / cover no-repeat,
-    linear-gradient(180deg, #8888ff 0%, #c4c4ff 22%, #f5f5ff 45%, #f5f5ff 68%, #9696ff 100%);
-  /* the violet glow of the dark sections (pick 06, 09): brightest at its middle, where the page anchors it, and the
-     page masks it to nothing at every edge (`.glow` in Landing.svelte), since its edges are only near the canvas */
+    linear-gradient(180deg, #a7bedb 0%, #ffffff 25%, #eddecc 50%, #f9bba1 72%, #f89183 100%);
+  /* the glow of the dark sections (pick 06, 09): violet, coral and clay deepened, brightest at its middle, where the page
+     anchors it, and the page masks it to nothing at every edge (the `glow` utility), since its edges are only near the canvas */
   --glow: var(--grain), url(./gradients/glow.webp) center / 100% 100% no-repeat,
-    radial-gradient(70% 50% at 50% 50%, rgba(91, 79, 245, 0.6) 0%, rgba(56, 26, 201, 0.25) 45%, transparent 75%);
-  /* the check-in's lavender field (pick 07), lavender beneath */
-  --grad-lavender: var(--grain), url(./gradients/panel.webp) center / cover no-repeat, #bebeff;
+    radial-gradient(70% 50% at 50% 50%, #9c5e57 0%, rgba(56, 26, 201, 0.5) 45%, transparent 75%);
+  /* the check-in's field (pick 07): lavender led, peach and white at the top right, coral below them, mist and heather */
+  --grad-lavender: var(--grain), url(./gradients/panel.webp) center / cover no-repeat,
+    radial-gradient(60% 60% at 60% 0%, #f9bba1 0%, transparent 70%), radial-gradient(60% 60% at 80% 70%, #f89183 0%, transparent 70%), #bebeff;
+  /* the closing call's panel, inside the dark run in both themes: heather and steel deepened, a band of clay and coral */
+  --grad-call: var(--grain), url(./gradients/call.webp) center / cover no-repeat,
+    radial-gradient(90% 120% at 80% 40%, #a95445 0%, transparent 70%),
+    radial-gradient(60% 90% at 0% 0%, #486478 0%, transparent 70%), #121214;
   /* L2: Liquid Glass (iOS 26 "regular"): the fill tints what the blur lifts, the rim catches light top left and, fainter,
      bottom right. Violet glass for the footer's panels; the solids stand in without blur */
   --liquid-blur: blur(24px) saturate(180%); /* L3: the owner's "more blurred" (was 14) */
@@ -187,11 +206,11 @@
   /* clear white glass in both themes, for chips and cards that sit on the phone's light screen or the lavender field */
   --liquid-white: rgba(255, 255, 255, 0.6);
   --liquid-white-rim: inset 1px 1px 0 rgba(255, 255, 255, 0.9), inset -1px -1px 0 rgba(255, 255, 255, 0.35);
-  /* the colour-washed cards (pick 10): white words on the first three, night words on the lavender one */
-  --wash-ink: var(--grain), url(./gradients/wash-ink.webp) center / cover no-repeat, linear-gradient(180deg, #3a3a3e 0%, #121214 100%);
-  --wash-blue: var(--grain), url(./gradients/wash-blue.webp) center / cover no-repeat, linear-gradient(180deg, #2747b8 0%, #1a2f86 100%);
-  --wash-magenta: var(--grain), url(./gradients/wash-magenta.webp) center / cover no-repeat, linear-gradient(180deg, #9233bb 0%, #6d1f8e 100%);
-  --wash-lavender: var(--grain), url(./gradients/wash-lavender.webp) center / cover no-repeat, linear-gradient(180deg, #ffffff 0%, #bebeff 100%);
+  /* the colour-washed cards (pick 10): white words on ink, steel and clay (deepened), night words on sand */
+  --wash-ink: var(--grain), url(./gradients/wash-ink.webp) center / cover no-repeat, linear-gradient(160deg, #121214 0%, #364957 60%, #381ac9 100%);
+  --wash-steel: var(--grain), url(./gradients/wash-steel.webp) center / cover no-repeat, linear-gradient(160deg, #4a677c 0%, #445d70 50%, #486478 100%);
+  --wash-clay: var(--grain), url(./gradients/wash-clay.webp) center / cover no-repeat, linear-gradient(160deg, #a55244 0%, #9a4d40 50%, #864439 100%);
+  --wash-sand: var(--grain), url(./gradients/wash-sand.webp) center / cover no-repeat, linear-gradient(160deg, #eddecc 0%, #f9bba1 50%, #f89183 100%);
 }
 
 /* the root in the dark theme, and any element marked dark: the landing page's dark sections in either theme */
@@ -224,6 +243,7 @@
   --ink: #ffffff;
   --ink-2: rgba(255, 255, 255, 0.8);           /* White/80% */
   --ink-3: rgba(255, 255, 255, 0.6);           /* White/60% */
+  --haze-ink-2: rgba(255, 255, 255, 0.8);
   --line: rgba(255, 255, 255, 0.08);           /* U1b: White/5% vanished on a phone */
   --line-strong: rgba(255, 255, 255, 0.2);     /* White/20% */
   --track-bg: rgba(255, 255, 255, 0.08);
@@ -238,19 +258,21 @@
   --toast-bg: #292929;                         /* Neutral/04 */
   --scrim: rgba(0, 0, 0, 0.4);
 
+  /* P1: the same palette deepened toward night, so white words and the dark ink-2 keep 4.5 to 1 */
   --grad-hero: var(--grain), url(./gradients/haze-dark.webp) center / cover no-repeat,
-    radial-gradient(90% 120% at 100% 0%, rgba(91, 79, 245, 0.45) 0%, transparent 70%),
-    radial-gradient(70% 100% at 0% 0%, rgba(56, 110, 220, 0.3) 0%, transparent 70%),
-    radial-gradient(60% 90% at 85% 110%, rgba(190, 70, 210, 0.22) 0%, transparent 70%), #1e1e22;
+    radial-gradient(70% 100% at 100% 100%, #733c33 0%, transparent 70%),
+    radial-gradient(60% 90% at 0% 100%, #381ac9 0%, transparent 70%),
+    radial-gradient(60% 90% at 70% 0%, #384c5a 0%, transparent 70%), #121214;
   --grad-feature: var(--grain), url(./gradients/feature-dark.webp) center / cover no-repeat,
-    radial-gradient(120% 160% at 0% 0%, #5b4ff5 0%, transparent 60%),
-    radial-gradient(90% 160% at 100% 100%, #9233bb 0%, transparent 70%), #381ac9;
+    radial-gradient(70% 100% at 100% 0%, #90493d 0%, transparent 70%),
+    radial-gradient(70% 100% at 60% 60%, #381ac9 0%, transparent 70%), #121214;
   --grad-sky: var(--grain), url(./gradients/sky-dark.webp) center / cover no-repeat,
-    linear-gradient(180deg, #381ac9 0%, #28119c 22%, #17142e 45%, #17142e 68%, #381ac9 100%);
+    radial-gradient(60% 50% at 0% 20%, #381ac9 0%, transparent 70%),
+    linear-gradient(180deg, #121214 0%, #3a505f 30%, #364957 55%, #733c33 85%, #121214 100%);
   --liquid-fill: rgba(255, 255, 255, 0.1);
   --liquid-solid: #2c2a3c;
   --liquid-rim: inset 1px 1px 0 rgba(255, 255, 255, 0.4), inset -1px -1px 0 rgba(255, 255, 255, 0.12);
-  --sky-top: #341dbe;
+  --sky-top: #343d4c;
 
   --shadow-card: 0 0 0 1px rgba(255, 255, 255, 0.1);                       /* U1b: the ring that sets a card off the page */
   --shadow-float: 0 1px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1);   /* Carousel Feature Card */

@@ -83,16 +83,16 @@
     { shot: supplementShot, alt: L.alt.supplement },
   ].map((x, i) => ({ ...x, ...L.log.cards[i] }));
   const TRAIN = [
-    { shot: trainShot, alt: L.alt.train, icon: TrainIcon },
-    { shot: progressShot, alt: L.alt.progress, icon: TrendingUp },
+    { shot: trainShot, alt: L.alt.train, icon: TrainIcon, panel: 'bg-mist' },
+    { shot: progressShot, alt: L.alt.progress, icon: TrendingUp, panel: 'bg-peach' },
   ].map((x, i) => ({ ...x, ...L.train.cards[i] }));
   const FRIENDS = [UserPlus, MapPin, Lock].map((icon, i) => ({ icon, ...L.friends.points[i] }));
   // each number on the page cites the constant's own source, so the cards cannot drift from the engine
   const SOURCED = [
     { label: L.sources.resting, source: SOURCES[C.mifflin.source]?.short, wash: '[--lens:var(--wash-ink)] text-on-night' },
-    { label: L.sources.training, source: SOURCES[C.metStrength.source]?.short, wash: '[--lens:var(--wash-blue)] text-on-night' },
-    { label: L.sources.gain, source: SOURCES[C.gainPace.source]?.short, wash: '[--lens:var(--wash-magenta)] text-on-night' },
-    { label: L.sources.thai, source: L.sources.thaiSource, wash: '[--lens:var(--wash-lavender)] text-night' },
+    { label: L.sources.training, source: SOURCES[C.metStrength.source]?.short, wash: '[--lens:var(--wash-steel)] text-on-night' },
+    { label: L.sources.gain, source: SOURCES[C.gainPace.source]?.short, wash: '[--lens:var(--wash-clay)] text-on-night' },
+    { label: L.sources.thai, source: L.sources.thaiSource, wash: '[--lens:var(--wash-sand)] text-night' },
   ];
 
   // the floating Build your plan: once the hero's action has scrolled away, until the closing call is on screen
@@ -137,7 +137,7 @@
     <!-- the hero: OneFin's sky as a photo gradient with grain (L2), the promise word by word, the action popping in, Today
          rising in an iPhone 16 with two glass chips -->
     <section class="relative isolate px-4 pt-[calc(env(safe-area-inset-top)+120px)] lg:pt-44" data-testid="landing-hero">
-      <div class="grained absolute inset-0 -z-10 [background:var(--grad-sky)]" aria-hidden="true"></div>
+      <div class="absolute inset-0 -z-10 [background:var(--grad-sky)]" aria-hidden="true"></div>
       <div class="mx-auto grid max-w-[1200px] items-center gap-12 lg:grid-cols-[1.15fr_0.85fr] lg:gap-8">
         <div class="text-center lg:pb-24 lg:text-left">
           <h1 class="text-poster text-balance">
@@ -196,7 +196,7 @@
       </div>
     </section>
 
-    <!-- 02 Training: a dark section with a violet glow (pick 06, 12); dark cards hold lavender panels and settle as they come -->
+    <!-- 02 Training: a dark section with a glow (pick 06, 12); dark cards hold flat palette panels (P1) and settle as they come -->
     <section class="px-2 sm:px-4" id="training" tabindex="-1" data-testid="landing-train">
       <div data-theme="dark" class="bg-canvas text-ink relative isolate overflow-clip rounded-xl px-4 pt-20 pb-24">
         <div class="glow absolute inset-x-0 bottom-0 -z-10 h-3/4 translate-y-1/2" aria-hidden="true"></div>
@@ -205,7 +205,7 @@
           {#each TRAIN as c, i (i)}
             {@const Icon = c.icon}
             <article class="settle bg-surface rounded-xl p-2 pb-8" style:--tilt="{i ? 5 : -5}deg">
-              <div class="bg-lavender flex justify-center overflow-clip rounded-sheet px-8 pt-8">
+              <div class="{c.panel} flex justify-center overflow-clip rounded-sheet px-8 pt-8">
                 <Phone src={c.shot} alt={c.alt} crop={0.55} class="w-[min(100%,240px)]" />
               </div>
               <div class="mt-6 flex items-center justify-between px-4">
@@ -220,11 +220,11 @@
       </div>
     </section>
 
-    <!-- 03 Check-in: a lavender photo gradient with rings and tilted glass cards (pick 07, glass-02), and its 1-2-3 stepper -->
+    <!-- 03 Check-in: a lavender led photo gradient with rings and tilted glass cards (pick 07, glass-02), and its 1-2-3 stepper -->
     <section class="px-4 pt-24 pb-28" id="check-in" tabindex="-1" data-testid="landing-checkin">
       {@render head('03', L.checkin.tag, L.checkin.title, L.checkin.lead)}
       <div class="mx-auto mt-12 grid max-w-[1100px] items-center gap-10 lg:grid-cols-2 lg:gap-16">
-        <div class="grained text-night relative isolate flex justify-center overflow-clip rounded-xl px-6 pt-12 [background:var(--grad-lavender)]">
+        <div class="text-night relative isolate flex justify-center overflow-clip rounded-xl px-6 pt-12 [background:var(--grad-lavender)]">
           {#each [1, 0.72, 0.44] as r (r)}
             <span class="border-on-night/60 absolute top-[38%] left-1/2 -z-10 aspect-square -translate-1/2 rounded-full border" style:width="{r * 100}%" aria-hidden="true"></span>
           {/each}
@@ -278,7 +278,7 @@
         {@render head('05', L.sources.tag, L.sources.title, L.sources.lead)}
         <div class="mx-auto mt-12 grid max-w-[1200px] gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {#each SOURCED as c, i (i)}
-            <article class="settle grained relative flex min-h-52 flex-col justify-between gap-8 rounded-lg p-6 [background:var(--lens)] {c.wash}" style:--tilt="{i % 2 ? 3 : -3}deg" data-lens>
+            <article class="settle relative flex min-h-52 flex-col justify-between gap-8 rounded-lg p-6 [background:var(--lens)] {c.wash}" style:--tilt="{i % 2 ? 3 : -3}deg" data-lens>
               <span class="relative isolate grid size-12 place-items-center rounded-sm {i === 3 ? 'bg-accent text-on-accent' : 'liquid'}" aria-hidden="true">
                 {#if i !== 3}<span class="lens" use:lens></span>{/if}<BookOpen size={22} />
               </span>
@@ -298,7 +298,7 @@
         <h2 class="text-poster flex flex-col items-center">
           {#each L.cta.words as w, i (i)}<span class="slide block {i === 1 ? 'text-on-accent-soft' : ''}" style:--from="{[-40, -70, -25][i]}vw">{w}</span>{/each}
         </h2>
-        <div class="feature text-on-accent relative mx-auto mt-10 flex max-w-[34rem] flex-col items-center rounded-xl px-6 py-10 [--lens:var(--grad-feature)]" data-lens>
+        <div class="text-on-accent relative mx-auto mt-10 flex max-w-[34rem] flex-col items-center rounded-xl px-6 py-10 [--lens:var(--grad-call)] [background:var(--lens)]" data-lens>
           <span class="liquid relative isolate mb-6 grid size-16 place-items-center rounded-md [&>svg]:size-11" aria-hidden="true"><span class="lens" use:lens></span>{@html mark}</span>
           <p class="text-lead max-w-[24rem] text-pretty">{L.cta.line}</p>
           <Button variant="primary" size="lg" onclick={start} class="mt-6" data-testid="landing-start-end">{L.start}</Button>
@@ -328,7 +328,7 @@
   @media (prefers-reduced-motion: no-preference) { .tap:active { scale: 0.97; } }
   /* L3: the footer's Learn links scroll to these and focus them; the bar (8 + 52) and 8 more stay clear */
   section[id] { scroll-margin-top: calc(env(safe-area-inset-top) + var(--spacing) * 17); outline: none; }
-  /* the lead sits on the sky's violet top: full ink, not ink-2, keeps it at 4.5 to 1 */
+  /* the lead sits on the sky's photo (P1: mist, sand and peach, contrast.test.ts checks ink on all of it): full ink, not ink-2 */
   .hero-lead { color: var(--ink); }
 
   /* hidden until shown, in every motion setting; the slide itself only when motion is welcome */
