@@ -427,7 +427,7 @@ export const en = {
     remindWeigh: 'No weigh-in for 3 days',
     remindCheckin: 'Check-in due',
     remindEasy: 'Evening easy adds',
-    remindEasyLine: (time: string) => `When gaining, from ${time}`,
+    remindEasyLine: (time: string) => `From ${time} when gaining`,
     food: 'Food',
     thai: 'Thai dishes first',
     thaiLine: 'In search results',

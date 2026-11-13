@@ -18,7 +18,7 @@ const k = <T extends Constant['value']>(value: T, unit: string, source: SourceId
 export const C = {
   // Resting energy, section 2
   mifflin: k({ weight: 10, height: 6.25, age: 5, male: 5, female: -161 }, 'kcal/day per kg, per cm, per year, and sex term', 'S1', 'verified'),
-  mifflinUnspecified: k(-78, 'kcal/day, sex term', 'OT', 'assumption', 'Mean of the male and female terms'),
+  mifflinUnspecified: k(-78, 'kcal/day for the sex term', 'OT', 'assumption', 'Mean of the male and female terms'),
   cunningham: k({ intercept: 370, perKgFfm: 21.6 }, 'kcal/day, and kcal/day per kg of fat-free mass', 'S2', 'verified'),
   bodyFatRange: k({ min: 5, max: 60 }, 'percent', 'OT', 'assumption', 'Outside this range the Mifflin-St Jeor path is used'),
 

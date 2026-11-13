@@ -29,7 +29,7 @@
       {@const open = opened === key}
       <Row title={t.science.names[key]} onclick={() => (opened = open ? null : key)} testid="science-{key}">
         {#snippet caption()}
-          <span class="text-ink block" data-testid="science-value">{typeof c.value === 'number' ? `${num(c.value, 4)} ${c.unit}` : c.unit}</span>
+          {#if typeof c.value === 'number'}<span class="text-ink block" data-testid="science-value">{num(c.value, 4)} {c.unit}</span>{/if}
           <span class="block">{c.source === 'OT' ? t.science.ours : SOURCES[c.source]?.short}</span>
           <span class="block" data-testid="science-status">{t.science.status[c.status]}</span>
           {#if open}
