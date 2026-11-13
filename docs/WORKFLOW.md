@@ -123,3 +123,4 @@ Changed, because it did not work:
 - One check spent the day's free Gemini requests (B1) and held two checks for a day; four fast requests later hit the per-minute limit. An eval runs once per milestone, 30 seconds between photos; tests use fixtures.
 - Bookkeeping slipped: L1's row stayed "in progress" after its merge. The conductor updates the row in the commit that records the tag.
 - Foreground CI watches timed out. Watch in the background.
+- Round 3 (L2 and L3): Safari behaviour shipped on a guess made the bars worse, and a footer feature the owner did not ask for in that form had to be rolled back. Build what the owner describes; when a platform behaviour cannot be checked on a device, cite the vendor's documentation or take the conservative option, and say so. Quality first: rework costs more tokens than care.

@@ -25,6 +25,10 @@ Ten milestones and eleven the owner added (D1, N1, N2, B1, D2, N3, T1, O1, L1, S
 | U1 | Feel and polish | The owner's iPhone pass fixed, and motion, feedback and satisfaction app wide | Using it for a day on the iPhone |
 | L2 | Landing glass and photo gradients | Liquid glass throughout the landing page, gradients made from photos, a real iPhone 16 frame | Looking at it on desktop and on the iPhone |
 | L3 | Landing glass that bends, and Safari's top bar | Glass that blurs more and warps at its edges, no white bar above the page, an ink Sign in | Looking at it on the iPhone |
+| P1 | Palette and photo gradients | The owner's wider palette, and every gradient remade from it | Seeing them on the iPhone |
+| L4 | Landing rework | Safari's bars left alone, a calm new footer, real liquid glass, a phone-width nav, playful scroll animation, speed | The landing on the iPhone and desktop |
+| U2 | App polish: corners, transitions, update prompt, speed | Every radius nested, in-page changes that animate, an update prompt that goes away, a faster app | A day of use on the iPhone |
+| U3 | Text hierarchy and cards (Mobbin research) | App text hierarchy and card design from research on Airbnb and Shop, run in a separate session | The app on the iPhone |
 | M9 | Hardening and release | Settings, export, accessibility, speed, security, production | Full device check |
 
 After M8 the order is N1, N2, B1, D2, N3, T1, O1, L1, S1, then M9. D2 comes straight after B1 so every later screen is built on the refined look. It follows the owner's MoSCoW and RICE prioritization: B1 is Must (the owner made barcode scanning a main feature); N1, N2, N3, T1 and L1 are Should, with N2 the highest RICE score of the features not yet built, (high value for little effort), S1 is Could, and M9 hardens everything last. O1 comes after N2 and T1 so onboarding can personalize with supplements, the faster pace and hybrid templates, and before L1 because the landing page leads into it.
@@ -128,6 +132,41 @@ References: `safari-top-white-bar.jpg` in `/Users/admin/destination/ontrack-desi
 
 Gate: `landing.spec.ts`, reduced motion and the stress matrix green; the press check covers the landing; the footer's pull, spring back, open, close on leaving and the button in end to end tests; screenshots at 390 and 1440, light and dark, against L2's; one critic round.
 Owner checks: the landing in Safari on the iPhone: the top bar, the glass bending at its edges, pulling the footer open.
+
+## Round 3: the owner's review of L2 and L3 (13 November, evening)
+
+The owner judged most of the L2 and L3 round not good. Screenshots in `/Users/admin/destination/ontrack-design/feedback/2026-11-13-round3/` (numbered below). Quality comes first this round: low quality work costs more tokens in rework than it saves. Lanes: P1 first and fast, then L4 and U2 side by side; U3 runs in another session from `docs/briefs/U3-text-and-cards.md`.
+
+### P1 Palette and photo gradients (first, small)
+
+1. Brand colours stay `#381ac9` and `#bebeff`. Add every colour in screenshot 07 as an occasional palette: `#EDDECC`, `#6C9BBB`, `#FFFFFF`, `#F89183`, `#E46D58`, `#F9BBA1`, `#A7BEDB`, `#A69EB4`. Tokens in `design/tokens.css` with names and a rule in DESIGN.md for when each may be used (never for actions; contrast checked).
+2. Remake every gradient, app and landing, in the manner of screenshot 08: photogradient.com with Gradient "Sharp Bézier", Warp Shape "Worley Noise", Warp about 25 percent, Warp Size about 35 percent, Noise about 60 percent, eight colour points. Each gradient unique (different colours chosen from the palette and different positions), all from the same settings. Through Yab (`yab exec`), settings and colours recorded in `scripts/gradients.sh`. Dark theme variants deeper but from the same palette. The grain comes from the export, not a separate overlay, unless that is lighter.
+3. Text on every gradient keeps its contrast (`contrast.test.ts` and the landing's check).
+
+Gate: verify; screenshots of every gradient in place, light and dark; one critic round.
+
+### L4 Landing rework (after P1, alongside U2)
+
+1. Safari's bars: no tint, band or fade at the top or the bottom (screenshots 02 to 05; before L3 the bottom was fine). Read WebKit's own notes on how Safari 26 colours its bars (fixed elements at the edges, the page background, `theme-color` ignored) and cite them in DECISIONS. If no colour can be made to disappear, roll L3's change back to the state before it.
+2. The footer: roll back to a normal footer, no pull to open. Redesign it to fit the landing's mood, with some creativity and professional restraint: not OneFin's footer, not the current violet panels.
+3. Liquid glass (screenshot 06): no frosted layer behind text where the text already reads; the nav bar gets the liquid glass too; on desktop the nav is no wider than a phone (about 430 px), centred. Study https://github.com/callstack/liquid-glass (clone it, read its effect styles, tint, interactive highlight and the container that merges nearby glass) and make our own web version of those behaviours; record what was taken in DECISIONS.
+4. Scroll animation, maximised: playful, asymmetric, like the "02 Training" card; looping ambient motion; micro-interactions on every control. Reduced motion respected.
+5. Speed: measure the landing (largest paint, total weight, images, fonts, layout shift, scroll smoothness with the glass) before and after, and fix what costs most.
+
+Gate: landing tests, reduced motion, stress; before and after numbers in the PR; screenshots at 390 and 1440, light and dark; two critic rounds; videos of the scroll for the owner.
+
+### U2 App polish (after P1, alongside L4)
+
+1. Every corner radius nested (screenshot 01: the dock's active pill against the dock); audit every element with a check that measures it.
+2. Changes on the same page animate, minimal and pleasant: content swaps, toggles, segmented controls, expanding rows, values changing, items appearing. Reduced motion respected.
+3. "A new version is ready": after Update it must not come back on reload. Find why the waiting service worker does not take over, fix it, test it.
+4. Speed: measure the app (start, interaction, bundle) and fix what costs most.
+
+Gate: verify, stress, motion tests, the update flow tested; before and after numbers; one critic round.
+
+### U3 Text hierarchy and cards (separate session)
+
+Run by the owner in another session: `docs/briefs/U3-text-and-cards.md`. Research on Mobbin (Airbnb, Shop), then the app's text hierarchy and card design.
 
 ## M9 Hardening and release
 
