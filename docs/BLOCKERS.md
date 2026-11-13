@@ -33,6 +33,11 @@ Each entry: what is blocked, what Claude tried, the exact steps for you, and wha
 
 Each entry: what to look at (URL or screenshot paths), what to look for, and which milestone it belongs to.
 
+### U1c: motion and feel, a day on your iPhone
+
+- **Where:** https://ontrack-black.vercel.app in Safari (close and reopen the tab first). Videos of the eight main tasks, light and dark: https://github.com/JedizR/ontrack/tree/pr-assets/u1/u1c
+- **Look for:** swipe a meal left (short leaves Delete open, past half deletes with a haptic; any white edge around the red? does Undo bring it back smoothly?); log a meal (the total counts, bars fill; at a target the bar turns green, swells once and shows a check: good or too much?); a photo's wait (sweep and steps in words); Done on a session (the check pops); the dock and week pills slide. With Reduce Motion on in iOS Settings everything should change at once.
+
 ### U1b: the look on your iPhone, light and dark
 
 - **Where:** https://ontrack-black.vercel.app (close the tab and reopen it so the phone drops its cached copy). Before and after shots of your ten cases: branch `pr-assets`, `u1/u1b/`.

@@ -8,7 +8,7 @@ The conductor role and its rules are in `STARTING_PROMPT.md`; the final report i
 
 1. **Wave 1:** S1b and U1a: both shipped (`v0.8.12`, `v0.8.11`).
 2. **Wave 2:** U1b and M9a, side by side. M9a shipped (`v0.8.13`), U1b shipped (`v0.8.14`). The Gemini Flash-Lite fallback shipped as `v0.8.15` (PR #36, `docs/EVAL-NOTES.md`). Support Gmail, paid Gemini and the 150 a day cap shipped as `v0.8.16` (PR #38).
-3. **Wave 3:** U1c.
+3. **Wave 3:** U1c shipped (`v0.8.17`).
 4. **Wave 4:** M9b, then `v1.0.0`.
 5. **The final report:** the milestone table, the last lines of a passing `pnpm verify` on `main`, the full `docs/BLOCKERS.md`, the production URL https://ontrack-black.vercel.app, and the three things the owner should do first.
 
@@ -43,10 +43,10 @@ Status is one of: not started, in progress, shipped, shipped with cuts, blocked.
 | S1 | Friends, profiles and the food map (owner, after L1) | shipped | S1a PR #25 and S1b PR #31, merged, `v0.8.12` | F16, F17. Friends by request, optional program on the profile, opt-in meal photos on a map at rounded photo locations, landing section 04 Friends |
 | S1a | Friends data, S1's data half (alongside T1a) | shipped | PR #25, merged, `v0.8.8` | Visibility suite green on the mock and on live Supabase; `0005_social.sql` and `0006_publish_upsert.sql` pushed, advisors unchanged. No screens: S1b builds them on the notes below |
 | S1b | Friends screens, S1's screen half | shipped | PR #31, merged, `v0.8.12` | verify and full CI green; initial JS 90.2 KB gzip (MapLibre lazy, 298 KB). Two critic rounds, a code review (9 findings, all fixed). Landing 04 Friends. Live visibility suite: S1a's run stands. No map gesture videos |
-| U1 | Feel and polish (owner's iPhone pass, 13 November) | in progress | | UI about 70 percent, UX about 30 percent done in the owner's view. Split: U1a onboarding, U1b the look, U1c motion and feel |
+| U1 | Feel and polish (owner's iPhone pass, 13 November) | shipped | U1a PR #32, U1b PR #34, U1c PR #35, merged, `v0.8.17` | The owner's ten screenshots fixed, plus motion, feedback and satisfaction app wide. The feel on the iPhone is on the owner's list |
 | U1a | Onboarding feel | shipped | PR #32, merged, `v0.8.11` | Gate green on the mock: select then Continue on every choice step, Gain weight (vector J) and Lose fat and build muscle (vector K), Building your plan (skipped under reduced motion). Gain user 12 to 19 gestures, modelled 118 to 135 s; cut 13 to 19, 114 to 130 s. Two critic rounds, a code review. Cold onboarding per new goal: on the owner's list |
 | U1b | The look, app wide | shipped | PR #34, merged, `v0.8.14` | Gate green on the mock: contrast test (3 to 1 for selected states and shape-only controls, both themes), corners nest e2e, the sweep allowing one featured gradient, stress 66 green. Two critic rounds, a code review. Rebased on M9a. Status bar colour untestable without Safari 26: on the owner's list |
-| U1c | Motion and feel, app wide | not started | | Wave 3. Motion tokens, tap feedback, moving numbers, iOS swipe, progress, satisfaction, the UX walk |
+| U1c | Motion and feel, app wide | shipped | PR #35, merged, `v0.8.17` | verify and full CI green; motion.spec gate (end states; reduced motion leaves nothing over 1 ms or looping); initial JS 96.9 KB gzip (95.2 before). iOS Mail swipe to delete, counting numbers, sliding dock and week pills, photo sweep and steps, reach pulse and checks, lavender pick glyph. Critic 1 round clean, code review 7 fixed. Taps unchanged across the eight tasks, feedback added. No flick to delete, no close on outside tap |
 | M9 | Hardening and release | in progress | | Split: M9a features (shipped), M9b hardening |
 | M9a | Settings and the last features | shipped | PR #33, merged, `v0.8.13` | Gate green on the mock: settings.spec 16 tests, stress matrix with Settings' pages, conformance on mock and live (36 of 36). Two critic rounds, a code review (one known limit: same target every day and sex recalculate past days). The console error did not reproduce in three runs; imperial height is one wheel of inches; Report a problem needs `VITE_SUPPORT_EMAIL` |
 | M9b | Hardening and release | not started | | Wave 4. Accessibility, speed, offline, security, production, `v1.0.0` |
@@ -62,6 +62,9 @@ Status is one of: not started, in progress, shipped, shipped with cuts, blocked.
 - Vision: real. `/api/analyze` with `gemini-3.6-flash`, minimal thinking. Vercel holds `VISION_PROVIDER=gemini`, `GEMINI_MODEL`, and `GEMINI_API_KEY` (the development key, free tier: 20 requests a day per model) for production and preview, plus `VITE_BACKEND=supabase`, the Supabase URL and keys, and `CRON_SECRET`. The key's file is `~/.config/ontrack/gemini-api-key`; `scripts/live-env.sh` reads it for `dev:live` and `eval:vision`.
 
 ## Notes for the next milestone
+
+U1c (motion; rules in DESIGN.md section 10; decisions under U1c):
+- For M9b: motion lives in the `--d-*` tokens; JavaScript reads them through `dur()` (0 under reduced motion) and `ms()` in `src/lib/haptics.ts`. Shared transitions `collapse` and `pop`; the counting number is `Count.svelte`. A new looping animation must not run under reduced motion (`tests/e2e/motion.spec.ts`). `Track` and `HeroNumber` take `scope` (a change of day is navigation: no haptic, pulse or pop). `SwipeRow` is the only swipe to delete (`data-open`, `swipe-delete`). `--project=tasks` measures the eight tasks, `TASK_VIDEO=1` films them; the start figure there is a dev comparison, M9b's phone measurement still stands. The photo's steps run on a timer, so a slow answer can hold "Looking up the food table".
 
 U1b (the look; rules in DESIGN.md sections 4 rule 7, 6, 7 and rubric 16 to 21; decisions under U1b):
 - New pieces: `Facts.svelte` (`rest` sets the lighter step), Row's `unit`, `--control-edge`, `--grad-feature` with `data-featured` (Photo and Scan the tub), `fade-under` and `fade-over`, `--sky-top` with `topColour()` in prefs. Every calorie row shows "kcal".
