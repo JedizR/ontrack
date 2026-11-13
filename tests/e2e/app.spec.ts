@@ -104,6 +104,27 @@ test('a sheet opens with its main action and closes', async ({ page }) => {
   await expect(sheet).toHaveCount(0);
 });
 
+// DESIGN.md section 12 (M9b): a sheet keeps focus inside and gives it back; the track reads as text; pinch zoom stays on
+test('a sheet traps focus and restores it, the track reads as text, and pinch zoom is allowed', async ({ page }) => {
+  await open(page, '/gallery');
+  expect(await page.locator('meta[name="viewport"]').getAttribute('content')).not.toMatch(/maximum-scale|user-scalable/);
+  await expect(page.locator('[data-section="hero"]').getByRole('progressbar')).toHaveAttribute('aria-valuetext', /\d/);
+  const opener = page.getByRole('button', { name: 'Open a sheet' });
+  await opener.focus();
+  await page.keyboard.press('Enter');
+  const sheet = page.getByTestId('sample-sheet');
+  await expect(sheet.getByRole('heading', { name: 'Chicken rice bowl' })).toBeVisible();
+  // WebKit, like Safari by default, tabs to the close button and then out to the page itself, never to what is behind
+  for (let i = 0; i < 12; i++) {
+    await page.keyboard.press('Tab');
+    expect(await sheet.evaluate((el) => el.contains(document.activeElement) || document.activeElement === document.body), `Tab ${i + 1} stays in the sheet`).toBe(true);
+  }
+  await expect(sheet).toHaveAttribute('aria-modal', 'true');
+  await page.keyboard.press('Escape');
+  await expect(sheet).toHaveCount(0);
+  await expect(opener).toBeFocused();
+});
+
 test('the track turns green in its zone and the counterpart follows', async ({ page }) => {
   await open(page, '/gallery');
   const hero = page.locator('[data-section="hero"]');
