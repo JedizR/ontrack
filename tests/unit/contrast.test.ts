@@ -1,4 +1,5 @@
-// The contrast bars in docs/DESIGN.md section 12, read from design/tokens.css: 4.5 to 1 for text, 3 to 1 for large text.
+// The contrast bars in docs/DESIGN.md section 12, read from design/tokens.css: 4.5 to 1 for text, 3 to 1 for large text,
+// and (U1b) 3 to 1 for what identifies a control or shows its state against what is next to it (WCAG 1.4.11).
 import { describe, expect, test } from 'vitest';
 import { readFileSync } from 'node:fs';
 
@@ -30,7 +31,7 @@ const PAIRS: [string, string, number][] = [
   // ink on canvas is also a picked onboarding answer's fill against the page (U1a, WCAG 1.4.11)
   ['ink', 'canvas', 4.5], ['ink', 'surface', 4.5], ['ink', 'surface-2', 4.5], ['ink', 'accent-soft', 4.5],
   ['ink-2', 'canvas', 4.5], ['ink-2', 'surface', 4.5], ['ink-2', 'surface-2', 4.5],
-  ['ink-3', 'surface', 3],
+  ['ink-3', 'canvas', 4.5], ['ink-3', 'surface', 4.5], // U1b: the second fact on a line, one step lighter (Facts)
   ['success-ink', 'canvas', 4.5], ['success-ink', 'surface', 4.5],
   ['on-accent', 'accent', 4.5], ['on-accent-soft', 'accent-soft', 4.5],
   ['on-action', 'action', 4.5], ['on-action', 'action-press', 4.5], // the ink pill's label, at rest and pressed
@@ -42,8 +43,39 @@ const PAIRS: [string, string, number][] = [
   ['toast-ink', 'toast-bg', 4.5],
 ];
 
+// [mark, what is next to it]. U1b, WCAG 1.4.11: a control known by its shape, or a state shown by a fill, needs 3 to 1 against
+// its neighbours. A labelled button is known by its label (the text pairs above); its grey fill only groups it.
+const STATES: [string, string][] = [
+  // selected chips, segments, onboarding choices and the week's picked day are ink, on the page, a card or a grey track
+  ['ink', 'canvas'], ['ink', 'surface'], ['ink', 'surface-2'],
+  // the switch: its off track on a card or the page, and the knob (surface) on either track
+  ['control-edge', 'surface'], ['control-edge', 'canvas'], ['surface', 'control-edge'], ['surface', 'ink'],
+  // the dock's selected tab: a violet icon and label on its grey pill and on the bar
+  ['accent-ink', 'surface-2'], ['accent-ink', 'bar-solid'],
+  // the stepper's keys and the dock's plus, on a card or the page
+  ['action', 'surface'], ['action', 'canvas'],
+];
+
 describe.each([['light', light], ['dark', dark]] as const)('%s theme', (_, t) => {
   test.each(PAIRS)('%s on %s', (fg, bg, bar) => expect(on(t, fg, bg)).toBeGreaterThanOrEqual(bar));
+  test.each(STATES)('control %s next to %s', (fg, bg) => expect(on(t, fg, bg)).toBeGreaterThanOrEqual(3));
+});
+
+// U1b, the owner's dark pass (feedback 3): the page, cards, grey controls and the dock stand apart. Light gets this from the
+// card shadow; dark has none, so the steps and rings must carry it.
+test('dark steps stand apart', () => {
+  const ring = (name: string) => css.slice(css.indexOf('[data-theme="dark"] {')).match(new RegExp(`--${name}:[^;]*?(rgba\\([^)]+\\))`))![1];
+  expect(on(dark, 'surface', 'canvas'), 'card on page').toBeGreaterThanOrEqual(1.1);
+  expect(on(dark, ring('shadow-card'), 'canvas'), 'card ring on page').toBeGreaterThanOrEqual(1.25);
+  expect(on(dark, 'surface-2', 'canvas'), 'grey control on page').toBeGreaterThanOrEqual(1.4);
+  expect(on(dark, 'surface-2', 'surface'), 'grey control or tile on card').toBeGreaterThanOrEqual(1.25);
+  expect(on(dark, 'glass-edge', 'canvas'), 'dock edge on page').toBeGreaterThanOrEqual(2);
+});
+
+// U1b: the featured card's gradient (the Add sheet's Photo) carries white words on every stop, in both themes
+test('words on the featured card', () => {
+  const at = css.indexOf('--grad-feature:');
+  for (const m of css.slice(at, css.indexOf(';', at)).matchAll(/#[0-9a-f]{6}/gi)) expect(ratio(parse(light['on-accent']), parse(m[0])), m[0]).toBeGreaterThanOrEqual(4.5);
 });
 
 test('words on the light hero haze', () => {
