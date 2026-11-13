@@ -8,6 +8,7 @@
   import { t } from '$lib/i18n';
   import { collapse } from '$lib/haptics';
   import Card from '$lib/components/Card.svelte';
+  import CardHead from '$lib/components/CardHead.svelte';
   import Facts from '$lib/components/Facts.svelte';
   import Button from '$lib/components/Button.svelte';
   import Track from '$lib/components/Track.svelte';
@@ -121,7 +122,9 @@
   {:else}
     <Card data-testid="train-summary">
       {#if sessions.length}
-        <div class="flex gap-10" role="group" aria-label={t.train.summary(num(sessions.length), num(minutes))}>
+        <!-- U3: a summary card, the program its eyebrow, the two figures first, then what they add -->
+        <p class="text-eyebrow text-ink-2" data-testid="train-program">{program.name || t.train.ownProgram}</p>
+        <div class="mt-2 flex gap-10" role="group" aria-label={t.train.summary(num(sessions.length), num(minutes))}>
           <div aria-hidden="true">
             <p class="text-display" data-testid="train-sessions">{num(sessions.length)}</p>
             <p class="text-caption text-ink-2 mt-1">{t.after.sessionsWeek(num(sessions.length))}</p>
@@ -131,12 +134,11 @@
             <p class="text-caption text-ink-2 mt-1">{t.after.minutesWeek}</p>
           </div>
         </div>
-        <p class="text-body mt-4 font-semibold">{t.train.adds(num(Math.round(perDay)))}</p>
-        <div class="mt-1 flex items-center gap-3">
-          <p class="text-callout text-ink-2 min-w-0 flex-1">{program.name || t.train.ownProgram}</p>
+        <div class="mt-4 flex items-center gap-3">
+          <p class="text-callout text-ink-2 min-w-0 flex-1">{t.train.adds(num(Math.round(perDay)))}</p>
           <Button size="sm" onclick={() => (templates = true)} data-testid="train-change">{t.train.change}</Button>
         </div>
-        {#if pending}<p class="text-callout mt-2" data-testid="train-pending">{t.train.fromTomorrow}</p>{/if}
+        {#if pending}<p class="text-body mt-2" data-testid="train-pending">{t.train.fromTomorrow}</p>{/if}
       {:else}
         <EmptyState text={t.today.noProgram} action={t.train.pick} onaction={() => (templates = true)} />
       {/if}
@@ -163,7 +165,7 @@
               {#if i}<span class="size-12 flex-none"></span>{:else}{@render day(d)}{/if}
               <span class="min-w-0 flex-1">
                 <span class="text-body line-clamp-2 block font-semibold">{s.name}</span>
-                <span class="text-caption text-ink-2 block"><Facts facts={[t.train.types[s.type], t.after.minN(num(s.minutes))]} /></span>
+                <span class="text-callout text-ink-2 block"><Facts facts={[t.train.types[s.type], t.after.minN(num(s.minutes))]} /></span>
               </span>
             </button>
             <button
@@ -198,8 +200,7 @@
       <h2 class="text-heading mt-2">{t.train.analysis}</h2>
       {#if analysis.hasExercises}
         <Card aria-label={t.train.balance} data-testid="train-balance">
-          <p class="text-body font-semibold">{t.train.balance}</p>
-          <p class="text-caption text-ink-2">{t.train.balanceLine(num(V.setsRange), num(V.setsHigh))}</p>
+          <CardHead level={3} title={t.train.balance} line={t.train.balanceLine(num(V.setsRange), num(V.setsHigh))} />
           <div class="mt-4 flex flex-col gap-3">
             {#each muscles as m (m)}
               {@const sets = analysis.muscles[m].sets}
@@ -226,21 +227,18 @@
         <div class="border-line border-t py-4" data-testid="train-cardio">
           <div class="flex items-baseline justify-between gap-3">
             <span class="text-body font-semibold">{t.train.cardio}</span>
-            <span class="text-caption text-ink-2">{t.train.cardioLine(num(analysis.aerobicMinutes), num(V.aerobicMinutes.min), num(V.aerobicMinutes.max))}</span>
+            <span class="text-callout text-ink-2 text-right">{t.train.cardioLine(num(analysis.aerobicMinutes), num(V.aerobicMinutes.min), num(V.aerobicMinutes.max))}</span>
           </div>
           <div class="mt-2">
             <Track value={analysis.aerobicMinutes} target={V.aerobicMinutes.max} zone={[V.aerobicMinutes.min, V.aerobicMinutes.max]} label="{t.train.cardio} {t.train.cardioLine(num(analysis.aerobicMinutes), num(V.aerobicMinutes.min), num(V.aerobicMinutes.max))}" />
           </div>
-          {#each analysis.notes as n (n.kind)}<p class="text-caption text-ink-2 mt-2">{sentence(n)}</p>{/each}
+          {#each analysis.notes as n (n.kind)}<p class="text-callout text-ink-2 mt-2">{sentence(n)}</p>{/each}
         </div>
       </Card>
 
       {#if analysis.hybrid.length}
         <Card list aria-label={t.train.hybrid} data-testid="train-hybrid">
-          <div class="pt-4 pb-3">
-            <p class="text-body font-semibold">{t.train.hybrid}</p>
-            <p class="text-caption text-ink-2">{t.train.hybridLine}</p>
-          </div>
+          <CardHead level={3} class="pt-5 pb-4" title={t.train.hybrid} line={t.train.hybridLine} />
           <div class="border-line border-t">
             {#each analysis.hybrid as p (p.kind)}{@render point(`hybrid-${p.kind}`, hybridSentence(p), p.source, 'hybrid-point')}{/each}
           </div>

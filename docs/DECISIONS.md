@@ -2,6 +2,22 @@
 
 Changes to a doc's decision, and choices made on the owner's behalf. Newest first, one line each: what, why.
 
+## U3
+
+Text hierarchy and cards, 14 November 2026, a separate session from `docs/briefs/U3-text-and-cards.md`. Research: 16 Mobbin searches over Airbnb's and Shop's iOS screens, 55 cited in `ontrack-design/research/u3-mobbin/NOTES.md`.
+- **Five levels inside the app: Heading, Subhead, Body, Meta, Label** (DESIGN.md section 5). Both apps read three steps a card (title, meta, value) and never set two neighbouring lines alike. Ontrack had a card's title, a row's title and a total all in Body 600, so nothing marked the card above its rows.
+- **One new style, no new size: Subhead** (`text-subhead`, Geist 600 at Lead's 18). Both apps put card titles one step over row titles (16 to 18 against 15 to 16). It titles cards, sets the stat tiles' figures (16 to 18, so the macros read as numbers before labels) and the sheets' totals (Shop's total row is its one bold line).
+- **The meta line is Callout 14 at 400, was Caption 12 at 500.** Both apps set meta at 13 to 14 regular in grey. Caption now means a label under a figure, a unit or a legend, so 12 is no longer used for both. Rows grow about 3 px.
+- **Status is the title, the subject is the eyebrow** (Shop's order cards, Airbnb's trip pill). Today's one card, Train's suggestion and the session expired card use `CardHead`: "Weekly check-in" over "Ready to review", "Weigh-in" over "Time for a new one". The old titles repeated the subject.
+- **Eyebrow is the one label above.** Sheets kept Heading for their groups (Add's Recent and Saved, the session's Exercises) under a Heading title, two lines alike; Settings used a bold Caption. All now take the Eyebrow the Friends panel and Progress already used.
+- **A single card names itself; a growing list gets a section Heading.** Today's training card gains "Training" as an eyebrow inside it rather than a Heading over it, so Today stays as tall above the fold.
+- **The suggestion's line no longer repeats the program's name**, which is now its title ("Fits 4 days a week."). Templates' cards had four Caption lines in a row; they read days (eyebrow), name, who it suits, then the numbers.
+- **Facts wraps cleanly.** Meta at 14 made Today's training line wrap, and the old divider was its own flex item, so a line ended on it. Each fact now carries its divider and the row is clipped 16 px left, so the one that would start a line is cut off. Every Facts line gains it.
+- **Totals and Consistency take a figure** (critic rounds 1 and 2). The Meal and Review sheets' total is Subhead with "kcal" a level down and protein as Meta under it, as Shop's total row; the Consistency card leads with its on track days in Display, as the Summary cards beside it.
+- **The eyebrow is part of the card's heading** (code review), so moving by heading says "Weigh-in, Time for a new one"; Train's analysis cards and the Friends setup are level 3 under their section.
+- **Kept on purpose:** the hero's "1,840" over "of 2,460 kcal" (Airbnb's price over "For 2 nights": a figure measured against something keeps its unit on the line under it), condensed capitals for titles and headings, one card style (no hairline-only cards), Facts instead of dots, and date-titled check-in rows (Shop's order history titles the order, not the status).
+- **Not adopted:** photo-led cards, carousels for numbers, underlined text links, floating sheets with four corners, red status lines, struck-through values (NOTES.md lists why).
+
 ## L4
 
 Landing rework after the owner's round 3 (screenshots 02 to 06 in `ontrack-design/feedback/2026-11-13-round3/`), 14 November 2026, unattended.

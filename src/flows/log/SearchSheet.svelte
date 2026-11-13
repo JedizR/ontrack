@@ -159,7 +159,7 @@
         {/each}
       </div>
     {:else if recent.length}
-      <h3 class="text-heading mt-5">{t.search.recent}</h3>
+      <h3 class="text-eyebrow text-ink-2 mt-6">{t.search.recent}</h3>
       <div data-testid="recent-foods">
         {#each recent as r (r.food.id)}
           <Row title={r.food.name} caption="{num(r.grams)} {t.after.g}" value={kcalFor(r.food, r.grams)} unit={t.after.kcal} onclick={() => (picked = { ...r })} testid="result" />

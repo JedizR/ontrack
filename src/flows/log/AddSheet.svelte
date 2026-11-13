@@ -115,7 +115,7 @@
     </div>
   {:else}
     {#if supplements.length}
-      <h3 class="text-heading">{t.supplement.section}</h3>
+      <h3 class="text-eyebrow text-ink-2">{t.supplement.section}</h3>
       <div data-testid="supplements">
         {#snippet typical()}<SourceLabel source="typical" />{/snippet}
         {#each supplements as { id, data: s } (id)}
@@ -153,7 +153,7 @@
       </div>
     {/if}
 
-    <h3 class="text-heading mt-8">{t.add.recent}</h3>
+    <h3 class="text-eyebrow text-ink-2 mt-8">{t.add.recent}</h3>
     {#if recent.length}
       <div data-testid="recent">
         {#each recent as { id, data: m } (id)}
@@ -170,7 +170,7 @@
     {/if}
 
     {#if saved.length}
-      <h3 class="text-heading mt-8">{t.add.saved}</h3>
+      <h3 class="text-eyebrow text-ink-2 mt-8">{t.add.saved}</h3>
       <div data-testid="saved">
         {#each saved as { id, data: s } (id)}
           <Row title={s.title} value={kcalOf(s.items)} unit={t.after.kcal}>

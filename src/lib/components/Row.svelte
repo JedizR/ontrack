@@ -1,5 +1,5 @@
-<!-- DESIGN.md section 7, Row: a 48 px leading tile or thumbnail, a title, a caption, a trailing number with its unit in
-     Caption (U1b: calories always say kcal).
+<!-- DESIGN.md section 7, Row: a 48 px leading tile or thumbnail, a title, a Meta line (U3: Callout in ink-2, as Shop's
+     and Airbnb's 14 px meta), a trailing number with its unit in Caption (U1b: calories always say kcal).
      Rows in a list card are divided by hairlines inset to the text. With onclick the row is a button. -->
 <script lang="ts">
   import type { Snippet } from 'svelte';
@@ -41,9 +41,9 @@
       <div class="text-body line-clamp-2 font-semibold">{title}</div>
       <!-- title and caption wrap rather than cut off a food name or a number ("Adds 240 kcal") -->
       {#if typeof caption === 'function'}
-        <div class="text-caption text-ink-2">{@render caption()}</div>
+        <div class="text-callout text-ink-2">{@render caption()}</div>
       {:else if caption}
-        <div class="text-caption text-ink-2">{caption}</div>
+        <div class="text-callout text-ink-2">{caption}</div>
       {/if}
     </div>
     {#if value !== undefined}<div class="text-body num flex-none font-semibold">{value}{#if unit}<span class="text-caption text-ink-2 font-medium">{' '}{unit}</span>{/if}</div>{/if}

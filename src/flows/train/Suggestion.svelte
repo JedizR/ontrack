@@ -4,6 +4,7 @@
 <script lang="ts">
   import { collapse } from '$lib/haptics';
   import Card from '$lib/components/Card.svelte';
+  import CardHead from '$lib/components/CardHead.svelte';
   import Button from '$lib/components/Button.svelte';
   import { changeProgram, undoToast } from '$lib/actions';
   import { TEMPLATES, suggestTemplate, type TrainKind } from '$lib/data/templates';
@@ -38,9 +39,8 @@
 {#if tpl}
   <div in:collapse out:collapse={{ leave: true }}>
   <Card data-testid="train-suggest">
-    <p class="text-body font-semibold">{t.suggest.title}</p>
-    <p class="text-callout mt-1">{adds ? t.suggest.gainLine(tpl.name) : t.suggest.line(tpl.name, num(tpl.daysPerWeek))}</p>
-    <p class="text-callout text-ink-2 mt-1">{t.train.suits[tpl.id]}</p>
+    <!-- U3: a status card, the suggestion its subject and the program its title -->
+    <CardHead eyebrow={t.suggest.title} title={tpl.name} line="{adds ? t.suggest.gainLine : t.suggest.line(num(tpl.daysPerWeek))} {t.train.suits[tpl.id]}" />
     <div class="mt-4 -mb-2 flex flex-wrap items-center gap-x-2">
       <Button size="sm" onclick={use} data-testid="suggest-use">{t.suggest.use}</Button>
       <Button variant="plain" size="sm" onclick={() => (prefs.suggestOff = true)} data-testid="suggest-later">{t.suggest.later}</Button>

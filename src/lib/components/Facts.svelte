@@ -13,6 +13,11 @@
   const shown = $derived(facts.filter((f): f is string | Snippet => !!f));
 </script>
 
-<span class="{cls} inline-flex flex-wrap items-center gap-x-2">
-  {#each shown as f, i (i)}{#if i}<span class="bg-line-strong h-[1em] w-px flex-none" aria-hidden="true"></span><span class="sr-only">{', '}</span>{/if}<span class={i ? rest : ''}>{#if typeof f === 'function'}{@render f()}{:else}{f}{/if}</span>{/each}
+<!-- U3: every fact carries its divider on its left, and the row is pulled 16 past a clipping edge, so when the facts wrap
+     (Meta is 14 now) the divider that would start a line is cut off and none is left hanging at a line's end -->
+<!-- clip, not hidden: no scroll container, so the line keeps its baseline -->
+<span class="{cls} inline-flex overflow-clip">
+  <span class="-ml-4 inline-flex flex-wrap items-center">
+    {#each shown as f, i (i)}<span class="before:bg-line-strong relative ml-2 pl-2 before:absolute before:top-1/2 before:left-0 before:h-[1em] before:w-px before:-translate-y-1/2 {i ? rest : ''}">{#if i}<span class="sr-only">{', '}</span>{/if}{#if typeof f === 'function'}{@render f()}{:else}{f}{/if}</span>{/each}
+  </span>
 </span>

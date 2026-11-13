@@ -116,15 +116,15 @@
         <Segmented bind:value={s.intensity} label={t.train.intensity} options={INTENSITIES.map((i) => ({ value: i, label: t.train.intensities[i] }))} />
         <p class="text-caption text-ink-2">{t.train.intensityLines[s.intensity]}</p>
       </div>
-      <p class="text-body font-semibold" data-testid="session-kcal">{t.train.sessionAdds(num(Math.round(sessionKcal(s, weightKg))))}</p>
+      <p class="text-subhead num" data-testid="session-kcal">{t.train.sessionAdds(num(Math.round(sessionKcal(s, weightKg))))}</p>
 
       <div>
-        <h3 class="text-heading">{t.train.exercises}</h3>
+        <h3 class="text-eyebrow text-ink-2">{t.train.exercises}</h3>
         {#each s.exercises ?? [] as e, i (i)}
           <div class="border-line border-t py-3 first-of-type:border-t-0" data-testid="session-exercise">
             <button type="button" class="active:bg-surface-2 -mx-6 flex w-[calc(100%+var(--inset)*2)] flex-col items-start px-6 py-1 text-left transition-colors duration-[var(--d-press)]" aria-expanded={opened === i} onclick={() => (opened = opened === i ? null : i)}>
               <span class="text-body line-clamp-2 font-semibold">{LIBRARY[e.exerciseId]?.name ?? e.exerciseId}</span>
-              <span class="text-caption text-ink-2"><Facts facts={[t.train.sets(num(e.sets)), t.train.reps(num(e.repsMin), num(e.repsMax))]} /></span>
+              <span class="text-callout text-ink-2"><Facts facts={[t.train.sets(num(e.sets)), t.train.reps(num(e.repsMin), num(e.repsMax))]} /></span>
             </button>
             {#if opened === i}
               <div class="mt-2 flex flex-col gap-2">

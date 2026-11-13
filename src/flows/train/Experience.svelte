@@ -4,6 +4,7 @@
 <script lang="ts">
   import { collapse } from '$lib/haptics';
   import Card from '$lib/components/Card.svelte';
+  import CardHead from '$lib/components/CardHead.svelte';
   import Chip from '$lib/components/Chip.svelte';
   import Button from '$lib/components/Button.svelte';
   import { t } from '$lib/i18n';
@@ -34,8 +35,7 @@
 {#if shown}
   <div in:collapse out:collapse={{ leave: true }}>
   <Card data-testid="train-experience">
-    <p class="text-body font-semibold">{t.experience.q}</p>
-    <p class="text-callout text-ink-2 mt-1">{t.experience.trainLine}</p>
+    <CardHead title={t.experience.q} line={t.experience.trainLine} />
     <div class="mt-3 flex flex-wrap gap-2" role="group" aria-label={t.experience.q}>
       {#each LEVELS as level (level)}
         <Chip selected={picked === level} onclick={() => (picked = level)}>{t.experience[level]}</Chip>

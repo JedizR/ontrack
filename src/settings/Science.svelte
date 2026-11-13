@@ -15,7 +15,7 @@
 </script>
 
 {#snippet heading(text: string)}
-  <h3 class="text-caption text-ink-2 font-semibold mt-6 mb-1">{text}</h3>
+  <h3 class="text-eyebrow text-ink-2 mt-6 mb-1">{text}</h3>
 {/snippet}
 
 <p class="text-body">{t.science.intro}</p>

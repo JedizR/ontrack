@@ -97,6 +97,11 @@
   --text-lead: var(--t-lead);
   --text-lead--line-height: 1.5;
   --text-lead--letter-spacing: -0.01em;
+  /* U3: a card's title or status, a stat tile's figure, a sheet's total; Lead's size, set as a title */
+  --text-subhead: var(--t-lead);
+  --text-subhead--line-height: 1.33;
+  --text-subhead--font-weight: 600;
+  --text-subhead--letter-spacing: -0.02em;
   --text-body: var(--t-body);
   --text-body--line-height: 1.5;
   --text-body--letter-spacing: -0.02em;

@@ -20,6 +20,7 @@
   import Button from '$lib/components/Button.svelte';
   import Card from '$lib/components/Card.svelte';
   import Row from '$lib/components/Row.svelte';
+  import CardHead from '$lib/components/CardHead.svelte';
   import Facts from '$lib/components/Facts.svelte';
   import Chip from '$lib/components/Chip.svelte';
   import Segmented from '$lib/components/Segmented.svelte';
@@ -153,8 +154,27 @@
 
       {#snippet estimate()}<SourceLabel source="estimate" />{/snippet}
       {#snippet database()}<SourceLabel source="database" />{/snippet}
+      <!-- U3: the five levels inside the app (DESIGN.md section 5, Hierarchy) -->
+      <section data-section="type">
+        {@render heading('Text levels')}
+        <Card>
+          <p class="text-eyebrow text-ink-2">Label, the eyebrow</p>
+          <p class="text-subhead mt-1">Subhead, a card's title</p>
+          <p class="text-body mt-2 font-semibold">Body, a row's title</p>
+          <p class="text-callout text-ink-2"><Facts facts={['Meta, the line under it', 'a second fact']} /></p>
+          <p class="text-caption text-ink-2 mt-2">Caption, a label under a figure</p>
+        </Card>
+      </section>
+
       <section data-section="rows">
         {@render heading('Card and rows')}
+        {@render note('A status card: the subject, the status, why, one action')}
+        <Card>
+          <CardHead eyebrow={t.checkin.cardEyebrow} title={t.checkin.cardTitle} line={t.checkin.cardLine}>
+            {#snippet action()}<Button size="sm">{t.checkin.open}</Button>{/snippet}
+          </CardHead>
+        </Card>
+        {@render note('A list card')}
         <Card list>
           <Row title="Push day" wrap>
       {#snippet caption()}<Facts facts={['Strength', t.after.minN('60'), t.after.kcalN('240')]} />{/snippet}

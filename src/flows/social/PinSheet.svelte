@@ -60,7 +60,7 @@
       <Avatar name={who.initial} path={who.path} local={who.local} size="md" />
       <div class="min-w-0">
         <p class="text-body truncate font-semibold">{who.name}</p>
-        <p class="text-caption text-ink-2 num">{when(m.takenAt)}</p>
+        <p class="text-callout text-ink-2 num">{when(m.takenAt)}</p>
       </div>
     </div>
     <div class="mt-4" data-testid="pin-nutrition">
