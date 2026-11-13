@@ -386,6 +386,13 @@ export const en = {
   },
   onboarding: {
     label: 'Set up your plan',
+    /** U1a: the short screen before Your plan; each row names work the engine does */
+    building: 'Building your plan',
+    buildEnergy: 'Energy you use each day',
+    buildDays: 'Targets for training days',
+    buildEvery: 'One target for every day',
+    buildProtein: 'Protein for this goal',
+    built: 'Your plan is ready',
     back: 'Back',
     continue: 'Continue',
     progress: (n: string, total: string) => `Step ${n} of ${total}`,
@@ -401,6 +408,12 @@ export const en = {
     loseLine: 'Keep the muscle you have.',
     maintain: 'Maintain',
     maintainLine: 'Eat to match your training.',
+    /** U1a: a small link under the three goals that shows two more */
+    more: "Not what you're looking for?",
+    weight: 'Gain weight',
+    weightLine: 'Put on weight faster if you are lean.',
+    recomp: 'Lose fat and build muscle',
+    recompLine: 'Eat just under maintenance, with more protein.',
   },
   screening: {
     q: 'Before we set any numbers',
@@ -620,6 +633,8 @@ export const en = {
     expectLose: (kg: string) => `Expect to lose about ${kg} a week.`,
     expectGain: (kg: string) => `Expect to gain about ${kg} a week.`,
     expectHold: 'Expect your weight to hold steady.',
+    /** the in-between goal (U1a): why its pace is fixed */
+    recomp: "The gentle pace with a cut's protein, so muscle can still grow while you lift.",
     estimate: 'This is a starting estimate. Ontrack corrects it from your results after two weeks.',
     yourTraining: 'Your training',
     lifting: (days: string, min: string) => `Lifting ${days} ${days === '1' ? 'day' : 'days'} a week, ${min} minutes each, at a moderate effort.`,

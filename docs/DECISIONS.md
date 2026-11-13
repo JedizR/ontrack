@@ -2,6 +2,21 @@
 
 Changes to a doc's decision, and choices made on the owner's behalf. Newest first, one line each: what, why.
 
+## U1a
+
+Onboarding feel, 13 November 2026. Unattended; from the owner's iPhone pass (feedback 8, 9, 10). The owner's calls, recorded as asked:
+- **A choice never advances on its own** (overrides O1's advance 240 ms after the pick). A tap selects and saves the answer, so the number so far still grows on that tap; Continue, pinned and disabled until there is an answer, moves on. Every question, "None of these apply" included. "How fast" has been a control on Your plan since O1, which never moved on; the owner's screenshot 10 shows the flow from before O1, so his phone was likely on an old cached version. Cost: one more tap per choice step (measured below).
+- **Building your plan** (overrides O1's "no fake wait" and the voice guide's "a fake loader" row as far as the wait goes): about 2 s before Your plan. It names only work the engine does, and the plan is computed before it shows.
+
+Decided on the owner's behalf:
+- **The selected tile's glyph is white** (`--on-accent`, the token for content on violet), not the owner's suggested light purple: `--lavender` is a landing-only token, and a new app token would be U1b's shared look. The ink fill already gives the card over 15 to 1 against the page in both themes.
+- **The two goals add one rule each, no constant and no stored field** (SCIENCE.md section 6, vectors J and K). Gain weight is the gain goal leading with the faster pace where `paceOptions` offers it. "Lose fat and build muscle" is a cut held at the gentle pace with the cut's protein: "near maintenance" read as the engine's smallest deficit, about 10 percent, because a maintenance plan with a cut's protein would need a stored goal (a records change for sync) and every check-in or program change would recompute it to maintenance protein. Its deficit stays under the 500 kcal a day at which lean mass gains stopped (S26, added through `science-check`).
+- **The draft keeps the pick as `aim`** (`weight` or `recomp`) beside the engine goal, so the goal card shows it and Back reopens the link's two; plans store only the engine goal, so after onboarding a recomp plan is a `lose` plan at 0.25 and a Gain weight plan is a `gain` plan.
+- **Names and lines:** "Gain weight", "Put on weight faster if you are lean." (honest about the provisional pace, and says who it is for); "Lose fat and build muscle", "Eat just under maintenance, with more protein."; Your plan explains the fixed pace: "The gentle pace with a cut's protein, so muscle can still grow while you lift." The link is the owner's words. The two show below the three, so no card moves under a thumb.
+- **Building your plan's rows**: "Energy you use each day", "Targets for training days" (with no training, "One target for every day"), "Protein for this goal" (few "your" on one screen, voice rule 2); the title is a statement. The rows tick, then an empty disc fills with a violet check (no ring: D2 kept the track over the ring), not green: green means a target reached, and a plan is not one. 2.15 s in all. It plays once a visit: going back to change an answer and returning shows Your plan at once, since a second wait would be a fake one. Never with reduced motion, where Your plan's numbers also show at once.
+- **Your plan's protein counts up** with the hero (from zero, 400 ms); the rest day line does not, to keep one moving number beside the hero.
+- **Measured** (`tests/e2e/measure.spec.ts`, Building's 2.15 s added to the model): gain user 12 to 19 gestures, modelled 118 to 135 s; cut user 13 to 19, 114 to 130 s.
+
 ## L1
 
 Landing page, 12 to 13 November 2026. Unattended; from the owner's picks (`ontrack-design/onefin/owner-picks/`), `site/SITE-EXTRACT.md` "Landing sections", `site/motion/MOTION.md` and the landing proposals in `onboarding/COPY.md`. Decided on the owner's behalf:

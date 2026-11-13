@@ -52,11 +52,14 @@ function walker(page: Page) {
   };
 }
 
+/** Building your plan (U1a): a fixed wait before Your plan, added to the model as it is. */
+const BUILDING_S = 2.15;
+
 function report(name: string, log: Log, ms: number) {
   const taps = log.reduce((a, s) => a + s.taps, 0);
   const drags = log.reduce((a, s) => a + s.drags, 0);
   const read = log.reduce((a, s) => a + 0.3 + s.words / 4, 0);
-  const model = read + (taps + drags) * 1.35 + taps * 0.4 + drags * 1.5;
+  const model = read + (taps + drags) * 1.35 + taps * 0.4 + drags * 1.5 + BUILDING_S;
   console.log(JSON.stringify({ name, screens: log.length, taps, drags, gestures: taps + drags, words: log.reduce((a, s) => a + s.words, 0), modelSeconds: Math.round(model), walkSeconds: +(ms / 1000).toFixed(1), log }));
 }
 
@@ -65,6 +68,8 @@ test.describe.configure({ mode: 'serial' });
 // The flow before O1 (main at 0460b12), walked with this file before the redesign, same users and same model:
 //   gain: 11 screens, 13 taps and 3 drags (16 gestures), 336 words, modelled 119 s, automated walk 5.0 s
 //   cut:  11 screens, 12 taps and 3 drags (15 gestures), 345 words, modelled 119 s, automated walk 4.9 s
+// O1 (main at 354bfb1, auto-advance): gain 12 gestures, modelled 118 s; cut 13 gestures, modelled 114 s (docs/STATE.md).
+// U1a adds a Continue on every choice step (the owner's call) and Building your plan's fixed wait.
 // The phone's region is Thailand, so the body screen starts in metric, as the owner's users' phones would.
 test.use({ locale: 'en-TH' });
 
@@ -76,10 +81,13 @@ test('a typical gain user (vector A: 25, 175 cm, 60 kg, lifts 4 days)', async ({
   await w.tap('landing-start');
   await w.at('step-goal');
   await w.tap('choice-gain');
+  await w.tap('continue');
   await w.at('step-screening');
   await w.tap('screen-none');
+  await w.tap('continue');
   await w.at('step-sex');
   await w.tap('choice-male');
+  await w.tap('continue');
   await w.at('step-born');
   await w.wheel('wheel-year', '2001');
   await w.tap('continue');
@@ -89,12 +97,16 @@ test('a typical gain user (vector A: 25, 175 cm, 60 kg, lifts 4 days)', async ({
   await w.tap('continue');
   await w.at('step-move');
   await w.tap('choice-seated');
+  await w.tap('continue');
   await w.at('step-days');
   await w.tap('days-4');
+  await w.tap('continue');
   await w.at('step-kind');
   await w.tap('choice-lifting');
+  await w.tap('continue');
   await w.at('step-experience');
   await w.tap('choice-beginner');
+  await w.tap('continue');
   await w.at('your-plan');
   await w.tap('plan-save');
   await expect(page.getByTestId('signin-sheet')).toBeVisible();
@@ -109,10 +121,13 @@ test('a typical cut user (32, 165 cm, 75 kg, some walking, lifts 3 days)', async
   await w.tap('landing-start');
   await w.at('step-goal');
   await w.tap('choice-lose');
+  await w.tap('continue');
   await w.at('step-screening');
   await w.tap('screen-none');
+  await w.tap('continue');
   await w.at('step-sex');
   await w.tap('choice-female');
+  await w.tap('continue');
   await w.at('step-born');
   await w.wheel('wheel-year', '1994');
   await w.tap('continue');
@@ -122,10 +137,13 @@ test('a typical cut user (32, 165 cm, 75 kg, some walking, lifts 3 days)', async
   await w.tap('continue');
   await w.at('step-move');
   await w.tap('choice-light');
+  await w.tap('continue');
   await w.at('step-days');
   await w.tap('days-3');
+  await w.tap('continue');
   await w.at('step-kind');
   await w.tap('choice-lifting');
+  await w.tap('continue');
   await w.at('your-plan');
   await w.tap('plan-save');
   await expect(page.getByTestId('signin-sheet')).toBeVisible();

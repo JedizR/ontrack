@@ -2,7 +2,7 @@
 // draft in prefs so it survives the Google redirect, and actions.finishOnboarding writes what toRecords returns.
 import {
   defaultPace, guardrails, paceOptions, plan, V,
-  type Experience, type Goal, type Neat, type PlanInput, type Sex,
+  type Experience, type Goal, type Neat, type PaceName, type PlanInput, type Sex,
 } from '$lib/model/engine';
 import { TEMPLATES, type TrainKind } from '$lib/data/templates';
 import { weekdayOf, yearOf } from '$lib/model/dates';
@@ -15,9 +15,19 @@ export type Screening = { pregnant: boolean; medical: boolean; eatingDisorder: b
 export type Screen =
   | 'welcome' | 'goal' | 'screening' | 'advice' | 'sex' | 'born' | 'young' | 'body' | 'move' | 'days' | 'kind' | 'experience' | 'plan';
 
+/**
+ * The two goals behind "Not what you're looking for?" (U1a), each an engine goal with one rule: Gain weight is the gain
+ * goal leading with the faster pace where it is offered; the in-between goal is a cut held at the gentle pace, the
+ * smallest deficit, with the cut's protein (SCIENCE.md section 6).
+ */
+export type Aim = 'weight' | 'recomp';
+export const AIMS: Record<Aim, { goal: Goal; pace: PaceName }> = { weight: { goal: 'gain', pace: 'faster' }, recomp: { goal: 'lose', pace: 'gentle' } };
+
 export type Draft = {
   at: Screen;
   goal?: Goal;
+  /** one of the two goals behind the link; the engine goal is in `goal` */
+  aim?: Aim;
   screening?: Screening;
   sex?: Sex;
   birthYear?: number;
@@ -136,7 +146,8 @@ export const programOf = (d: Draft): Program => ({ name: '', sessions: d.days &&
 
 /**
  * The engine's input. A goal the guardrails remove becomes maintain; a pace not chosen yet, or no longer offered after
- * an answer changed, is the default (none for maintain). Only here are the faster gain pace's BMI limits applied.
+ * an answer changed, is the aim's pace where offered, else the default (none for maintain). Only here are the faster
+ * gain pace's BMI limits applied.
  */
 export function inputOf(d: Draft, year: number): PlanInput {
   const age = ageOf(d, year);
@@ -145,6 +156,10 @@ export function inputOf(d: Draft, year: number): PlanInput {
   const g = guardrails({ age, heightCm, weightKg });
   const goal: Goal = d.goal && g.goals.includes(d.goal) ? d.goal : 'maintain';
   const experience: Experience = (asksExperience(d) && d.experience) || 'beginner';
+  const offered = paceOptions(goal, g.bmi, experience);
+  // the in-between goal's pace is fixed; Gain weight leads with the faster pace until another is picked
+  const chosen = d.aim !== 'recomp' && offered.some((o) => o.rate === d.rate) ? d.rate : undefined;
+  const lead = d.aim && offered.find((o) => o.name === AIMS[d.aim!].pace);
   return {
     sex: d.sex ?? 'unspecified',
     age,
@@ -154,8 +169,7 @@ export function inputOf(d: Draft, year: number): PlanInput {
     neat: d.neat ?? 'seated',
     sessions: programOf(d).sessions,
     goal,
-    ratePctPerWeek:
-      (paceOptions(goal, g.bmi, experience).some((o) => o.rate === d.rate) ? d.rate : defaultPace(goal, g.bmi, experience)?.rate) ?? 0,
+    ratePctPerWeek: chosen ?? (lead || defaultPace(goal, g.bmi, experience))?.rate ?? 0,
     experience,
     maintainOnly: flagged(d),
   };
@@ -181,22 +195,23 @@ export const minGoalWeightKg = (d: Draft) => Math.max(guardrails({ age: 0, heigh
 export const goalWeightOf = (d: Draft) => (d.goalWeightKg && d.goalWeightKg >= minGoalWeightKg(d) ? d.goalWeightKg : undefined);
 
 export type Why = 'noLose' | 'gentleOnly' | 'noFaster' | 'leanOnly' | 'noFasterGain';
-/** The paces offered for this draft, each with its plan, the one picked, and why any pace is missing. */
+/** The paces offered for this draft, each with its plan, the one in use, and why any pace is missing. */
 export function paceChoices(d: Draft, year: number) {
   const base = inputOf(d, year);
   const { bmi } = guardrails(base);
-  const offered = flagged(d) ? [] : paceOptions(base.goal, bmi, base.experience);
+  // the in-between goal has no pace to choose
+  const offered = flagged(d) || d.aim === 'recomp' ? [] : paceOptions(base.goal, bmi, base.experience);
   const why: Why | null =
     flagged(d) ? null
     : d.goal === 'lose' && base.goal !== 'lose' ? 'noLose'
+    : d.aim === 'recomp' ? null
     : d.goal === 'lose' && bmi < V.gentleOnlyBmi ? 'gentleOnly'
     : d.goal === 'lose' && bmi < V.fasterPaceMinBmi ? 'noFaster'
     : d.goal === 'gain' && base.experience === 'advanced' ? 'leanOnly'
     : d.goal === 'gain' && bmi >= V.fasterGainMaxBmi ? 'noFasterGain'
     : null;
   const options = offered.map((o) => ({ ...o, plan: plan({ ...base, ratePctPerWeek: o.rate }) }));
-  const picked = (offered.find((o) => o.rate === d.rate) ?? defaultPace(base.goal, bmi, base.experience))?.rate ?? 0;
-  return { options, why, picked, hold: plan({ ...base, goal: 'maintain', ratePctPerWeek: 0 }) };
+  return { options, why, picked: base.ratePctPerWeek, hold: plan({ ...base, goal: 'maintain', ratePctPerWeek: 0 }) };
 }
 
 /** The records onboarding creates: profile, program, the first plan and the first weigh-in. */

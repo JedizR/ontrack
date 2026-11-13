@@ -2,7 +2,7 @@
 // becomes (SCREENS.md section 4, PRD section 7). Vector A of docs/SCIENCE.md is the hardgainer below.
 import { describe, expect, test } from 'vitest';
 import { SCHEMAS } from '../../shared/records';
-import { plan, type PlanNumbers } from '../../src/lib/model/engine';
+import { dayMacros, dayTarget, plan, type PlanNumbers } from '../../src/lib/model/engine';
 import { kgPerWeek, targetParts, targetWith, trainingDayEee } from '../../src/lib/model/day';
 import { cmToFtIn, ftInToCm, kgToLb, lbToKg } from '../../src/lib/model/units';
 import { weekdayOf } from '../../src/lib/model/dates';
@@ -138,6 +138,54 @@ describe('guardrails', () => {
   test('a screening tick makes the plan maintenance only', () => {
     const p = plan(inputOf({ ...A, screening: { pregnant: false, medical: true, eatingDisorder: false } }, YEAR));
     expect(p).toMatchObject({ goal: 'maintain', delta: 0, flags: ['maintainOnly'] });
+  });
+});
+
+describe('the two goals behind "Not what you\'re looking for?" (U1a, SCIENCE.md vectors J and K)', () => {
+  const day = (d: Draft) => {
+    const p = plan(inputOf(d, YEAR));
+    const sex = inputOf(d, YEAR).sex;
+    return { p, training: targetWith(p, sex, trainingDayEee(p)), rest: targetWith(p, sex, 0) };
+  };
+  test('J: vector A as Gain weight leads with the faster pace, so its plan is vector H', () => {
+    const { p, training, rest } = day({ ...A, goal: 'gain', aim: 'weight' });
+    expect(p).toMatchObject({ goal: 'gain', ratePctPerWeek: 0.75, proteinG: 108, flags: ['surplusCap'] });
+    expect([training, rest]).toEqual([2530, 2290]);
+    expect(paceChoices({ ...A, aim: 'weight' }, YEAR)).toMatchObject({ options: [{}, {}, { name: 'faster' }], picked: 0.75, why: null });
+    // another pace picked on Your plan holds
+    expect(inputOf({ ...A, aim: 'weight', rate: 0.25 }, YEAR).ratePctPerWeek).toBe(0.25);
+  });
+  test('Gain weight where the faster pace is not offered is the gain goal\'s default, saying why', () => {
+    expect(paceChoices({ ...A, aim: 'weight', weightKg: 67 }, YEAR)).toMatchObject({ picked: 0.5, why: 'noFasterGain' }); // BMI 21.9
+    expect(paceChoices({ ...A, aim: 'weight', experience: 'advanced' }, YEAR)).toMatchObject({ picked: 0.25, why: 'leanOnly' });
+  });
+  // vector B's person lifting 3 days at the onboarding defaults
+  const K: Draft = { ...A, goal: 'lose', aim: 'recomp', sex: 'female', birthYear: 1996, heightCm: 165, weightKg: 70, neat: 'light', days: 3, kind: 'lifting' };
+  test('K: the in-between goal is a cut held at the gentle pace, with the cut\'s protein and no pace to choose', () => {
+    const { p, training, rest } = day(K);
+    expect(p).toMatchObject({ goal: 'lose', ratePctPerWeek: 0.25, proteinG: 140, fatG: 49, flags: [] });
+    expect(p.delta).toBeCloseTo(-192.5, 9); // under the 500 kcal a day at which lean mass gains stopped (S26)
+    expect([training, rest]).toEqual([1930, 1650]);
+    const even = dayTarget(p, { sex: 'female', mode: 'even', weekday: 0 });
+    expect(even).toBe(1770);
+    expect([training, rest, even].map((x) => dayMacros(p, x).carbsG)).toEqual([232, 162, 192]);
+    expect(kgPerWeek(p, 'female', 'matched')).toBeCloseTo(0.175, 3);
+    expect(paceChoices(K, YEAR)).toMatchObject({ options: [], why: null, picked: 0.25 });
+    // a pace left from Lose fat does not carry over
+    expect(inputOf({ ...K, rate: 0.75 }, YEAR).ratePctPerWeek).toBe(0.25);
+    // between maintenance and the cut's steady pace, with more protein than maintenance
+    expect(day({ ...K, goal: 'maintain', aim: undefined }).training).toBe(2130);
+    expect(day({ ...K, aim: undefined }).training).toBe(1740);
+    expect(day({ ...K, goal: 'maintain', aim: undefined }).p.proteinG).toBe(112);
+  });
+  test('below BMI 18.5 the in-between goal keeps the weight steady, as Lose fat does', () => {
+    const d: Draft = { ...K, weightKg: 48 };
+    expect(inputOf(d, YEAR)).toMatchObject({ goal: 'maintain', ratePctPerWeek: 0 });
+    expect(paceChoices(d, YEAR)).toMatchObject({ options: [], why: 'noLose' });
+  });
+  test('neither asks a new question: Gain weight asks experience as Build muscle does, the in-between goal does not', () => {
+    expect(route({ ...A, aim: 'weight' }, YEAR)).toContain('experience');
+    expect(route(K, YEAR)).not.toContain('experience');
   });
 });
 

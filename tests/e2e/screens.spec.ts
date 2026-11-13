@@ -151,7 +151,10 @@ for (const theme of ['light', 'dark'] as const) {
         await openFresh(page);
         await go('landing-start');
         await at('step-goal', 'goal');
-        await go('choice-lose');
+        await go('goal-more');
+        await go('choice-recomp');
+        await at('step-goal', 'goal-more-picked');
+        await go('choice-lose'); await go('continue');
         await at('step-screening', 'screening');
         await go('screen-medical');
         await at('step-screening', 'screening-ticked');
@@ -164,9 +167,9 @@ for (const theme of ['light', 'dark'] as const) {
         await at('step-advice', 'advice-eating-disorder');
         await go('back');
         await go('screen-eatingDisorder');
-        await go('screen-none');
+        await go('screen-none'); await go('continue');
         await at('step-sex', 'sex');
-        await go('choice-female');
+        await go('choice-female'); await go('continue');
         await at('step-born', 'born');
         await wheelType(page, 'wheel-year', '2012');
         await go('continue');
@@ -185,10 +188,15 @@ for (const theme of ['light', 'dark'] as const) {
         await go('continue');
         await at('step-move', 'move');
         await go('choice-light');
+        await at('step-move', 'move-picked');
+        await go('continue');
         await at('step-days', 'days');
-        await go('days-3');
+        await go('days-3'); await go('continue');
         await at('step-kind', 'kind');
-        await go('choice-lifting');
+        await go('choice-lifting'); await go('continue');
+        // straight away: the screen is gone 2.15 s after it opens
+        await page.getByTestId('build-row').nth(1).and(page.locator('[data-done="true"]')).waitFor();
+        await page.screenshot({ path: `screenshots/onboarding/building-${theme}-${d.name}.png` });
         await at('your-plan', 'plan-lose');
         await page.getByTestId('plan-pace').getByRole('radio', { name: 'Faster' }).click();
         await shot(page, 'onboarding', 'plan-lose-faster');
@@ -208,6 +216,7 @@ for (const theme of ['light', 'dark'] as const) {
         await page.getByTestId('step-experience').waitFor();
         await shot(page, 'onboarding', 'experience');
         await page.getByTestId('choice-beginner').click();
+        await page.getByTestId('continue').click();
         await page.getByTestId('your-plan').waitFor();
         await shot(page, 'onboarding', 'plan-gain-doctor');
         await page.getByTestId('plan-pace').getByRole('radio', { name: 'Faster' }).click();

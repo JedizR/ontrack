@@ -49,6 +49,9 @@
   // the payoff: the hero counts up from the number the user watched grow (400 ms), then follows each pace tapped
   const hero = new Tween(untrack(() => shown.last || parts.total), { duration: dur(400), easing: cubicOut });
   $effect(() => { hero.target = parts.total; });
+  // protein counts up with it on arrival (U1a)
+  const protein = new Tween(0, { duration: dur(400), easing: cubicOut });
+  $effect(() => { protein.target = n.proteinG; });
 
   // the pace, live (replaces the Pace screen): only the paces the guardrails allow, with why one is missing
   const c = $derived(paceChoices(d, year));
@@ -131,7 +134,8 @@
         {#if matched}<p class="text-lead num mt-3" data-testid="plan-rest">{t.plan.onRest(num(rest))}</p>{/if}
       </div>
       <div class="bg-surface-2 appear mt-2 rounded-lg p-4" style="--i: 2">
-        <p class="text-display" data-testid="plan-protein">{num(n.proteinG)}</p>
+        <p class="text-display" aria-hidden="true">{num(Math.round(protein.current))}</p>
+        <p class="sr-only" data-testid="plan-protein">{num(n.proteinG)}</p>
         <p class="text-caption text-ink-2 mt-1">{t.after.proteinDay}</p>
       </div>
     </Card>
@@ -144,6 +148,7 @@
     {/if}
     <div class="flex flex-col gap-2">
       <p class="text-lead" data-testid="plan-expect">{expect} {t.plan.estimate}</p>
+      {#if d.aim === 'recomp' && n.goal === 'lose'}<p class="text-callout text-ink-2" data-testid="plan-recomp">{t.plan.recomp}</p>{/if}
       {#if faster}
         <p class="text-callout" data-testid="pace-faster">{t.pace.fasterGain} <span class="text-ink-2">{t.plan.provisional}</span></p>
       {/if}

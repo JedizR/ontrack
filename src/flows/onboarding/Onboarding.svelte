@@ -1,6 +1,7 @@
-<!-- SCREENS.md section 4 (O1): up to nine questions with their guardrail screens, and Your plan. Before the first
-     question the draft sits at 'welcome', which App shows as the landing page (L1). Single answers advance on tap, 240 ms
-     after the pick fills ink, with no button; the number builds in the footer from the daily movement question on.
+<!-- SCREENS.md section 4 (O1, U1a): up to nine questions with their guardrail screens, and Your plan. Before the first
+     question the draft sits at 'welcome', which App shows as the landing page (L1). A tap selects an answer and enables
+     Continue, which moves on (the owner's call in U1a); the number builds in the footer from the daily movement question
+     on, and Building your plan plays once before Your plan.
      Answers live in the prefs draft, so a reload or the Google redirect lands on the same screen. Signed out, Save this
      plan opens sign in; signed in, it writes the plan at once. -->
 <script lang="ts">
@@ -11,6 +12,7 @@
   import Body from './Body.svelte';
   import YourPlan from './YourPlan.svelte';
   import SoFar from './SoFar.svelte';
+  import Building from './Building.svelte';
   import Button from '$lib/components/Button.svelte';
   import Check from '@lucide/svelte/icons/check';
   import TrendingUp from '@lucide/svelte/icons/trending-up';
@@ -23,6 +25,9 @@
   import Dumbbell from '@lucide/svelte/icons/dumbbell';
   import HeartPulse from '@lucide/svelte/icons/heart-pulse';
   import Blend from '@lucide/svelte/icons/blend';
+  import Weight from '@lucide/svelte/icons/weight';
+  import ArrowDownUp from '@lucide/svelte/icons/arrow-down-up';
+  import { tick as settled } from 'svelte';
   import { prefs } from '$lib/prefs.svelte';
   import { db } from '$lib/db/store.svelte';
   import { sheets } from '$lib/sheets.svelte';
@@ -31,9 +36,9 @@
   import type { TrainKind } from '$lib/data/templates';
   import { today, yearOf } from '$lib/model/dates';
   import { num } from '$lib/model/format';
-  import { dur, haptic } from '$lib/haptics';
+  import { dur, haptic, reducedMotion } from '$lib/haptics';
   import { t } from '$lib/i18n';
-  import { LIMITS, START, fresh, progress, soFar, step, upgrade, type Draft, type Screen, type Screening } from './draft';
+  import { AIMS, LIMITS, START, flagged, fresh, progress, soFar, step, upgrade, type Aim, type Draft, type Screen, type Screening } from './draft';
   import { settle } from './settle';
 
   type Icon = Component<{ size?: number; strokeWidth?: number }>;
@@ -44,29 +49,25 @@
   function set(patch: Partial<Draft>) {
     prefs.draft = { ...d, ...patch };
   }
-  let timer: ReturnType<typeof setTimeout> | undefined;
   function move(at: Screen, by: 1 | -1) {
-    clearTimeout(timer);
     dir = by;
     // leaving Your plan takes back "Save this plan": a changed answer must not settle before it is saved again
     prefs.draft = { ...d, at, saved: undefined };
     scrollTo({ top: 0 });
   }
+  // Building your plan plays once a visit: coming back to Your plan after changing an answer is no new wait
+  let building = $state(false);
+  let built = false;
   /** Save this screen's answer, then go to the screen the answers lead to. */
   function next(patch: Partial<Draft> = {}) {
     const nd = { ...d, ...patch };
+    const to = step(nd, year, 1);
+    if (to === 'plan' && !built && !reducedMotion()) building = built = true;
     prefs.draft = nd;
-    move(step(nd, year, 1), 1);
-  }
-  /** A single answer: the pick fills ink and the number grows, then the screen slides on (SCREENS.md section 4). */
-  function pick(patch: Partial<Draft>) {
-    clearTimeout(timer);
-    set(patch);
-    timer = setTimeout(() => next(), dur(240));
+    move(to, 1);
   }
   const back = () => move(step(d, year, -1), -1);
   function leave() {
-    clearTimeout(timer);
     prefs.draft = null;
     dir = -1;
     ticks = { ...NONE };
@@ -82,12 +83,29 @@
     else sheets.signin = true;
   }
 
-  // ----- the single choice questions -----
-  const GOALS: { value: Goal; title: string; line: string; icon: Icon }[] = [
+  // ----- the single choice questions: a tap selects (the answer is saved, so the number grows), Continue moves on -----
+  const GOALS: { value: Goal | Aim; title: string; line: string; icon: Icon }[] = [
     { value: 'gain', title: t.goal.gain, line: t.goal.gainLine, icon: TrendingUp },
     { value: 'lose', title: t.goal.lose, line: t.goal.loseLine, icon: TrendingDown },
     { value: 'maintain', title: t.goal.maintain, line: t.goal.maintainLine, icon: Equal },
+    // behind "Not what you're looking for?" (U1a)
+    { value: 'weight', title: t.goal.weight, line: t.goal.weightLine, icon: Weight },
+    { value: 'recomp', title: t.goal.recomp, line: t.goal.recompLine, icon: ArrowDownUp },
   ];
+  const isAim = (v: Goal | Aim): v is Aim => v in AIMS;
+  const chosenGoal = $derived(d.aim ?? d.goal);
+  // the link opens once and stays open; a draft already on one of the two opens with them
+  let more = $state(!!prefs.draft?.aim);
+  async function showMore() {
+    more = true;
+    await settled();
+    document.querySelector<HTMLElement>('[data-testid="choice-weight"]')?.focus();
+  }
+  function pickGoal(v: Goal | Aim) {
+    if (v === chosenGoal) return;
+    // a changed goal changes the paces offered, so the pace goes back to the goal's own
+    set(isAim(v) ? { goal: AIMS[v].goal, aim: v, rate: undefined } : { goal: v, aim: undefined, rate: undefined });
+  }
   const SEXES: { value: Sex; title: string; line?: string }[] = [
     { value: 'male', title: t.sex.male },
     { value: 'female', title: t.sex.female },
@@ -111,27 +129,28 @@
     { value: 'intermediate', title: t.experience.intermediate },
     { value: 'advanced', title: t.experience.advanced },
   ];
-  // a changed goal or experience changes the paces offered, so the pace goes back to the default
-  const repace = (patch: Partial<Draft>, same: boolean) => pick(same ? {} : { ...patch, rate: undefined });
+  // a changed experience changes the paces offered, so the pace goes back to the default
+  const repace = (experience: Experience) => experience !== d.experience && set({ experience, rate: undefined });
 
-  // ----- screening: None of these apply answers in one tap; a tick shows Continue, which leads to the advice screen -----
+  // ----- screening: None of these apply or a tick enables Continue; a tick leads to the advice screen -----
   const ITEMS: (keyof Screening)[] = ['pregnant', 'medical', 'eatingDisorder'];
   const NONE: Screening = { pregnant: false, medical: false, eatingDisorder: false };
   // local until answered; a draft from an earlier visit fills them in
   const was = prefs.draft?.screening;
   let ticks = $state<Screening>({ ...NONE, ...was });
   const ticked = $derived(ITEMS.some((k) => ticks[k]));
-  const none = $derived(!!d.screening && !ITEMS.some((k) => d.screening![k]) && !ticked);
+  const none = $derived(!!d.screening && !flagged(d) && !ticked);
   function tick(k: keyof Screening) {
-    // a tick right after "None of these apply" wins over its pending advance
-    clearTimeout(timer);
     haptic();
     ticks[k] = !ticks[k];
+    // a tick takes back the saved answer, "None of these apply" included; Continue saves the ticks
+    if (d.screening) set({ screening: undefined });
   }
   function tickNone() {
     haptic();
     ticks = { ...NONE };
-    pick({ screening: { ...NONE } });
+    // a second tap unticks it, as any checkbox
+    set({ screening: none ? undefined : { ...NONE } });
   }
 
   // ----- birth year: a wheel from the answer, or from a 25 year old; Continue saves it -----
@@ -139,10 +158,11 @@
   let yearError = $state('');
 </script>
 
-{#snippet cta(onclick: () => void)}
-  <Button variant="primary" size="lg" full {onclick} data-testid="continue">{t.onboarding.continue}</Button>
+{#snippet cta(onclick: () => void, ready = true)}
+  <Button variant="primary" size="lg" full {onclick} disabled={!ready} data-testid="continue">{t.onboarding.continue}</Button>
 {/snippet}
-{#snippet card()}{#if now}<SoFar {now} />{/if}{/snippet}
+<!-- from daily movement on: the number so far, then Continue -->
+{#snippet card(ready: boolean)}{#if now}<div class="mb-2"><SoFar {now} /></div>{/if}{@render cta(() => next(), ready)}{/snippet}
 
 {#snippet checkbox(label: string, on: boolean, onclick: () => void, testid: string)}
   <button type="button" role="checkbox" aria-checked={on} class="bg-surface shadow-card active:bg-surface-2 flex min-h-18 w-full items-center gap-4 rounded-md px-5 py-4 text-left transition-[transform,background-color] duration-[var(--d-press)] active:scale-[0.98]" {onclick} data-testid={testid}>
@@ -158,7 +178,11 @@
       <div in:fly={{ x: 32 * dir, duration: dur(240) }}>
         {#if d.at === 'goal'}
           <Step title={t.goal.q} onback={back} progress={prog} testid="step-goal">
-            <Choices label={t.goal.q} options={GOALS} value={d.goal} onpick={(goal) => repace({ goal }, goal === d.goal)} />
+            <Choices label={t.goal.q} options={more ? GOALS : GOALS.slice(0, 3)} value={chosenGoal} onpick={pickGoal} />
+            {#if !more}
+              <button type="button" class="text-callout text-accent-ink mt-2 min-h-[var(--tap)] self-center px-2 underline underline-offset-4" onclick={showMore} data-testid="goal-more">{t.goal.more}</button>
+            {/if}
+            {#snippet footer()}{@render cta(() => next(), !!d.goal)}{/snippet}
           </Step>
         {:else if d.at === 'screening'}
           <Step title={t.screening.q} caption={t.screening.lead} onback={back} progress={prog} testid="step-screening">
@@ -167,7 +191,7 @@
               {@render checkbox(t.screening.none, none, tickNone, 'screen-none')}
               <p class="text-caption text-ink-2 mt-2">{t.screening.disclaimer}</p>
             </div>
-            {#snippet footer()}{#if ticked}{@render cta(() => next({ screening: { ...ticks } }))}{/if}{/snippet}
+            {#snippet footer()}{@render cta(() => next({ screening: { ...ticks } }), ticked || none)}{/snippet}
           </Step>
         {:else if d.at === 'advice'}
           {@const ed = !!d.screening?.eatingDisorder}
@@ -188,7 +212,8 @@
           </Step>
         {:else if d.at === 'sex'}
           <Step title={t.sex.q} caption={t.sex.caption} onback={back} progress={prog} testid="step-sex">
-            <Choices label={t.sex.q} options={SEXES} value={d.sex} onpick={(sex) => pick({ sex })} />
+            <Choices label={t.sex.q} options={SEXES} value={d.sex} onpick={(sex) => set({ sex })} />
+            {#snippet footer()}{@render cta(() => next(), !!d.sex)}{/snippet}
           </Step>
         {:else if d.at === 'born'}
           <Step title={t.born.q} onback={back} progress={prog} testid="step-born">
@@ -217,8 +242,8 @@
           <Body {d} {set} {next} {back} progress={prog} />
         {:else if d.at === 'move'}
           <Step title={t.move.q} onback={back} progress={prog} testid="step-move">
-            <Choices label={t.move.q} options={NEATS} value={d.neat} onpick={(neat) => pick({ neat })} />
-            {#snippet footer()}{@render card()}{/snippet}
+            <Choices label={t.move.q} options={NEATS} value={d.neat} onpick={(neat) => set({ neat })} />
+            {#snippet footer()}{@render card(!!d.neat)}{/snippet}
           </Step>
         {:else if d.at === 'days'}
           <Step title={t.days.q} caption={t.days.caption} onback={back} progress={prog} testid="step-days">
@@ -230,25 +255,29 @@
                   role="radio"
                   aria-checked={on}
                   class="shadow-card text-callout num min-h-16 rounded-sm px-1 font-semibold transition-[transform,background-color,color] duration-[var(--d-ui)] ease-[var(--spring-default)] active:scale-[0.97] {on ? 'bg-ink text-canvas' : 'bg-surface text-ink active:bg-surface-2'}"
-                  onclick={() => { haptic(); pick({ days: n }); }}
+                  onclick={() => { haptic(); set({ days: n }); }}
                   data-testid="days-{n}"
                 >{n ? num(n) : t.days.none}</button>
               {/each}
             </div>
-            {#snippet footer()}{@render card()}{/snippet}
+            {#snippet footer()}{@render card(d.days !== undefined)}{/snippet}
           </Step>
         {:else if d.at === 'kind'}
           <Step title={t.kind.q} caption={t.kind.caption} onback={back} progress={prog} testid="step-kind">
-            <Choices label={t.kind.q} options={KINDS} value={d.kind} onpick={(kind) => pick({ kind })} />
-            {#snippet footer()}{@render card()}{/snippet}
+            <Choices label={t.kind.q} options={KINDS} value={d.kind} onpick={(kind) => set({ kind })} />
+            {#snippet footer()}{@render card(!!d.kind)}{/snippet}
           </Step>
         {:else if d.at === 'experience'}
           <Step title={t.experience.q} onback={back} progress={prog} testid="step-experience">
-            <Choices label={t.experience.q} options={EXPERIENCE} value={d.experience} onpick={(experience) => repace({ experience }, experience === d.experience)} />
-            {#snippet footer()}{@render card()}{/snippet}
+            <Choices label={t.experience.q} options={EXPERIENCE} value={d.experience} onpick={repace} />
+            {#snippet footer()}{@render card(!!d.experience)}{/snippet}
           </Step>
         {:else if d.at === 'plan'}
-          <YourPlan {d} {year} {set} {back} onsave={save} />
+          {#if building}
+            <Building training={!!d.days} ondone={() => (building = false)} />
+          {:else}
+            <div in:fly={{ y: 16, duration: dur(240) }}><YourPlan {d} {year} {set} {back} onsave={save} /></div>
+          {/if}
         {/if}
       </div>
     {/key}
