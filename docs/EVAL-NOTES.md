@@ -31,7 +31,19 @@ Under 20 percent: white rice 130 to 136, boiled egg 155 to 138, fried rice 174 t
 
 **Still without a Thai source:** larb moo, nam tok, moo ping, hor mok, pad pak boong, kai jeow, kaeng jued, Thai milk tea and iced coffee, mango sticky rice, boat noodles, pad thai with a named protein (these keep SG FoodID, FNDDS or SR Legacy, or stay estimates in photos). INMU lists none of them, and the Thai pages found give calories per plate without the macros or the plate's weight.
 
-**The N1 photo evaluation rerun:** not run yet. The free key's 20 requests a day were spent by B1 earlier on 12 November and come back at 07:00 Bangkok time on 13 November, after this run ended; it needs about 10 requests (eight photos and a retry or two). Run `pnpm eval:vision <folder of the eight N1 photos>` and compare with N1's after pass: 7 of 13 items from the table, 3 of 8 dishes whole, 57 percent of calories from the table. Dishes N1 left as estimates that the table now has: khao soi, massaman, som tam, kai yang and sticky rice by INMU's value (beef green curry and crispy pork kra pao still have no entry).
+**The N1 photo evaluation rerun (13 November):** one of eight photos ran before the free key answered 429 to the other seven, still 429 when retried one at a time 30 seconds apart, so the day's requests were spent (production shares this key). Photo 1, crispy pork kra pao with rice: 720 kcal, white rice 200 g from the table, the crispy pork kra pao 160 g as an estimate (no table entry, as expected), 3.5 s. The full rerun moves to M9b, which puts the production key in place.
+
+## B1, 13 November 2026: the label reader live
+
+`pnpm eval:vision --label` on the three Wikimedia Commons label photos with `gemini-3.6-flash`, checked by eye against each photo:
+
+| Photo | Read | Right? |
+| --- | --- | --- |
+| Longevity sweetened milk spread | per 100 g: 357 kcal, protein 2.6, carbohydrate 63.9, fat 10.1 g | All four exact |
+| Nutrition Information Panel (cereal) | serving 30 g, 14 per pack; per serving 120 kcal (500 kJ), 1.8, 24, 0.9 g; per 100 g 398 kcal, 6, 80, 3 g | All exact, kJ converted |
+| SunnyD, 1 bottle | 80 kcal per serving, fat 0 | Calories and fat right. Protein and carbohydrate read as 0 though the photo cuts them off: they should be empty. M9a item |
+
+Median 4.4 s, slowest 4.9 s.
 
 ## N1, 12 November 2026: Thai photos before and after the Thai table
 
