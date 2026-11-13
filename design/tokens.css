@@ -178,7 +178,7 @@
   --grad-lavender: var(--grain), url(./gradients/panel.webp) center / cover no-repeat, #bebeff;
   /* L2: Liquid Glass (iOS 26 "regular"): the fill tints what the blur lifts, the rim catches light top left and, fainter,
      bottom right. Violet glass for the footer's panels; the solids stand in without blur */
-  --liquid-blur: blur(14px) saturate(180%);
+  --liquid-blur: blur(24px) saturate(180%); /* L3: the owner's "more blurred" (was 14) */
   --liquid-fill: rgba(255, 255, 255, 0.55);
   --liquid-solid: #f3f3fb;
   --liquid-rim: inset 1px 1px 0 rgba(255, 255, 255, 0.9), inset -1px -1px 0 rgba(255, 255, 255, 0.35);

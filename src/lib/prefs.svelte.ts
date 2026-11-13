@@ -95,7 +95,9 @@ export function applyTheme() {
 }
 
 // U1b: the status bar continues the colour at the top of the screen (the owner, feedback 1): the canvas, or the landing
-// hero's sky. theme-color for Safari up to 18, and the root's own background, which Safari 26 samples instead
+// hero's sky. theme-color for Safari up to 18, and the page's background for Safari 26, which samples it instead. L3: the
+// body's as well as the root's, since Safari blends the body's background over the root's and the body's canvas showed
+// as the owner's white bar
 let top = '--canvas';
 export function topColour(token = '--canvas') {
   top = token;
@@ -106,6 +108,6 @@ function paintTop() {
   const colour = getComputedStyle(root).getPropertyValue(top).trim();
   if (!colour) return;
   document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.setAttribute('content', colour));
-  root.style.backgroundColor = top === '--canvas' ? '' : colour;
+  root.style.backgroundColor = document.body.style.backgroundColor = top === '--canvas' ? '' : colour;
 }
 media?.addEventListener('change', applyTheme);

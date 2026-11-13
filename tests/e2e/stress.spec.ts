@@ -33,7 +33,8 @@ const overflow = (page: Page) => page.evaluate(() => {
 
 /** Visible tap targets smaller than 44 px in either direction. The map's credit line (S1b) is text links, as OpenFreeMap asks. */
 const smallTargets = (page: Page) => page.evaluate(() => [...document.querySelectorAll<HTMLElement>('button, a[href], input, [role="radio"], [role="switch"]')]
-  .filter((el) => !el.closest('.maplibregl-ctrl-attrib'))
+  // a screen reader only control (the landing footer's More about Ontrack) is a 1 px box until a keyboard reaches it
+  .filter((el) => !el.closest('.maplibregl-ctrl-attrib') && !el.matches('.sr-only'))
   .filter((el) => { const r = el.getBoundingClientRect(); const s = getComputedStyle(el); return r.width > 0 && r.height > 0 && s.visibility !== 'hidden' && s.opacity !== '0' && (r.width < 43.5 || r.height < 43.5); }) // sub-pixel layout can draw a 44 px box at 43.9
   .map((el) => `${(el.getAttribute('aria-label') || el.textContent || el.tagName).trim().slice(0, 24)} ${Math.round(el.getBoundingClientRect().width)}x${Math.round(el.getBoundingClientRect().height)}`));
 
@@ -45,7 +46,7 @@ const clipped = (page: Page) => page.evaluate(() => [...document.querySelectorAl
 
 /** Text spilling out of a button (its box is narrower than its label). */
 const spill = (page: Page) => page.evaluate(() => [...document.querySelectorAll<HTMLElement>('button')]
-  .filter((el) => el.offsetParent !== null && el.scrollWidth > el.clientWidth + 1)
+  .filter((el) => el.offsetParent !== null && el.scrollWidth > el.clientWidth + 1 && !el.matches('.sr-only'))
   .map((el) => (el.textContent ?? '').trim().slice(0, 20)));
 
 const SCREENS = [['today', 'tab-0'], ['train', 'tab-1'], ['progress', 'tab-2']] as const;
@@ -121,6 +122,9 @@ async function checkAll(page: Page, dir: string) {
   await page.goto('/');
   await expect(page.getByTestId('landing')).toBeVisible();
   await checkPage(page, 'landing', dir);
+  // L3: this project is Chromium, which bends the backdrop with an SVG filter in place of the blur (glass.ts); WebKit's
+  // lens layer is checked in landing.spec.ts
+  expect(await page.getByTestId('landing').locator('header nav').evaluate((n) => getComputedStyle(n).backdropFilter)).toMatch(/^url\("#bend-\d+"\) saturate/);
   await page.getByTestId('landing-signin').click();
   await expect(page.getByTestId('signin-sheet')).toHaveCSS('transform', 'none');
   await expect(page.getByTestId('signin-send')).toBeInViewport({ ratio: 1 });

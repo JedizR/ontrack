@@ -155,6 +155,20 @@ for (const theme of ['light', 'dark'] as const) {
         await section.screenshot({ path: `screenshots/landing/friends-${theme}-${d.name}.png` });
       });
 
+      // L3: the footer's two states, at rest: the teaser the page ends on, then opened (its top, then its foot)
+      test('landing footer', async ({ page }) => {
+        await page.emulateMedia({ reducedMotion: 'reduce' });
+        await openFresh(page);
+        await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
+        await shot(page, 'landing', 'footer-teaser');
+        await page.getByTestId('landing-more-open').evaluate((b: HTMLElement) => b.click());
+        await expect(page.getByTestId('landing-footer')).toHaveAttribute('data-open');
+        await page.evaluate(() => (document.activeElement as HTMLElement).blur());
+        await shot(page, 'landing', 'footer-open');
+        await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
+        await shot(page, 'landing', 'footer-end');
+      });
+
       // SCREENS.md section 4: every question and its guardrail screens, Your plan
       test('onboarding', async ({ page }) => {
         const go = (id: string) => page.getByTestId(id).click();
