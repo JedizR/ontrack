@@ -119,7 +119,7 @@ Gate: end to end tests for each setting, export, the reminders and easy adds on 
 2. Speed: bundle report against the budgets in the PRD, lazy chunks confirmed, start time measured with a year of seeded data.
 3. Offline pass: every feature in airplane mode.
 4. Security: advisors, a scan of the build output for secrets, quota tests, the account deletion test.
-5. Production: environment variables and the production Gemini key in Vercel, the budget alert, the production smoke test, `README.md`, tag `v1.0.0`.
+5. Production: environment variables and the production Gemini key in Vercel, the budget alert, the production smoke test, the N1 Thai photo rerun that the free key could not finish (`docs/EVAL-NOTES.md`), `README.md`, tag `v1.0.0`.
 
 Gate: every bar in `docs/PRD.md` section 8 is measured and met, with the numbers in the pull request. All feature tests pass.
 Owner checks, on the iPhone, installed: sign in, onboard, log by every method, weigh in, edit a program, go offline and log, come back online, switch theme and text size, export, sign out and back in on a second device if one is available.
