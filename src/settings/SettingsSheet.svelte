@@ -83,7 +83,7 @@
 </script>
 
 {#snippet heading(text: string, line?: string)}
-  <h3 class="text-eyebrow text-ink-2 mt-8 mb-1 first:mt-0">{text}</h3>
+  <h3 class="text-caption text-ink-2 font-semibold mt-8 mb-1 first:mt-0">{text}</h3>
   {#if line}<p class="text-caption text-ink-2 mb-1">{line}</p>{/if}
 {/snippet}
 {#snippet chevron()}<ChevronRight class="text-ink-2 flex-none" size={20} strokeWidth={2} aria-hidden="true" />{/snippet}

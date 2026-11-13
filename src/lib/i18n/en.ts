@@ -1100,8 +1100,6 @@ export const en = {
       gainMin: 'Lowest when gaining', gainMax: 'Highest when gaining', maintainMin: 'Lowest when maintaining', maintainMax: 'Highest when maintaining', loseMin: 'Lowest when losing', loseMax: 'Highest when losing',
       fromHour: 'From the hour', minShare: 'Share of the target left',
     },
-    unit: 'Unit',
-    open: (name: string) => `${name}, show the source`,
     names: {
       mifflin: 'Resting energy from weight, height and age',
       mifflinUnspecified: 'Adjustment when sex is not given',

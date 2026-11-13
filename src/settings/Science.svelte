@@ -15,7 +15,7 @@
 </script>
 
 {#snippet heading(text: string)}
-  <h3 class="text-eyebrow text-ink-2 mt-6 mb-1">{text}</h3>
+  <h3 class="text-caption text-ink-2 font-semibold mt-6 mb-1">{text}</h3>
 {/snippet}
 
 <p class="text-body">{t.science.intro}</p>
@@ -27,12 +27,12 @@
     {#each g.keys as key (key)}
       {@const c = C[key] as (typeof C)[Key]}
       {@const open = opened === key}
-      <Row title={t.science.names[key]} value={typeof c.value === 'number' ? num(c.value, 4) : undefined} onclick={() => (opened = open ? null : key)} testid="science-{key}">
+      <Row title={t.science.names[key]} onclick={() => (opened = open ? null : key)} testid="science-{key}">
         {#snippet caption()}
+          <span class="text-ink block" data-testid="science-value">{typeof c.value === 'number' ? `${num(c.value, 4)} ${c.unit}` : c.unit}</span>
           <span class="block">{c.source === 'OT' ? t.science.ours : SOURCES[c.source]?.short}</span>
           <span class="block" data-testid="science-status">{t.science.status[c.status]}</span>
           {#if open}
-            <span class="text-ink mt-2 block">{t.science.unit}: {c.unit}</span>
             {#if typeof c.value === 'object'}
               {#each Object.entries(c.value) as [part, v] (part)}
                 <span class="text-ink flex justify-between gap-4"><span>{partOf(key, part)}</span><span class="num">{num(v, 4)}</span></span>

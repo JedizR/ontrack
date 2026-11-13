@@ -98,7 +98,7 @@
 </script>
 
 {#snippet heading(text: string)}
-  <h3 class="text-eyebrow text-ink-2 mt-6 mb-1 first:mt-0">{text}</h3>
+  <h3 class="text-caption text-ink-2 font-semibold mt-6 mb-1 first:mt-0">{text}</h3>
 {/snippet}
 
 <div class="flex flex-col" data-testid="plan-page">
@@ -109,7 +109,7 @@
     <div class="mt-4">
       <Row title={t.settings.birthYear} value={String(draft.birthYear)} onclick={askYear} testid="set-born" />
       <Row title={t.settings.height} value={heightText(draft.heightCm, draft.units)} onclick={askHeight} testid="set-height" />
-      <Row title={t.plan.bodyFat} caption={t.plan.bodyFatHint} value={draft.bodyFatPct ? `${num(draft.bodyFatPct)}${t.after.percent}` : t.plan.noneYet} onclick={askBodyFat} testid="set-bodyfat" />
+      <Row title={t.plan.bodyFat} value={draft.bodyFatPct ? `${num(draft.bodyFatPct)}${t.after.percent}` : t.plan.noneYet} onclick={askBodyFat} testid="set-bodyfat" />
     </div>
     {@render heading(t.settings.movement)}
     <Options label={t.settings.movement} value={draft.neat} onchange={(v) => edit({ neat: v })} options={[...MOVES]} testid="set-move" />
@@ -119,7 +119,6 @@
   {:else if maintainOnly}
     <p class="text-body" data-testid="set-maintain-only">{t.settings.maintainOnly}</p>
   {:else}
-    {@render heading(t.settings.goal)}
     <Options label={t.settings.goal} value={goal} onchange={pickGoal} testid="set-goal"
       options={goals.map((g) => ({ value: g, label: GOALS[g][0], caption: GOALS[g][1] }))} />
     {#if paces.length}
