@@ -676,7 +676,7 @@ export const en = {
       hard: 'Hard. Only a few words at a time.',
     },
     exercises: 'Exercises',
-    exerciseLine: (sets: string, from: string, to: string) => `${sets} sets, ${from} to ${to} reps`,
+    reps: (from: string, to: string) => `${from} to ${to} reps`,
     setsLabel: 'Sets',
     repsFrom: 'Reps from',
     repsTo: 'Reps to',

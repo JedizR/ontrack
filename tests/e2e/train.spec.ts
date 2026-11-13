@@ -20,7 +20,7 @@ test('build a week: add a session, list exercises, see the analysis with its sou
   const sheet = page.getByTestId('train-session-sheet');
   await sheet.getByTestId('session-name').fill('Run');
   await sheet.getByRole('button', { name: 'Cardio' }).click();
-  await sheet.getByRole('button', { name: 'Hard' }).click();
+  await sheet.getByRole('radio', { name: 'Hard' }).click();
   await sheet.getByRole('button', { name: 'Less Minutes a session' }).click();
   await expect(sheet.getByTestId('session-kcal')).toHaveText('Adds 440 kcal to the day'); // (9 - 1) MET x 60 kg x 55 min
   await sheet.getByTestId('session-save').click();

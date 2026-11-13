@@ -6,6 +6,7 @@
   import Button from '$lib/components/Button.svelte';
   import Chip from '$lib/components/Chip.svelte';
   import Segmented from '$lib/components/Segmented.svelte';
+  import Facts from '$lib/components/Facts.svelte';
   import Stepper from '$lib/components/Stepper.svelte';
   import { toast } from 'svelte-sonner';
   import { changeProgram, undoToast } from '$lib/actions';
@@ -123,7 +124,7 @@
           <div class="border-line border-t py-3 first-of-type:border-t-0" data-testid="session-exercise">
             <button type="button" class="active:bg-surface-2 -mx-6 flex w-[calc(100%+var(--inset)*2)] flex-col items-start px-6 py-1 text-left transition-colors duration-[var(--d-press)]" aria-expanded={opened === i} onclick={() => (opened = opened === i ? null : i)}>
               <span class="text-body line-clamp-2 font-semibold">{LIBRARY[e.exerciseId]?.name ?? e.exerciseId}</span>
-              <span class="text-caption text-ink-2">{t.train.exerciseLine(num(e.sets), num(e.repsMin), num(e.repsMax))}</span>
+              <span class="text-caption text-ink-2"><Facts facts={[t.train.sets(num(e.sets)), t.train.reps(num(e.repsMin), num(e.repsMax))]} /></span>
             </button>
             {#if opened === i}
               <div class="mt-2 flex flex-col gap-2">
