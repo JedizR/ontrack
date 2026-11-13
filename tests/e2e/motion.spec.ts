@@ -6,18 +6,22 @@ import { MEALS, open, swipeAt, takePhoto, vision, withPrefs } from './helpers';
 
 const hero = (page: Page) => page.getByTestId('hero-value');
 const meals = (page: Page) => page.getByTestId('meal');
-/** Animations still playing, named so a failure says which. */
-const running = (page: Page) =>
-  page.evaluate(() =>
+/** Animations still playing, named so a failure says which; with `moving`, only those that last over 1 ms or loop. */
+const running = (page: Page, moving = false) =>
+  page.evaluate((moving) =>
     document
       .getAnimations()
       .filter((a) => a.playState === 'running')
+      .filter((a) => {
+        const t = a.effect!.getComputedTiming();
+        return !moving || t.iterations === Infinity || Number(t.duration) > 1;
+      })
       .map((a) => {
         const el = (a.effect as KeyframeEffect)?.target;
         const what = (a as CSSAnimation).animationName ?? (a as CSSTransition).transitionProperty ?? 'svelte';
         return `${what} on ${el?.closest('[data-testid]')?.getAttribute('data-testid') ?? el?.tagName} (${String(a.effect?.getTiming().duration)} ms)`;
       }),
-  );
+  moving);
 /** Everything settles: no animation left running (the skeleton's pulse and the photo's sweep only run while waiting). */
 const settled = (page: Page) => expect.poll(() => running(page), { timeout: 3000 }).toEqual([]);
 async function quickAdd(page: Page, kcal: string, protein?: string) {
@@ -144,8 +148,12 @@ test.describe('reduced motion', () => {
     await withPrefs(page, { photoOk: true });
     const s = await open(page, '/', MEALS);
     await vision(page, s, { fixture: 'basil-pork' });
-    // everything lands within a frame or two: 100 ms is shorter than any motion token, the press included
-    const now = () => expect.poll(() => running(page), { timeout: 100, intervals: [16] }).toEqual([]);
+    // nothing moves: every animation there is is already instant (0.01 ms) and none loops; then they are all gone. A
+    // slow machine may not have ticked the instant ones yet, so only those wait
+    const now = async () => {
+      expect(await running(page, true)).toEqual([]);
+      await settled(page);
+    };
     await now();
     await quickAdd(page, '450');
     await now();
