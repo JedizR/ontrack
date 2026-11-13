@@ -32,7 +32,7 @@ test('photo', async ({ page }) => {
   await page.getByTestId('add').click();
   const chooser = page.waitForEvent('filechooser');
   await page.getByTestId('add-photo').click();
-  await (await chooser).setFiles('tests/fixtures/meal.jpg');
+  await (await chooser).setFiles('tests/fixtures/krapao.jpg'); // L2: the owner's pad kra pao with fried eggs
   await expect(page.getByTestId('meal-item')).toHaveCount(3);
   await settled(page, 'review-sheet');
   await shot(page, 'photo');
