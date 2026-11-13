@@ -69,7 +69,7 @@ export const en = {
       points: [
         { title: 'Friends by request', line: 'Find people by their handle. They see what you share only once you both say yes.' },
         { title: 'Off until you share', line: 'Share to map is off for every photo. Your weight, targets and food log are never shared.' },
-        { title: 'Rounded, never tracked', line: 'A shared place is rounded to about 100 m on your phone. Ontrack never follows where you go.' },
+        { title: 'Rounded, never tracked', line: 'A shared place is rounded to about 100\u00a0m on your phone. Ontrack never follows where you go.' },
       ],
     },
     sources: {
@@ -972,6 +972,12 @@ export const en = {
     onMapLine: 'Friends can see it on the map.',
     loggedLine: 'Friends see the photo and its nutrition, placed where you are now.',
     shared: 'Shared to the map',
+    /** a shared meal's macros, each its own fact */
+    protein: (n: string) => `${n} g protein`,
+    carbs: (n: string) => `${n} g carbs`,
+    fat: (n: string) => `${n} g fat`,
+    minutes: (n: string) => `${n} min`,
+    loggedUnplaced: (title: string) => `Added ${title}. It is not on the map: share it from the meal.`,
   },
 } as const;
 

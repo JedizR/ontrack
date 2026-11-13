@@ -245,14 +245,15 @@ The landing page is the one marketing screen: a visitor reads it top to bottom, 
 
 | Pattern (pick) | Where | Why it helps there |
 | --- | --- | --- |
-| Tilted sticker eyebrows, "01 BENEFITS" (01, 05, 12) | Over each section headline: 01 Logging, 02 Training, 03 Check-in, 04 Sources | Numbered chapters tell a scanning visitor how far they are and what the next block is about |
+| Tilted sticker eyebrows, "01 BENEFITS" (01, 05, 12) | Over each section headline: 01 Logging, 02 Training, 03 Check-in, 04 Friends, 05 Sources | Numbered chapters tell a scanning visitor how far they are and what the next block is about |
 | Huge condensed capitals ending in a full stop (01, 05, 10, 12) | The hero (Poster) and every section (Section) | A statement, not a slogan: one claim per block, readable at a glance on a phone |
 | Inline word pills in big body text (08) | The statement under the hero | The three things Ontrack does are the pills, so a skimmer reads them first; the last one is ink |
 | Floating tilted icon tiles (08) | Around the statement | The four ways in (photo, barcode, training, weigh-in) as violet tiles, moving a little with the scroll |
-| Dark sections with a violet glow (06, 09, 12) | 02 Training, and the run from 04 Sources to the footer | Changes the pace of a long page and marks the two blocks about the method |
+| Dark sections with a violet glow (06, 09, 12) | 02 Training, and the run from 05 Sources to the footer | Changes the pace of a long page and marks the two blocks about the method |
 | Flat lavender panels (`--lavender`, the same in both themes) inside dark cards, number badges (06) | 02 Training | The screen is the content; the panel frames it the way OneFin frames its feature art |
 | Flat lavender field with rings and tilted white cards, the 1-2-3 stepper (07) | 03 Check-in | The check-in is a sequence; the stepper says so, the cards repeat its own words |
-| Colour-washed cards (10) | 04 Sources | Where OneFin puts testimonials, Ontrack puts its sources: honest proof in the same look, read from `constants.ts` so it cannot drift |
+| Colour-washed cards (10) | 05 Sources | Where OneFin puts testimonials, Ontrack puts its sources: honest proof in the same look, read from `constants.ts` so it cannot drift |
+| Violet icon tiles beside short points (05) | 04 Friends | The food map raises who sees it and where; three points answer that beside the real map |
 | The nested-panel footer with a giant wordmark (09) | The footer | Ends the page on the name, with the two actions and the wellness line in reach |
 | OneFin's sky and glass bar, tilted white chips flying in (hero, nav, 15) | The hero and the fixed bar | The first screen reads as OneFin at once; the glass bar sits over colour, where glass belongs. The chips are white with night words in both themes, since they sit on the phone's light screen |
 | Phones with real screens (05, 12) | Every feature | Proof by showing: each is a screenshot of the app at the current look, never a mock-up. A night bezel at radius 48, no island (the screens have no status bar) and no shadow |

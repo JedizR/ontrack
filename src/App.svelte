@@ -131,7 +131,8 @@
   {#if Onboarding}<Onboarding />{/if}
 {:else}
 <!-- svh: the height with Safari's toolbars showing, so nothing reflows when they collapse -->
-<div class="bg-canvas relative mx-auto flex min-h-svh w-full max-w-[480px] flex-col overflow-x-clip">
+<!-- inert under the food map, a modal layer over the shell -->
+<div class="bg-canvas relative mx-auto flex min-h-svh w-full max-w-[480px] flex-col overflow-x-clip" inert={!!FoodMap && sheets.friends}>
   <Header
     title={prefs.tab === 0 && view.past ? dayTitle(view.date) : TITLES[prefs.tab]}
     sync={MARK[sync.status]}

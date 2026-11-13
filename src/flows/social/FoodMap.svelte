@@ -74,19 +74,23 @@
 
   function webgl() {
     try {
-      const c = document.createElement('canvas');
-      return !!(c.getContext('webgl2') ?? c.getContext('webgl'));
+      const gl = document.createElement('canvas').getContext('webgl2') ?? document.createElement('canvas').getContext('webgl');
+      gl?.getExtension('WEBGL_lose_context')?.loseContext(); // Safari allows only a few live contexts
+      return !!gl;
     } catch {
       return false;
     }
   }
 
+  let root: HTMLElement;
+  let dead = false; // closed while MapLibre was still loading
   async function start() {
     status = 'loading';
     if (!navigator.onLine) return void (status = 'offline');
     if (!webgl()) return void (status = 'nogl');
     try {
       const [maplibre, worker] = await Promise.all([import('maplibre-gl'), import('maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'), import('maplibre-gl/dist/maplibre-gl.css')]);
+      if (dead) return;
       maplibre.setWorkerUrl(worker.default);
       map?.remove();
       // with nothing shared yet, the phone's part of the world: its time zone gives a longitude, 15 degrees an hour
@@ -112,15 +116,18 @@
       size = { w: container.clientWidth, h: container.clientHeight };
       map = m;
       await loadMeals();
-      fit(false);
+      if (!dead) fit(false);
     } catch {
       status = navigator.onLine ? 'failed' : 'offline';
     }
   }
 
   // shortcut: one query for the whole world, the newest 500; query the box on moveend once friends share more than that
+  let asked = 0; // an answer older than the latest ask is dropped
   async function loadMeals() {
+    const mine = ++asked;
     const r = await mapMeals(WORLD);
+    if (mine !== asked) return;
     mealsError = r.ok ? null : r.error;
     if (r.ok) server = r.value;
   }
@@ -170,7 +177,6 @@
     if (mealsError === 'auth') return { text: t.social.signedOut, action: t.social.signIn, run: () => (sheets.signin = true) };
     if (mealsError && mealsError !== 'offline') return { text: t.social.mapFailed, action: t.social.retry, run: () => void loadMeals() };
     if (note === 'off') return { text: t.social.locateOff };
-    if (status === 'ready' && !mealsError && !pins.length) return { text: t.social.mapEmpty };
     return null;
   });
 
@@ -182,7 +188,15 @@
     void start();
     const online = () => { if (status === 'offline') void start(); };
     addEventListener('online', online);
+    // a modal layer: focus comes in, Escape goes back unless a sheet over the map takes it, focus returns on close
+    const opener = document.activeElement as HTMLElement | null;
+    root.focus();
+    const esc = (e: KeyboardEvent) => { if (e.key === 'Escape' && document.querySelectorAll('[role="dialog"]').length === 1) close(); };
+    addEventListener('keydown', esc);
     return () => {
+      dead = true;
+      removeEventListener('keydown', esc);
+      requestAnimationFrame(() => opener?.focus()); // once the shell is no longer inert
       removeEventListener('online', online);
       document.documentElement.style.overflow = was;
       map?.remove();
@@ -197,7 +211,7 @@
   </button>
 {/snippet}
 
-<div class="bg-canvas fixed inset-0 z-40 mx-auto max-w-[480px] overflow-hidden" style="--panel: {lowered}px" role="dialog" aria-modal="true" aria-label={t.social.open} data-testid="food-map">
+<div bind:this={root} tabindex="-1" class="bg-canvas fixed inset-0 z-40 mx-auto max-w-[480px] overflow-hidden outline-none" style="--panel: {lowered}px" role="dialog" aria-modal="true" aria-label={t.social.open} data-testid="food-map">
   <!-- MapLibre makes its container position: relative, so the container fills a placed box rather than being placed -->
   <div class="absolute inset-0 {status === 'offline' || status === 'nogl' ? 'hidden' : ''}">
     <div bind:this={container} class="size-full" data-testid="map-canvas"></div>
@@ -218,11 +232,11 @@
               onclick={() => (pinMeals = [c.lead, ...c.more])}
               data-testid="pin"
             >
-              <span class="bg-surface shadow-float relative block rounded-control p-1">
+              <span class="bg-on-night shadow-float relative block rounded-control p-1">
                 <Photo path={c.lead.owner === me ? null : c.lead.photo} local={c.lead.owner === me ? c.lead.mealId : null} class="block size-14 rounded-sm" />
                 <Avatar name={who.initial} path={who.path} local={who.local} size="sm" ring class="absolute bottom-2 left-2" />
               </span>
-              <svg class="fill-surface -mt-px block h-2 w-4" viewBox="0 0 16 8" aria-hidden="true"><path d="M0 0h16L8 8z" /></svg>
+              <svg class="fill-on-night -mt-px block h-2 w-4" viewBox="0 0 16 8" aria-hidden="true"><path d="M0 0h16L8 8z" /></svg>
               {#if c.more.length}
                 <span class="glass text-caption text-ink num mt-1 rounded-full px-2.5 py-0.5 font-semibold whitespace-nowrap" data-testid="pin-more">{t.social.more(num(c.more.length))}</span>
               {/if}
@@ -248,7 +262,9 @@
     {/if}
   </div>
 
-  {#if note === 'ask'}
+  {#if raised}
+    <!-- the raised panel covers the map: no card peeks out above it -->
+  {:else if note === 'ask'}
     <div class="bg-surface shadow-card absolute inset-x-4 top-[calc(env(safe-area-inset-top)+136px)] rounded-lg p-6" data-testid="map-locate-note">
       <p class="text-body">{t.social.locateNote}</p>
       <div class="mt-4 flex flex-wrap gap-2">
@@ -263,7 +279,7 @@
     </div>
   {/if}
 
-  <FriendsPanel bind:lowered bind:raised onfriend={(f) => (friend = f)} />
+  <FriendsPanel bind:lowered bind:raised empty={status === 'ready' && !mealsError && !pins.length} onfriend={(f) => (friend = f)} />
 </div>
 
 <PinSheet bind:meals={pinMeals} {whoOf} {me} />

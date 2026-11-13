@@ -299,13 +299,13 @@ PRD F16 and F17 (S1): friends by request, an optional program on the profile, an
 
 **Friend sheet.** Title: the friend's name.
 - A 72 avatar and "@handle".
-- Eyebrow "Program". Shown: the program's name when it has one, then a row per training day, the weekday as the title and "Upper A. Strength, 60 min" as the caption. Not shown: "Nan keeps their program to themselves." Loading: skeleton rows. Offline or failed: "The program needs a connection." or "Could not load the program." with "Try again".
+- Eyebrow "Program". Shown: the program's name when it has one, then a row per training day, the weekday as the title and "Upper A", "Strength" and "60 min" as the caption, apart by small dividers. Not shown: "Nan keeps their program to themselves." Loading: skeleton rows. Offline or failed: "The program needs a connection." or "Could not load the program." with "Try again".
 - At the end a danger "Remove friend", which steps to "Remove Nan?" with "You stop seeing each other's shared meals and program. You can send a request again later." and a pinned danger "Remove friend" (no undo: a new request needs their yes). Toast "Nan removed".
 
 **Meal photo sheet** (a pin). Title: the meal's title, or "Shared meal" when it has none.
 - The photo, full width, 4 by 3, radius 24. Loading, a skeleton; not uploaded yet, a lavender tile with a camera icon and "The photo is on its way".
 - Who and when: a 40 avatar, the name ("You" for yours) and "Today, 12:40", "Yesterday, 12:40" or "Nov 9, 12:40".
-- Its nutrition in neutral words: calories in Display with "kcal", then "32 g protein, 70 g carbs, 18 g fat". Nothing about targets or the day.
+- Its nutrition in neutral words: calories in Display with "kcal", then "32 g protein", "70 g carbs" and "18 g fat" apart by small dividers, protein in ink and the rest one step lighter. Nothing about targets or the day.
 - A pin with several meals: "2 of 4" between previous and next buttons under the photo.
 - Yours: a neutral "Take off the map", at once, toast "Taken off the map".
 

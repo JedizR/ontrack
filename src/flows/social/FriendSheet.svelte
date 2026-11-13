@@ -14,6 +14,7 @@
   import type { Friend } from '$lib/backend/types';
   import type { Program } from '../../../shared/records';
   import Avatar from './Avatar.svelte';
+  import Facts from './Facts.svelte';
 
   let { friend = $bindable(null) }: { friend?: Friend | null } = $props();
 
@@ -35,19 +36,18 @@
   }
 
   const sessions = $derived([...(program?.sessions ?? [])].sort((a, z) => a.weekday - z.weekday));
-  const line = (s: Program['sessions'][number]) => {
-    const kind = t.train.line(t.train.types[s.type], num(s.minutes));
-    return s.name === t.train.types[s.type] ? kind : `${s.name}. ${kind}`;
-  };
+  // "Upper A", "Strength", "60 min" as three facts; the name only when it is not the kind's own
+  const line = (s: Program['sessions'][number]) => [...(s.name === t.train.types[s.type] ? [] : [s.name]), t.train.types[s.type], t.social.minutes(num(s.minutes))];
 
   async function remove() {
-    if (!friend) return;
+    const f = friend; // the sheet may close while the request runs
+    if (!f) return;
     busy = true;
-    const r = await removeFriend(friend.id);
+    const r = await removeFriend(f.id);
     busy = false;
     if (!r.ok) return void toast(r.error === 'offline' ? t.social.actionOffline : t.social.actionFailed);
-    toast(t.social.removed(friend.name));
-    friend = null;
+    toast(t.social.removed(f.name));
+    if (friend?.id === f.id) friend = null;
     await refreshFriends();
   }
 </script>
@@ -83,11 +83,15 @@
           <p class="text-body text-ink-2" data-testid="friend-program-hidden">{t.social.programHidden(friend.name)}</p>
         {:else}
           {#if program.name}<p class="text-body font-semibold">{program.name}</p>{/if}
-          {#each sessions as s (s.key)}
-            <Row title={t.train.weekdays[s.weekday]} caption={line(s)} testid="friend-session" />
-          {:else}
-            <p class="text-body text-ink-2">{t.social.programEmpty}</p>
-          {/each}
+          <!-- its own box: the first row's hairline divides rows, not the name from them -->
+          <div>
+            {#each sessions as s (s.key)}
+              {#snippet caption()}<Facts facts={line(s)} />{/snippet}
+              <Row title={t.train.weekdays[s.weekday]} {caption} testid="friend-session" />
+            {:else}
+              <p class="text-body text-ink-2">{t.social.programEmpty}</p>
+            {/each}
+          </div>
         {/if}
       </div>
 

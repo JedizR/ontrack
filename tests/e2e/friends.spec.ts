@@ -64,7 +64,7 @@ test('two friends: request, accept, share, see the pin, open it, unshare, remove
   const sheet = nan.getByTestId('friend-sheet');
   await expect(sheet.getByTestId('friend-session')).toHaveCount(2);
   await expect(sheet.getByTestId('friend-session').first()).toContainText('Monday');
-  await expect(sheet.getByTestId('friend-session').first()).toContainText('Upper A. Strength, 60 min');
+  await expect(sheet.getByTestId('friend-session').first()).toContainText(/Upper A\W+Strength\W+60 min/);
   await expect(sheet).not.toContainText('kg');
   await nan.keyboard.press('Escape');
   await nan.getByTestId('map-back').click();

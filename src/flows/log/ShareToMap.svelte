@@ -2,6 +2,7 @@
      photo's own location, else the phone's position read once. The first time, one sentence about location comes
      before the browser asks. The caption says where it will go; refusals say what to do. -->
 <script lang="ts">
+  import { onDestroy } from 'svelte';
   import Switch from '$lib/components/Switch.svelte';
   import Button from '$lib/components/Button.svelte';
   import { t } from '$lib/i18n';
@@ -30,6 +31,9 @@
   let stage = $state<'off' | 'on' | 'reading' | 'ask' | 'locating' | 'photo' | 'here' | 'denied' | 'notfound'>(checked ? 'on' : 'off');
   let place: Position | null = null;
   let pending: Promise<unknown> | null = null;
+  // a position that arrives after the sheet has closed must not place whatever meal the sheet shows next
+  let gone = false;
+  onDestroy(() => (gone = true));
 
   /** Resolves once a position being read has arrived, so a meal added meanwhile goes with it. */
   export const settled = () => pending ?? Promise.resolve();
@@ -43,8 +47,12 @@
       return;
     }
     stage = 'reading';
-    const fromFile = file ? await photoPosition(file).catch(() => null) : null;
-    if (!checked) return;
+    // the photo's own location is being read too: a meal added meanwhile waits for it
+    const reading = file ? photoPosition(file).catch(() => null) : Promise.resolve(null);
+    pending = reading;
+    const fromFile = await reading;
+    if (pending === reading) pending = null;
+    if (!checked || gone) return;
     if (fromFile) return found(fromFile, 'photo');
     if (!prefs.locationOk) return void (stage = 'ask');
     await locate();
@@ -56,7 +64,7 @@
     stage = 'locating';
     pending = currentPosition().then((r) => {
       pending = null;
-      if (!checked) return;
+      if (!checked || gone) return;
       if (typeof r === 'object') return found(r, 'here');
       checked = false;
       stage = r === 'denied' ? 'denied' : 'notfound';

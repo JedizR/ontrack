@@ -17,7 +17,7 @@
   import type { Friend, Person } from '$lib/backend/types';
   import Avatar from './Avatar.svelte';
 
-  let { lowered = $bindable(0), raised = $bindable(false), onfriend }: { lowered?: number; raised?: boolean; onfriend: (f: Friend) => void } = $props();
+  let { lowered = $bindable(0), raised = $bindable(false), empty = false, onfriend }: { lowered?: number; raised?: boolean; empty?: boolean; onfriend: (f: Friend) => void } = $props();
 
   let typed = $state('');
   let results = $state.raw<Person[] | null>(null);
@@ -26,6 +26,7 @@
   let full = $state(0);
   let head = $state(0);
   let drag = $state<number | null>(null);
+  let scrolled = $state(false);
 
   const social = $derived(db.get('social', 'social'));
   const incoming = $derived(friends.list.filter((f) => f.status === 'incoming'));
@@ -69,14 +70,15 @@
   function add(p: Person) {
     // the server knows only people with a profile: set one up first, then the request goes once it has synced
     if (!social) return void (sheets.profile = { then: () => add(p) });
-    void act(p, async () => { if (db.pending) await syncNow(); return requestFriend(p.id); }, t.social.sentTo(p.name));
+    // twice: a round already running may have started before the profile was saved
+    void act(p, async () => { if (db.pending) await syncNow(); if (db.pending) await syncNow(); return requestFriend(p.id); }, t.social.sentTo(p.name));
   }
   const accept = (p: Person) => act(p, () => acceptFriend(p.id), t.social.nowFriends(p.name));
   const decline = (p: Person) => act(p, () => declineFriend(p.id));
   const withdraw = (p: Person) => act(p, () => removeFriend(p.id));
   const statusOf = (id: string) => friends.list.find((f) => f.id === id)?.status ?? null;
 
-  // the grabber: a tap raises or lowers, a drag follows the finger and settles past 40 px
+  // the grabber: a tap or a key raises or lowers (click), a drag follows the finger and settles past 40 px
   let from = 0;
   let moved = false;
   function down(e: PointerEvent) {
@@ -95,7 +97,11 @@
     if (drag === null) return;
     const dy = e.clientY - from;
     drag = null;
-    raised = moved ? (raised ? dy < 40 : dy < -40) : !raised;
+    if (moved) raised = raised ? dy < 40 : dy < -40;
+  }
+  function tap() {
+    if (!moved) raised = !raised;
+    moved = false;
   }
 </script>
 
@@ -133,12 +139,13 @@
       onpointerdown={down}
       onpointermove={move}
       onpointerup={up}
+      onclick={tap}
       onpointercancel={() => (drag = null)}
       data-testid="panel-grabber"
     >
       <span class="bg-line-strong block h-1.25 w-9 rounded-full"></span>
     </button>
-    <div class="px-4">
+    <div class="px-6">
       <label class="relative block">
         <span class="sr-only">{t.social.search}</span>
         <SearchIcon class="text-ink-2 pointer-events-none absolute top-1/2 left-4 -translate-y-1/2" size={20} strokeWidth={2} aria-hidden="true" />
@@ -159,10 +166,12 @@
       {#if !raised && incoming.length}
         <Button variant="plain" size="sm" class="-ml-4 mt-1" onclick={() => (raised = true)} data-testid="panel-requests">{t.social.requests(num(incoming.length))}</Button>
       {/if}
+      {#if empty}<p class="text-body text-ink-2 mt-3" data-testid="map-empty">{t.social.mapEmpty}</p>{/if}
     </div>
   </div>
 
-  <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 pb-[max(24px,env(safe-area-inset-bottom))]" inert={!raised}>
+  <!-- the list fades under the field as it scrolls, never a hard edge -->
+  <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 pb-[max(24px,env(safe-area-inset-bottom))] {scrolled ? '[mask-image:linear-gradient(to_bottom,transparent,black_24px)]' : ''}" inert={!raised} onscroll={(e) => (scrolled = e.currentTarget.scrollTop > 0)}>
     {#if query}
       {#if searching === 'loading' && !results}
         {@render skeleton()}
@@ -180,12 +189,12 @@
     {:else}
       {#if social}
         {#snippet me()}<Avatar name={social.name} local={social.photo ?? null} size="row" />{/snippet}
-        <Row title={social.name} caption={t.social.handle(social.handle)} leading={me} onclick={() => (sheets.profile = {})} testid="panel-me" />
+        <Row title={social.name} caption={t.social.handle(social.handle)} leading={me} onclick={() => { sheets.profile = {}; }} testid="panel-me" />
       {:else}
-        <div class="bg-surface-2 rounded-md p-4" data-testid="panel-setup">
+        <div data-testid="panel-setup">
           <p class="text-body font-semibold">{t.social.setup}</p>
           <p class="text-callout text-ink-2 mt-1">{t.social.setupLine}</p>
-          <Button variant="primary" class="mt-3" onclick={() => (sheets.profile = {})} data-testid="panel-setup-open">{t.social.setupAction}</Button>
+          <Button class="mt-3" onclick={() => { sheets.profile = {}; }} data-testid="panel-setup-open">{t.social.setupAction}</Button>
         </div>
       {/if}
 

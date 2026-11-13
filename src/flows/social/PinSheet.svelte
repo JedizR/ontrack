@@ -13,6 +13,7 @@
   import type { SharedMeal } from '$lib/backend/types';
   import Avatar from './Avatar.svelte';
   import Photo from './Photo.svelte';
+  import Facts from './Facts.svelte';
   import type { Who } from './who';
 
   let {
@@ -67,7 +68,7 @@
         <span class="text-display" data-testid="pin-kcal">{num(m.kcal)}</span>
         <span class="text-heading text-ink-2">{t.after.kcal}</span>
       </div>
-      <p class="text-callout text-ink-2 mt-2">{t.search.macros(num(m.protein, 1), num(m.carbs, 1), num(m.fat, 1))}</p>
+      <p class="text-callout text-ink-2 mt-2"><Facts facts={[t.social.protein(num(m.protein, 1)), t.social.carbs(num(m.carbs, 1)), t.social.fat(num(m.fat, 1))]} lead="text-ink" /></p>
     </div>
     {#if m.owner === me}
       <Button class="mt-6" onclick={unshare} data-testid="pin-unshare">{t.social.unshare}</Button>

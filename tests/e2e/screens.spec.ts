@@ -145,6 +145,16 @@ for (const theme of ['light', 'dark'] as const) {
         await page.screenshot({ path: `screenshots/landing/full-${theme}-${d.name}.png`, fullPage: true });
       });
 
+      // S1b: the landing's 04 Friends section whole, at rest (reduced motion shows each reveal's end state)
+      test('landing friends', async ({ page }) => {
+        await page.emulateMedia({ reducedMotion: 'reduce' });
+        await openFresh(page);
+        const section = page.getByTestId('landing-friends');
+        await section.scrollIntoViewIfNeeded();
+        await expect(section.locator('img')).toHaveJSProperty('complete', true);
+        await section.screenshot({ path: `screenshots/landing/friends-${theme}-${d.name}.png` });
+      });
+
       // SCREENS.md section 4: every question and its guardrail screens, Your plan
       test('onboarding', async ({ page }) => {
         const go = (id: string) => page.getByTestId(id).click();

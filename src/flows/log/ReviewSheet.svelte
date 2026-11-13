@@ -131,18 +131,26 @@
     if (!items.length || saving) return;
     const name = title.trim() || items[0].name;
     const meal: Meal = { date: view.date, at: stampOn(view.date), title: title.trim(), method: kind, items, ...(ai ? { ai } : {}) };
+    const mine = run;
+    const row = shareRow;
     saving = true;
-    // a position still being read goes with the meal (F17)
-    const place = share && shareRow ? (await shareRow.settled(), shareRow.position()) : null;
-    // the sheet closes only once the meal is written, so a refused meal is never lost
-    const undo = await logReviewed(meal, kind === 'photo' ? thumb : null, place ?? undefined).catch(() => null);
-    saving = false;
-    if (!undo) return void toast(t.review.notSaved);
-    rememberFoods(lines.filter((l) => l.corrected).map(scaled));
-    if (keep) saveAsMeal(meal, name);
-    close();
-    haptic();
-    undoToast(t.add.logged(name), undo);
+    try {
+      // a position still being read goes with the meal (F17)
+      const place = share && row ? (await row.settled(), row.position()) : null;
+      if (mine !== run) return; // closed while the position was read
+      // the sheet closes only once the meal is written, so a refused meal is never lost
+      const undo = await logReviewed(meal, kind === 'photo' ? thumb : null, place ?? undefined).catch(() => null);
+      if (!undo) return void toast(t.review.notSaved);
+      rememberFoods(lines.filter((l) => l.corrected).map(scaled));
+      if (keep) saveAsMeal(meal, name);
+      const unplaced = share && !place;
+      close();
+      haptic();
+      // the switch was on but no place came (the location sentence never answered): say so, never share it silently later
+      undoToast(unplaced ? t.social.loggedUnplaced(name) : t.add.logged(name), undo);
+    } finally {
+      saving = false;
+    }
   }
 </script>
 
