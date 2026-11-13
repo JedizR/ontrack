@@ -254,7 +254,7 @@
       <div aria-live="polite">
         {#if product.brand}<p class="text-caption text-ink-2 mb-1" data-testid="product-brand">{product.brand}</p>{/if}
         <div class="flex items-baseline gap-2">
-          <span class="text-display" data-testid="product-kcal"><Count value={item.kcal} /></span>
+          <span class="text-display" data-testid="product-kcal" aria-hidden="true"><Count value={item.kcal} /></span><span class="sr-only">{num(item.kcal)}</span>
           <span class="text-heading text-ink-2">{t.after.kcal}</span>
         </div>
         <p class="text-caption text-ink-2 mt-2"><Facts facts={[t.after.proteinN(num(item.protein, 1)), t.after.carbsN(num(item.carbs, 1)), t.after.fatN(num(item.fat, 1))]} /></p>

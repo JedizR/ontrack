@@ -286,10 +286,21 @@ export const unnested = (page: Page) => page.evaluate(() => {
     }
   };
   for (const sheet of document.styleSheets) { try { walk(sheet.cssRules); } catch { /* another origin's sheet */ } }
-  const pressable = (e: Element) => pressedSel.some((sel) => { try { return e.matches(sel); } catch { return false; } });
+  // one selector list, of the rules this browser can match, so each element is matched once
+  const pressedAll = pressedSel.filter((sel) => { try { document.body.matches(sel); return true; } catch { return false; } }).join(', ');
+  const pressable = (e: Element) => !!pressedAll && e.matches(pressedAll);
+  const clipCache = new Map<Element, boolean>();
+  const clipping = (e: Element) => { let c = clipCache.get(e); if (c === undefined) clipCache.set(e, (c = getComputedStyle(e).overflow !== 'visible')); return c; };
   const name = (e: Element) => e.getAttribute('data-testid') ?? `${e.tagName.toLowerCase()}.${e.className.toString().slice(0, 40)}`;
   type Shape = { e: Element; r: DOMRect; radii: number[]; clips: boolean; fill: string; edge: boolean; pressed: boolean };
   const CORNERS = ['top-left', 'top-right', 'bottom-right', 'bottom-left'];
+  // a pressed fill carried past the row's box by its pseudo elements (`bleed`) reaches as far as they do
+  const reach = (e: Element, r: DOMRect) => {
+    const [b, a] = [getComputedStyle(e, '::before'), getComputedStyle(e, '::after')];
+    const up = b.content !== 'none' && b.position === 'absolute' ? Math.max(0, -parseFloat(b.top) || 0) : 0;
+    const down = a.content !== 'none' && a.position === 'absolute' ? Math.max(0, -parseFloat(a.bottom) || 0) : 0;
+    return new DOMRect(r.x, r.y - up, r.width, r.height + up + down);
+  };
   const shapes: Shape[] = [];
   for (const e of document.querySelectorAll('body *')) {
     if (e.closest('[data-testid="landing"]')) continue;
@@ -304,7 +315,7 @@ export const unnested = (page: Page) => page.evaluate(() => {
     const b = p.getBoundingClientRect();
     if (getComputedStyle(p).overflow !== 'visible' && Math.abs(r.left - b.left) + Math.abs(r.top - b.top) + Math.abs(r.right - b.right) + Math.abs(r.bottom - b.bottom) < 1) continue;
     const radii = CORNERS.map((c) => Math.min(parseFloat(cs.getPropertyValue(`border-${c}-radius`)) || 0, r.width / 2, r.height / 2));
-    shapes.push({ e, r, radii, clips: cs.overflow !== 'visible', fill: `${cs.backgroundColor} ${cs.backgroundImage}`, edge, pressed });
+    shapes.push({ e, r: pressed ? reach(e, r) : r, radii, clips: cs.overflow !== 'visible', fill: `${cs.backgroundColor} ${cs.backgroundImage}`, edge, pressed });
   }
   const bad: string[] = [];
   let checked = 0;
@@ -314,7 +325,7 @@ export const unnested = (page: Page) => page.evaluate(() => {
       if (inner === outer || outer.pressed || !outer.e.contains(inner.e)) continue;
       // something between them that clips (a sheet's scrolling list) decides what shows of the inner shape
       let between = inner.e.parentElement;
-      while (between && between !== outer.e && getComputedStyle(between).overflow === 'visible') between = between.parentElement;
+      while (between && between !== outer.e && !clipping(between)) between = between.parentElement;
       if (between !== outer.e) continue;
       if (!inner.pressed && !inner.edge && inner.fill === outer.fill) continue;
       const i = inner.r;

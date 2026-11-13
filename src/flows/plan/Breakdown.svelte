@@ -2,8 +2,7 @@
      floor, summing exactly to the target (targetParts). Each line opens its sources and their status. Rows only: the
      caller puts them on a card or a sheet. The faster gain pace (F19) cites its own source, Being checked. -->
 <script lang="ts">
-  import { fade } from 'svelte/transition';
-  import { collapse, dur } from '$lib/haptics';
+  import { collapse } from '$lib/haptics';
   import Row from '$lib/components/Row.svelte';
   import { C, V, type Goal } from '$lib/model/engine';
   import type { targetParts } from '$lib/model/day';
@@ -40,7 +39,7 @@
   <Row title={l.label} value={signed(l.value, i === 0)} unit={t.after.kcal} onclick={() => (opened = opened === l.key ? null : l.key)} testid="line-{l.key}">
     <!-- one line closed (the first source), every citation and its status open -->
     {#snippet caption()}
-      <!-- U2: the citations open and close in place; the short source fades back -->
+      <!-- U2: the citations open in place of the short source, each growing or shrinking, so the row eases to its new height -->
       {#if opened === l.key}
         <span class="block" in:collapse out:collapse={{ leave: true }}>
           {#each l.basis as b (b.source)}<span class="block pt-1">{SOURCES[b.source]?.cite}</span>{/each}
@@ -48,7 +47,7 @@
           {#if l.basis.some((b) => b.status === 'provisional')}<span class="block pt-1" data-testid="provisional">{t.plan.provisional}</span>{/if}
         </span>
       {:else}
-        <span class="block" in:fade={{ duration: dur('--d-fade') }}>{SOURCES[l.basis[0].source]?.short}</span>
+        <span class="block" in:collapse out:collapse={{ leave: true }}>{SOURCES[l.basis[0].source]?.short}</span>
       {/if}
     {/snippet}
   </Row>

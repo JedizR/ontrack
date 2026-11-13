@@ -70,7 +70,7 @@
 </script>
 
 <!-- the hairline between swipe rows sits on the wrapper, inset to where the row text starts (inset, tile, gap). No clip
-     here: the card's own clip and corners cut the action, and the first and last rows fill the card's padding -->
+     here: the card's own clip and corners cut the action, and the first and last rows' action fills the card's padding -->
 <div
   class="relative -mx-6 [&+&]:before:bg-line [&+&]:before:absolute [&+&]:before:top-0 [&+&]:before:right-0 [&+&]:before:left-22 [&+&]:before:z-10 [&+&]:before:h-px"
   data-no-swipe
@@ -90,12 +90,11 @@
   >
     {@render children()}
   </div>
-  <!-- the action fills exactly the space the row leaves, over the hairline and, as the row reaches into the card's
-       padding at the ends (its `bleed`, U2), into that padding too. It
+  <!-- the action fills exactly the space the row leaves, over the hairline and into the card's padding at the ends. It
        stays drawn at no width when closed, so it shrinks with the row as it slides back, and comes after the row in the
        document, so the row's own button is the first one there -->
   <div
-    class="bg-danger text-on-danger absolute inset-y-0 right-0 z-20 overflow-hidden"
+    class="bg-danger text-on-danger absolute inset-y-0 right-0 z-20 overflow-hidden [:first-child>&]:-top-1 [:last-child>&]:-bottom-1"
     style="width: {Math.max(0, -dx)}px; transition: {dragging ? 'none' : 'width var(--d-settle) var(--ease-out)'}"
     inert={dx !== -ACTION}
     aria-hidden={dx !== -ACTION}

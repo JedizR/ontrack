@@ -3,7 +3,7 @@
      Opaque: no glass in the content layer. Opens to content height, at most 92 percent of the visible height. A long
      title (a scanned product's name) wraps to a second line. -->
 <script lang="ts">
-  import type { Snippet } from 'svelte';
+  import { tick, type Snippet } from 'svelte';
   import * as Drawer from '$lib/components/ui/drawer';
   import X from '@lucide/svelte/icons/x';
   import ChevronLeft from '@lucide/svelte/icons/chevron-left';
@@ -43,9 +43,9 @@
   let scrolled = $state(false);
   // the content is rebuilt on every open, scrolled to the top
   $effect(() => { if (open) scrolled = false; });
-  // read once as the new step's content slides in, then reset
+  // Back's step slides in from the left; set for the one change Back makes (a Back that changes no step leaves no trace)
   let backing = false;
-  const enter = () => { const x = backing ? -24 : 24; backing = false; return { x, opacity: 0, duration: dur('--d-settle') }; };
+  const enter = () => ({ x: backing ? -24 : 24, opacity: 0, duration: dur('--d-settle') });
   const icon = 'active:bg-surface-2 grid size-11 flex-none place-items-center rounded-sm transition-colors duration-[var(--d-press)]';
 </script>
 
@@ -54,7 +54,7 @@
   <Drawer.Content class={Z[layer]} overlayClass={Z[layer]} data-testid={testid}>
     <div class="fade-under relative z-10 flex items-center gap-1 pt-2 pr-3 pb-1 [--fade:var(--surface)] {onback ? 'pl-3' : 'pl-6'}" data-scrolled={scrolled || undefined}>
       {#if onback}
-        <button class="{icon} text-ink" aria-label={backLabel} onclick={() => { backing = true; onback?.(); }} data-testid="sheet-back"><ChevronLeft size={24} strokeWidth={2} /></button>
+        <button class="{icon} text-ink" aria-label={backLabel} onclick={() => { backing = true; onback?.(); void tick().then(() => (backing = false)); }} data-testid="sheet-back"><ChevronLeft size={24} strokeWidth={2} /></button>
       {/if}
       <Drawer.Title class="text-heading line-clamp-2 min-w-0 flex-1 py-1 text-left break-words">{title}</Drawer.Title>
       <button class="{icon} text-ink-2" aria-label={t.sheet.close} onclick={() => { open = false; onclose?.(); }}>

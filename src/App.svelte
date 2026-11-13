@@ -122,7 +122,7 @@
       // U2: a new version has taken over this page (vite.config.ts): the next load is the new one, so Update just reloads.
       // Until then a lazy chunk this page asks for may be gone from the deploy, and a reload fixes that too
       let stale = false;
-      window.addEventListener('vite:preloadError', (e) => { if (stale) { e.preventDefault(); location.reload(); } });
+      window.addEventListener('vite:preloadError', () => { if (stale) location.reload(); });
       import('virtual:pwa-register').then(({ registerSW }) => {
         registerSW({
           onNeedReload() {
