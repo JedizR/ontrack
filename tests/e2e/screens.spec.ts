@@ -151,7 +151,7 @@ for (const theme of ['light', 'dark'] as const) {
         await openFresh(page);
         const section = page.getByTestId('landing-friends');
         await section.scrollIntoViewIfNeeded();
-        await expect(section.locator('img')).toHaveJSProperty('complete', true);
+        await expect(section.locator('img:not([alt=""])')).toHaveJSProperty('complete', true); // L2: not the status bar's copy
         await section.screenshot({ path: `screenshots/landing/friends-${theme}-${d.name}.png` });
       });
 

@@ -17,7 +17,7 @@
       <!-- the status bar continues the screen's own top: its first rows, stretched and softened -->
       <div class="text-night relative h-[12.6cqw] overflow-clip" aria-hidden="true">
         <!-- a transform and a backdrop blur, not scale or filter, so the reduced motion check reads the phone as at rest -->
-        <img {src} alt="" width="390" height="844" {loading} decoding="async" class="absolute inset-x-0 top-0 h-auto w-full origin-top [transform:scaleY(20)]" />
+        <img {src} alt="" width="390" height="844" {loading} fetchpriority={eager ? 'high' : 'auto'} decoding="async" class="absolute inset-x-0 top-0 h-auto w-full origin-top [transform:scaleY(20)]" />
         <span class="absolute inset-0 backdrop-blur-[4px]"></span>
         <span class="num absolute top-[6.9cqw] left-[16cqw] -translate-y-1/2 text-[4cqw] leading-none font-semibold">{t.landing.phoneTime}</span>
         <span class="bg-night absolute top-[2.6cqw] left-1/2 h-[8.7cqw] w-[29.4cqw] -translate-x-1/2 rounded-full"></span>

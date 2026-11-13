@@ -300,26 +300,26 @@
           <Button variant="primary" size="lg" onclick={start} class="mt-6" data-testid="landing-start-end">{L.start}</Button>
           <p class="text-caption mt-1">{L.noAccount}</p>
         </div>
-        <p class="text-body text-ink-2 mt-6">{L.cta.account} <button type="button" class="text-accent-ink min-h-11 px-1 font-semibold" onclick={signin}>{L.signin}</button></p>
+        <p class="text-body text-ink-2 mt-6">{L.cta.account} <button type="button" class="tap text-accent-ink active:bg-surface-2 min-h-11 rounded-xs px-1 font-semibold" onclick={signin}>{L.signin}</button></p>
       </section>
 
       <!-- the footer (pick 09, glass-01): the giant wordmark over the violet glow, the back to top tile, glass panels -->
       <footer class="relative px-2 pt-16 sm:px-4">
         <div class="text-accent-ink mx-auto max-w-[1200px] px-2 opacity-40" aria-hidden="true"><Wordmark class="aspect-[61/10] w-full" /></div>
         <div class="relative z-10 -mt-6 flex justify-center">
-          <button type="button" class="glass text-ink grid size-12 place-items-center rounded-sm active:scale-[0.97]" onclick={top} aria-label={L.footer.top}><ArrowUp size={22} /></button>
+          <button type="button" class="glass tap text-ink active:bg-surface-2 grid size-12 place-items-center rounded-sm" onclick={top} aria-label={L.footer.top}><ArrowUp size={22} /></button>
         </div>
         <div class="relative mt-4">
           <!-- the glow rises from where the panels begin (the owner's footer-glow-bug): its brightest middle on their top
                edge, spreading behind them and up into the wordmark, the canvas at every edge so it shows no seam -->
-          <div class="glow absolute -inset-x-4 top-0 -z-10 h-[clamp(18rem,40vw,36rem)] -translate-y-1/2" data-testid="landing-glow" aria-hidden="true"></div>
+          <div class="glow absolute -inset-x-2 top-0 sm:-inset-x-4 -z-10 h-[clamp(18rem,40vw,36rem)] -translate-y-1/2" data-testid="landing-glow" aria-hidden="true"></div>
         <div class="liquid rise-in mx-auto max-w-[1200px] rounded-t-sheet p-2 pb-0" use:inview={0.05} data-reveal data-testid="landing-panels">
           <div class="grid gap-2 md:grid-cols-2">
             <div class="liquid-violet text-on-night rounded-lg p-6">
               <h2 class="text-heading">{L.footer.start}</h2>
               <ul class="mt-4 flex flex-col items-start">
-                <li><button type="button" class="text-body min-h-11 font-medium" onclick={start}>{L.start}</button></li>
-                <li><button type="button" class="text-body min-h-11 font-medium" onclick={signin}>{L.signin}</button></li>
+                <li><button type="button" class="tap text-body active:bg-on-night/15 -mx-2 min-h-11 rounded-xs px-2 font-medium" onclick={start}>{L.start}</button></li>
+                <li><button type="button" class="tap text-body active:bg-on-night/15 -mx-2 min-h-11 rounded-xs px-2 font-medium" onclick={signin}>{L.signin}</button></li>
               </ul>
             </div>
             <div class="liquid-violet text-on-night rounded-lg p-6">
@@ -349,9 +349,13 @@
      the grain nor the colour ever starts at a line (the owner's footer-glow-bug) */
   .glow {
     background: var(--glow);
-    background-blend-mode: soft-light, normal;
+    background-blend-mode: soft-light, normal, normal;
     mask-image: radial-gradient(closest-side, black 40%, transparent);
   }
+  /* every tap has a pressed state (PRD section 8, DESIGN.md section 10): the fill steps in the markup, and the face scales
+     to 0.97 over --d-press when motion is welcome */
+  .tap { transition: background-color var(--d-press), scale var(--d-press); }
+  @media (prefers-reduced-motion: no-preference) { .tap:active { scale: 0.97; } }
   /* the lead sits on the sky's violet top: full ink, not ink-2, keeps it at 4.5 to 1 */
   .hero-lead { color: var(--ink); }
 

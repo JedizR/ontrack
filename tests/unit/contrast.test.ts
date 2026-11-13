@@ -98,8 +98,8 @@ test('words on the landing washes, panels and sky', () => {
   for (const c of stops('grad-sky', css.indexOf('[data-theme="dark"] {'))) expect(ratio(parse(dark['accent-ink']), c), 'dark grad-sky violet').toBeGreaterThanOrEqual(3);
   for (const w of ['wash-ink', 'wash-blue', 'wash-magenta']) for (const c of stops(w)) expect(ratio(parse(light['on-night']), c), w).toBeGreaterThanOrEqual(4.5);
   // L2: white words on the footer's violet glass at the glow's brightest (Violet/01 lifted), night words on the white glass
-  // chips over the dark sky's brightest violet; the photo gradients themselves are measured in landing.spec.ts
+  // chips over the darkest thing behind them (the phone's bezel); the photo gradients themselves are measured in landing.spec.ts
   expect(ratio(parse(light['on-night']), over(parse(light['liquid-violet']), parse('#5b4ff5'))), 'liquid-violet').toBeGreaterThanOrEqual(4.5);
-  expect(ratio(parse(light.night), over(parse(light['liquid-white']), parse('#381ac9'))), 'liquid-white').toBeGreaterThanOrEqual(4.5);
+  expect(ratio(parse(light.night), over(parse(light['liquid-white']), parse(light.night))), 'liquid-white').toBeGreaterThanOrEqual(4.5);
   for (const c of stops('wash-lavender')) expect(ratio(parse(light.night), c), 'wash-lavender').toBeGreaterThanOrEqual(4.5);
 });
