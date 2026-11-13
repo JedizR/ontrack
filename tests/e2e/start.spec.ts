@@ -65,6 +65,29 @@ async function measure(page: Page, browser: string) {
   console.log(JSON.stringify({ task: 'start with a year', browser, records: records.length, medianMs: runs[3], runs }));
 }
 
+/** PRD section 8, tap to visible response: each tap's Event Timing duration (input to the next paint), Chromium only. */
+async function taps(page: Page) {
+  await page.evaluate(() => {
+    const w = window as unknown as { taps: Record<number, number> };
+    w.taps = {};
+    new PerformanceObserver((l) => {
+      for (const e of l.getEntries() as PerformanceEventTiming[]) if (e.interactionId) w.taps[e.interactionId] = Math.max(w.taps[e.interactionId] ?? 0, e.duration);
+    }).observe({ type: 'event', durationThreshold: 16, buffered: false } as PerformanceObserverInit);
+  });
+  // the tabs (Train and Progress load on their first tap), the Add sheet, Search, and a day in the week
+  for (const id of ['tab-1', 'tab-2', 'tab-0', 'add', 'add-search']) {
+    await page.getByTestId(id).click();
+    await page.waitForTimeout(600);
+  }
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(600);
+  await page.getByRole('button', { name: /^Monday/ }).first().click();
+  await page.waitForTimeout(600);
+  const ms = Object.values(await page.evaluate(() => (window as unknown as { taps: Record<number, number> }).taps)).sort((a, b) => a - b);
+  // durations under 16 ms are not reported: those taps answered within a frame
+  console.log(JSON.stringify({ task: 'tap to next paint', browser: 'chromium, 4x CPU', taps: 7, over16ms: ms, maxMs: ms.at(-1) ?? 16 }));
+}
+
 test('start with a year of data, WebKit', async ({ page }) => {
   test.setTimeout(120_000);
   await measure(page, 'webkit');
@@ -78,5 +101,6 @@ test('start with a year of data, Chromium at a 4x slower CPU', async ({ baseURL 
   const cdp = await page.context().newCDPSession(page);
   await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 });
   await measure(page, 'chromium, 4x CPU');
+  await taps(page);
   await browser.close();
 });
