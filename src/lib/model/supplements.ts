@@ -1,7 +1,7 @@
 // Supplements (N2, PRD F21): the presets, and what a logged amount puts on the day. Ontrack logs what the user takes; it
 // never suggests a supplement or an amount. Every number comes from the tub's label or the food table.
 import { itemFor, type Food } from '$lib/data/foods';
-import { per100From } from './products';
+import { per100From, scaleTo, type LabelMacros } from './products';
 import { ML_PER_CUP } from './units';
 import type { Goal } from './engine';
 import type { FoodMemory, MealItem, Supplement } from '../../../shared/records';
@@ -31,15 +31,14 @@ const r1 = (n: number) => Math.round(n * 10) / 10;
 /** The table's scoop for a preset's food, 0 (not known) when it lists none. */
 export const scoopOf = (f?: Food) => f?.portions.find((p) => p.label === '1 scoop')?.grams ?? 0;
 
-/** A preset's values for one scoop of this many grams: the food's values per 100 g, scaled. */
-export function perScoopOf(f: Pick<Food, 'per100'> | undefined, grams: number): Supplement['perScoop'] {
-  if (!f) return { kcal: 0, protein: 0, carbs: 0, fat: 0 };
-  const k = grams / 100;
-  return { kcal: Math.round(f.per100.kcal * k), protein: r1(f.per100.protein * k), carbs: r1(f.per100.carbs * k), fat: r1(f.per100.fat * k) };
+/** A preset's values for one scoop of this many grams: the food's values per 100 g, scaled; a label's macro it did not
+ * show stays null (M9a). */
+export function perScoopOf<M extends LabelMacros>(f: { per100: M } | undefined, grams: number): M | Supplement['perScoop'] {
+  return f ? scaleTo(f.per100, grams) : { kcal: 0, protein: 0, carbs: 0, fat: 0 };
 }
 
 /** A supplement with no calories (creatine) is logged as taken and shown compactly. */
-export const noCalories = (s: Pick<Supplement, 'perScoop'>) => s.perScoop.kcal === 0;
+export const noCalories = (s: { perScoop: { kcal: number } }) => s.perScoop.kcal === 0;
 
 export type Milk = { food: Food; grams: number; mine?: FoodMemory['per100'] };
 
@@ -63,9 +62,10 @@ export function scoopsIn(serving?: string) {
 /**
  * A tub's label or Open Food Facts entry as the setup's starting point (B1), in the label's own terms (owner, after N2):
  * the serving as printed, the scoops in it, and values per 100 g (`base`) that the serving's values follow. A label that
- * prints a serving with no weight gives that serving's values directly (`own`) and leaves its weight unknown (0).
+ * prints a serving with no weight gives that serving's values directly (`own`) and leaves its weight unknown (0). A
+ * macro the label did not show stays null in both (M9a).
  */
-export function fromServing(o: { per100?: Macros | null; perServing?: Macros | null; servingG?: number | null; scoops?: number | null }) {
+export function fromServing(o: { per100?: LabelMacros | null; perServing?: LabelMacros | null; servingG?: number | null; scoops?: number | null }) {
   const scoops = o.scoops && o.scoops > 0 ? o.scoops : 1;
   const servingG = o.servingG ?? 0;
   const base = o.perServing && o.servingG ? per100From(o.perServing, o.servingG) : (o.per100 ?? undefined);

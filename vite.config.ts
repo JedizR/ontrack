@@ -60,7 +60,8 @@ export default defineConfig({
         // worker) loads when the map first opens, and the map needs the network for its tiles anyway
         globIgnores: ['**/Gallery-*', '**/maplibre-gl-*'],
         navigateFallback: '/index.html',
-        navigateFallbackDenylist: [/^\/api\//, /^\/__mock\//],
+        // the Privacy and Terms pages in public/ are their own documents, never the app
+        navigateFallbackDenylist: [/^\/api\//, /^\/__mock\//, /^\/(privacy|terms)\.html$/],
         cleanupOutdatedCaches: true,
         // the scanner's WebAssembly reader (B1, about 1 MB) is cached the first time the scanner opens, not for everyone
         runtimeCaching: [{ urlPattern: /\/assets\/.*\.wasm$/, handler: 'CacheFirst', options: { cacheName: 'scanner', expiration: { maxEntries: 2 } } }],

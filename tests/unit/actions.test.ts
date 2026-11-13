@@ -136,10 +136,11 @@ test('supplements: two scoops with milk become the day\'s items; the last amount
   expect(entry.data).toMatchObject({ date: '2026-11-12', title: 'Whey', items: [{ kcal: 240, protein: 48, scoops: 2, supplementId: id }, { foodId: 'milk-whole', grams: 300, kcal: 183 }] });
   expect(db.get('supplement', id)).toMatchObject({ lastScoops: 2, lastMix: { foodId: 'milk-whole', grams: 300 } });
 
-  // corrected later: the same day and time, water now, from the current label; the next start stays the last logged
+  // corrected later: the same day at the time given (M9a), water now, from the current label; the next start stays the
+  // last logged
   saveSupplement({ ...db.get('supplement', id)!, perScoop: { ...whey.perScoop, kcal: 130 } }, id);
-  const back = logSupplement(id, 1, null, '2026-11-20', 'ignored', entry.id)!;
-  expect(db.get('meal', entry.id)).toMatchObject({ date: '2026-11-12', at: '2026-11-12T00:30:00.000Z', items: [{ kcal: 130, scoops: 1 }] });
+  const back = logSupplement(id, 1, null, '2026-11-20', '2026-11-12T01:15:00.000Z', entry.id)!;
+  expect(db.get('meal', entry.id)).toMatchObject({ date: '2026-11-12', at: '2026-11-12T01:15:00.000Z', items: [{ kcal: 130, scoops: 1 }] });
   expect(db.get('meal', entry.id)!.items).toHaveLength(1);
   expect(db.get('supplement', id)).toMatchObject({ lastScoops: 2, lastMix: { foodId: 'milk-whole', grams: 300 } });
   back();
@@ -188,6 +189,8 @@ test('products (B1): the saved one first, then Open Food Facts; logging keeps it
     rememberFoods([{ ...meal.data.items[0], kcal: 500 }]);
     expect(db.get('product', '8850987101021')).toMatchObject({ source: 'yours', per100: { kcal: 454.55 } });
     expect(db.get('food', foodKey(meal.data.items[0]))).toBeUndefined();
+    // Use default values (F15, M9a) asks Open Food Facts past the user's product
+    expect(await findProduct('8850987101021', true)).toMatchObject({ kind: 'found', product: { source: 'off', per100: { kcal: 472.73 } } });
   } finally {
     vi.unstubAllGlobals();
   }
@@ -239,6 +242,7 @@ test('social (S1): the profile saves through the store with its handle checked o
     expect(await saveSocial({ handle: 'nan_t', name: 'Nan T', showProgram: false }, null)).toBe('offline');
     expect(await saveSocial({ handle: 'nan_eats', name: 'Nan T', showProgram: false }, null)).toBe('ok');
     expect(db.get('social', 'social')).toEqual({ handle: 'nan_eats', name: 'Nan T' });
+    expect(db.dropQueue().map((d) => d.id)).toContain(mine.photo); // the removed picture leaves storage (M9a)
     expect(await listFriends()).toEqual({ ok: false, error: 'offline' });
   } finally {
     vi.unstubAllGlobals();
@@ -258,4 +262,40 @@ test('social (S1): the profile saves through the store with its handle checked o
   expect(db.live('meal').find((r) => r.data.share?.lat === -12.047)?.data).toEqual({ ...meal, thumb: true, share: { lat: -12.047, lng: -77.028 } });
   await logReviewed({ ...meal, title: 'Described' }, null, { lat: 1, lng: 1 });
   expect(db.live('meal').find((r) => r.data.title === 'Described')?.data.share).toBeUndefined();
+});
+
+test('a deleted meal\'s thumbnail leaves the phone and storage once Undo has had its time; an undone delete keeps it (M9a)', async () => {
+  const server = createMockServer();
+  const b = createMockBackend({ base: 'http://mock', fetch: (u, i) => server(new Request(u, i)), space: 'actions-drop' });
+  await b.auth.sendEmailCode('drop@example.com');
+  await b.auth.verifyEmailCode('drop@example.com', MOCK_CODE);
+  const { Sync } = await import('../../src/lib/sync/engine.svelte');
+  const engine = new Sync(db);
+  vi.stubGlobal('navigator', { onLine: true });
+  const jpeg = new Blob([new Uint8Array([255, 216, 255, 9])], { type: 'image/jpeg' });
+  const meal = (title: string) => saveMeal({ date: '2026-11-12', at: '2026-11-12T05:30:00.000Z', title, method: 'photo', thumb: true, items: [{ name: title, kcal: 300, protein: 10, carbs: 40, fat: 10, source: 'estimate' }] });
+  try {
+    engine.start(b);
+    const gone = meal('Gone');
+    const kept = meal('Kept');
+    await db.saveThumb(gone, jpeg);
+    await db.saveThumb(kept, jpeg);
+    await engine.run();
+    expect(await b.getThumb(gone)).not.toBeNull();
+    deleteMeal(gone);
+    deleteMeal(kept)();
+    await engine.run();
+    expect(await b.getThumb(gone)).not.toBeNull(); // Undo could still bring it back
+    vi.setSystemTime(Date.now() + 31_000);
+    await engine.run();
+    expect(await b.getThumb(gone)).toBeNull();
+    expect(await db.thumb(gone)).toBeUndefined();
+    expect(await b.getThumb(kept)).not.toBeNull();
+    expect(await db.thumb(kept)).toBeDefined();
+    expect(db.dropQueue()).toEqual([]);
+  } finally {
+    engine.stop();
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  }
 });

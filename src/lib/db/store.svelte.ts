@@ -1,6 +1,6 @@
 // Local-first store, ported from watermelon: records in $state maps, mirrored to IndexedDB, with an outbox for sync.
 // One IndexedDB database per user (TECH-SPEC section 4). Only actions.ts writes; the sync engine merges and acks.
-import { clear, createStore, get, getMany, keys, set, setMany, type UseStore } from 'idb-keyval';
+import { clear, createStore, del, get, getMany, keys, set, setMany, type UseStore } from 'idb-keyval';
 import { COLLECTIONS, type Collection, type DataOf, type Rec } from '../../../shared/records';
 import { MIGRATIONS, SCHEMA_VERSION } from './migrations';
 
@@ -24,6 +24,7 @@ export class Store {
   #idb: UseStore | null = null;
   #outbox = new Set<string>();
   #blobq: string[] = [];
+  #dropq: { id: string; at: number }[] = [];
   #dirty = new Set<string>();
   #flushing: Promise<void> = Promise.resolve();
   #flushQueued = false;
@@ -34,7 +35,7 @@ export class Store {
     const idb = createStore(`ontrack-${userId}`, 'kv');
     try { await navigator.storage?.persist?.(); } catch { /* best effort */ }
     const recKeys = ((await keys(idb)) as string[]).filter((k) => k.startsWith('r:'));
-    const [meta, outbox, blobq, ...recs] = await getMany<unknown>(['meta', 'outbox', 'blobq', ...recKeys], idb);
+    const [meta, outbox, blobq, dropq, ...recs] = await getMany<unknown>(['meta', 'outbox', 'blobq', 'dropq', ...recKeys], idb);
     const loaded = (recs as Rec[]).filter((r) => r && COLLECTIONS.includes(r.collection));
     this.meta = { ...freshMeta(), ...(meta as Meta | undefined) };
     const dirty = new Set<string>();
@@ -48,6 +49,7 @@ export class Store {
     this.#idb = idb;
     this.#outbox = new Set((outbox as string[] | undefined) ?? []);
     this.#blobq = (blobq as string[] | undefined) ?? [];
+    this.#dropq = (dropq as { id: string; at: number }[] | undefined) ?? [];
     this.#dirty = dirty;
     this.data = data;
     this.pending = this.#outbox.size;
@@ -145,6 +147,29 @@ export class Store {
   async thumbSent(mealId: string) {
     this.#blobq = this.#blobq.filter((id) => id !== mealId);
     if (this.#idb) await set('blobq', [...this.#blobq], this.#idb);
+  }
+  // M9a: thumbnails to delete here and on the server (a deleted meal's, a replaced profile photo), kept with when they
+  // were asked so a sync round sends them once Undo has had its time, and only if nothing uses them again
+  async dropThumb(mealId: string) {
+    if (!this.#idb) return;
+    // a second delete after an Undo starts the wait again
+    this.#dropq = [...this.#dropq.filter((d) => d.id !== mealId), { id: mealId, at: Date.now() }];
+    await set('dropq', [...this.#dropq], this.#idb);
+  }
+  /** a live meal or the profile photo still shows this picture */
+  thumbUsed(id: string) {
+    return !!this.get('meal', id) || this.get('social', 'social')?.photo === id;
+  }
+  dropQueue() {
+    return [...this.#dropq];
+  }
+  /** Out of the queue; `gone` also deletes the bytes on this phone and any upload still waiting. */
+  async thumbDropped(mealId: string, gone: boolean) {
+    this.#dropq = this.#dropq.filter((d) => d.id !== mealId);
+    if (gone) this.#blobq = this.#blobq.filter((id) => id !== mealId);
+    if (!this.#idb) return;
+    await setMany([['dropq', [...this.#dropq]], ['blobq', [...this.#blobq]]], this.#idb);
+    if (gone) await del(`blob:${mealId}`, this.#idb);
   }
 
   /** Resolves once everything written so far is in IndexedDB. */

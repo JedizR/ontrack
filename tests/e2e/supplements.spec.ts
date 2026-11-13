@@ -215,3 +215,23 @@ test('F21: a supplement logs offline and reaches the account once the network is
   await expect.poll(() => pending(page)).toBe(0);
   await expect(page.getByTestId('sync-mark')).toBeHidden();
 });
+
+test("F21 (M9a): a logged entry's time is changed on its amount step", async ({ page }) => {
+  await open(page, '/', [WHEY]);
+  await page.getByTestId('add').click();
+  await page.getByTestId('supplement').click();
+  await expect(page.getByTestId('supplement-time')).toHaveCount(0); // a new entry is logged now
+  await page.getByTestId('supplement-add').click();
+  const row = page.getByTestId('meal').first();
+  await expect(row).toContainText('2 scoops');
+
+  await row.getByRole('button').first().click();
+  await expect(page.getByTestId('supplement-time')).toHaveValue(/^\d\d:\d\d$/);
+  await page.getByTestId('supplement-time').fill('07:30');
+  await page.getByTestId('supplement-add').click();
+  await expect(page.getByText('Changes saved')).toBeVisible();
+  await expect(row).toContainText('07:30');
+  await expect(hero(page)).toHaveText('240');
+  await row.getByRole('button').first().click();
+  await expect(page.getByTestId('supplement-time')).toHaveValue('07:30');
+});

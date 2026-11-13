@@ -17,9 +17,10 @@ import { foodKey, per100Of, type Food } from '$lib/data/foods';
 import { supplementItems } from '$lib/model/supplements';
 import { productItem } from '$lib/model/products';
 import { fetchOff } from '$lib/data/off';
+import { allJson, mealsCsv } from '$lib/model/export';
 import { avatarPhoto, preparePhoto } from '$lib/photo';
 import type { AnalyzeRequest, AnalyzeResponse, LabelResponse } from '../../shared/analysis';
-import { foodSchema, ids, productSchema, recSchema, SCHEMAS, socialSchema, type Checkin, type Collection, type DataOf, type Meal, type MealItem, type Plan, type Product, type Profile, type Program, type Saved, type SessionLog, type Supplement, type Weight } from '../../shared/records';
+import { COLLECTIONS, foodSchema, ids, productSchema, recSchema, SCHEMAS, socialSchema, type Checkin, type Collection, type DataOf, type Meal, type MealItem, type Plan, type Product, type Profile, type Program, type Saved, type SessionLog, type Supplement, type Weight } from '../../shared/records';
 
 const uid = () => crypto.randomUUID();
 /** a plain copy of the store's proxy, for undo */
@@ -45,7 +46,13 @@ export const saveProgram = (p: Program) => write('program', ids.program(), p);
 export const logWeight = (date: string, kg: number) => write('weight', ids.weight(date), { date, kg });
 export const deleteWeight = (date: string) => remove('weight', ids.weight(date));
 export const saveMeal = (m: Meal, id: string = uid()) => write('meal', id, m).id;
-export const deleteMeal = (id: string) => remove('meal', id);
+/** Deletes a meal; its thumbnail leaves storage once Undo has had its time (M9a, the sync round). Returns the undo. */
+export function deleteMeal(id: string) {
+  const had = db.get('meal', id)?.thumb;
+  const undo = remove('meal', id);
+  if (had) void db.dropThumb(id);
+  return undo;
+}
 export const saveMealThumb = (mealId: string, jpeg: Blob) => db.saveThumb(mealId, jpeg);
 export const saveSaved = (s: Saved, id: string = uid()) => write('saved', id, s).id;
 export const deleteSaved = (id: string) => remove('saved', id);
@@ -91,9 +98,9 @@ export const saveSupplement = (s: Supplement, id: string = uid()) => write('supp
 /** Removes a supplement; what was logged from it keeps its numbers. Returns the undo. */
 export const removeSupplement = (id: string) => remove('supplement', id);
 /**
- * A supplement logged on a day, or a logged one changed (`mealId`, keeping its day and time). Its items come from the
- * supplement's current label. A new entry's amount and mix become the next start; correcting an old entry leaves the
- * start alone. Returns the undo: the entry gone (or as it was) and the last amount and mix back.
+ * A supplement logged on a day, or a logged one changed (`mealId`, keeping its day, at the time given). Its items come
+ * from the supplement's current label. A new entry's amount and mix become the next start; correcting an old entry
+ * leaves the start alone. Returns the undo: the entry gone (or as it was) and the last amount and mix back.
  */
 export function logSupplement(id: string, scoops: number, milk: { food: Food; grams: number } | null, date: string, at: string, mealId?: string) {
   const s = db.get('supplement', id);
@@ -102,7 +109,7 @@ export function logSupplement(id: string, scoops: number, milk: { food: Food; gr
   const before = mealId ? db.get('meal', mealId) : undefined;
   const old = before && copy(before);
   const items = supplementItems(id, s, scoops, milk ? { ...milk, mine: db.get('food', milk.food.id)?.per100 } : undefined);
-  const newId = saveMeal({ ...(old ?? { date, at, method: 'supplement' as const }), title: s.name, items }, mealId);
+  const newId = saveMeal({ ...(old ?? { date, method: 'supplement' as const }), at, title: s.name, items }, mealId);
   const { lastMix: _, ...rest } = was;
   if (!mealId) saveSupplement({ ...rest, lastScoops: scoops, ...(milk ? { lastMix: { foodId: milk.food.id, grams: milk.grams } } : {}) }, id);
   return () => {
@@ -132,9 +139,10 @@ export type Found =
   | { kind: 'found'; code: string; product: Product }
   | { kind: 'empty'; code: string; name: string; brand?: string }
   | { kind: 'missing' | 'offline' | 'failed'; code: string };
-/** The user's saved product first, at once and offline too, then Open Food Facts. Never throws. */
-export async function findProduct(code: string): Promise<Found> {
-  const mine = db.get('product', code);
+/** The user's saved product first, at once and offline too, then Open Food Facts; `fresh` asks Open Food Facts only, for
+ * Use default values (F15). Never throws. */
+export async function findProduct(code: string, fresh = false): Promise<Found> {
+  const mine = fresh ? undefined : db.get('product', code);
   if (mine) return { kind: 'found', code, product: copy(mine) };
   if (!navigator.onLine) return { kind: 'offline', code };
   try {
@@ -214,6 +222,37 @@ export function finishOnboarding(r: { profile: Profile; program: Program; plan: 
   logWeight(r.weight.date, r.weight.kg);
   saveProfile(r.profile); // last: a profile is what tells the app onboarding is done
 }
+// ----- settings (M9a) -----
+/** A Settings edit: the profile, and the plan from tomorrow when the edit moves a number (`nextPlan` in model/replan). */
+export function saveSettings(profile: Profile, next?: Plan) {
+  SCHEMAS.profile.parse(profile);
+  if (next) savePlan(SCHEMAS.plan.parse(next) as Plan);
+  saveProfile(profile);
+}
+/** Every record this account holds, as a JSON file to share or save (F12). Photos stay out. */
+export function exportAll() {
+  const records = Object.fromEntries(COLLECTIONS.map((c) => [c, db.live(c).map(({ id, updatedAt, data }) => ({ id, updatedAt, data }))]));
+  return shareFile(`ontrack-${today()}.json`, 'application/json', allJson(records, { version: __APP_VERSION__, exportedAt: new Date().toISOString() }));
+}
+/** Meals as CSV, one line per food (F12). */
+export const exportMeals = () => shareFile(`ontrack-meals-${today()}.csv`, 'text/csv', mealsCsv(db.live('meal').map((r) => r.data)));
+/** The share sheet where the browser can share files (iPhone Safari), else a download. Call it straight from a tap. */
+async function shareFile(name: string, type: string, text: string): Promise<'shared' | 'saved' | 'cancelled'> {
+  const file = new File([text], name, { type });
+  if (navigator.canShare?.({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file] });
+      return 'shared';
+    } catch (e) {
+      if ((e as Error).name === 'AbortError') return 'cancelled';
+    }
+  }
+  const url = URL.createObjectURL(file);
+  Object.assign(document.createElement('a'), { href: url, download: name }).click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  return 'saved';
+}
+
 export const closeDay = (date: string) => write('day', ids.day(date), { date, closed: true });
 export const reopenDay = (date: string) => write('day', ids.day(date), { date });
 
@@ -307,6 +346,7 @@ export async function saveSocial(p: { handle: string; name: string; showProgram:
     await saveMealThumb(name, square);
   }
   write('social', ids.social(), { ...data, ...(name ? { photo: name } : {}) });
+  if (was?.photo && was.photo !== name) void db.dropThumb(was.photo); // a replaced or removed picture leaves storage (M9a)
   return 'ok';
 }
 export const handleFree = (typed: string) => online((b) => b.social.handleFree(handleOf(typed)));
@@ -371,6 +411,8 @@ export async function signOut(force = false): Promise<'ok' | 'unsent'> {
   session.leaving = true;
   sync.stop();
   try {
+    // pictures waiting to leave storage go now, best effort: the queue is wiped with the phone's data (M9a)
+    for (const d of db.dropQueue()) if (!db.thumbUsed(d.id)) await session.backend?.dropThumb(d.id).catch(() => undefined);
     await session.backend?.auth.signOut().catch(() => undefined);
     await db.wipe();
   } finally {
@@ -380,6 +422,10 @@ export async function signOut(force = false): Promise<'ok' | 'unsent'> {
     // the account's first days and its dismissed suggestion (O1) are not the next account's
     prefs.firstDay = null;
     prefs.suggestOff = false;
+    prefs.liftAsked = false;
+    // the next account answers the photo and location notices for itself (M9a)
+    prefs.photoOk = false;
+    prefs.locationOk = false;
     location.reload();
   }
   return 'ok';

@@ -160,6 +160,15 @@
     </div>
   {/if}
 
+  <!-- SCREENS.md section 5: small print linking to Terms and Privacy (M9a), the links as plain actions 44 high -->
+  <div class="mt-4" data-testid="signin-legal">
+    <p class="text-caption text-ink-2">{t.signin.legal}</p>
+    <div class="-ml-4 flex flex-wrap">
+      {#each [['/terms.html', t.settings.terms], ['/privacy.html', t.settings.privacy]] as [href, label] (href)}
+        <a {href} target="_blank" rel="noopener" class="text-callout text-accent-ink active:bg-surface-2 inline-flex min-h-11 items-center rounded-sm px-4 font-semibold transition-colors duration-[var(--d-press)]">{label}</a>
+      {/each}
+    </div>
+  </div>
 
   {#snippet footer()}
     {#if step === 'email'}

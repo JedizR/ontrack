@@ -2,6 +2,33 @@
 
 Changes to a doc's decision, and choices made on the owner's behalf. Newest first, one line each: what, why.
 
+## M9a
+
+Settings and the last features, 13 November 2026. Unattended; decided on the owner's behalf:
+- **Settings saves on the tap.** Switches, segmented choices, the reminder time and the check-in day save at once; only Profile, Goal and pace, Check-in day, The science and Delete account open a page. Why: the fewest taps for the common case. Alternative: a page per group with Save (SCREENS.md's first wording), one more tap each.
+- **No choice advances on its own** (the owner's U1a rule): picking on a page selects; Back or the pinned action leaves. Train's experience card is chips plus Save, with Not now.
+- **Profile and goal edits take effect tomorrow**, like a program change and an accepted check-in, and the page shows the new target first ("From tomorrow: ..."). Why: today keeps the target the day's meals were logged against, and one rule for every plan change. Alternative: from today.
+- **Goal, pace and experience edits keep the baseline (a measured one too); sex, birth year, height, body fat and movement rerun the equation** from the latest weigh-in, as a formula baseline. Why: the user is saying their body or life changed; the next check-in measures again.
+- **A Settings edit that changes the goal, pace or baseline restarts the check-in count** (`baselineFrom`, still the one rule in `checkinDueOn`). Why: a window measured under another goal would mislead the check-in. A program change still does not restart it.
+- **Only what the user changed counts:** a plan from an older engine version does not show as "new target" until the user edits something.
+- **A faster gain pace chosen under BMI 20 stays offered past it** while it is the plan's, so stepping down is one tap (F19's "once chosen it holds").
+- **Imperial height in Settings is one wheel of inches** (onboarding's feet and inches pair is a step component). Shortcut, upgrade if imperial users ask.
+- **Sex, movement, experience and text size are rows with a check**, not segmented controls: their words do not fit four or three segments at the largest text on the SE (the stress matrix caught text size).
+- **Reminders (F23) are Today's cards**, not toasts or notifications: nothing logged yet (from 13:00 by default, editable), no weigh-in for 3 days, check-in due, evening easy adds; all on by default, each off in Settings. Order: check-in, easy adds, weigh-in, Getting started, nothing logged. Off hides the card only; the check-in stays on Progress. Stored per phone in `prefs` (like the theme), not synced, so no record or sync change.
+- **Thai dishes first** follows the phone's languages until the switch is touched (`prefs.thai`, per phone).
+- **Easy adds (F10):** three foods that together cover the gap, a third each, rounded to 5 g; the user's own calorie dense foods from recent meals first (oils never), then peanut butter, trail mix and a granola bar. Read "sized to close the gap" as together, since one food sized to a 1,500 kcal gap is not a snack. Each is one tap with an undo. From 18:00 with more than 25 percent left (`C.easyAdds`, an Ontrack assumption from the PRD).
+- **Finish day** shows on today from 20:00 (`C.finishDayHour`) and on any past day; it turns into a line with Reopen. A finished day shows no easy adds or nothing logged card.
+- **Experience on Train** is asked once per phone (`prefs.liftAsked`, cleared on sign out) of people not gaining whose week lifts; it writes no plan, since experience moves no number for lose or maintain.
+- **Exports** go through the share sheet where the browser shares files (iPhone Safari) and download elsewhere. JSON holds every live record; CSV one line per food, a leading = + - @ neutralised so a spreadsheet never runs it. Photos stay out.
+- **Report a problem** opens an email with the version and the browser filled in, to `VITE_SUPPORT_EMAIL` (unset: the user types the address). Why: no contact address is known; on the owner's list.
+- **Profile for friends** closes Settings and opens the map with the friends profile over it, rather than a second copy of S1b's sheet.
+- **Version** is `package.json`'s, now 0.8.13; bump it with each tag.
+- **Thumbnails leave storage** (a deleted meal's, a replaced or removed profile photo) through a queue on the phone that a sync round sends 10 s after the delete, past the 5 s undo, and only if nothing uses the picture again. Why: survives closing the app and needs no undo bookkeeping. Friends' photos download with `no-store` and thumbnails upload with `cacheControl` 0 (S1b's note).
+- **Sign out also clears** the photo and location notices and the experience flag: the next account answers them itself.
+- From the logging lane (a subagent): a nutrient the label photo does not show comes back null, shows empty, and Save waits until it is filled (a printed 0 stays 0); a filled-in read saves as Yours. A supplement entry's time is a Time row on its amount step when editing. "Use default values" on a product means Open Food Facts fetched again by barcode, shown only on a Yours product; offline or with no OFF values the user's numbers stay and the sheet says why.
+- **Known limit:** Same target every day, and sex, apply to past days too, since each day reads them from the profile (as before M9a); only plan numbers start tomorrow. Carrying the mode in plans would be a record change.
+- **Not done:** the "onboarding failed to load" console error did not reproduce in three runs (warm, cold Vite cache, the full smoke set with console capture); L1's landing flow likely removed its cause. Left as is.
+
 ## S1b
 
 Friends, profiles and the food map, the screen half, 12 to 13 November 2026. Unattended; decided on the owner's behalf from his request and the Instagram map he sent:

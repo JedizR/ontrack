@@ -1,6 +1,7 @@
 <!-- SCREENS.md section 6, Today: the week strip, the hero with the track and macros, at most one card, the training
      card, and the day's meals, newest first. Supplements with calories are rows; those with none are chips under "Taken"
-     (N2). A past day picked in the strip shows the same view. -->
+     (N2). A past day picked in the strip shows the same view. M9a: gain mode's evening easy adds, the nothing logged
+     reminder (each card can be turned off in Settings, F23) and Finish day under the meals. -->
 <script lang="ts" module>
   // the cards fade up once, on the first paint of a session (DESIGN.md section 10)
   let first = true;
@@ -37,15 +38,17 @@
   import { prefs } from '$lib/prefs.svelte';
   import { view } from '$lib/view.svelte';
   import { db } from '$lib/db/store.svelte';
-  import { clearSessionLog, deleteMeal, logSession, undoToast } from '$lib/actions';
-  import { dayView, mealSource, planFor, weighInDue, totals } from '$lib/model/day';
+  import { clearSessionLog, closeDay, deleteMeal, logSession, reopenDay, saveMeal, undoToast } from '$lib/actions';
+  import { loadFoods, type Food } from '$lib/data/foods';
+  import { easyAdds, easyDue } from '$lib/model/easy';
+  import { dayView, mealSource, planFor, recentFoods, weighInDue, totals } from '$lib/model/day';
   import { checkinDueOn } from '$lib/model/progress';
-  import { daysBetween, lastWeek, timeOf } from '$lib/model/dates';
-  import { proteinBand, roundTarget, sessionKcal } from '$lib/model/engine';
+  import { daysBetween, lastWeek, stampOn, timeOf } from '$lib/model/dates';
+  import { proteinBand, roundTarget, sessionKcal, V } from '$lib/model/engine';
   import { num } from '$lib/model/format';
   // the weigh-in flow loads on first use: it brings the onboarding limits with it
   const weighIn = (date: string) => import('../flows/log/weigh').then((m) => m.weighIn(date));
-  import { ids, type Meal, type Session } from '../../shared/records';
+  import { ids, type Meal, type MealItem, type Session } from '../../shared/records';
 
   // a new device after sign in: nothing local yet, the first pull is on its way
   const bringing = $derived(!!session.user && !sync.pulled && sync.status === 'syncing');
@@ -92,11 +95,26 @@
       : [],
   );
 
-  // at most one card (section 6), on today only: the weekly check-in first, then the weigh-in prompt
-  const checkinCard = $derived(!view.past && !!profile && checkinDueOn(plans, profile.checkinWeekday, view.today) && !db.get('checkin', ids.checkin(view.today)));
+  // at most one card (section 6), on today only: the weekly check-in, the evening easy adds, the weigh-in prompt, Getting
+  // started, then nothing logged yet; Settings turns each reminder off (F23), the check-in staying on Progress
+  const remind = $derived(prefs.remind);
+  const closed = $derived(!!db.get('day', ids.day(view.date))?.closed);
+  const checkinCard = $derived(remind.checkin && !view.past && !!profile && checkinDueOn(plans, profile.checkinWeekday, view.today) && !db.get('checkin', ids.checkin(view.today)));
+  const gap = $derived(day ? day.target - day.eaten.kcal : 0);
+  const easyCard = $derived(remind.easy && !view.past && !checkinCard && !!day && easyDue({ goal: day.plan.goal, time: view.time, eaten: day.eaten.kcal, target: day.target, closed }));
+  let foods = $state<Food[] | null>(null);
+  $effect(() => { if (easyCard && !foods) loadFoods().then((f) => (foods = f), () => undefined); });
+  const easy = $derived(easyCard && foods ? easyAdds(foods, recentFoods(allMeals.map((r) => r.data), 20).map((r) => r.foodId), gap, (id) => db.get('food', id)?.per100) : []);
   const weights = $derived(db.live('weight').map((r) => r.data.date));
   const lastWeigh = $derived(weights.filter((d) => d <= view.today).sort().at(-1));
-  const weighCard = $derived(!view.past && !checkinCard && !!profile && weighInDue(weights, view.today));
+  const weighCard = $derived(remind.weigh && !view.past && !checkinCard && !!profile && weighInDue(weights, view.today));
+  const nothingCard = $derived(remind.meal && !view.past && !closed && logged.length === 0 && view.time >= remind.mealAt);
+  // Finish day: on today from 20:00, on any past day (section 6)
+  const finishable = $derived(view.past || view.time >= `${String(V.finishDayHour).padStart(2, '0')}:00`);
+  function addEasy(item: MealItem) {
+    const id = saveMeal({ date: view.date, at: stampOn(view.date), title: item.name, method: 'search', items: [item] });
+    undoToast(t.add.logged(item.name), () => { deleteMeal(id); });
+  }
   // O1: the first two days on the phone that saved the plan, until a meal is logged and the next weigh-in is in
   const startDay = $derived(prefs.firstDay);
   const mealDone = $derived(allMeals.length > 0);
@@ -215,6 +233,19 @@
           <Button size="sm" onclick={() => (sheets.checkin = view.today)} data-testid="checkin-open">{t.checkin.open}</Button>
         </div>
       </Card>
+    {:else if easyCard}
+      <!-- F10: three calorie dense foods, together about the gap, each added in one tap -->
+      <Card data-testid="easy-card" {...rise(2)}>
+        <p class="text-body num font-semibold">{t.today.easyTitle(num(Math.round(gap)))}</p>
+        <p class="text-callout text-ink-2 mt-0.5">{t.today.easyLine}</p>
+        <div class="mt-2 -mb-3">
+          {#each easy as item (item.foodId)}
+            <Row title={item.name} caption="{num(item.grams ?? 0)} {t.after.g}" wrap testid="easy-item">
+              {#snippet trailing()}<Button size="sm" onclick={() => addEasy(item)} data-testid="easy-add">{t.today.easyAdd(num(Math.round(item.kcal)))}</Button>{/snippet}
+            </Row>
+          {/each}
+        </div>
+      </Card>
     {:else if weighCard}
       <Card data-testid="weigh-card" {...rise(2)}>
         <div class="flex items-center gap-3">
@@ -235,6 +266,16 @@
           {@render step(t.firstDay.meal, mealDone, () => (sheets.add = true), 'first-meal')}
           {@render step(tomorrow ? t.firstDay.weighTomorrow : t.firstDay.weighToday, weighDone, tomorrow ? undefined : () => weighIn(view.today), 'first-weigh')}
         </ul>
+      </Card>
+    {:else if nothingCard}
+      <Card data-testid="nothing-card" {...rise(2)}>
+        <div class="flex items-center gap-3">
+          <div class="min-w-0 flex-1">
+            <p class="text-body font-semibold">{t.today.nothingTitle}</p>
+            <p class="text-callout text-ink-2 mt-0.5">{t.today.nothingLine}</p>
+          </div>
+          <Button size="sm" onclick={() => (sheets.add = true)} data-testid="nothing-add">{t.today.nothingAction}</Button>
+        </div>
       </Card>
     {/if}
 
@@ -299,5 +340,15 @@
         </div>
       {/if}
     </Card>
+
+    <!-- section 6: a finished day counts as complete for the check-in (SCIENCE.md section 10) -->
+    {#if closed}
+      <div class="flex items-center gap-3" data-testid="day-finished">
+        <p class="text-callout text-ink-2 min-w-0 flex-1">{t.today.finished}</p>
+        <Button variant="plain" size="sm" class="-mr-4" onclick={() => reopenDay(view.date)} data-testid="day-reopen">{t.today.reopen}</Button>
+      </div>
+    {:else if finishable}
+      <div><Button variant="plain" size="sm" class="-ml-4" onclick={() => closeDay(view.date)} data-testid="day-finish">{t.today.finish}</Button></div>
+    {/if}
   {/if}
 </section>

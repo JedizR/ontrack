@@ -101,8 +101,17 @@ async function checkAll(page: Page, dir: string) {
   await signIn(page);
   await page.getByTestId('avatar').click();
   await expect(page.getByTestId('account-sheet')).toHaveCSS('transform', 'none');
-  if (page.viewportSize()!.height > page.viewportSize()!.width) await expect(page.getByTestId('account-delete')).toBeInViewport({ ratio: 1 });
+  // Settings (M9a) is a long list: its last row, Delete account, is reached by scrolling the sheet
+  await page.getByTestId('account-delete').scrollIntoViewIfNeeded();
+  await expect(page.getByTestId('account-delete')).toBeInViewport({ ratio: 1 });
   await checkPage(page, 'account', dir);
+  // Settings' pages (M9a)
+  for (const [testid, name] of [['set-profile', 'settings-profile'], ['set-goal-open', 'settings-goal'], ['set-science', 'settings-science']] as const) {
+    await page.getByTestId(testid).click();
+    await expect(page.getByTestId('sheet-back')).toBeVisible();
+    await checkPage(page, name, dir);
+    await page.getByTestId('sheet-back').click();
+  }
 }
 
 for (const d of DEVICES) {

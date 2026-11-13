@@ -11,6 +11,9 @@ const DEBOUNCE_MS = 1500;
 const EVERY_MS = 5 * 60_000;
 const BACKOFF_MS = 2000;
 const BACKOFF_MAX_MS = 5 * 60_000;
+/** a deleted meal's thumbnail waits this long after the delete, well past the 5 s undo toast (which pauses while
+ * touched), before it leaves storage */
+const DROP_AFTER_MS = 30_000;
 const offline = () => typeof navigator !== 'undefined' && navigator.onLine === false;
 const refused = (e: unknown) => e instanceof BackendError && e.kind === 'bad_request';
 
@@ -105,12 +108,21 @@ export class Sync {
         if (blob) await backend.putThumb(mealId, blob).catch((e) => { if (!refused(e)) throw e; console.error('thumbnail refused', mealId); });
         await store.thumbSent(mealId);
       }
+      // M9a: thumbnails nothing uses any more leave storage once Undo has had its time; one used again stays
+      let later = false;
+      for (const d of store.dropQueue()) {
+        const used = store.thumbUsed(d.id);
+        if (!used && now - d.at < DROP_AFTER_MS) { later = true; continue; }
+        if (!used) await backend.dropThumb(d.id).catch((e) => { if (!refused(e)) throw e; console.error('thumbnail delete refused', d.id); });
+        await store.thumbDropped(d.id, !used);
+      }
       this.#failures = 0;
       this.lastSyncAt = now;
       this.lastError = null;
       this.pulled = true;
       this.status = 'idle';
       if (store.pending > 0) this.schedule(300);
+      else if (later) this.schedule(DROP_AFTER_MS);
     } catch (e) {
       if (backend !== this.#backend) return;
       const kind = e instanceof BackendError ? e.kind : 'network';

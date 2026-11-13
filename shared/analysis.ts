@@ -35,7 +35,7 @@ export type AnalyzeResponse = { ok: true; analysis: Analysis; usage: Usage } | {
 /**
  * What a nutrition label prints (B1): each column it has (per serving, per 100 g or ml) or null, the serving's weight
  * or volume, how many scoops make a serving (supplements) and servings in the pack, each null when not printed.
- * `name` is empty when the photo shows none. A label that is not one answers `not_food`.
+ * `name` is empty when the photo shows none; a column's nutrient the photo does not show is null, never 0. A label that is not one answers `not_food`.
  */
 export type LabelRead = {
   name: string;
@@ -43,7 +43,9 @@ export type LabelRead = {
   servingG: number | null;
   scoops: number | null;
   servingsPerPack: number | null;
-  perServing: Macros | null;
-  per100: Macros | null;
+  perServing: LabelMacros | null;
+  per100: LabelMacros | null;
 };
+/** A label's column: protein, carbs or fat the photo does not show is null, for the user to fill in (M9a). */
+export type LabelMacros = { kcal: number; protein: number | null; carbs: number | null; fat: number | null };
 export type LabelResponse = { ok: true; label: LabelRead; model: string; usage: Usage } | { ok: false; error: AnalyzeError; usage?: Usage };

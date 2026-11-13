@@ -2,6 +2,7 @@
 // FNDDS, SG FoodID, the Thai FCD (INMU) and `data/food-list.csv`; nobody types a nutrient value. It loads lazily and works
 // offline.
 import type { FoodMemory, MealItem } from '../../../shared/records';
+import { prefs } from '$lib/prefs.svelte';
 
 export type FoodTag = 'dense' | 'protein' | 'drink' | 'oil' | 'staple' | 'thai';
 export type FoodSet = 'usda-sr-legacy' | 'usda-fndds' | 'sg-foodid' | 'thai-fcd' | 'thai-fcd-owner';
@@ -39,7 +40,9 @@ function score(text: string, q: string) {
 
 /** The phone reads Thai (a Thai language, or English in Thailand): Thai dishes rank first among equal matches (O1). A
  * wrong guess only changes the order. */
-export const thaiFirst = () => typeof navigator !== 'undefined' && (navigator.languages ?? [navigator.language]).some((l) => /^th\b|-TH\b/i.test(l));
+/** Thai dishes first: the phone's languages include Thai, unless Settings says otherwise (M9a) */
+export const thaiByLanguage = () => typeof navigator !== 'undefined' && (navigator.languages ?? [navigator.language]).some((l) => /^th\b|-TH\b/i.test(l));
+export const thaiFirst = () => prefs.thai ?? thaiByLanguage();
 
 /** Scored match over name and aliases: a whole match beats prefix beats word start beats substring, then Thai dishes when
  * `thai`, then shorter names. No library. */

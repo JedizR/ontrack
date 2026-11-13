@@ -186,6 +186,13 @@ describe.each(harnesses)('sync conformance: $name', (h) => {
     const got = await a.getThumb('meal-1');
     expect([...new Uint8Array(await got!.arrayBuffer())]).toEqual([255, 216, 255, 1, 2, 3]);
     expect(await a.getThumb('never')).toBeNull();
+    // M9a: a deleted meal's thumbnail leaves storage; another user cannot delete it, and deleting one that is gone is fine
+    await z.dropThumb('meal-1');
+    expect(await a.getThumb('meal-1')).not.toBeNull();
+    await a.dropThumb('meal-1');
+    await h.renew?.(a); // Supabase's Storage CDN serves a download it cached for a token until that token changes (S1a)
+    expect(await a.getThumb('meal-1')).toBeNull();
+    await a.dropThumb('meal-1');
   });
 
   test('remembered nutrition (the food collection, N1) round trips and stays with its user', async () => {

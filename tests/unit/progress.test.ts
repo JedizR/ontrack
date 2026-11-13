@@ -63,6 +63,15 @@ test('a program change waiting for tomorrow keeps its exercise energy in the rai
   expect(r.plan!.baseline).toBeCloseTo(1987.18, 2);
 });
 
+test('a goal changed in Settings today waits in tomorrow\'s plan, and an accepted check-in keeps it (M9a)', () => {
+  const recs = records(seedRecords('raise', TODAY));
+  const today = recs.plans[0].data;
+  recs.plans.push({ updatedAt: 2, data: { ...today, effectiveFrom: '2026-11-12', source: 'edit', goal: 'maintain', ratePctPerWeek: 0 } });
+  const r = account(recs).checkinOn(TODAY)!;
+  expect(r.plan).toMatchObject({ goal: 'maintain', ratePctPerWeek: 0, delta: 0 });
+  expect(r.plan!.baseline).toBeCloseTo(1987.18, 2);
+});
+
 test('the window holds no day before the account began', () => {
   const recs = records(seedRecords('raise', TODAY).filter((r) => r.collection !== 'weight' || (r.data as { date: string }).date >= '2026-10-25'));
   recs.plans[0].data = { ...recs.plans[0].data, effectiveFrom: '2026-10-25' };
@@ -83,6 +92,15 @@ describe('due', () => {
   });
   test('a program change does not restart the count', () => {
     expect(checkinDueOn([plan('2026-10-28', 'onboarding'), plan('2026-11-06', 'edit')], 2, '2026-11-11')).toBe(true);
+  });
+  test('a goal, pace or baseline changed in Settings restarts it (M9a)', () => {
+    const was = { updatedAt: 1, data: { effectiveFrom: '2026-10-28', source: 'onboarding', goal: 'gain', ratePctPerWeek: 0.5, baseline: 1900 } as Plan };
+    const edit = (d: Partial<Plan>) => ({ updatedAt: 2, data: { ...was.data, effectiveFrom: '2026-11-06', source: 'edit', ...d } as Plan });
+    expect(checkinDueOn([was, edit({ eeeByWeekday: [0, 0, 0, 0, 0, 0, 0] })], 2, '2026-11-11')).toBe(true); // a program change
+    expect(checkinDueOn([was, edit({ goal: 'lose' })], 2, '2026-11-11')).toBe(false);
+    expect(checkinDueOn([was, edit({ ratePctPerWeek: 0.25 })], 2, '2026-11-11')).toBe(false);
+    expect(checkinDueOn([was, edit({ baseline: 2000 })], 2, '2026-11-11')).toBe(false);
+    expect(checkinDueOn([was, edit({ goal: 'lose' })], 2, '2026-11-25')).toBe(true); // 20 days after the change
   });
 });
 
