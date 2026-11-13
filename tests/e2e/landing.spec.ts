@@ -99,8 +99,9 @@ test.describe('reduced motion', () => {
         .filter((el) => { const cs = getComputedStyle(el); return cs.opacity !== '1' || cs.scale !== 'none' || cs.filter !== 'none'; })
         .map((el) => el.textContent?.trim().slice(0, 20)),
     }));
-    // polled: the page's first frame can still list animations that end at once under reduced motion
-    await expect.poll(still).toEqual({ animations: 0, hidden: [] });
+    // polled: the page's first frame can still list animations that end at once under reduced motion; CI's runner draws
+    // without a GPU, and L2's glass and grain make that first frame slow there (once 6 s), so it gets 15
+    await expect.poll(still, { timeout: 15_000 }).toEqual({ animations: 0, hidden: [] });
     await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
     await toLanding(page);
     expect(await still()).toEqual({ animations: 0, hidden: [] });
