@@ -145,28 +145,37 @@ test.describe('reduced motion', () => {
   });
 });
 
-// L2: every photo gradient keeps its words at 4.5 to 1 (3 to 1 for the hero's large violet words), measured on the images
-// themselves in 8 px blocks, as the eye reads through the grain. The CSS gradients beneath are in contrast.test.ts.
+// L2, P1: every photo gradient keeps its words at 4.5 to 1 (3 to 1 for large words: the hero's violet words, the haze's
+// reached figure), measured on the images themselves in 8 px blocks under the grain's mean (9.5 percent toward mid grey),
+// as the eye reads through the grain. Their eight colours are in contrast.test.ts.
 test('the photo gradients keep their words readable', async ({ page }) => {
-  const words = { night: '#121214', ink2: '#525252', success: '#006644', violet: '#381ac9', white: '#ffffff', white80: '#cccccc', violetDark: '#a9a9ff' };
-  const CASES: [string, (keyof typeof words)[], (keyof typeof words)[]][] = [
+  // [colour, alpha]: words with alpha (ink-2 on the haze, the dark ink-2) take the colour of the block under them
+  const words: Record<string, [string, number]> = {
+    night: ['#121214', 1], ink2: ['#121214', 0.73], success: ['#006644', 1], violet: ['#381ac9', 1],
+    white: ['#ffffff', 1], white80: ['#ffffff', 0.8], successDark: ['#19dba8', 1], violetDark: ['#a9a9ff', 1],
+  };
+  const CASES: [string, string[], string[]][] = [
     // image, words that need 4.5 to 1, words that need 3 to 1
-    ['haze-light', ['night', 'ink2', 'success'], []],
-    ['haze-dark', ['white', 'white80'], []],
+    ['haze-light', ['night', 'ink2'], ['success']],
+    ['haze-dark', ['white', 'white80'], ['successDark']],
     ['feature-light', ['white'], []],
     ['feature-dark', ['white'], []],
+    ['call', ['white'], []],
     ['sky-light', ['night'], ['violet']],
     ['sky-dark', ['white'], ['violetDark']],
+    ['glow', ['white'], []],
     ['panel', ['night'], []],
     ['wash-ink', ['white'], []],
-    ['wash-blue', ['white'], []],
-    ['wash-magenta', ['white'], []],
-    ['wash-lavender', ['night'], []],
+    ['wash-steel', ['white'], []],
+    ['wash-clay', ['white'], []],
+    ['wash-sand', ['night'], []],
   ];
+  const lin = (v: number) => ((v /= 255) <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4);
+  const lum = (c: number[]) => 0.2126 * lin(c[0]) + 0.7152 * lin(c[1]) + 0.0722 * lin(c[2]);
   await page.goto('about:blank');
   for (const [name, strong, large] of CASES) {
     const b64 = readFileSync(`design/gradients/${name}.webp`).toString('base64');
-    const [lo, hi] = await page.evaluate(async (src) => {
+    const blocks = await page.evaluate(async (src) => {
       const img = new Image();
       img.src = `data:image/webp;base64,${src}`;
       await img.decode();
@@ -175,23 +184,19 @@ test('the photo gradients keep their words readable', async ({ page }) => {
       const g = c.getContext('2d')!;
       g.imageSmoothingQuality = 'high';
       g.drawImage(img, 0, 0, w, h);
-      const d = g.getImageData(0, 0, w, h).data;
-      const lin = (v: number) => ((v /= 255) <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4);
-      let lo = 1, hi = 0;
-      for (let i = 0; i < d.length; i += 4) {
-        const l = 0.2126 * lin(d[i]) + 0.7152 * lin(d[i + 1]) + 0.0722 * lin(d[i + 2]);
-        lo = Math.min(lo, l); hi = Math.max(hi, l);
-      }
-      return [lo, hi];
+      return Array.from(g.getImageData(0, 0, w, h).data);
     }, b64);
-    const lum = (hex: string) => {
-      const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).map((v) => (v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
-      return 0.2126 * r + 0.7152 * g + 0.0722 * b;
-    };
-    // the worst block for a word is the one closest to it in lightness
-    const worst = (hex: string) => { const l = lum(hex); if (l >= lo && l <= hi) return 1; return Math.min((Math.max(l, lo) + 0.05) / (Math.min(l, lo) + 0.05), (Math.max(l, hi) + 0.05) / (Math.min(l, hi) + 0.05)); };
-    for (const w of strong) expect(worst(words[w]), `${w} on ${name}`).toBeGreaterThanOrEqual(4.5);
-    for (const w of large) expect(worst(words[w]), `${w} on ${name}`).toBeGreaterThanOrEqual(3);
+    for (const [bar, list] of [[4.5, strong], [3, large]] as const) for (const w of list) {
+      const [hex, a] = words[w];
+      const fg = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+      let worst = Infinity;
+      for (let i = 0; i < blocks.length; i += 4) {
+        const bg = [0, 1, 2].map((k) => blocks[i + k] * 0.905 + 127.5 * 0.095);
+        const [x, y] = [lum(fg.map((v, k) => v * a + bg[k] * (1 - a))), lum(bg)];
+        worst = Math.min(worst, (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05));
+      }
+      expect(worst, `${w} on ${name}`).toBeGreaterThanOrEqual(bar);
+    }
   }
 });
 

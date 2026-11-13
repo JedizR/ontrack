@@ -80,9 +80,37 @@ test('words on the featured card', () => {
   for (const m of css.slice(at, css.indexOf(';', at)).matchAll(/#[0-9a-f]{6}/gi)) expect(ratio(parse(light['on-accent']), parse(m[0])), m[0]).toBeGreaterThanOrEqual(4.5);
 });
 
-test('words on the light hero haze', () => {
-  const lavender = over(parse('rgba(190, 190, 255, 0.75)'), parse('#ffffff'));
-  for (const fg of ['ink', 'ink-2', 'success-ink']) expect(ratio(parse(light[fg]), lavender), fg).toBeGreaterThanOrEqual(4.5);
+// P1: every photo gradient's eight colours (scripts/gradients.sh), each under the grain's mean (the site's noise: 9.5
+// percent toward a random grey), carry the words that sit on it: [text, theme, bar]. Secondary words on the haze are
+// `haze-ink-2`; the reached figure on the haze is heading sized, large text. The images are measured in landing.spec.ts.
+const PHOTOS: Record<string, [string, typeof light, number][]> = {
+  'haze-light': [['ink', light, 4.5], ['haze-ink-2', light, 4.5], ['success-ink', light, 3]],
+  'haze-dark': [['ink', dark, 4.5], ['haze-ink-2', dark, 4.5], ['success-ink', dark, 3]],
+  'feature-light': [['on-accent', light, 4.5]],
+  'feature-dark': [['on-accent', dark, 4.5]],
+  'sky-light': [['ink', light, 4.5], ['accent-ink', light, 3]],
+  'sky-dark': [['ink', dark, 4.5], ['accent-ink', dark, 3]],
+  glow: [['on-night', light, 4.5]],
+  panel: [['night', light, 4.5]],
+  'wash-ink': [['on-night', light, 4.5]],
+  'wash-steel': [['on-night', light, 4.5]],
+  'wash-clay': [['on-night', light, 4.5]],
+  'wash-sand': [['night', light, 4.5]],
+  call: [['on-night', light, 4.5]],
+};
+test('words on the photo gradients', () => {
+  const rows = [...readFileSync('scripts/gradients.sh', 'utf8').matchAll(/^#= (\S+)([^|]*)/gm)].filter((m) => m[1] !== 'grain');
+  expect(rows.map((m) => m[1]).sort()).toEqual(Object.keys(PHOTOS).sort());
+  for (const [, name, points] of rows) {
+    const colours = points.match(/\b[0-9A-F]{6}\b/g)!.map((h) => parse(`#${h}`).map((v, i) => (i < 3 ? v * 0.905 + 127.5 * 0.095 : v)) as RGBA);
+    expect(colours, name).toHaveLength(8);
+    for (const [fg, t, bar] of PHOTOS[name]) for (const c of colours) expect(ratio(over(parse(t[fg]), c), c), `${fg} on ${name}`).toBeGreaterThanOrEqual(bar);
+  }
+});
+
+// P1: the palette's colours carry night words (and, as the image tests show, white words only when deepened)
+test('words on the palette', () => {
+  for (const c of ['sand', 'steel', 'snow', 'coral', 'clay', 'peach', 'mist', 'heather', 'lavender']) expect(ratio(parse(light.night), parse(light[c])), c).toBeGreaterThanOrEqual(4.5);
 });
 
 // L1: words on the landing page's colour washes and violet panels, which look the same in both themes
@@ -96,10 +124,10 @@ test('words on the landing washes, panels and sky', () => {
   for (const c of stops('grad-sky')) expect(ratio(parse(light['accent-ink']), c), 'grad-sky violet').toBeGreaterThanOrEqual(3);
   for (const c of stops('grad-sky', css.indexOf('[data-theme="dark"] {'))) expect(ratio(parse(dark.ink), c), 'dark grad-sky').toBeGreaterThanOrEqual(4.5);
   for (const c of stops('grad-sky', css.indexOf('[data-theme="dark"] {'))) expect(ratio(parse(dark['accent-ink']), c), 'dark grad-sky violet').toBeGreaterThanOrEqual(3);
-  for (const w of ['wash-ink', 'wash-blue', 'wash-magenta']) for (const c of stops(w)) expect(ratio(parse(light['on-night']), c), w).toBeGreaterThanOrEqual(4.5);
-  // L2: white words on the footer's violet glass at the glow's brightest (Violet/01 lifted), night words on the white glass
+  for (const w of ['wash-ink', 'wash-steel', 'wash-clay']) for (const c of stops(w)) expect(ratio(parse(light['on-night']), c), w).toBeGreaterThanOrEqual(4.5);
+  // L2: white words on the footer's violet glass at the glow's brightest (P1: coral deepened), night words on the white glass
   // chips over the darkest thing behind them (the phone's bezel); the photo gradients themselves are measured in landing.spec.ts
-  expect(ratio(parse(light['on-night']), over(parse(light['liquid-violet']), parse('#5b4ff5'))), 'liquid-violet').toBeGreaterThanOrEqual(4.5);
+  expect(ratio(parse(light['on-night']), over(parse(light['liquid-violet']), parse('#9c5e57'))), 'liquid-violet').toBeGreaterThanOrEqual(4.5);
   expect(ratio(parse(light.night), over(parse(light['liquid-white']), parse(light.night))), 'liquid-white').toBeGreaterThanOrEqual(4.5);
-  for (const c of stops('wash-lavender')) expect(ratio(parse(light.night), c), 'wash-lavender').toBeGreaterThanOrEqual(4.5);
+  for (const c of stops('wash-sand')) expect(ratio(parse(light.night), c), 'wash-sand').toBeGreaterThanOrEqual(4.5);
 });
