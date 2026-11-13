@@ -1,5 +1,6 @@
 <!-- DESIGN.md section 7, Week strip: seven equal cells, a weekday letter, the date, and a dot when the day was on track.
-     Today is an ink pill. Days after today cannot be picked. Today passes the seven days ending today (F3). -->
+     The day in view is an ink pill; today, when another day is in view, keeps an ink ring (U1b: a grey picked day did not
+     show in dark). Days after today cannot be picked. Today passes the seven days ending today (F3). -->
 <script lang="ts">
   import { t } from '$lib/i18n';
   import { weekdayOf } from '$lib/model/dates';
@@ -28,7 +29,7 @@
 <nav class="grid grid-cols-7" aria-label={t.week.label} data-testid="week">
   {#each days as d (d.date)}
     {@const isToday = d.date === today}
-    {@const picked = d.date === selected && !isToday}
+    {@const picked = d.date === selected}
     {@const name = fmt.format(local(d.date))}
     <button
       type="button"
@@ -42,11 +43,11 @@
       <!-- the pill is inset 2 px a side, so neighbouring pills keep a 4 px gap while each button fills its cell -->
       <span
         class="text-caption mx-0.5 grid h-16 content-center justify-items-center gap-0.5 rounded-md transition-colors duration-[var(--d-ui)] ease-[var(--spring-default)]
-          {isToday ? 'bg-ink text-canvas' : picked ? 'bg-surface shadow-card text-ink-2' : 'text-ink-2 group-enabled:group-active:bg-surface-2'}"
+          {picked ? 'bg-ink text-canvas' : isToday ? 'ring-ink text-ink-2 ring-2 ring-inset' : 'text-ink-2 group-enabled:group-active:bg-surface-2'}"
       >
         {t.week.letters[weekdayOf(d.date)]}
-        <b class="text-body num font-semibold {isToday ? 'text-canvas' : 'text-ink'}">{local(d.date).getDate()}</b>
-        <i class="size-1.25 rounded-full {d.onTrack ? (isToday ? 'bg-success' : 'bg-success-ink') : ''}"></i>
+        <b class="text-body num font-semibold {picked ? 'text-canvas' : 'text-ink'}">{local(d.date).getDate()}</b>
+        <i class="size-1.25 rounded-full {d.onTrack ? (picked ? 'bg-success' : 'bg-success-ink') : ''}"></i>
       </span>
     </button>
   {/each}

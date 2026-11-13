@@ -1,4 +1,5 @@
-<!-- An on and off control, 44 to tap. On is ink, as OneFin's selected option is black: violet is the brand and green a reached target. -->
+<!-- An on and off control, 44 to tap. On is ink, as OneFin's selected option is black: violet is the brand and green a reached target.
+     Off is the control edge (U1b), so the track and its knob keep 3 to 1 in both themes (WCAG 1.4.11). -->
 <script lang="ts">
   import { haptic } from '$lib/haptics';
 
@@ -14,7 +15,7 @@
   onclick={() => { haptic(); checked = !checked; onchange?.(checked); }}
   data-testid={testid}
 >
-  <span class="relative block h-[30px] w-[50px] rounded-full transition-colors duration-[var(--d-ui)] ease-[var(--spring-default)] {checked ? 'bg-ink' : 'bg-surface-3'}">
+  <span class="relative block h-[30px] w-[50px] rounded-full transition-colors duration-[var(--d-ui)] ease-[var(--spring-default)] {checked ? 'bg-ink' : 'bg-control-edge'}">
     <span class="bg-surface absolute top-[3px] left-[3px] size-6 rounded-full shadow-card transition-transform duration-[var(--d-ui)] ease-[var(--spring-default)] {checked ? 'translate-x-5' : ''}"></span>
   </span>
 </button>

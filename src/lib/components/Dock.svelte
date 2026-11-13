@@ -24,14 +24,15 @@
 
 <!-- DESIGN.md section 7, Dock: a floating glass pill with three tabs (OneFin's dark nav pill, in the theme's colours), and
      the plus to its right as the ink circle of the action family, white on dark. 12 px above the safe area so it clears
-     Safari's bar. Unselected tabs are ink-2: their labels are text and need 4.5 to 1. -->
+     Safari's bar. The selected tab sits on a grey pill, its icon and label violet (U1b, the owner); the pill is 8 inside the
+     dock on every side, so the two full radii nest. Unselected tabs are ink-2: their labels are text and need 4.5 to 1. -->
 <div class="fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+12px)] z-30 mx-auto flex max-w-[480px] items-center gap-3 px-4" data-testid="dock">
   <nav class="glass-bar shadow-float grid h-[var(--dock-h)] flex-1 grid-cols-3 items-center rounded-full px-2" aria-label={t.tabs.label} use:swipe={swipeOpts}>
     {#each TABS as item, i (item.label)}
       {@const Icon = item.icon}
       {@const on = tab === i}
       <button
-        class="grid h-[var(--tap)] min-w-0 place-items-center content-center gap-0.5 rounded-full transition-[color,transform] duration-[var(--d-press)] active:scale-[0.97] {on ? 'text-ink' : 'text-ink-2'}"
+        class="grid h-12 min-w-0 place-items-center content-center gap-0.5 rounded-full transition-[color,background-color,transform] duration-[var(--d-press)] active:scale-[0.97] {on ? 'bg-surface-2 text-accent-ink' : 'text-ink-2'}"
         aria-current={on ? 'page' : undefined}
         data-testid="tab-{i}"
         onclick={() => onselect(i as Tab)}
