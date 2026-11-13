@@ -34,12 +34,13 @@
 
   type Status = 'loading' | 'ready' | Exclude<Analyzed, { ok: true }>['error'];
   let status = $state<Status>('loading');
-  // steps of the wait shown so far (U1c): one more every --d-step while it is read
+  // the step of the wait in words (U1c): the next every --d-step while a meal is being read, the last held
+  const STEPS = t.review.steps.length; // after the first line
   let waited = $state(0);
   $effect(() => {
-    if (status !== 'loading') return;
+    if (status !== 'loading' || !sheets.review) return;
     waited = 0;
-    const id = setInterval(() => waited++, ms('--d-step'));
+    const id = setInterval(() => { if (++waited >= STEPS) clearInterval(id); }, ms('--d-step'));
     return () => clearInterval(id);
   });
   let kind = $state<'photo' | 'text'>('photo');
@@ -80,6 +81,7 @@
     reset();
     kind = r.kind;
     status = 'loading';
+    waited = 0;
     let request: AnalyzeRequest;
     if (r.kind === 'text') request = { kind: 'text', text: r.text, localDate: view.today, locale: 'en' };
     else {
@@ -190,7 +192,7 @@
     <!-- the wait in words: what is being done, a step every --d-step, the last held until the answer -->
     {@const said = [kind === 'photo' ? t.review.looking : t.review.reading, ...t.review.steps]}
     <p class="text-callout text-ink-2 mt-4 grid" role="status" data-testid="review-looking">
-      {#key waited}<span class="[grid-area:1/1]" in:fade={{ duration: dur('--d-fade') }} out:fade={{ duration: dur('--d-fade') }}>{said[Math.min(waited, said.length - 1)]}</span>{/key}
+      {#key waited}<span class="[grid-area:1/1]" in:fade={{ duration: dur('--d-fade') }} out:fade={{ duration: dur('--d-fade') }}>{said[waited]}</span>{/key}
     </p>
     <!-- the shapes of the name field and three item rows, so nothing jumps when they arrive -->
     <Skeleton class="mt-4 h-14 w-full rounded-sm" />

@@ -298,8 +298,9 @@
           {#snippet leading()}<div class="tile grid size-full place-items-center"><TrainIcon /></div>{/snippet}
           {#snippet trailing()}
             <div class="flex flex-none items-center gap-1">
+              <!-- outside the block below, so it already exists when Done is tapped: only then does the check pop -->
+              {#if status === 'done'}<span class="text-success-ink inline-grid" in:pop data-testid="session-tick"><Check size={24} strokeWidth={2.5} aria-hidden="true" /></span>{/if}
               {#if status}
-                {#if status === 'done'}<span class="text-success-ink inline-grid" in:pop data-testid="session-tick"><Check size={24} strokeWidth={2.5} aria-hidden="true" /></span>{/if}
                 <Button variant="plain" size="sm" onclick={() => clearSessionLog(view.date, s.key)} data-testid="session-undo">{t.today.undo}</Button>
               {:else}
                 <Button size="sm" onclick={() => { haptic(); logSession({ date: view.date, sessionKey: s.key, status: 'done' }); }} data-testid="session-done">{t.today.done}</Button>

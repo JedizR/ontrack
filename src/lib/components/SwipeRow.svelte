@@ -28,14 +28,18 @@
   // another row opening closes this one
   $effect(() => { if (openRow !== me && !dragging && !gone && dx !== 0) dx = 0; });
 
-  function settle() {
+  // let go: open or closed by where it is; past half the row, deleted. A cancelled gesture (a second finger, the system
+  // taking the touch) only snaps, never deletes
+  function snap() {
     dragging = false;
-    if (armed) return remove();
     dx = -dx > ACTION / 2 ? -ACTION : 0;
     openRow = dx ? me : openRow === me ? null : openRow;
   }
+  const settle = () => (armed ? remove() : snap());
   // the haptic plays here, inside the touchend or the tap: iOS plays it only from a user's gesture
   function remove() {
+    if (gone) return; // a second swipe or tap while it slides out must not delete twice and spoil Undo
+    dragging = false;
     haptic();
     gone = true;
     dx = -w;
@@ -46,13 +50,14 @@
   const opts = {
     commit: 0,
     onDrag: (d: number) => {
+      if (gone) return;
       if (!dragging) { base = dx; openRow = me; }
       dragging = true;
       // a little give past closed, as iOS has
       dx = Math.min(8, base + d);
     },
     onSwipe: settle,
-    onCancel: settle,
+    onCancel: () => { if (!gone) snap(); },
   };
   // an open row's tap closes it instead of opening the meal
   const close = (e: MouseEvent) => {
@@ -75,25 +80,8 @@
   use:swipe={opts}
   in:collapse
   out:collapse={{ leave: true }}
+  onintrostart={() => { gone = false; dx = 0; }}
 >
-  {#if dx < 0}
-    <!-- the action fills exactly the space the row leaves; over the hairline, and into the card's padding at the ends -->
-    <div
-      class="bg-danger text-on-danger absolute inset-y-0 right-0 z-20 overflow-hidden [:first-child>&]:-top-1 [:last-child>&]:-bottom-1"
-      style="width: {-dx}px; transition: {dragging ? 'none' : 'width var(--d-settle) var(--ease-out)'}"
-    >
-      <button
-        type="button"
-        class="text-callout absolute inset-y-0 grid w-22 place-items-center content-center gap-0.5 font-semibold transition-[left] duration-[var(--d-settle)] ease-[var(--ease-out)]"
-        style="left: {armed || gone ? 0 : Math.max(0, -dx - ACTION)}px"
-        tabindex={dx === -ACTION ? 0 : -1}
-        onclick={remove}
-        data-testid="swipe-delete"
-      >
-        <Trash size={20} strokeWidth={2} aria-hidden="true" />{t.today.delete}
-      </button>
-    </div>
-  {/if}
   <!-- capture: a tap on an open row closes it before the row's own button sees it -->
   <div
     class="bg-surface relative px-6"
@@ -101,5 +89,24 @@
     onclickcapture={close}
   >
     {@render children()}
+  </div>
+  <!-- the action fills exactly the space the row leaves, over the hairline and into the card's padding at the ends. It
+       stays drawn at no width when closed, so it shrinks with the row as it slides back, and comes after the row in the
+       document, so the row's own button is the first one there -->
+  <div
+    class="bg-danger text-on-danger absolute inset-y-0 right-0 z-20 overflow-hidden [:first-child>&]:-top-1 [:last-child>&]:-bottom-1"
+    style="width: {Math.max(0, -dx)}px; transition: {dragging ? 'none' : 'width var(--d-settle) var(--ease-out)'}"
+    inert={dx !== -ACTION}
+    aria-hidden={dx !== -ACTION}
+  >
+    <button
+      type="button"
+      class="text-callout absolute inset-y-0 grid w-22 place-items-center content-center gap-0.5 font-semibold transition-[left] duration-[var(--d-settle)] ease-[var(--ease-out)]"
+      style="left: {armed || gone ? 0 : Math.max(0, -dx - ACTION)}px"
+      onclick={remove}
+      data-testid="swipe-delete"
+    >
+      <Trash size={20} strokeWidth={2} aria-hidden="true" />{t.today.delete}
+    </button>
   </div>
 </div>

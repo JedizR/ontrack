@@ -2,6 +2,25 @@
 
 Changes to a doc's decision, and choices made on the owner's behalf. Newest first, one line each: what, why.
 
+## U1c
+
+Motion and feel, app wide, 13 November 2026. Unattended; the owner judged the UX about 30 percent for lack of "good feelings". The rules are DESIGN.md section 10; the choices behind them:
+- **Motion explains a change, never decorates, and never holds a tap.** Every animation answers something the user did or something that changed (a number, a list, a wait); none plays on a timer or in a loop except while a real wait lasts. Why: the owner asked for feel, and motion without a cause reads as delay.
+- **Durations are tokens that JavaScript reads too** (`dur()` and `ms()` in `src/lib/haptics.ts` read `--d-*` from the root), not numbers repeated in components. `--spring-pop` moved from the landing set into the app's. Why: one set of numbers, as the plan's step 1 asked.
+- **No new dependency.** CSS transitions and keyframes, Svelte's `fly`, `fade`, `scale` and `Tween`, and one small transition of our own (`collapse`, which carries a flex parent's gap so nothing jumps at the end). Initial JavaScript 95.2 to 96.9 KB gzip (budget 130). Why: the plan can be met without one.
+- **Swipe to delete is iOS Mail's, not a slide-out.** A short swipe stays open on a Delete button; only a swipe past half the row deletes on release, and the label jumps to the row's edge to show it is armed. The red action takes exactly the width the row leaves, so the hairline and the card's padding are covered and nothing white shows. Why: the owner's feedback 7, and a short accidental swipe no longer deletes (before, 96 px did).
+- **The swipe's haptic plays on release, not as it arms.** Why: iOS only plays the switch haptic inside a user gesture (touchend or a tap), not a touchmove.
+- **A day picked in the strip is navigation, not change.** The day's cards and meals swap in one fade (`{#key view.date}`), so rows never collapse for a change of day; the hero above still counts between days, and its tracks move. Reaching a target there plays no haptic, no pulse and no pop (Track and HeroNumber take a `scope`). Why: DESIGN.md's "no haptic on navigation", and a past day being on track is not something just done.
+- **Reaching a target: green, a swell with a ring going out, and a check.** The check sits beside the hero's "On track" and the protein tile's label, so the reached state also shows still, not only in motion. No confetti. Why: the plan's "a short check and pulse"; the check is the part a screenshot and a glance keep.
+- **The photo's wait: a flat lavender band with a bright edge, not a gradient light,** and its steps in words ("Finding each food", "Estimating the grams", "Looking up the food table"), one every 1.6 s, the last held. Why: section 8 bans gradients section 6 does not name; the steps are paced, not reported by the server, so the last one never claims to finish before the answer does.
+- **Progress counts up on arrival; the weight counts from where its chart starts,** not from zero, so the change over the range is what moves. Bars grow, the line draws, the meters fill, once. Why: counting a body weight up from 0 reads as a slot machine.
+- **The check-in's result counts from today's target to the new one** (from zero when it holds), and its change line rises after it. Why: the plan's "the check-in reveals its result".
+- **Settings pages push and pop** (in from the right, the list back from the left); check-in steps rise in. Why: M9a's handoff, pages swapped with no transition.
+- **Building's beats come from tokens:** a row each `--d-beat` (450 ms), the mark pops `--d-settle` after the last and Your plan follows once it has popped (`--d-pop`): 2.11 s, was 2.15. Why: the plan's step 1; the mark now uses `--spring-pop` like every other check.
+- **Reduced motion: loops are not drawn at all** (the sweep, like the skeleton's pulse), since the global 0.01 ms rule leaves an infinite animation running. Why: the gate's "none left running".
+- **A picked choice's glyph is lavender** (`--on-accent-pick`: Violet/04 #bebeff in light, 5.6 to 1 on the violet; #d4d4ff in dark, 3.8 to 1 on the lifted violet, since #bebeff gives 3.1 there). Checked at 3 to 1 as an icon (WCAG 1.4.11) in `contrast.test.ts`. Why: the owner's request carried from U1a.
+- **The UX walk** (`tests/e2e/tasks.spec.ts`, the `tasks` project): taps and modelled time did not change, since no flow needed a step removed; what changed is feedback. Fixed: a session marked done was silent (now a haptic and a check that pops), the photo and Describe waits said one line (now the steps), deletes from the Meal and Supplement sheets and a check-in decided had no haptic.
+
 ## U1b
 
 The look, app wide, 13 November 2026. Unattended; from the owner's iPhone pass (feedback 1 to 8). The owner's calls: corners that nest with more padding, dark contrast, a grey pill and violet for the dock's tab, fades under bars, a real divider between facts, the status bar continuing the top, a gradient on the Add sheet's Photo. Decided on the owner's behalf:

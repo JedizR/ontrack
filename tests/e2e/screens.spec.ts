@@ -1,7 +1,7 @@
 // Visual review: every screen in its main states -> screenshots/<screen>/<state>-<theme>-<device>.png
 //   pnpm screenshots -- --grep "shell"
 import { expect, test, type Page } from '@playwright/test';
-import { EMAIL, MEALS, SEED, SUPPLEMENTS, TODAY, fieldFill, onboard, open, openFresh, openSeeded, seedAccount, signIn, takePhoto, vision, wheelType, withPrefs } from './helpers';
+import { EMAIL, MEALS, SEED, SUPPLEMENTS, TODAY, fieldFill, onboard, open, openFresh, openSeeded, seedAccount, signIn, swipeAt, takePhoto, vision, wheelType, withPrefs } from './helpers';
 import { openMap, quietTiles, raise, scene } from './social';
 
 const SECTIONS = ['prefs', 'buttons', 'track', 'hero', 'rows', 'chips', 'sheets', 'wheel', 'week', 'feedback', 'states'];
@@ -250,6 +250,11 @@ for (const theme of ['light', 'dark'] as const) {
         await shot(page, 'today', 'typical');
         await page.evaluate(() => scrollTo(0, document.body.scrollHeight));
         await shot(page, 'today', 'typical-end');
+        // U1c: a short swipe leaves the top meal open on its Delete button
+        const top = (await page.getByTestId('meal').first().boundingBox())!;
+        await swipeAt(page, -100, { x: top.x + top.width - 40, y: top.y + top.height / 2 });
+        await shot(page, 'today', 'swipe-open');
+        await page.getByTestId('meal').first().click({ position: { x: 60, y: 30 } });
         await page.evaluate(() => scrollTo(0, 0));
         await page.getByTestId('weigh-open').click();
         await sheet('picker', 'weigh');

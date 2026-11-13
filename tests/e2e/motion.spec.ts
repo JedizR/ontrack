@@ -102,6 +102,8 @@ test('a finished session ticks off; the week pill and the dock pill move to what
   const training = page.getByTestId('training');
   await training.getByTestId('session-done').click();
   await expect(training.getByTestId('session-tick')).toBeVisible();
+  // it pops in: tapping Done plays its transition (a check already there on arrival would not)
+  await expect.poll(() => running(page), { timeout: 500, intervals: [16] }).toContainEqual(expect.stringMatching(/on session-tick/));
   await settled(page);
 
   const pill = page.getByTestId('week-pill');
