@@ -2,6 +2,7 @@
 // PRD section 8's budget, the lazy chunks the PRD names, and a scan of every built text file for secrets.
 import { readFileSync, readdirSync } from 'node:fs';
 import { gzipSync } from 'node:zlib';
+import { loadEnv } from 'vite';
 
 const BUDGET_KB = 130;
 const kb = (file) => gzipSync(readFileSync(`dist${file}`)).length / 1024;
@@ -17,8 +18,8 @@ const leaked = [];
 for (const [what, re] of Object.entries(named)) {
   const first = initial.some((f) => has(re, f.slice('/assets/'.length)));
   const later = lazy.some((f) => has(re, f));
-  // a mock build (VITE_BACKEND=mock, as in CI) leaves supabase-js out altogether
-  const absent = what === 'Supabase' && process.env.VITE_BACKEND === 'mock';
+  // a mock build (VITE_BACKEND=mock, from the shell as in CI or from .env.local as Vite reads it) leaves supabase-js out
+  const absent = what === 'Supabase' && loadEnv('production', process.cwd(), 'VITE_').VITE_BACKEND === 'mock';
   console.log(`${what.padEnd(9)} ${first ? 'IN THE FIRST LOAD' : later ? 'lazy' : absent ? 'not in a mock build' : 'not found, fix the pattern'}`);
   if (first || (!later && !absent)) leaked.push(what);
 }
