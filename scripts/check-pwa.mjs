@@ -25,7 +25,8 @@ console.log('installability errors:', installabilityErrors.length ? installabili
 await page.reload(); // let the SW take control
 await ctx.setOffline(true);
 await page.reload();
-const ok = await page.getByTestId('dock').isVisible().catch(() => false);
+// a new visitor gets the landing page (L1), someone signed in gets the app with its dock
+const ok = await page.getByTestId('landing').or(page.getByTestId('dock')).first().waitFor({ timeout: 15_000 }).then(() => true, () => false);
 console.log('offline reload renders the app:', ok);
 await ctx.close();
 process.exit(installabilityErrors.length || !ok ? 1 : 0);

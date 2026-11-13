@@ -167,7 +167,7 @@
             </button>
             <button
               type="button"
-              class="text-ink-2 -mr-3 grid size-11 flex-none cursor-grab touch-none place-items-center rounded-full"
+              class="text-ink-2 active:bg-surface-2 -mr-3 grid size-11 flex-none cursor-grab touch-none place-items-center rounded-full transition-colors duration-[var(--d-press)]"
               aria-label={t.train.move(s.name)}
               data-no-swipe
               onpointerdown={(e) => down(e, s)}

@@ -15,7 +15,7 @@
   onclick={() => { haptic(); checked = !checked; onchange?.(checked); }}
   data-testid={testid}
 >
-  <span class="relative block h-[30px] w-[50px] rounded-full transition-colors duration-[var(--d-ui)] ease-[var(--spring-default)] {checked ? 'bg-ink' : 'bg-control-edge'}">
+  <span class="relative block h-[30px] w-[50px] rounded-full transition-[background-color,scale] duration-[var(--d-ui)] ease-[var(--spring-default)] group-active:scale-[0.97] {checked ? 'bg-ink' : 'bg-control-edge'}">
     <span class="bg-surface absolute top-[3px] left-[3px] size-6 rounded-full shadow-card transition-transform duration-[var(--d-ui)] ease-[var(--spring-default)] {checked ? 'translate-x-5' : ''}"></span>
   </span>
 </button>

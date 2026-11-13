@@ -42,7 +42,9 @@ export default defineConfig({
       },
     },
     // O1's tap and time measure, printed for the pull request; not part of any gate
-    { name: 'measure', testMatch: /measure\.spec\.ts/, use: { ...phone, colorScheme: 'light' } },
+    { name: 'measure', testMatch: /(measure|start)\.spec\.ts/, use: { ...phone, colorScheme: 'light' } },
+    // M9b: every feature in airplane mode, against a production build with its service worker (E2E_BASE_URL, see the file)
+    { name: 'offline', testMatch: /offline\.spec\.ts/, use: { ...phone, colorScheme: 'light' } },
     // U1c's eight main tasks, counted and timed; TASK_VIDEO=1 films them in light and dark. Not part of any gate
     { name: 'tasks', testMatch: /tasks\.spec\.ts/, use: { ...phone, video: process.env.TASK_VIDEO ? 'on' : 'off' } },
     // the landing page's phone screens (L1): writes images only with LANDING_SHOTS=1

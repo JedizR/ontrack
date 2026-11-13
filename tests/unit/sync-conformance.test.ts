@@ -235,6 +235,16 @@ describe.each(harnesses)('sync conformance: $name', (h) => {
     expect(await failKind(b.push([rec('x'.repeat(81), 1)]))).toBe('bad_request');
   });
 
+  // M9b: only /api/analyze, with the secret key, counts the daily quota; a signed in phone cannot raise or reset it
+  test.skipIf(!h.raw)('the AI quota is the server\'s alone: a client cannot bump, read or reset it', async () => {
+    const b = await signIn('q');
+    const sb = h.raw!(b);
+    const id = (await b.auth.session())!.userId;
+    expect((await sb.rpc('bump_ai_usage', { p_user: id, p_day: '2026-11-13', p_limit: 1000 })).error).not.toBeNull();
+    expect((await sb.from('ai_usage').select()).error).not.toBeNull();
+    expect((await sb.from('ai_usage').upsert({ user_id: id, day: '2026-11-13', count: 0 })).error).not.toBeNull();
+  });
+
   test('an ended session fails as auth, not as an error to retry', async () => {
     const b = await signIn('h');
     await h.expire(b);

@@ -133,7 +133,7 @@
   <div bind:clientHeight={head} class="flex-none pb-[max(16px,env(safe-area-inset-bottom))]">
     <button
       type="button"
-      class="flex h-11 w-full touch-none items-start justify-center pt-2"
+      class="group flex h-11 w-full touch-none items-start justify-center pt-2"
       aria-label={raised ? t.social.lower : t.social.raise}
       aria-expanded={raised}
       onpointerdown={down}
@@ -143,7 +143,7 @@
       onpointercancel={() => (drag = null)}
       data-testid="panel-grabber"
     >
-      <span class="bg-line-strong block h-1.25 w-9 rounded-full"></span>
+      <span class="bg-line-strong group-active:bg-ink-3 block h-1.25 w-9 rounded-full transition-colors duration-[var(--d-press)]"></span>
     </button>
     <div class="px-6">
       <label class="relative block">

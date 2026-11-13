@@ -53,7 +53,7 @@
       <!-- the pill is inset 2 px a side, so neighbouring pills keep a 4 px gap while each button fills its cell -->
       <span
         class="text-caption relative mx-0.5 grid h-16 content-center justify-items-center gap-0.5 rounded-md transition-colors duration-[var(--d-ui)]
-          {picked ? 'text-canvas' : isToday ? 'ring-ink text-ink-2 ring-2 ring-inset' : 'text-ink-2 group-enabled:group-active:bg-surface-2'}"
+          {picked ? 'text-canvas' : isToday ? 'ring-ink text-ink-2 ring-2 ring-inset group-enabled:group-active:bg-surface-2' : 'text-ink-2 group-enabled:group-active:bg-surface-2'}"
       >
         {t.week.letters[weekdayOf(d.date)]}
         <b class="text-body num font-semibold {picked ? 'text-canvas' : 'text-ink'}">{local(d.date).getDate()}</b>

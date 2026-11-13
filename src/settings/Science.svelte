@@ -54,7 +54,7 @@
   {#each [...Object.values(FOOD_SOURCES), OFF_SOURCE] as f (f.name)}
     <Row title={f.name}>
       {#snippet caption()}
-        {#if f.terms}<a class="text-accent-ink inline-flex min-h-11 items-center underline" href={f.terms} target="_blank" rel="noopener">{t.science.terms}</a>{/if}
+        {#if f.terms}<a class="text-accent-ink active:bg-surface-2 inline-flex min-h-11 items-center rounded-sm underline" href={f.terms} target="_blank" rel="noopener">{t.science.terms}</a>{/if}
       {/snippet}
     </Row>
   {/each}

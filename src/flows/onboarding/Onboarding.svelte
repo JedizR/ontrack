@@ -180,7 +180,7 @@
           <Step title={t.goal.q} onback={back} progress={prog} testid="step-goal">
             <Choices label={t.goal.q} options={more ? GOALS : GOALS.slice(0, 3)} value={chosenGoal} onpick={pickGoal} />
             {#if !more}
-              <button type="button" class="text-callout text-accent-ink mt-2 min-h-[var(--tap)] self-center px-2 underline underline-offset-4" onclick={showMore} data-testid="goal-more">{t.goal.more}</button>
+              <button type="button" class="text-callout text-accent-ink active:bg-surface-2 mt-2 min-h-[var(--tap)] self-center rounded-sm px-2 underline underline-offset-4" onclick={showMore} data-testid="goal-more">{t.goal.more}</button>
             {/if}
             {#snippet footer()}{@render cta(() => next(), !!d.goal)}{/snippet}
           </Step>

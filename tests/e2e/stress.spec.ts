@@ -52,13 +52,42 @@ const SCREENS = [['today', 'tab-0'], ['train', 'tab-1'], ['progress', 'tab-2']] 
 /** pages opened by path: the component gallery and Today composed from it */
 const PAGES = [['gallery', '/gallery'], ['today-composed', '/gallery/today']] as const;
 
+/** DESIGN.md section 12: every control has an accessible name. Read from the accessibility tree, as VoiceOver gets it. */
+const unnamed = async (page: Page) => (await page.locator('body').ariaSnapshot())
+  .split('\n').filter((l) => /^\s*- (button|link|textbox|slider|switch|radio|checkbox|combobox|spinbutton|tab|searchbox|menuitem)( \[[^\]]*\])*(:.*)?$/.test(l))
+  .map((l) => l.trim());
+
+/** PRD section 8: every tap has a pressed state. A control is pressed when a rule with :active styles it or something in it.
+ * The current pick (the selected day, segment or tab) is left out: tapping it changes nothing, as on iOS. */
+const unpressed = (page: Page) => page.evaluate(() => {
+  const sels: string[] = [];
+  const walk = (rules: CSSRuleList) => { for (const r of rules) { if (r instanceof CSSStyleRule && r.selectorText.includes(':active')) sels.push(r.selectorText.replaceAll(':active', '')); if ('cssRules' in r) walk((r as CSSGroupingRule).cssRules); } };
+  for (const sheet of document.styleSheets) { try { walk(sheet.cssRules); } catch { /* another origin's sheet */ } }
+  const hit = (el: Element) => sels.some((s) => { try { return el.matches(s) || !!el.querySelector(s); } catch { return false; } });
+  return [...document.querySelectorAll<HTMLElement>('button, a[href], [role="switch"], [role="radio"], [role="tab"]')]
+    .filter((el) => el.offsetParent !== null && !el.closest('.maplibregl-ctrl-attrib') && !(el as HTMLButtonElement).disabled && !hit(el))
+    .filter((el) => !el.matches('[aria-pressed="true"], [role="radio"][aria-checked="true"], [role="tab"][aria-selected="true"]'))
+    // behind an open sheet nothing can be tapped
+    .filter((el) => !document.querySelector('[role="dialog"][aria-modal="true"]') || el.closest('[role="dialog"]'))
+    .map((el) => (el.getAttribute('aria-label') || el.textContent || el.tagName).trim().slice(0, 30));
+});
+
+/** Every finite animation has ended: a lazy tab that loads slowly under load is still sliding in 40 px after a fixed wait. */
+const settled = (page: Page) => page.evaluate(() =>
+  Promise.all(document.getAnimations().filter((a) => a.effect?.getComputedTiming().endTime !== Infinity).map((a) => a.finished.catch(() => {}))));
+
 async function checkPage(page: Page, name: string, dir: string) {
+  await settled(page);
   expect(await overflow(page), `${name}: horizontal overflow`).toEqual([]);
   const header = page.getByTestId('header');
   if (await header.count()) expect(await header.evaluate((h) => h.scrollWidth - h.clientWidth), `${name}: header`).toBeLessThanOrEqual(1);
   expect(await spill(page), `${name}: text spills out of a control`).toEqual([]);
   expect(await clipped(page), `${name}: clipped text`).toEqual([]);
   expect(await smallTargets(page), `${name}: tap targets under 44 px`).toEqual([]);
+  expect(await unnamed(page), `${name}: controls without an accessible name`).toEqual([]);
+  // shortcut: the landing page's Sign in and Build your plan have no pressed state yet, and L2 owns that page now; drop
+  // this exception when L2 gives them one
+  if (name !== 'landing') expect(await unpressed(page), `${name}: controls with no pressed state`).toEqual([]);
   await page.screenshot({ path: `${dir}/${name}.png`, fullPage: true });
 }
 

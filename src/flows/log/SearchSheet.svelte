@@ -119,7 +119,7 @@
       {#if cite && item?.source !== 'yours'}
         <p class="text-caption text-ink-2" data-testid="portion-cite">
           {t.search.from(cite.name)}
-          {#if citeLink}<a href={citeLink.href} target="_blank" rel="noopener" class="relative underline after:absolute after:-inset-x-2 after:-inset-y-4">{citeLink.text}</a>{/if}
+          {#if citeLink}<a href={citeLink.href} target="_blank" rel="noopener" class="active:bg-surface-2 relative rounded-sm underline after:absolute after:-inset-x-2 after:-inset-y-4">{citeLink.text}</a>{/if}
         </p>
       {/if}
     </div>
