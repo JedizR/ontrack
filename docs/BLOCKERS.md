@@ -6,12 +6,10 @@ Everything that needs you, in one place. Newest first within each section.
 
 Each entry: what is blocked, what Claude tried, the exact steps for you, and what to tell Claude afterwards.
 
-### M9a: the support Gmail's app password
+### M9a: the support Gmail (done 13 November, kept for the record)
 
-- **Blocked:** sign-in codes from the product's own address (they still come from your own Gmail).
-- **Done:** the address is `hello.ontrackapp@gmail.com` (owner, 13 November). Privacy and Terms approved by the owner on 13 November and published with that address; `VITE_SUPPORT_EMAIL` set in Vercel.
-- **Steps for you:** create the Gmail, turn on 2-Step Verification (Google Account, Security), open https://myaccount.google.com/apppasswords, create one named "Ontrack", copy the 16 letters, then in Terminal run `pbpaste | tr -d ' ' > ~/.config/ontrack/smtp-app-password && chmod 600 ~/.config/ontrack/smtp-app-password`. Never paste it in a chat.
-- **Then tell Claude:** "the support Gmail is ready". Claude points Supabase's SMTP at it with the sender name Ontrack and sends a test code.
+- **Done:** the product address is `team.ontrackapp@gmail.com` (owner, 13 November). Privacy and Terms are approved and carry it; `VITE_SUPPORT_EMAIL` is set in Vercel; Supabase sends sign-in codes from it as "Ontrack" (declared in `supabase/config.toml`, the app password from `~/.config/ontrack/smtp-app-password`). A test code to that inbox was accepted on 13 November; that sign-in also created an unconfirmed account for the address.
+- **Your step, if you like:** look in that inbox for the Ontrack code (and its spam folder), so we know Gmail delivers it.
 
 ### Optional: Gemini's paid tier on your Google Developer Program credits
 

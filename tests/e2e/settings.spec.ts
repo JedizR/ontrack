@@ -147,7 +147,7 @@ test('Privacy and Terms open as pages, and the sign in sheet links to both', asy
   await sheet(page).getByTestId('set-privacy').click();
   const p = await popup;
   await expect(p).toHaveURL(/\/privacy\.html$/);
-  await expect(p.getByRole('link', { name: 'hello.ontrackapp@gmail.com' })).toBeVisible();
+  await expect(p.getByRole('link', { name: 'team.ontrackapp@gmail.com' })).toBeVisible();
 });
 
 test('the sign in sheet carries the small print', async ({ page }) => {
