@@ -5,6 +5,7 @@
   import { t } from '$lib/i18n';
   import Figure from '$lib/components/Figure.svelte';
   import Card from '$lib/components/Card.svelte';
+  import Facts from '$lib/components/Facts.svelte';
   import Button from '$lib/components/Button.svelte';
   import Row from '$lib/components/Row.svelte';
   import Segmented from '$lib/components/Segmented.svelte';
@@ -88,11 +89,12 @@
   let history = $state(false);
 </script>
 
-{#snippet meter(title: string, line: string, value: number, target: number, zone: [number, number], testid: string)}
+{#snippet meter(title: string, line: string | string[], value: number, target: number, zone: [number, number], testid: string)}
+  {@const facts = [line].flat()}
   <div data-testid={testid}>
     <p class="text-body font-semibold">{title}</p>
-    <p class="text-caption text-ink-2">{line}</p>
-    <div class="mt-2"><Track {value} {target} {zone} label="{title}. {line}" /></div>
+    <p class="text-caption text-ink-2"><Facts {facts} /></p>
+    <div class="mt-2"><Track {value} {target} {zone} label="{title}. {facts.join(', ')}" /></div>
   </div>
 {/snippet}
 
@@ -114,7 +116,7 @@
           <p class="text-caption text-ink-2 mt-1">{metric ? t.after.kg : t.after.lb} {t.after.trend}</p>
         {/if}
         <p class="mt-3 {rate != null ? 'text-callout' : 'text-body text-ink-2'}" data-testid="progress-rate">
-          {rate != null ? t.progress.rate(num(rate, 1), num(targetRate, 1)) : t.progress.needWeighIns(num(V.minWeighIns), num(V.minSpanDays / U.daysPerWeek))}
+          {#if rate != null}<Facts facts={[t.progress.rate(num(rate, 1)), t.progress.target(num(targetRate, 1))]} rest="text-ink-2" />{:else}{t.progress.needWeighIns(num(V.minWeighIns), num(V.minSpanDays / U.daysPerWeek))}{/if}
         </p>
       </div>
       <div class="px-4 pt-4 pb-4">
@@ -151,7 +153,7 @@
           <WeekBars weeks={bars} from={shortDate(weeks[0].start)} to={shortDate(today)} label={t.progress.bars(num(weeks.length))} />
         </div>
         <p class="text-caption text-ink-2 mt-2">{t.progress.intakeLine}</p>
-        <p class="text-callout mt-3" data-testid="progress-protein">{t.progress.protein(num(Math.round(mean(complete.map((d) => d.protein)))), num(plan.proteinG))}</p>
+        <p class="text-callout mt-3" data-testid="progress-protein"><Facts facts={[t.progress.protein(num(Math.round(mean(complete.map((d) => d.protein))))), t.progress.proteinTarget(num(plan.proteinG))]} rest="text-ink-2" /></p>
       {:else}
         <p class="text-body text-ink-2 mt-2">{t.progress.intakeNone}</p>
         <Button class="mt-4" onclick={() => (sheets.add = true)} data-testid="progress-add">{t.shell.add}</Button>
@@ -185,7 +187,7 @@
         </div>
         <p class="text-caption text-ink-2 mt-2">{t.progress.sessionsLine}</p>
         <div class="border-line mt-4 flex flex-col gap-4 border-t pt-4">
-          {@render meter(t.progress.strength, t.progress.strengthLine(num(training.strength, 1), num(V.strengthSessions)), training.strength, V.strengthSessions, [V.strengthSessions, Infinity], 'progress-strength')}
+          {@render meter(t.progress.strength, [t.progress.strengthLine(num(training.strength, 1)), t.progress.target(num(V.strengthSessions))], training.strength, V.strengthSessions, [V.strengthSessions, Infinity], 'progress-strength')}
           {@render meter(t.progress.cardio, t.progress.cardioLine(num(training.cardio), num(V.aerobicMinutes.min), num(V.aerobicMinutes.max)), training.cardio, V.aerobicMinutes.max, [V.aerobicMinutes.min, V.aerobicMinutes.max], 'progress-cardio')}
         </div>
       {:else}

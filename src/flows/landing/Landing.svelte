@@ -124,10 +124,10 @@
 <div class="bg-surface text-ink relative min-h-svh overflow-x-clip" data-testid="landing">
   <!-- the bar: OneFin's floating glass bar with the wordmark and the way back in -->
   <header class="bar fixed inset-x-0 top-0 z-30 px-4 pt-[calc(env(safe-area-inset-top)+8px)]">
-    <!-- U1b: Sign in sits 8 inside the bar on three sides, so its 16 corners nest in the bar's 24 -->
-    <nav class="glass-bar shadow-float mx-auto flex h-16 max-w-[1200px] items-center justify-between rounded-md pr-2 pl-5" aria-label={t.app.name}>
+    <!-- U1b: Sign in (sm, 36) sits 8 inside the 52 high bar on three sides, so its 16 corners nest in the bar's 24 -->
+    <nav class="glass-bar shadow-float mx-auto flex h-13 max-w-[1200px] items-center justify-between rounded-md pr-2 pl-5" aria-label={t.app.name}>
       <Wordmark class="h-5 w-fit" />
-      <Button variant="neutral" onclick={signin} data-testid="landing-signin">{L.signin}</Button>
+      <Button variant="neutral" size="sm" onclick={signin} data-testid="landing-signin">{L.signin}</Button>
     </nav>
   </header>
 

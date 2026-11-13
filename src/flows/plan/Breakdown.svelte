@@ -31,12 +31,11 @@
     ].filter((l, i) => i < 2 || l.value !== 0) as { key: string; label: string; value: number; basis: Basis[] }[],
   );
   let opened = $state<string | null>(null);
-  const kcal = (v: string) => `${v} ${t.after.kcal}`;
-  const signed = (v: number, first: boolean) => kcal(first || v < 0 ? num(v) : `+${num(v)}`);
+  const signed = (v: number, first: boolean) => (first || v < 0 ? num(v) : `+${num(v)}`);
 </script>
 
 {#each lines as l, i (l.key)}
-  <Row title={l.label} value={signed(l.value, i === 0)} onclick={() => (opened = opened === l.key ? null : l.key)} testid="line-{l.key}">
+  <Row title={l.label} value={signed(l.value, i === 0)} unit={t.after.kcal} onclick={() => (opened = opened === l.key ? null : l.key)} testid="line-{l.key}">
     <!-- one line closed (the first source), every citation and its status open -->
     {#snippet caption()}
       {#if opened === l.key}
@@ -49,4 +48,4 @@
     {/snippet}
   </Row>
 {/each}
-<Row title={t.plan.total} value={kcal(num(parts.total))} testid="line-total" />
+<Row title={t.plan.total} value={num(parts.total)} unit={t.after.kcal} testid="line-total" />
