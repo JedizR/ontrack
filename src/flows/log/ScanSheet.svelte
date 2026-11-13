@@ -277,7 +277,7 @@
       {#if product.source === 'off'}
         <p class="text-caption text-ink-2" data-testid="product-cite">
           {t.search.from(OFF_SOURCE.name)}
-          <a href={OFF_SOURCE.terms} target="_blank" rel="noopener" class="-my-3 inline-flex min-h-11 items-center underline">{t.search.terms}</a>
+          <a href={OFF_SOURCE.terms} target="_blank" rel="noopener" class="active:bg-surface-2 -my-3 inline-flex min-h-11 items-center rounded-sm underline">{t.search.terms}</a>
         </p>
       {/if}
     </div>
