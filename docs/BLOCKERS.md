@@ -6,11 +6,12 @@ Everything that needs you, in one place. Newest first within each section.
 
 Each entry: what is blocked, what Claude tried, the exact steps for you, and what to tell Claude afterwards.
 
-### M9a: Privacy and Terms, and a support address
+### M9a: Privacy and Terms, and the support Gmail
 
-- **Blocked:** publishing the Privacy and Terms drafts as final, and Report a problem's recipient.
-- **Steps for you:** read `public/privacy.html` and `public/terms.html` (live at https://ontrack-black.vercel.app/privacy.html and /terms.html), add a contact address at the placeholders, and check the Gemini free tier paragraph (written from memory). Add `VITE_SUPPORT_EMAIL` in Vercel for production and preview, or tell Claude the address.
-- **Then tell Claude:** "Privacy and Terms are approved" and the support address.
+- **Blocked:** publishing the Privacy and Terms drafts as final; Report a problem's recipient; sign-in codes from the product's own address.
+- **Decided:** the product address is `team.ontrackapp@gmail.com` (owner, 13 November).
+- **Steps for you:** create that Gmail, turn on 2-Step Verification, create an app password for Mail and save it to `~/.config/ontrack/smtp-app-password` (never in a chat). Read https://ontrack-black.vercel.app/privacy.html and /terms.html (`public/privacy.html`, `public/terms.html`) and check the Gemini free tier paragraph, written from memory.
+- **Then tell Claude:** "the support Gmail is ready" and "Privacy and Terms are approved". Claude then points Supabase's SMTP at it with the sender name Ontrack, sets `VITE_SUPPORT_EMAIL`, fills the placeholders, and sends a test code.
 
 ### B1: a contact address for Open Food Facts (optional)
 
