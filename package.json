@@ -20,6 +20,7 @@
     "verify": "pnpm check && pnpm test && pnpm build && pnpm bundle && playwright test --grep @smoke",
     "bundle": "node scripts/bundle-report.mjs",
     "check:pwa": "node scripts/check-pwa.mjs",
+    "smoke:prod": "sh scripts/smoke-prod.sh",
     "icons": "cp design/brand/app-icon.svg public/favicon.svg && pwa-assets-generator",
     "format": "prettier --write .",
     "foods:build": "tsx scripts/build-foods.ts",
