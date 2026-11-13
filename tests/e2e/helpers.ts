@@ -323,9 +323,12 @@ export const unnested = (page: Page) => page.evaluate(() => {
     const o = outer.r;
     for (const inner of shapes) {
       if (inner === outer || outer.pressed || !outer.e.contains(inner.e)) continue;
-      // something between them that clips (a sheet's scrolling list) decides what shows of the inner shape
+      // something between them that cuts the inner shape (a sheet's scrolling list) decides what shows of it; one that
+      // clips but holds it whole (a button round a panel, whose overflow engines report differently) changes nothing
+      const i0 = inner.r;
       let between = inner.e.parentElement;
-      while (between && between !== outer.e && !clipping(between)) between = between.parentElement;
+      const cuts = (b: Element) => { const c = b.getBoundingClientRect(); return i0.left < c.left - 0.5 || i0.right > c.right + 0.5 || i0.top < c.top - 0.5 || i0.bottom > c.bottom + 0.5; };
+      while (between && between !== outer.e && !(clipping(between) && cuts(between))) between = between.parentElement;
       if (between !== outer.e) continue;
       if (!inner.pressed && !inner.edge && inner.fill === outer.fill) continue;
       const i = inner.r;

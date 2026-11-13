@@ -281,6 +281,8 @@ test('no gradient, bevel or glow on any button on the landing page', async ({ pa
 test('corners nest on every tab, a sheet, a toast and a pressed row', async ({ page }) => {
   await open(page, '/', MEALS);
   await expect(page.getByTestId('hero')).toBeVisible();
+  // Today's cards fade up on first paint, from nothing: measure them once they have arrived (a slow CI runner is still at 0)
+  await page.waitForFunction(() => document.getAnimations().every((a) => a.playState !== 'running' || a.effect?.getComputedTiming().endTime === Infinity));
   // the check catches the stat tiles as the owner saw them (radius 24, 8 inside a radius 48 card), and U2's pressed row
   // whose grey is a square cut by the card's curve (flush with the sides, 4 below the top)
   await page.evaluate(() => document.body.insertAdjacentHTML('beforeend', '<div data-testid="probe-card" style="position:absolute;top:0;width:200px;height:200px;padding:8px;border-radius:48px;background:#fff"><div data-testid="probe-tile" style="height:100%;border-radius:24px;background:#eee"></div></div><style>.probe-row:active{background:#eee}</style><div data-testid="probe-list" style="position:absolute;top:0;width:200px;padding:4px 0;border-radius:32px;overflow:hidden;background:#fff"><button data-testid="probe-row" class="probe-row" style="display:block;width:100%;height:64px"></button></div>'));
