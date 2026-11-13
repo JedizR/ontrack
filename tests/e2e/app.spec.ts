@@ -313,6 +313,8 @@ test('corners nest on every tab, a sheet, a toast and a pressed row', async ({ p
   await page.keyboard.press('Escape');
   await page.getByTestId('add-sheet').waitFor({ state: 'detached' });
   // a toast holding Undo: radius 24, Undo 8 inside at 16
+  // the swipe fires at a point on screen: bring the row clear of the dock first (U3's eyebrow moved the meals down)
+  await page.getByTestId('meal').first().evaluate((el) => el.scrollIntoView({ block: 'center' }));
   const row = (await page.getByTestId('meal').first().boundingBox())!;
   await swipeAt(page, -260, { x: row.x + row.width - 40, y: row.y + row.height / 2 });
   await expect(page.getByRole('button', { name: 'Undo' })).toBeVisible();
