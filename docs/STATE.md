@@ -7,7 +7,7 @@ Handoff note between contexts. Read first, update last. Keep it under one screen
 The conductor role and its rules are in `STARTING_PROMPT.md`; the final report it describes is still the goal. The waves and their reasons are in `docs/BUILD-PLAN.md` after the table.
 
 1. **Wave 1:** S1b and U1a: both shipped (`v0.8.12`, `v0.8.11`).
-2. **Wave 2:** U1b and M9a, side by side.
+2. **Wave 2:** U1b and M9a, side by side. M9a shipped (`v0.8.13`).
 3. **Wave 3:** U1c.
 4. **Wave 4:** M9b, then `v1.0.0`.
 5. **The final report:** the milestone table, the last lines of a passing `pnpm verify` on `main`, the full `docs/BLOCKERS.md`, the production URL https://ontrack-black.vercel.app, and the three things the owner should do first.
@@ -47,8 +47,8 @@ Status is one of: not started, in progress, shipped, shipped with cuts, blocked.
 | U1a | Onboarding feel | shipped | PR #32, merged, `v0.8.11` | Gate green on the mock: select then Continue on every choice step, Gain weight (vector J) and Lose fat and build muscle (vector K), Building your plan (skipped under reduced motion). Gain user 12 to 19 gestures, modelled 118 to 135 s; cut 13 to 19, 114 to 130 s. Two critic rounds, a code review. Cold onboarding per new goal: on the owner's list |
 | U1b | The look, app wide | not started | | Wave 2. Nested corners and padding, dark contrast, dock, header fades, dividers, status bar |
 | U1c | Motion and feel, app wide | not started | | Wave 3. Motion tokens, tap feedback, moving numbers, iOS swipe, progress, satisfaction, the UX walk |
-| M9 | Hardening and release | not started | | Split: M9a features, M9b hardening |
-| M9a | Settings and the last features | not started | | Wave 2. Settings, exports, The science, Privacy and Terms, reminders, easy adds, carried items |
+| M9 | Hardening and release | in progress | | Split: M9a features (shipped), M9b hardening |
+| M9a | Settings and the last features | shipped | PR #33, merged, `v0.8.13` | Gate green on the mock: settings.spec 16 tests, stress matrix with Settings' pages, conformance on mock and live (36 of 36). Two critic rounds, a code review (one known limit: same target every day and sex recalculate past days). The console error did not reproduce in three runs; imperial height is one wheel of inches; Report a problem needs `VITE_SUPPORT_EMAIL` |
 | M9b | Hardening and release | not started | | Wave 4. Accessibility, speed, offline, security, production, `v1.0.0` |
 
 ## What is real and what is mocked
@@ -62,6 +62,12 @@ Status is one of: not started, in progress, shipped, shipped with cuts, blocked.
 - Vision: real. `/api/analyze` with `gemini-3.6-flash`, minimal thinking. Vercel holds `VISION_PROVIDER=gemini`, `GEMINI_MODEL`, and `GEMINI_API_KEY` (the development key, free tier: 20 requests a day per model) for production and preview, plus `VITE_BACKEND=supabase`, the Supabase URL and keys, and `CRON_SECRET`. The key's file is `~/.config/ontrack/gemini-api-key`; `scripts/live-env.sh` reads it for `dev:live` and `eval:vision`.
 
 ## Notes for the next milestone
+
+M9a (Settings and the last features; decisions in `docs/DECISIONS.md` under M9a):
+- Settings: `src/settings/SettingsSheet.svelte` (still `sheets.account`, testid `account-sheet`) with pages `PlanPage`, `Science` (`src/lib/data/science.ts`) and `Options`. Saving goes through `saveSettings(profile, plan?)`; `src/lib/model/replan.ts` holds `nextPlan`, `moves`, `targetsOf`, `pacesFor`. Plan edits start tomorrow; a goal, pace or baseline edit restarts the check-in count (`baselineFrom`).
+- Per phone: `prefs.remind`, `prefs.thai`, `prefs.liftAsked`. Today's card order: check-in, easy adds, weigh-in, Getting started, nothing logged. `view.time` is HH:MM; `C.easyAdds` and `C.finishDayHour` hold the hours. Thumbnails: `db.dropThumb` queues a delete sent 30 s later if unused; sign out flushes it.
+- For U1c: Settings pages swap with no transition; the easy adds card, Finish day's line and the experience card come and go with no motion. Screens: `settings`, `settings evening`, `settings nothing logged`.
+- For M9b: set `VITE_SUPPORT_EMAIL` (or keep the empty recipient, recorded); bump `package.json`'s version on each tag (Settings shows it; now 0.8.13); `vercel.json`'s `Permissions-Policy: geolocation=()` blocks S1b's position fallback; a worktree needs `supabase/.temp/project-ref` for `pnpm test:live`.
 
 S1b (friends screens and the food map; spec SCREENS.md section 13, TECH-SPEC section 11):
 - For U1b, the critic's findings in shared components on the social screens: dark contrast under 3:1 for `input-field`, the neutral Button, Switch's off track and Segmented's selected segment; the Sheet's scrolled hairline is a hard edge; radii that do not nest in the toast's Undo and the landing bar's Sign in; commas joining facts in the Review total and Today's meal caption. `src/flows/social/Facts.svelte` is a local divider marked `shortcut`: replace it with U1b's divider. Pin frames use `--on-night` (white in both themes). The stress case at text size l on the SE flaked once on Train's horizontal overflow.

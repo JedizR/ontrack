@@ -6,6 +6,12 @@ Everything that needs you, in one place. Newest first within each section.
 
 Each entry: what is blocked, what Claude tried, the exact steps for you, and what to tell Claude afterwards.
 
+### M9a: Privacy and Terms, and a support address
+
+- **Blocked:** publishing the Privacy and Terms drafts as final, and Report a problem's recipient.
+- **Steps for you:** read `public/privacy.html` and `public/terms.html` (live at https://ontrack-black.vercel.app/privacy.html and /terms.html), add a contact address at the placeholders, and check the Gemini free tier paragraph (written from memory). Add `VITE_SUPPORT_EMAIL` in Vercel for production and preview, or tell Claude the address.
+- **Then tell Claude:** "Privacy and Terms are approved" and the support address.
+
 ### B1: a contact address for Open Food Facts (optional)
 
 - Open Food Facts asks apps to name themselves with a contact email. Ontrack sends `X-User-Agent: Ontrack/<version> (https://ontrack-black.vercel.app)` and no email, because Claude does not put your address in requests to outside services. If you want one added, tell Claude: "Add <address> to the Open Food Facts user agent".
@@ -22,6 +28,13 @@ Each entry: what is blocked, what Claude tried, the exact steps for you, and wha
 ## Needs your eyes
 
 Each entry: what to look at (URL or screenshot paths), what to look for, and which milestone it belongs to.
+
+### M9a: Settings, easy adds, reminders and The science on your iPhone
+
+- **Settings:** open it from the avatar. In Goal and pace, change the pace, check the "From tomorrow" target, tap Use the new target. Switch theme and text size. Export all data through the share sheet.
+- **Easy adds** on a gain day after 18:00: are the three foods and sizes sensible? Add one. After 20:00, tap Finish day.
+- **Reminders:** the nothing logged card from 13:00, and each switch turning its card off. **The science:** do the plain names read well? **Train** asks lifting experience once, if you lift and are not gaining.
+- Screens: `screenshots/settings/` after `pnpm screenshots -- --grep settings`.
 
 ### S1: friends and the food map, with a second account
 
