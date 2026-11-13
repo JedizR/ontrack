@@ -2,6 +2,33 @@
 
 What the vision model got right and wrong on real photos, and what changed because of it. Newest first.
 
+## M9b, 13 November 2026: the N1 Thai rerun on the paid key
+
+N1's eight Thai photos, the same method (`pnpm eval:vision`, `gemini-3.6-flash`, minimal thinking, provider call timed from the Mac), now on the billed key and the 670 food table of N3. One request each, all eight answered, no 429 or 503.
+
+| Photo | N1 after: items (from the table), kcal, time | M9b: items (from the table), kcal, time |
+| --- | --- | --- |
+| Pad kra pao crispy pork, rice | 2 (1), 676, 30.0 s | 2 (1), 722, 3.0 s |
+| Khao man kai | 1 (1), 515, 3.7 s | 1 (1), 752, 2.9 s |
+| Beef green curry | 1 (0), 473, 10.3 s | 1 (0), 508, 2.9 s |
+| Khao soi | 1 (0), 672, 22.0 s | 1 (1) khao soi kai, 634, 2.5 s |
+| Massaman beef, brown rice | 2 (1), 540, 3.4 s | 2 (2), 764, 51.2 s |
+| Som tam, sticky rice, kai yang | 4 (2), 695, 4.8 s | 3 (3), 946, 4.1 s |
+| Pad thai with shrimp | 1 (1), 515, 4.5 s | 1 (1), 515, 2.9 s |
+| Mango sticky rice | 1 (1), 571, 28.1 s | 1 (1), 522, 2.5 s |
+
+| | N1 after | M9b |
+| --- | --- | --- |
+| Items that resolve to the table | 7 of 13 (54 percent) | 10 of 12 (83 percent) |
+| Photos whose dish resolves whole | 3 of 8 | 6 of 8 |
+| Calories that come from the table | 2,633 of 4,657 (57 percent) | 4,405 of 5,363 (82 percent) |
+| Time to an answer, median | 7.6 s | 2.9 s (one slow answer, 51.2 s) |
+
+**Reading it.**
+- N3's Thai table did what N1 said it would: khao soi, massaman, kai yang and som tam now come from INMU's values. Only crispy pork kra pao and beef green curry stay estimates, as the table has neither.
+- Calories rose on the plates that moved to the table (khao man kai 515 to 752, the som tam set 695 to 946): the Thai FCD values per 100 g are higher than the SG FoodID and FNDDS ones they replaced, and portions were not weighed, so this is not a check of accuracy.
+- Time: the paid tier removes the free tier's noise. Seven answers took 2.5 to 4.1 s; one took 51 s, inside the function's 60 s limit and the app's wait. PRD section 8's 8 s median for photo to review sheet holds with room for the upload and the phone's resize, which this does not time.
+
 ## N3, 12 November 2026: Thai values from the Thai Food Composition Database
 
 **What changed.** 670 foods, 236 tagged `thai`. 98 new Thai foods, 93 of them dishes, snacks and desserts with no table entry before (khao soi, massaman, red, panang and yellow curries, tom kha, som tam, larb, khao kha moo, pad see ew, kai yang, moo daeng, tod man, the khanom and the coconut desserts among them), and 17 existing Thai foods moved to the Thai source. 115 foods now read their values from INMU's Thai Food Composition Database: 23 from the owner's file and 92 from INMU's own pages, snapshotted in `data/thai/`. 23 of them have one value derived by Atwater (13 energy, 10 carbohydrate), marked in `foods.json`. Sources and rules: `docs/DECISIONS.md`, N3.
