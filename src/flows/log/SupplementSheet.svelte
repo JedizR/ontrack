@@ -326,6 +326,7 @@
 <Sheet
   bind:open={() => sheets.supplement !== null, (v) => { if (!v) close(); }}
   {title}
+  {step}
   layer="base"
   testid="supplement-sheet"
   footer={!notice && (step === 'label' || step === 'amount' || step === 'new') ? footer : undefined}

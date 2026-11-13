@@ -54,7 +54,10 @@ export default defineConfig({
     mockBackend(),
     devApi(),
     VitePWA({
-      registerType: 'prompt',
+      // U2: a new worker takes over as soon as it has installed (skipWaiting below; this plugin sets it only when it
+      // injects the register script). A worker left waiting for a message from the page stayed waiting on the owner's
+      // iPhone, so "A new version is ready" came back on every reload. The page then only offers a reload (App.svelte)
+      registerType: 'autoUpdate',
       injectRegister: false,
       manifest: {
         name: 'Ontrack',
@@ -87,6 +90,7 @@ export default defineConfig({
         // the Privacy and Terms pages in public/ are their own documents, never the app
         navigateFallbackDenylist: [/^\/api\//, /^\/__mock\//, /^\/(privacy|terms)\.html$/],
         cleanupOutdatedCaches: true,
+        skipWaiting: true,
         // the scanner's WebAssembly reader (B1, about 1 MB) is cached the first time the scanner opens, not for everyone
         runtimeCaching: [{ urlPattern: /\/assets\/.*\.wasm$/, handler: 'CacheFirst', options: { cacheName: 'scanner', expiration: { maxEntries: 2 } } }],
       },

@@ -97,6 +97,7 @@
 <Sheet
   bind:open={() => sheets.checkin !== null, (v) => { if (!v) close(); }}
   title={t.checkin.title}
+  {step}
   layer="base"
   testid="checkin-sheet"
   onback={step > 0 ? () => step-- : undefined}

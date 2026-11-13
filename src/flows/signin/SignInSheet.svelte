@@ -97,7 +97,7 @@
   <p class="text-callout mt-3 min-h-5 {error === t.signin.sentAgain ? 'text-ink-2' : 'text-danger'}" role="alert" data-testid="signin-error">{error}</p>
 {/snippet}
 
-<Sheet bind:open {title} layer="base" testid="signin-sheet">
+<Sheet bind:open {title} {step} layer="base" testid="signin-sheet">
   <p class="text-lead text-ink-2">{t.signin.lead}</p>
 
   {#if step === 'email'}

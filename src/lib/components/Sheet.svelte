@@ -3,11 +3,13 @@
      Opaque: no glass in the content layer. Opens to content height, at most 92 percent of the visible height. A long
      title (a scanned product's name) wraps to a second line. -->
 <script lang="ts">
-  import type { Snippet } from 'svelte';
+  import { tick, type Snippet } from 'svelte';
   import * as Drawer from '$lib/components/ui/drawer';
   import X from '@lucide/svelte/icons/x';
   import ChevronLeft from '@lucide/svelte/icons/chevron-left';
+  import { fly } from 'svelte/transition';
   import { t } from '$lib/i18n';
+  import { dur } from '$lib/haptics';
 
   let {
     open = $bindable(false),
@@ -17,6 +19,7 @@
     onclose,
     onback,
     backLabel,
+    step,
     children,
     footer,
   }: {
@@ -29,6 +32,8 @@
     /** a step back inside the sheet (Search's portion back to the results) */
     onback?: () => void;
     backLabel?: string;
+    /** U2: the sheet's step (Search's results or portion): a new one slides in, from the left after Back */
+    step?: unknown;
     children: Snippet;
     /** the main action, pinned */
     footer?: Snippet;
@@ -38,6 +43,9 @@
   let scrolled = $state(false);
   // the content is rebuilt on every open, scrolled to the top
   $effect(() => { if (open) scrolled = false; });
+  // Back's step slides in from the left; set for the one change Back makes (a Back that changes no step leaves no trace)
+  let backing = false;
+  const enter = () => ({ x: backing ? -24 : 24, opacity: 0, duration: dur('--d-settle') });
   const icon = 'active:bg-surface-2 grid size-11 flex-none place-items-center rounded-sm transition-colors duration-[var(--d-press)]';
 </script>
 
@@ -46,7 +54,7 @@
   <Drawer.Content class={Z[layer]} overlayClass={Z[layer]} data-testid={testid}>
     <div class="fade-under relative z-10 flex items-center gap-1 pt-2 pr-3 pb-1 [--fade:var(--surface)] {onback ? 'pl-3' : 'pl-6'}" data-scrolled={scrolled || undefined}>
       {#if onback}
-        <button class="{icon} text-ink" aria-label={backLabel} onclick={onback} data-testid="sheet-back"><ChevronLeft size={24} strokeWidth={2} /></button>
+        <button class="{icon} text-ink" aria-label={backLabel} onclick={() => { backing = true; onback?.(); void tick().then(() => (backing = false)); }} data-testid="sheet-back"><ChevronLeft size={24} strokeWidth={2} /></button>
       {/if}
       <Drawer.Title class="text-heading line-clamp-2 min-w-0 flex-1 py-1 text-left break-words">{title}</Drawer.Title>
       <button class="{icon} text-ink-2" aria-label={t.sheet.close} onclick={() => { open = false; onclose?.(); }}>
@@ -69,7 +77,7 @@
         }, 350);
       }}
     >
-      {@render children()}
+      {#key step}<div in:fly={enter()}>{@render children()}</div>{/key}
     </div>
     {#if footer}
       <div class="fade-over relative px-6 pt-3 pb-[max(16px,env(safe-area-inset-bottom))] [--fade:var(--surface)]">

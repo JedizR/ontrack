@@ -1,6 +1,5 @@
 <script lang="ts">
-  import { onMount, type Component } from 'svelte';
-  import { fly } from 'svelte/transition';
+  import { onMount, tick, type Component } from 'svelte';
   import { toast } from 'svelte-sonner';
   import { prefs, applyTheme, applyFontSize, type Tab } from '$lib/prefs.svelte';
   import { dur } from '$lib/haptics';
@@ -79,15 +78,22 @@
     if (db.ready && sync.pulledNow && prefs.draft) import('./flows/onboarding/settle').then((m) => m.settle(), (e) => console.error('the plan could not be saved', e));
   });
 
+  // U2: a tab stays mounted once opened, so coming back is instant and its arrival motion (Progress's line and bars,
+  // the counts) does not replay (DESIGN.md section 10 rule 7). The others wait hidden, out of layout and of reach
+  const seen = $state([false, false, false]);
+  $effect.pre(() => { seen[prefs.tab] = true; });
+  const panes: HTMLElement[] = $state([]);
   // tab changes slide in from the side the finger came from; swiping wraps around
-  let dir = $state(1);
   async function go(i: Tab, d?: 1 | -1) {
     if (i === prefs.tab) return;
     await loadTab(i);
-    dir = d ?? (i > prefs.tab ? 1 : -1);
+    const dir = d ?? (i > prefs.tab ? 1 : -1);
     prefs.tab = i;
     view.date = view.today; // a past day is a Today view; elsewhere the plus logs to today
     scrollTo({ top: 0 });
+    await tick();
+    const ms = dur('--d-settle');
+    if (ms) panes[i]?.animate([{ translate: `${40 * dir}px 0`, opacity: 0.2 }, { translate: '0 0', opacity: 1 }], { duration: ms, easing: getComputedStyle(document.documentElement).getPropertyValue('--ease-out') });
   }
   let dragX = $state(0);
   let dragging = $state(false);
@@ -113,10 +119,15 @@
     const clock = setInterval(tick, 60_000);
 
     if (import.meta.env.PROD) {
+      // U2: a new version has taken over this page (vite.config.ts): the next load is the new one, so Update just reloads.
+      // Until then a lazy chunk this page asks for may be gone from the deploy, and a reload fixes that too
+      let stale = false;
+      window.addEventListener('vite:preloadError', () => { if (stale) location.reload(); });
       import('virtual:pwa-register').then(({ registerSW }) => {
-        const update = registerSW({
-          onNeedRefresh() {
-            toast(t.update.ready, { duration: Infinity, action: { label: t.update.action, onClick: () => update(true) } });
+        registerSW({
+          onNeedReload() {
+            stale = true;
+            toast(t.update.ready, { id: 'update', duration: Infinity, action: { label: t.update.action, onClick: () => location.reload() } });
           },
         });
       });
@@ -146,17 +157,12 @@
   <!-- the content ends clear of the dock, which floats 12 above the safe area -->
   <main class="flex-1 px-4 pb-[calc(var(--dock-h)+12px+env(safe-area-inset-bottom)+24px)]" use:swipe={swipeOpts}>
     <div style="transform: translateX({dragX}px); transition: {dragging ? 'none' : 'transform var(--d-settle) var(--ease-out)'}">
-      {#key prefs.tab}
-        <div in:fly={{ x: 40 * dir, duration: dur('--d-settle'), opacity: 0.2 }}>
-          {#if prefs.tab === 0}
-            <Today />
-          {:else if prefs.tab === 1}
-            {#if Train}<Train />{/if}
-          {:else if Progress}
-            <Progress />
-          {/if}
-        </div>
-      {/key}
+      {#each [Today, Train, Progress] as Pane, i (i)}
+        {#if seen[i] && Pane}
+          {@const on = prefs.tab === i}
+          <div bind:this={panes[i]} hidden={!on}><Pane /></div>
+        {/if}
+      {/each}
     </div>
   </main>
 

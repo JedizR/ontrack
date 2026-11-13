@@ -40,7 +40,8 @@
   const bandPath = $derived(start ? `M${x(start.day)},${y(start.trend)}L${x(span)},${y(bandAt(span, 1))}L${x(span)},${y(bandAt(span, -1))}Z` : '');
 </script>
 
-<div bind:clientWidth={w} data-testid="weight-chart">
+<!-- a tab kept mounted but hidden measures 0 wide (U2): keep the last width, so nothing redraws when it shows -->
+<div bind:clientWidth={null, (v) => { if (v) w = v; }} data-testid="weight-chart">
   <svg width={w} height={H} role="img" aria-label={label} class="block">
     {#each y.ticks(3) as v (v)}
       <line x1={M.left} x2={w - M.right} y1={y(v)} y2={y(v)} class="stroke-line" />

@@ -1,7 +1,7 @@
 // Device and text size matrix: layout checks on every screen.
 //   pnpm exec playwright test --project=stress   -> screenshots/stress/<device>/*.png
 import { devices, expect, test, type Page } from '@playwright/test';
-import { MEALS, SUPPLEMENTS, fieldFill, open, openSeeded, signIn, takePhoto, wheelType, withPrefs } from './helpers';
+import { MEALS, SUPPLEMENTS, fieldFill, open, openSeeded, signIn, takePhoto, unnested, wheelType, withPrefs } from './helpers';
 import { openMap, raise, scene } from './social';
 
 const DEVICES = [
@@ -87,6 +87,8 @@ async function checkPage(page: Page, name: string, dir: string) {
   expect(await smallTargets(page), `${name}: tap targets under 44 px`).toEqual([]);
   expect(await unnamed(page), `${name}: controls without an accessible name`).toEqual([]);
   expect(await unpressed(page), `${name}: controls with no pressed state`).toEqual([]);
+  // U2: every app screen and sheet; the landing page is L4's
+  if (name !== 'landing') expect((await unnested(page)).bad, `${name}: corners that do not nest`).toEqual([]);
   await page.screenshot({ path: `${dir}/${name}.png`, fullPage: true });
 }
 

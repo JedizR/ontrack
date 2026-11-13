@@ -59,6 +59,7 @@
 <Sheet
   bind:open={() => friend !== null, (v) => { if (!v) friend = null; }}
   title={friend ? (mode === 'main' ? friend.name : t.social.removeTitle(friend.name)) : ''}
+  step={mode}
   layer="base"
   testid="friend-sheet"
   footer={mode === 'remove' ? confirm : undefined}

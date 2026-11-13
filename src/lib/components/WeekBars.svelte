@@ -15,7 +15,8 @@
   const bar = $derived(Math.min(32, slot * 0.6));
 </script>
 
-<div bind:clientWidth={w} data-testid="week-bars">
+<!-- a tab kept mounted but hidden measures 0 wide (U2): keep the last width, so nothing redraws when it shows -->
+<div bind:clientWidth={null, (v) => { if (v) w = v; }} data-testid="week-bars">
   <svg width={w} height={H} role="img" aria-label={label} class="block">
     <line x1="0" x2={w} y1={y(0)} y2={y(0)} class="stroke-line" />
     {#each weeks as k, i (i)}

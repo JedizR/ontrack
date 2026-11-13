@@ -52,7 +52,7 @@
 {/snippet}
 
 {#if onclick}
-  <button class="active:bg-surface-2 -mx-6 flex w-[calc(100%+var(--inset)*2)] items-center gap-4 px-6 transition-colors duration-[var(--d-press)]" {onclick} data-testid={testid}>
+  <button class="bleed active:bg-surface-2 -mx-6 flex w-[calc(100%+var(--inset)*2)] items-center gap-4 px-6 transition-colors duration-[var(--d-press)]" {onclick} data-testid={testid}>
     {@render body()}
   </button>
 {:else}

@@ -190,10 +190,28 @@
   backdrop-filter: var(--blur-glass);
   @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { background: var(--glass-solid); }
 }
-/* The dock: glass with more fill, since rows scroll under it. */
+/* U2: a row whose pressed grey runs edge to edge. In a list card (Card's `list`, 4 px above and below its rows) the first
+   and last rows carry their fill 4 px further, into that padding, so the grey meets the card's edge and the card's clip
+   gives it the card's own corners rather than a square cut by the curve. Drawn by a pseudo element, so nothing moves. */
+@utility bleed {
+  position: relative;
+  &:first-child:is([data-list] > *, [data-list] > :first-child > *, [data-list] > :first-child > * > *)::before,
+  &:last-child:is([data-list] > *, [data-list] > :last-child > *, [data-list] > :last-child > * > *)::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    height: var(--s-1);
+    background-color: inherit;
+  }
+  &::before { top: calc(-1 * var(--s-1)); }
+  &::after { bottom: calc(-1 * var(--s-1)); }
+}
+/* The dock: glass with more fill, since rows scroll under it. U2: its edge is drawn inside it, taking no room, so the
+   selected tab's pill sits 8 from the dock's outer edge on every side, 48 high, and the two full radii nest (32, 24). */
 @utility glass-bar {
   background: var(--bar-bg);
-  border: 1px solid var(--glass-edge);
+  outline: 1px solid var(--glass-edge);
+  outline-offset: -1px;
   -webkit-backdrop-filter: var(--blur-bar);
   backdrop-filter: var(--blur-bar);
   @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { background: var(--bar-solid); }
