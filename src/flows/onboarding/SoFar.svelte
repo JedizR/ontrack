@@ -18,7 +18,7 @@
 
   let { now }: { now: NonNullable<ReturnType<typeof soFar>> } = $props();
 
-  const value = new Tween(untrack(() => shown.last || now.value), { duration: dur(400), easing: cubicOut });
+  const value = new Tween(untrack(() => shown.last || now.value), { duration: dur('--d-count'), easing: cubicOut });
   $effect(() => {
     value.target = now.value;
     shown.last = now.value;

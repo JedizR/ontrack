@@ -145,9 +145,9 @@
   <!-- flex-1: the whole area between header and dock takes swipes, not just the content -->
   <!-- the content ends clear of the dock, which floats 12 above the safe area -->
   <main class="flex-1 px-4 pb-[calc(var(--dock-h)+12px+env(safe-area-inset-bottom)+24px)]" use:swipe={swipeOpts}>
-    <div style="transform: translateX({dragX}px); transition: {dragging ? 'none' : 'transform 240ms var(--ease-out)'}">
+    <div style="transform: translateX({dragX}px); transition: {dragging ? 'none' : 'transform var(--d-settle) var(--ease-out)'}">
       {#key prefs.tab}
-        <div in:fly={{ x: 40 * dir, duration: dur(220), opacity: 0.2 }}>
+        <div in:fly={{ x: 40 * dir, duration: dur('--d-settle'), opacity: 0.2 }}>
           {#if prefs.tab === 0}
             <Today />
           {:else if prefs.tab === 1}

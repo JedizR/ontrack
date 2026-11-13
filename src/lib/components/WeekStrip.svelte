@@ -24,9 +24,19 @@
     const [y, m, day] = d.split('-').map(Number);
     return new Date(y, m - 1, day, 12);
   };
+  const at = $derived(days.findIndex((d) => d.date === selected));
 </script>
 
-<nav class="grid grid-cols-7" aria-label={t.week.label} data-testid="week">
+<nav class="relative grid grid-cols-7" aria-label={t.week.label} data-testid="week">
+  <!-- U1c: one ink pill that slides to the day picked; each cell is a seventh, the pill 4 px narrower -->
+  {#if at >= 0}
+    <span
+      class="bg-ink absolute top-0 left-0.5 h-16 w-[calc(100%/7-var(--s-1))] rounded-md transition-transform duration-[var(--d-ui)] ease-[var(--spring-default)]"
+      style="transform: translateX(calc({at} * (100% + var(--s-1))))"
+      aria-hidden="true"
+      data-testid="week-pill"
+    ></span>
+  {/if}
   {#each days as d (d.date)}
     {@const isToday = d.date === today}
     {@const picked = d.date === selected}
@@ -42,8 +52,8 @@
     >
       <!-- the pill is inset 2 px a side, so neighbouring pills keep a 4 px gap while each button fills its cell -->
       <span
-        class="text-caption mx-0.5 grid h-16 content-center justify-items-center gap-0.5 rounded-md transition-colors duration-[var(--d-ui)] ease-[var(--spring-default)]
-          {picked ? 'bg-ink text-canvas' : isToday ? 'ring-ink text-ink-2 ring-2 ring-inset' : 'text-ink-2 group-enabled:group-active:bg-surface-2'}"
+        class="text-caption relative mx-0.5 grid h-16 content-center justify-items-center gap-0.5 rounded-md transition-colors duration-[var(--d-ui)]
+          {picked ? 'text-canvas' : isToday ? 'ring-ink text-ink-2 ring-2 ring-inset' : 'text-ink-2 group-enabled:group-active:bg-surface-2'}"
       >
         {t.week.letters[weekdayOf(d.date)]}
         <b class="text-body num font-semibold {picked ? 'text-canvas' : 'text-ink'}">{local(d.date).getDate()}</b>

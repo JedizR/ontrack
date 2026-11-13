@@ -9,6 +9,7 @@
 
 <script lang="ts">
   import { onMount, type Component } from 'svelte';
+  import { fade } from 'svelte/transition';
   import Check from '@lucide/svelte/icons/check';
   import Ellipsis from '@lucide/svelte/icons/ellipsis';
   import ChevronRight from '@lucide/svelte/icons/chevron-right';
@@ -26,6 +27,7 @@
   import SwipeRow from '$lib/components/SwipeRow.svelte';
   import Track from '$lib/components/Track.svelte';
   import HeroNumber from '$lib/components/HeroNumber.svelte';
+  import Count from '$lib/components/Count.svelte';
   import WeekStrip from '$lib/components/WeekStrip.svelte';
   import SourceLabel from '$lib/components/SourceLabel.svelte';
   import Facts from '$lib/components/Facts.svelte';
@@ -34,6 +36,7 @@
   import ShakerIcon from '$lib/components/ShakerIcon.svelte';
   import Thumb from '../flows/log/Thumb.svelte';
   import { sync } from '$lib/sync/engine.svelte';
+  import { collapse, dur, haptic, pop } from '$lib/haptics';
   import { session } from '$lib/session.svelte';
   import { sheets } from '$lib/sheets.svelte';
   import { prefs } from '$lib/prefs.svelte';
@@ -143,10 +146,13 @@
     const end = status === 'done' ? t.today.done : t.after.kcalN(num(Math.round(sessionKcal(s, day!.plan.weightKg))));
     return [s.name !== kindOf(s) && kindOf(s), t.after.minN(num(s.minutes)), end];
   };
-  const animate = first;
+  let animate = first;
   onMount(() => { first = false; });
+  // the day's cards are made again when the day in view changes: they rise only on the session's first paint
+  const firstDate = view.date;
+  $effect(() => { if (view.date !== firstDate) animate = false; });
   /** the appear effect for the nth card, on the first paint only */
-  const rise = (i: number) => (animate ? { class: 'appear', style: `--i: ${i}` } : {});
+  const rise = (i: number) => (animate && view.date === firstDate ? { class: 'appear', style: `--i: ${i}` } : {});
 </script>
 
 {#snippet step(label: string, done: boolean, onclick?: () => void, testid?: string)}
@@ -201,8 +207,8 @@
       <button type="button" class="block w-full text-left transition-transform duration-[var(--d-press)] active:scale-[0.98]" aria-describedby="hero-how" aria-haspopup="dialog" onclick={() => (sheets.how = true)} data-testid="hero-open">
         <!-- U1b: corners in the shell's corners nest (48 less the 8 gap is 40); corners facing a sibling take the tile's 24 -->
         <div class="haze rounded-t-sheet rounded-b-md p-6">
-          <HeroNumber value={Math.round(day.eaten.kcal)} caption={t.after.ofKcal(num(day.target))} side={side.side} sideCaption={side.cap} reached={!side.cap} />
-          <div class="mt-4"><Track hero value={day.eaten.kcal} target={day.target} zone={day.zone} label="{num(Math.round(day.eaten.kcal))} {t.after.ofKcal(num(day.target))}" /></div>
+          <HeroNumber scope={view.date} value={Math.round(day.eaten.kcal)} caption={t.after.ofKcal(num(day.target))} side={side.side} sideCaption={side.cap} reached={!side.cap} />
+          <div class="mt-4"><Track hero scope={view.date} value={day.eaten.kcal} target={day.target} zone={day.zone} label="{num(Math.round(day.eaten.kcal))} {t.after.ofKcal(num(day.target))}" /></div>
           <div class="text-caption text-ink-2 mt-3 flex items-center justify-between gap-4">
             <span class="glass text-ink rounded-full px-2.5 py-0.5 font-semibold whitespace-nowrap" data-testid="day-kind">{day.training ? t.today.trainingDay : t.today.restDay}</span>
             <span class="text-right">{t.today.onTrackFrom(num(roundTarget(day.zone[0])))}</span>
@@ -213,9 +219,11 @@
           {#each macros as m (m.key)}
             <!-- the track sits at the bottom of each tile, so the three stay level when a value wraps at large text -->
             <div class="bg-surface-2 flex min-w-0 flex-col rounded-md px-4 pt-3 pb-5 first:rounded-bl-sheet last:rounded-br-sheet" data-testid="macro-{m.key}">
-              <div class="text-caption text-ink-2">{m.label}</div>
-              <div class="text-body num font-semibold">{num(Math.round(m.value))}{' '}<span class="text-caption text-ink-2 block font-medium whitespace-nowrap">{t.after.ofGrams(num(m.target))}</span></div>
-              <div class="mt-auto pt-2"><Track value={m.value} target={m.target} zone={m.zone} label="{m.label} {num(Math.round(m.value))} {t.after.ofGrams(num(m.target))}" /></div>
+              <div class="text-caption text-ink-2 flex items-center gap-1">
+                {m.label}{#key view.date}{#if m.zone && m.value >= m.zone[0] && m.value <= m.zone[1]}<span class="text-success-ink inline-grid" in:pop><Check size={14} strokeWidth={3} aria-hidden="true" /></span>{/if}{/key}
+              </div>
+              <div class="text-body num font-semibold"><Count value={m.value} />{' '}<span class="text-caption text-ink-2 block font-medium whitespace-nowrap">{t.after.ofGrams(num(m.target))}</span></div>
+              <div class="mt-auto pt-2"><Track scope={view.date} value={m.value} target={m.target} zone={m.zone} label="{m.label} {num(Math.round(m.value))} {t.after.ofGrams(num(m.target))}" /></div>
             </div>
           {/each}
         </div>
@@ -223,8 +231,12 @@
       <span id="hero-how" hidden>{t.today.how}</span>
     </Card>
 
+    <!-- U1c: the cards below belong to the day in view. A day picked in the strip replaces them at once, so nothing
+         collapses or slides for a change of day; within a day, the one card and the meals come and go with motion -->
+    {#key view.date}
+    <div class="flex flex-col gap-4" in:fade={{ duration: dur('--d-fade') }}>
     {#if checkinCard}
-      <Card data-testid="checkin-card" {...rise(2)}>
+      <div in:collapse out:collapse={{ leave: true }}><Card data-testid="checkin-card" {...rise(2)}>
         <div class="flex items-center gap-3">
           <div class="min-w-0 flex-1">
             <p class="text-body font-semibold">{t.checkin.cardTitle}</p>
@@ -232,10 +244,10 @@
           </div>
           <Button size="sm" onclick={() => (sheets.checkin = view.today)} data-testid="checkin-open">{t.checkin.open}</Button>
         </div>
-      </Card>
+      </Card></div>
     {:else if easyCard}
       <!-- F10: three calorie dense foods, together about the gap, each added in one tap -->
-      <Card data-testid="easy-card" {...rise(2)}>
+      <div in:collapse out:collapse={{ leave: true }}><Card data-testid="easy-card" {...rise(2)}>
         <p class="text-body num font-semibold">{t.today.easyTitle(num(Math.round(gap)))}</p>
         <p class="text-callout text-ink-2 mt-0.5">{t.today.easyLine}</p>
         <div class="mt-2 -mb-3">
@@ -245,9 +257,9 @@
             </Row>
           {/each}
         </div>
-      </Card>
+      </Card></div>
     {:else if weighCard}
-      <Card data-testid="weigh-card" {...rise(2)}>
+      <div in:collapse out:collapse={{ leave: true }}><Card data-testid="weigh-card" {...rise(2)}>
         <div class="flex items-center gap-3">
           <div class="min-w-0 flex-1">
             <p class="text-body font-semibold">{t.weigh.promptTitle}</p>
@@ -255,20 +267,20 @@
           </div>
           <Button size="sm" onclick={() => weighIn(view.today)} data-testid="weigh-open">{t.weigh.action}</Button>
         </div>
-      </Card>
+      </Card></div>
     {:else if firstCard}
       <!-- SCREENS.md section 4, after onboarding: a true head start (the plan is saved), then the two first habits -->
       {@const tomorrow = view.today === startDay}
-      <Card data-testid="first-day" {...rise(2)}>
+      <div in:collapse out:collapse={{ leave: true }}><Card data-testid="first-day" {...rise(2)}>
         <h2 class="text-body font-semibold">{t.firstDay.title}</h2>
         <ul class="mt-2 -mb-2 flex flex-col">
           {@render step(t.firstDay.saved, true)}
           {@render step(t.firstDay.meal, mealDone, () => (sheets.add = true), 'first-meal')}
           {@render step(tomorrow ? t.firstDay.weighTomorrow : t.firstDay.weighToday, weighDone, tomorrow ? undefined : () => weighIn(view.today), 'first-weigh')}
         </ul>
-      </Card>
+      </Card></div>
     {:else if nothingCard}
-      <Card data-testid="nothing-card" {...rise(2)}>
+      <div in:collapse out:collapse={{ leave: true }}><Card data-testid="nothing-card" {...rise(2)}>
         <div class="flex items-center gap-3">
           <div class="min-w-0 flex-1">
             <p class="text-body font-semibold">{t.today.nothingTitle}</p>
@@ -276,7 +288,7 @@
           </div>
           <Button size="sm" onclick={() => (sheets.add = true)} data-testid="nothing-add">{t.today.nothingAction}</Button>
         </div>
-      </Card>
+      </Card></div>
     {/if}
 
     <Card list aria-label={t.today.training} data-testid="training" {...rise(3)}>
@@ -287,10 +299,10 @@
           {#snippet trailing()}
             <div class="flex flex-none items-center gap-1">
               {#if status}
-                {#if status === 'done'}<Check class="text-success-ink" size={24} strokeWidth={2.5} aria-hidden="true" />{/if}
+                {#if status === 'done'}<span class="text-success-ink inline-grid" in:pop data-testid="session-tick"><Check size={24} strokeWidth={2.5} aria-hidden="true" /></span>{/if}
                 <Button variant="plain" size="sm" onclick={() => clearSessionLog(view.date, s.key)} data-testid="session-undo">{t.today.undo}</Button>
               {:else}
-                <Button size="sm" onclick={() => logSession({ date: view.date, sessionKey: s.key, status: 'done' })} data-testid="session-done">{t.today.done}</Button>
+                <Button size="sm" onclick={() => { haptic(); logSession({ date: view.date, sessionKey: s.key, status: 'done' }); }} data-testid="session-done">{t.today.done}</Button>
                 <button type="button" class="text-ink-2 active:bg-surface-2 -mr-3 grid size-11 flex-none place-items-center rounded-sm transition-colors duration-[var(--d-press)]" aria-label={t.today.more(s.name)} onclick={() => (sheets.session = { date: view.date, key: s.key, name: s.name })} data-testid="session-more">
                   <Ellipsis size={24} strokeWidth={2} />
                 </button>
@@ -345,12 +357,14 @@
 
     <!-- section 6: a finished day counts as complete for the check-in (SCIENCE.md section 10) -->
     {#if closed}
-      <div class="flex items-center gap-3" data-testid="day-finished">
+      <div class="flex items-center gap-3" data-testid="day-finished" in:fade={{ duration: dur('--d-fade') }}>
         <p class="text-callout text-ink-2 min-w-0 flex-1">{t.today.finished}</p>
         <Button variant="plain" size="sm" class="-mr-4" onclick={() => reopenDay(view.date)} data-testid="day-reopen">{t.today.reopen}</Button>
       </div>
     {:else if finishable}
-      <div><Button variant="plain" size="sm" class="-ml-4" onclick={() => closeDay(view.date)} data-testid="day-finish">{t.today.finish}</Button></div>
+      <div in:fade={{ duration: dur('--d-fade') }}><Button variant="plain" size="sm" class="-ml-4" onclick={() => closeDay(view.date)} data-testid="day-finish">{t.today.finish}</Button></div>
     {/if}
+    </div>
+    {/key}
   {/if}
 </section>

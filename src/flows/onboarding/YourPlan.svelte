@@ -47,10 +47,10 @@
   );
 
   // the payoff: the hero counts up from the number the user watched grow (400 ms), then follows each pace tapped
-  const hero = new Tween(untrack(() => shown.last || parts.total), { duration: dur(400), easing: cubicOut });
+  const hero = new Tween(untrack(() => shown.last || parts.total), { duration: dur('--d-count'), easing: cubicOut });
   $effect(() => { hero.target = parts.total; });
   // protein counts up with it on arrival (U1a)
-  const protein = new Tween(0, { duration: dur(400), easing: cubicOut });
+  const protein = new Tween(0, { duration: dur('--d-count'), easing: cubicOut });
   $effect(() => { protein.target = n.proteinG; });
 
   // the pace, live (replaces the Pace screen): only the paces the guardrails allow, with why one is missing

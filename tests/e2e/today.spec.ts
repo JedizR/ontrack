@@ -1,7 +1,7 @@
 // Today and logging without a photo (F3, F5, F6), on the mock backend. "Today" is frozen at 2026-11-11, a Wednesday
 // and a training day for the seeded plan: 2,460 kcal, 2,220 on rest days.
 import { expect, test, type Page } from '@playwright/test';
-import { MEALS, TODAY, fieldFill, open, pickerSave, wheelType } from './helpers';
+import { MEALS, TODAY, fieldFill, open, pickerSave, swipeAt, wheelType } from './helpers';
 
 const hero = (page: Page) => page.getByTestId('hero-value');
 const meals = (page: Page) => page.getByTestId('meal');
@@ -95,20 +95,10 @@ test('a meal opens, edits grams, saves, keeps as a saved meal and deletes with u
   // the Add sheet (taller since B1) must be gone before the swipe, or the swipe lands on it as it slides away
   await expect(page.getByTestId('add-sheet')).toBeHidden();
 
-  // swipe left to delete, with undo
+  // a long swipe left deletes, with undo (U1c: past half the row)
   const row = meals(page).filter({ hasText: 'Snack' });
   const box = (await row.boundingBox())!;
-  await page.evaluate(({ x, y }) => {
-    const el = document.elementFromPoint(x, y)!;
-    const fire = (type: string, cx: number) => {
-      const e = new Event(type, { bubbles: true });
-      Object.assign(e, { touches: type === 'touchend' ? [] : [{ clientX: cx, clientY: y }], changedTouches: [{ clientX: cx, clientY: y }] });
-      el.dispatchEvent(e);
-    };
-    fire('touchstart', x);
-    for (let i = 1; i <= 8; i++) fire('touchmove', x - (160 * i) / 8);
-    fire('touchend', x - 160);
-  }, { x: box.x + box.width - 40, y: box.y + box.height / 2 });
+  await swipeAt(page, -260, { x: box.x + box.width - 40, y: box.y + box.height / 2 });
   await expect(meals(page)).toHaveCount(3);
   await expect(hero(page)).toHaveText('1,455');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Today'); // the swipe deleted, it did not change tab

@@ -27,12 +27,19 @@
      Safari's bar. The selected tab sits on a grey pill, its icon and label violet (U1b, the owner); the pill is 8 inside the
      dock on every side, so the two full radii nest. Unselected tabs are ink-2: their labels are text and need 4.5 to 1. -->
 <div class="fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+12px)] z-30 mx-auto flex max-w-[480px] items-center gap-3 px-4" data-testid="dock">
-  <nav class="glass-bar shadow-float grid h-[var(--dock-h)] flex-1 grid-cols-3 items-center rounded-full px-2" aria-label={t.tabs.label} use:swipe={swipeOpts}>
+  <nav class="glass-bar shadow-float relative grid h-[var(--dock-h)] flex-1 grid-cols-3 items-center rounded-full px-2" aria-label={t.tabs.label} use:swipe={swipeOpts}>
+    <!-- U1c: one grey pill that slides to the tab picked, rather than one per tab switching on and off -->
+    <span
+      class="bg-surface-2 absolute inset-y-2 left-2 w-[calc((100%-var(--s-4))/3)] rounded-full transition-transform duration-[var(--d-ui)] ease-[var(--spring-default)]"
+      style="transform: translateX({tab * 100}%)"
+      aria-hidden="true"
+      data-testid="dock-pill"
+    ></span>
     {#each TABS as item, i (item.label)}
       {@const Icon = item.icon}
       {@const on = tab === i}
       <button
-        class="grid min-h-12 min-w-0 place-items-center content-center gap-0.5 rounded-full transition-[color,background-color,transform] duration-[var(--d-press)] active:scale-[0.97] {on ? 'bg-surface-2 text-accent-ink' : 'text-ink-2'}"
+        class="relative grid min-h-12 min-w-0 place-items-center content-center gap-0.5 rounded-full transition-[color,transform] duration-[var(--d-press)] active:scale-[0.97] {on ? 'text-accent-ink' : 'text-ink-2'}"
         aria-current={on ? 'page' : undefined}
         data-testid="tab-{i}"
         onclick={() => onselect(i as Tab)}

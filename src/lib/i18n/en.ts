@@ -211,6 +211,9 @@ export const en = {
     title: 'Review',
     photo: 'Your meal',
     looking: 'Looking at your meal',
+    // U1c: the wait in words, one step every --d-step; the last stays until the answer comes
+    steps: ['Finding each food', 'Estimating the grams', 'Looking up the food table'],
+    reading: 'Reading what you wrote',
     oil: 'Cooked with oil?',
     oilNone: 'None',
     oilTsp: '1 tsp',

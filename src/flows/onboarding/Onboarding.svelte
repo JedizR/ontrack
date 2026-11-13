@@ -175,7 +175,7 @@
 
 <div class="bg-canvas relative mx-auto min-h-svh w-full max-w-[480px] overflow-x-clip" data-onboarding data-testid="onboarding">
     {#key d.at}
-      <div in:fly={{ x: 32 * dir, duration: dur(240) }}>
+      <div in:fly={{ x: 32 * dir, duration: dur('--d-settle') }}>
         {#if d.at === 'goal'}
           <Step title={t.goal.q} onback={back} progress={prog} testid="step-goal">
             <Choices label={t.goal.q} options={more ? GOALS : GOALS.slice(0, 3)} value={chosenGoal} onpick={pickGoal} />
@@ -276,7 +276,7 @@
           {#if building}
             <Building training={!!d.days} ondone={() => (building = false)} />
           {:else}
-            <div in:fly={{ y: 16, duration: dur(240) }}><YourPlan {d} {year} {set} {back} onsave={save} /></div>
+            <div in:fly={{ y: 16, duration: dur('--d-settle') }}><YourPlan {d} {year} {set} {back} onsave={save} /></div>
           {/if}
         {/if}
       </div>

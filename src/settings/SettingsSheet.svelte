@@ -2,6 +2,8 @@
      the tap; Profile, Goal and pace, Check-in day, The science and Delete account open a page inside the sheet. -->
 <script lang="ts">
   import { untrack } from 'svelte';
+  import { fly } from 'svelte/transition';
+  import { dur } from '$lib/haptics';
   import { toast } from 'svelte-sonner';
   import ChevronRight from '@lucide/svelte/icons/chevron-right';
   import Sheet from '$lib/components/Sheet.svelte';
@@ -120,8 +122,11 @@
   onback={page !== 'main' && !busy ? () => (page = 'main') : undefined}
   backLabel={t.account.back}
 >
+  <!-- U1c: a page slides in from the right, and the main list back in from the left, as iOS pushes and pops -->
+  {#key page}
+  <div in:fly={{ x: page === 'main' ? -24 : 24, duration: dur('--d-settle') }}>
   {#if page === 'profile' || page === 'goal'}
-    {#key page}<PlanPage bind:this={plan} mode={page} done={() => (page = 'main')} />{/key}
+    <PlanPage bind:this={plan} mode={page} done={() => (page = 'main')} />
   {:else if page === 'checkin' && profile}
     <p class="text-callout text-ink-2 mb-2">{t.settings.checkinDayLine}</p>
     <Options label={t.settings.checkinDay} value={profile.checkinWeekday} onchange={(v) => set({ checkinWeekday: v })} options={t.train.weekdays.map((label, value) => ({ value, label }))} testid="set-checkin-day" />
@@ -220,4 +225,6 @@
       <Button variant="danger" size="sm" class="-ml-4" disabled={busy} onclick={() => (page = 'delete')} data-testid="account-delete">{t.account.delete}</Button>
     </div>
   {/if}
+  </div>
+  {/key}
 </Sheet>
