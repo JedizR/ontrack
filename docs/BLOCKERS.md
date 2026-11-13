@@ -32,6 +32,11 @@ Each entry: what is blocked, what Claude tried, the exact steps for you, and wha
 
 Each entry: what to look at (URL or screenshot paths), what to look for, and which milestone it belongs to.
 
+### U3: text hierarchy and cards, on your iPhone
+
+- **Where:** https://ontrack-black.vercel.app in Safari (close and reopen the tab). Before and after: branch `pr-assets`, `u3/`; the research in `/Users/admin/destination/ontrack-design/research/u3-mobbin/NOTES.md`.
+- **Look for:** whether Today, Train, Progress and the sheets now read in a clear first, second and third step; the status card (eyebrow, status, why, action); meta lines at 14; macro figures before their labels. Compare with Airbnb and Shop by feel.
+
 ### U2: corners, transitions, the update prompt and speed, on your iPhone
 
 - **Where:** https://ontrack-black.vercel.app in Safari; close and reopen the tab first so the phone drops its old worker. Videos: branch `pr-assets`, `u2/`.
