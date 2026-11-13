@@ -1,4 +1,5 @@
-<!-- DESIGN.md section 7, Row: a 48 px leading tile or thumbnail, a title, a caption, a trailing number.
+<!-- DESIGN.md section 7, Row: a 48 px leading tile or thumbnail, a title, a caption, a trailing number with its unit in
+     Caption (U1b: calories always say kcal).
      Rows in a list card are divided by hairlines inset to the text. With onclick the row is a button. -->
 <script lang="ts">
   import type { Snippet } from 'svelte';
@@ -7,6 +8,7 @@
     title,
     caption,
     value,
+    unit,
     leading,
     trailing,
     onclick,
@@ -17,6 +19,8 @@
     caption?: string | Snippet;
     /** trailing number, already formatted */
     value?: string;
+    /** the number's unit, set smaller beside it (kcal) */
+    unit?: string;
     /** the 48 px tile or thumbnail */
     leading?: Snippet;
     /** a trailing control instead of a number */
@@ -42,7 +46,7 @@
         <div class="text-caption text-ink-2">{caption}</div>
       {/if}
     </div>
-    {#if value !== undefined}<div class="text-body num flex-none font-semibold">{value}</div>{/if}
+    {#if value !== undefined}<div class="text-body num flex-none font-semibold">{value}{#if unit}<span class="text-caption text-ink-2 font-medium">{' '}{unit}</span>{/if}</div>{/if}
     {@render trailing?.()}
   </div>
 {/snippet}

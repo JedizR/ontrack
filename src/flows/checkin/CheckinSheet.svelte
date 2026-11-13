@@ -114,7 +114,7 @@
         <p class="text-body text-ink-2 pb-0.5" data-testid="checkin-target-rate">{t.checkin.target(num(targetRate, 1))}</p>
       </div>
       <div class="mt-4">
-        <Row title={t.checkin.intake} caption={t.checkin.target(num(Math.round(s.meanTarget)))} value={s.meanIntake == null ? t.plan.noneYet : `${num(Math.round(s.meanIntake))} ${t.after.kcal}`} testid="checkin-intake" />
+        <Row title={t.checkin.intake} caption={t.checkin.target(num(Math.round(s.meanTarget)))} value={s.meanIntake == null ? t.plan.noneYet : num(Math.round(s.meanIntake))} unit={s.meanIntake == null ? undefined : t.after.kcal} testid="checkin-intake" />
         <Row title={t.checkin.days} value={t.checkin.of(num(s.completeDays), num(s.days))} testid="checkin-days" />
         <Row title={t.checkin.weighIns} value={num(s.weighIns)} testid="checkin-weighins" />
       </div>

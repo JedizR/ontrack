@@ -5,6 +5,8 @@
   import Sheet from '$lib/components/Sheet.svelte';
   import Button from '$lib/components/Button.svelte';
   import Chip from '$lib/components/Chip.svelte';
+  import Segmented from '$lib/components/Segmented.svelte';
+  import Facts from '$lib/components/Facts.svelte';
   import Stepper from '$lib/components/Stepper.svelte';
   import { toast } from 'svelte-sonner';
   import { changeProgram, undoToast } from '$lib/actions';
@@ -108,17 +110,13 @@
         <span class={label}>{t.train.minutes}</span>
         <Stepper bind:value={s.minutes} min={5} max={MAX.minutes} step={5} label={t.train.minutes} />
       </div>
-      <!-- chips, not a segmented control, as in onboarding: three options clip in one at the largest text on the SE -->
+      <!-- SCREENS.md section 8: a three way segmented control (U1b); the longest label fits at the largest text on the SE -->
       <div class="flex flex-col gap-3">
         <span class={label}>{t.train.intensity}</span>
-        <div class="flex flex-wrap gap-2" role="group" aria-label={t.train.intensity}>
-          {#each INTENSITIES as i (i)}
-            <Chip selected={s.intensity === i} onclick={() => (s.intensity = i)}>{t.train.intensities[i]}</Chip>
-          {/each}
-        </div>
+        <Segmented bind:value={s.intensity} label={t.train.intensity} options={INTENSITIES.map((i) => ({ value: i, label: t.train.intensities[i] }))} />
         <p class="text-caption text-ink-2">{t.train.intensityLines[s.intensity]}</p>
       </div>
-      <p class="text-heading" data-testid="session-kcal">{t.train.sessionAdds(num(Math.round(sessionKcal(s, weightKg))))}</p>
+      <p class="text-body font-semibold" data-testid="session-kcal">{t.train.sessionAdds(num(Math.round(sessionKcal(s, weightKg))))}</p>
 
       <div>
         <h3 class="text-heading">{t.train.exercises}</h3>
@@ -126,7 +124,7 @@
           <div class="border-line border-t py-3 first-of-type:border-t-0" data-testid="session-exercise">
             <button type="button" class="active:bg-surface-2 -mx-6 flex w-[calc(100%+var(--inset)*2)] flex-col items-start px-6 py-1 text-left transition-colors duration-[var(--d-press)]" aria-expanded={opened === i} onclick={() => (opened = opened === i ? null : i)}>
               <span class="text-body line-clamp-2 font-semibold">{LIBRARY[e.exerciseId]?.name ?? e.exerciseId}</span>
-              <span class="text-caption text-ink-2">{t.train.exerciseLine(num(e.sets), num(e.repsMin), num(e.repsMax))}</span>
+              <span class="text-caption text-ink-2"><Facts facts={[t.train.sets(num(e.sets)), t.train.reps(num(e.repsMin), num(e.repsMax))]} /></span>
             </button>
             {#if opened === i}
               <div class="mt-2 flex flex-col gap-2">
@@ -147,12 +145,12 @@
             {/if}
           </div>
         {:else}
-          <p class="text-callout text-ink-2 mt-1">{t.train.noneListed}</p>
+          <p class="text-body text-ink-2 mt-1">{t.train.noneListed}</p>
         {/each}
         <Button variant="plain" class="-ml-5 mt-1" disabled={(s.exercises?.length ?? 0) >= MAX.exercises} onclick={() => (picking = true)} data-testid="exercise-add">{t.train.addExercise}</Button>
       </div>
       {#if !editing?.isNew}
-        <div><Button variant="danger" onclick={remove} data-testid="session-delete">{t.train.deleteSession}</Button></div>
+        <div><Button variant="danger" class="-ml-5" onclick={remove} data-testid="session-delete">{t.train.deleteSession}</Button></div>
       {/if}
     </div>
   {/if}

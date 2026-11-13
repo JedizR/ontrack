@@ -47,6 +47,7 @@
   --color-line: var(--line);
   --color-line-strong: var(--line-strong);
   --color-track: var(--track-bg);
+  --color-control-edge: var(--control-edge);
   --color-surround: var(--surround);
   --color-attention: var(--attention);
   --color-attention-soft: var(--attention-soft);
@@ -185,6 +186,38 @@
   -webkit-backdrop-filter: var(--blur-bar);
   backdrop-filter: var(--blur-bar);
   @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { background: var(--bar-solid); }
+}
+/* U1b: content that scrolls under a bar fades into the bar's colour (--fade) over --fade-h, instead of meeting a hard
+   edge. fade-under hangs below a header and shows with data-scrolled; fade-over sits above a pinned footer. The bar's
+   own colour going clear, as the wheel's mask: not one of section 6's gradients, and never on a button. */
+@utility fade-under {
+  &::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    top: 100%;
+    height: var(--fade-h);
+    background: linear-gradient(var(--fade, var(--canvas)), transparent);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity var(--d-ui) var(--ease-out);
+  }
+  &[data-scrolled]::after { opacity: 1; }
+}
+@utility fade-over {
+  &::before {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    bottom: 100%;
+    height: var(--fade-h);
+    background: linear-gradient(transparent, var(--fade, var(--canvas)));
+    pointer-events: none;
+  }
+}
+/* U1b, the owner's request: the screen's one featured card (the Add sheet's Photo) */
+@utility feature {
+  background: var(--grad-feature);
 }
 /* Fade in and up once, on the first paint of a session (Today's cards). Reduced motion shows the end state. */
 @utility appear {

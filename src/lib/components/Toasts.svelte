@@ -14,7 +14,8 @@
   toastOptions={{
     unstyled: true,
     classes: {
-      toast: 'bg-toast text-toast-ink shadow-float flex w-full items-center gap-3 rounded-control py-2 pr-2 pl-5 font-sans min-h-14',
+      // U1b: radius 24, so Undo (radius 16) 8 inside it nests
+      toast: 'bg-toast text-toast-ink shadow-float flex w-full items-center gap-3 rounded-md py-2 pr-2 pl-5 font-sans min-h-14',
       title: 'text-callout font-semibold line-clamp-1',
       description: 'text-caption',
       actionButton: 'bg-toast-ink text-toast text-callout ml-auto min-h-[var(--tap)] flex-none rounded-sm px-4 font-semibold active:opacity-80',

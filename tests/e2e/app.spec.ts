@@ -165,7 +165,9 @@ test('the theme and text size change from the gallery and are remembered', async
 // D2's gate: every button is flat. No gradient, no bevel and no glow on a button, the face that fills it (Button's inner
 // span) or their ::before and ::after; a soft drop that falls below the button, or a hairline ring, is all the depth a
 // button may have. Smaller things inside a button are content, not its face: that is how Today's hero card, a button
-// holding the screen's one haze panel, passes (DESIGN.md section 6).
+// holding the screen's one haze panel, passes (DESIGN.md section 6). U1b, the owner's request: the screen's one featured
+// card (`data-featured`, the Add sheet's Photo) may fill with the feature gradient, and nothing else; a second featured
+// card on the screen fails, and so does a bevel or glow on it.
 const unflat = (page: import('@playwright/test').Page) => page.evaluate(() => {
   const layers = (v: string) => (v === 'none' ? [] : v.split(/,(?![^(]*\))/));
   const glow = (layer: string) => {
@@ -179,6 +181,8 @@ const unflat = (page: import('@playwright/test').Page) => page.evaluate(() => {
   };
   const bad: string[] = [];
   let checked = 0;
+  const featured = [...document.querySelectorAll<HTMLElement>('[data-featured]')].filter((e) => e.getBoundingClientRect().width);
+  if (featured.length > 1) bad.push(`${featured.length} featured cards`);
   for (const btn of document.querySelectorAll<HTMLElement>('button, [role="button"]')) {
     const box = btn.getBoundingClientRect();
     if (!box.width || !box.height) continue;
@@ -190,7 +194,8 @@ const unflat = (page: import('@playwright/test').Page) => page.evaluate(() => {
     for (const f of faces) for (const pseudo of [null, '::before', '::after']) {
       const cs = getComputedStyle(f, pseudo);
       if (pseudo && cs.content === 'none') continue;
-      if (cs.backgroundImage !== 'none' || cs.textShadow !== 'none' || layers(cs.boxShadow).some(glow))
+      const fill = cs.backgroundImage !== 'none' && !(f === featured[0] && !pseudo && /^linear-gradient|^radial-gradient/.test(cs.backgroundImage));
+      if (fill || cs.textShadow !== 'none' || layers(cs.boxShadow).some(glow))
         bad.push(`${btn.getAttribute('aria-label') ?? btn.textContent?.trim().slice(0, 30)}${pseudo ?? ''}: ${cs.backgroundImage} ${cs.boxShadow}`);
     }
   }
@@ -202,9 +207,10 @@ test('no gradient, bevel or glow on any button in the gallery, on Today and in t
   await expect(page.locator('[data-section="buttons"]')).toBeVisible();
   // the check itself catches D1's 3D pill, a violet glow and a bevel drawn in a pseudo-element, and lets a soft drop through
   await page.evaluate(() => {
-    const add = (style: string, label: string, before = '') => {
+    const add = (style: string, label: string, before = '', featured = false) => {
       const b = document.createElement('button');
       b.setAttribute('aria-label', label);
+      if (featured) b.dataset.featured = '';
       b.style.cssText = `width: 80px; height: 44px; ${style}`;
       if (before) {
         b.className = label.replace(/ /g, '-');
@@ -217,9 +223,13 @@ test('no gradient, bevel or glow on any button in the gallery, on Today and in t
     add('box-shadow: 0 0 24px rgba(98, 98, 254, 0.6)', 'probe glow');
     add('', 'probe rim', 'position: absolute; inset: 0; background: linear-gradient(#fff, transparent)');
     add('background: #121214; box-shadow: 0 6px 14px rgba(18, 18, 20, 0.12)', 'probe flat');
+    add('background: linear-gradient(#5b4ff5, #381ac9)', 'probe featured', '', true);
   });
   const probes = (await unflat(page)).bad.filter((b) => b.startsWith('probe')).map((b) => b.split(': ')[0]);
   expect(probes).toEqual(['probe gradient', 'probe bevel', 'probe glow', 'probe rim::before']);
+  // a second featured card on the screen is one too many
+  await page.evaluate(() => document.querySelector('[aria-label="probe flat"]')!.setAttribute('data-featured', ''));
+  expect((await unflat(page)).bad).toContain('2 featured cards');
   await page.reload();
   await expect(page.locator('[data-section="buttons"]')).toBeVisible();
   const gallery = await unflat(page);
@@ -244,4 +254,52 @@ test('no gradient, bevel or glow on any button on the landing page', async ({ pa
   const landing = await unflat(page);
   expect(landing.bad).toEqual([]);
   expect(landing.checked).toBeGreaterThanOrEqual(6);
+});
+
+// U1b, the owner's corners (feedback 2, 5, 8): a filled shape 8 or less inside a filled shape's corner, the same gap on
+// both sides, has the outer radius less the gap, so the two curves run parallel (DESIGN.md section 6).
+const unnested = (page: import('@playwright/test').Page) => page.evaluate(() => {
+  const filled = (e: Element) => {
+    const cs = getComputedStyle(e);
+    const r = e.getBoundingClientRect();
+    return r.width > 0 && r.height > 0 && cs.visibility !== 'hidden' && (cs.backgroundImage !== 'none' || !/rgba\([^)]*, 0\)|transparent/.test(cs.backgroundColor));
+  };
+  const radius = (e: Element, corner: string) => {
+    const r = e.getBoundingClientRect();
+    return Math.min(parseFloat(getComputedStyle(e).getPropertyValue(`border-${corner}-radius`)) || 0, r.width / 2, r.height / 2);
+  };
+  const bad: string[] = [];
+  let checked = 0;
+  const shapes = [...document.querySelectorAll('body *')].filter(filled);
+  for (const outer of shapes) {
+    const o = outer.getBoundingClientRect();
+    for (const inner of shapes) {
+      if (inner === outer || !outer.contains(inner)) continue;
+      const i = inner.getBoundingClientRect();
+      for (const [corner, gx, gy] of [['top-left', i.left - o.left, i.top - o.top], ['top-right', o.right - i.right, i.top - o.top], ['bottom-left', i.left - o.left, o.bottom - i.bottom], ['bottom-right', o.right - i.right, o.bottom - i.bottom]] as const) {
+        const R = radius(outer, corner);
+        if (R < 12 || gx < 0 || gx > 10 || Math.abs(gx - gy) > 1) continue; // 8, and a 1 px edge or two
+        checked++;
+        const want = Math.max(0, R - gx);
+        const got = radius(inner, corner);
+        if (Math.abs(got - want) > 1.5) bad.push(`${inner.getAttribute('data-testid') ?? inner.className.toString().slice(0, 40)} ${corner}: ${got} in ${R} at ${gx}, want ${want}`);
+      }
+    }
+  }
+  return { checked, bad };
+});
+
+test('corners nest on Today and Progress', async ({ page }) => {
+  await open(page, '/', MEALS);
+  await expect(page.getByTestId('hero')).toBeVisible();
+  // the check catches the stat tiles as the owner saw them: radius 24, 8 inside a radius 48 card
+  await page.evaluate(() => document.body.insertAdjacentHTML('beforeend', '<div data-testid="probe-card" style="position:absolute;top:0;width:200px;height:200px;padding:8px;border-radius:48px;background:#fff"><div data-testid="probe-tile" style="height:100%;border-radius:24px;background:#eee"></div></div>'));
+  expect((await unnested(page)).bad.filter((b) => b.startsWith('probe'))).toHaveLength(4);
+  await page.getByTestId('probe-card').evaluate((e) => e.remove());
+  const today = await unnested(page);
+  expect(today.bad).toEqual([]);
+  expect(today.checked).toBeGreaterThanOrEqual(5); // the haze's two top corners, the tiles' two outer ones, the dock's pill
+  await page.getByTestId('tab-2').click();
+  await expect(page.getByTestId('progress-weight')).toBeVisible();
+  expect((await unnested(page)).bad).toEqual([]);
 });

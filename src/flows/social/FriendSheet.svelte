@@ -14,7 +14,7 @@
   import type { Friend } from '$lib/backend/types';
   import type { Program } from '../../../shared/records';
   import Avatar from './Avatar.svelte';
-  import Facts from './Facts.svelte';
+  import Facts from '$lib/components/Facts.svelte';
 
   let { friend = $bindable(null) }: { friend?: Friend | null } = $props();
 
@@ -37,7 +37,7 @@
 
   const sessions = $derived([...(program?.sessions ?? [])].sort((a, z) => a.weekday - z.weekday));
   // "Upper A", "Strength", "60 min" as three facts; the name only when it is not the kind's own
-  const line = (s: Program['sessions'][number]) => [...(s.name === t.train.types[s.type] ? [] : [s.name]), t.train.types[s.type], t.social.minutes(num(s.minutes))];
+  const line = (s: Program['sessions'][number]) => [...(s.name === t.train.types[s.type] ? [] : [s.name]), t.train.types[s.type], t.after.minN(num(s.minutes))];
 
   async function remove() {
     const f = friend; // the sheet may close while the request runs

@@ -4,6 +4,7 @@
 <script lang="ts">
   import { untrack } from 'svelte';
   import Sheet from '$lib/components/Sheet.svelte';
+  import Facts from '$lib/components/Facts.svelte';
   import Button from '$lib/components/Button.svelte';
   import { sheets } from '$lib/sheets.svelte';
   import { db } from '$lib/db/store.svelte';
@@ -81,7 +82,7 @@
 
 {#snippet footer()}
   <div class="flex items-center gap-4">
-    <p class="text-body num min-w-0 flex-1 font-semibold" data-testid="meal-total">{t.meal.total(num(Math.round(sum.kcal)), num(Math.round(sum.protein)))}</p>
+    <p class="text-body num min-w-0 flex-1 font-semibold" data-testid="meal-total"><Facts facts={[t.after.kcalN(num(Math.round(sum.kcal))), t.after.proteinN(num(Math.round(sum.protein)))]} rest="text-ink-2" /></p>
     <Button variant="primary" size="lg" disabled={!items.length} onclick={save} data-testid="meal-save">{t.meal.save}</Button>
   </div>
 {/snippet}

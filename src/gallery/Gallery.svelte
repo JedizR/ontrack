@@ -20,6 +20,7 @@
   import Button from '$lib/components/Button.svelte';
   import Card from '$lib/components/Card.svelte';
   import Row from '$lib/components/Row.svelte';
+  import Facts from '$lib/components/Facts.svelte';
   import Chip from '$lib/components/Chip.svelte';
   import Segmented from '$lib/components/Segmented.svelte';
   import Stepper from '$lib/components/Stepper.svelte';
@@ -139,7 +140,7 @@
       <section data-section="hero">
         {@render heading('Hero number and card')}
         <Card hero>
-          <div class="haze rounded-sheet p-4">
+          <div class="haze rounded-sheet p-6">
             <HeroNumber value={eaten} caption={t.after.ofKcal(num(target))} side={side.side} sideCaption={side.cap} reached={!side.cap} />
             <div class="mt-4"><Track hero value={eaten} {target} {zone} label="{num(eaten)} {t.after.ofKcal(num(target))}" /></div>
           </div>
@@ -150,10 +151,13 @@
         </div>
       </section>
 
+      {#snippet estimate()}<SourceLabel source="estimate" />{/snippet}
+      {#snippet database()}<SourceLabel source="database" />{/snippet}
       <section data-section="rows">
         {@render heading('Card and rows')}
         <Card list>
-          <Row title="Push day" caption={t.today.session('Strength', '60', '240')} wrap>
+          <Row title="Push day" wrap>
+      {#snippet caption()}<Facts facts={['Strength', t.after.minN('60'), t.after.kcalN('240')]} />{/snippet}
             {#snippet leading()}<div class="tile grid size-full place-items-center"><TrainIcon /></div>{/snippet}
             {#snippet trailing()}<Button size="sm">{t.today.done}</Button>{/snippet}
           </Row>
@@ -161,18 +165,19 @@
         {@render note('Tappable rows, photo or a tile for how the meal was logged')}
         <Card list>
           {#each MEALS.slice(0, 2) as m (m.name)}
-            <Row title={m.name} value={num(m.kcal)} onclick={() => (sheetOpen = true)}>
+            {#snippet src()}<SourceLabel source={m.source} />{/snippet}
+            <Row title={m.name} value={num(m.kcal)} unit={t.after.kcal} onclick={() => (sheetOpen = true)}>
               {#snippet leading()}<img src={m.photo} alt="" class="size-full object-cover" />{/snippet}
-              {#snippet caption()}{m.time}, <SourceLabel source={m.source} />{/snippet}
+              {#snippet caption()}<Facts facts={[m.time, src]} />{/snippet}
             </Row>
           {/each}
-          <Row title="Quick add" value="350" onclick={() => (sheetOpen = true)}>
+          <Row title="Quick add" value="350" unit={t.after.kcal} onclick={() => (sheetOpen = true)}>
             {#snippet leading()}{@render tile(Hash)}{/snippet}
-            {#snippet caption()}15:30, <SourceLabel source="estimate" />{/snippet}
+            {#snippet caption()}<Facts facts={['15:30', estimate]} />{/snippet}
           </Row>
-          <Row title="Greek yoghurt" value="146" onclick={() => (sheetOpen = true)}>
+          <Row title="Greek yoghurt" value="146" unit={t.after.kcal} onclick={() => (sheetOpen = true)}>
             {#snippet leading()}{@render tile(Search)}{/snippet}
-            {#snippet caption()}16:10, <SourceLabel source="database" />{/snippet}
+            {#snippet caption()}<Facts facts={['16:10', database]} />{/snippet}
           </Row>
         </Card>
       </section>

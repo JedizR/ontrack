@@ -20,7 +20,7 @@ test('build a week: add a session, list exercises, see the analysis with its sou
   const sheet = page.getByTestId('train-session-sheet');
   await sheet.getByTestId('session-name').fill('Run');
   await sheet.getByRole('button', { name: 'Cardio' }).click();
-  await sheet.getByRole('button', { name: 'Hard' }).click();
+  await sheet.getByRole('radio', { name: 'Hard' }).click();
   await sheet.getByRole('button', { name: 'Less Minutes a session' }).click();
   await expect(sheet.getByTestId('session-kcal')).toHaveText('Adds 440 kcal to the day'); // (9 - 1) MET x 60 kg x 55 min
   await sheet.getByTestId('session-save').click();
@@ -81,7 +81,7 @@ test('a template replaces the program from tomorrow; today and the days before k
   // today, Wednesday, keeps its session and target; Tuesday, now Lower A, stays a rest day
   await page.getByTestId('tab-0').click();
   await expect(kcalOf(page)).toHaveText('of 2,460 kcal');
-  await expect(page.getByTestId('training')).toContainText('60 min. Adds 240 kcal');
+  await expect(page.getByTestId('training')).toContainText('60 min, 240 kcal');
   await page.getByTestId('week').getByRole('button', { name: /Tuesday, November 10/ }).click();
   await expect(kcalOf(page)).toHaveText('of 2,220 kcal');
   await expect(page.getByTestId('day-kind')).toHaveText('Rest day');

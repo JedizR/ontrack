@@ -14,7 +14,7 @@
     requests = 0,
   }: { title: string; sync?: SyncState; signedIn?: boolean; onaccount?: () => void; onfriends?: () => void; requests?: number } = $props();
 
-  // a hairline appears once content scrolls under the header
+  // once content scrolls under the header it fades into the canvas below it (U1b), never a hard edge
   let scrolled = $state(false);
   const circle = 'bg-surface text-ink group-active:bg-surface-2 grid size-11 place-items-center rounded-full transition-[background-color,transform] duration-[var(--d-press)] group-active:scale-[0.97]';
 </script>
@@ -22,7 +22,8 @@
 <svelte:window onscroll={() => (scrolled = scrollY > 4)} />
 
 <header
-  class="sticky top-0 z-30 px-4 pt-[env(safe-area-inset-top)] transition-[box-shadow,background-color] duration-[var(--d-ui)] bg-canvas {scrolled ? 'shadow-[0_1px_0_var(--line)]' : ''}"
+  class="fade-under bg-canvas sticky top-0 z-30 px-4 pt-[env(safe-area-inset-top)]"
+  data-scrolled={scrolled || undefined}
   data-testid="header"
 >
   <div class="flex h-[var(--header-h)] items-center gap-3">

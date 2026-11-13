@@ -17,6 +17,7 @@
   import { prefs } from '$lib/prefs.svelte';
   import Sheet from '$lib/components/Sheet.svelte';
   import Row from '$lib/components/Row.svelte';
+  import Facts from '$lib/components/Facts.svelte';
   import { sheets } from '$lib/sheets.svelte';
   import { view } from '$lib/view.svelte';
   import { db } from '$lib/db/store.svelte';
@@ -116,22 +117,24 @@
     {#if supplements.length}
       <h3 class="text-heading">{t.supplement.section}</h3>
       <div data-testid="supplements">
+        {#snippet typical()}<SourceLabel source="typical" />{/snippet}
         {#each supplements as { id, data: s } (id)}
-          <Row title={s.name} value={lastKcal(id, s)} onclick={() => supplement(id)} testid="supplement">
-            {#snippet caption()}{t.supplement.amount(num(s.lastScoops, 1), !!s.lastMix && !noCalories(s))}{#if s.typical}, <SourceLabel source="typical" />{/if}{/snippet}
+          <Row title={s.name} value={lastKcal(id, s)} unit={t.after.kcal} onclick={() => supplement(id)} testid="supplement">
+            {#snippet caption()}<Facts facts={[t.supplement.amount(num(s.lastScoops, 1), !!s.lastMix && !noCalories(s)), s.typical && typical]} />{/snippet}
             {#snippet leading()}<div class="bg-surface-2 text-ink-2 grid size-full place-items-center"><ShakerIcon /></div>{/snippet}
           </Row>
         {/each}
       </div>
       <Button variant="plain" size="sm" class="-ml-4 mb-6" onclick={() => supplement(null)} data-testid="supplement-new">{t.supplement.setup}</Button>
     {/if}
-    <!-- Photo is the sheet's featured way: one solid violet card, as OneFin's featured blog card, flat. The others are grey
-         cards holding white icon tiles with a lavender edge (the integrations tiles), Scan first (B1) -->
+    <!-- Photo is the sheet's featured way: one violet card, as OneFin's featured blog card, filled with the sheet's one
+         gradient (the owner, U1b), flat. The others are grey cards holding white icon tiles with a lavender edge (the
+         integrations tiles), Scan first (B1) -->
     <div class="grid grid-cols-2 gap-3">
       {#each WAYS as w (w.key)}
         {@const Icon = w.icon}
         {@const main = w.key === 'photo'}
-        <button type="button" class="{main ? 'bg-accent text-on-accent active:bg-accent-press col-span-2 min-h-20 flex-row items-center' : 'bg-surface-2 active:bg-surface-3 min-h-26 flex-col items-start justify-between'} flex gap-3 rounded-md p-4 text-left transition-[transform,background-color] duration-[var(--d-press)] active:scale-[0.97]" onclick={() => go(w.key)} data-testid="add-{w.key}">
+        <button type="button" class="{main ? 'feature text-on-accent col-span-2 min-h-20 flex-row items-center active:brightness-90' : 'bg-surface-2 active:bg-surface-3 min-h-26 flex-col items-start justify-between'} flex gap-3 rounded-md p-4 text-left transition-[transform,background-color,filter] duration-[var(--d-press)] active:scale-[0.97]" onclick={() => go(w.key)} data-featured={main || undefined} data-testid="add-{w.key}">
           <span class="{main ? 'bg-on-accent/20' : 'bg-surface text-accent-ink ring-accent-soft ring-1'} grid size-10 place-items-center rounded-sm"><Icon size={22} strokeWidth={2} /></span>
           <span>
             <span class="text-body block font-semibold">{w.label}</span>
@@ -156,7 +159,7 @@
         {#each recent as { id, data: m } (id)}
           {@const title = titleOf(m.title, m.items)}
           {@const Icon = ICON[m.method]}
-          <Row {title} value={kcalOf(m.items)}>
+          <Row {title} value={kcalOf(m.items)} unit={t.after.kcal}>
             {#snippet leading()}<div class="bg-surface-2 text-ink-2 grid size-full place-items-center"><Icon size={24} strokeWidth={2} /></div>{/snippet}
             {#snippet trailing()}{@render again(t.add.again(title), () => logged(relog(m), title))}{/snippet}
           </Row>
@@ -170,7 +173,7 @@
       <h3 class="text-heading mt-8">{t.add.saved}</h3>
       <div data-testid="saved">
         {#each saved as { id, data: s } (id)}
-          <Row title={s.title} value={kcalOf(s.items)}>
+          <Row title={s.title} value={kcalOf(s.items)} unit={t.after.kcal}>
             {#snippet leading()}<div class="bg-surface-2 text-ink-2 grid size-full place-items-center"><Bookmark size={24} strokeWidth={2} /></div>{/snippet}
             {#snippet trailing()}{@render again(t.add.again(s.title), () => logged(logSaved(id, view.date, stampOn(view.date)), s.title))}{/snippet}
           </Row>

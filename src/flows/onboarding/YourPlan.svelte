@@ -127,13 +127,14 @@
 
     <!-- the screen's hero: the target on the haze panel, protein on a grey stat tile beneath, as the "Withdraw" card -->
     <Card hero data-testid="plan-hero">
-      <div class="haze rounded-sheet p-4">
+      <!-- U1b: corners in the shell's corners are 40 (48 less the 8 gap), corners facing each other 24 -->
+      <div class="haze rounded-t-sheet rounded-b-md p-6">
         <p class="text-hero" aria-hidden="true">{num(Math.round(hero.current))}</p>
         <p class="sr-only" data-testid="plan-kcal">{num(parts.total)}</p>
         <p class="text-caption text-ink-2 mt-1">{matched ? t.after.kcalTraining : t.after.kcalDay}</p>
         {#if matched}<p class="text-lead num mt-3" data-testid="plan-rest">{t.plan.onRest(num(rest))}</p>{/if}
       </div>
-      <div class="bg-surface-2 appear mt-2 rounded-lg p-4" style="--i: 2">
+      <div class="bg-surface-2 appear rounded-t-md rounded-b-sheet mt-2 p-6" style="--i: 2">
         <p class="text-display" aria-hidden="true">{num(Math.round(protein.current))}</p>
         <p class="sr-only" data-testid="plan-protein">{num(n.proteinG)}</p>
         <p class="text-caption text-ink-2 mt-1">{t.after.proteinDay}</p>

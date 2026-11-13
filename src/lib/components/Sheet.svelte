@@ -1,5 +1,5 @@
 <!-- DESIGN.md section 7, Sheet (vaul Drawer): grabber, title in Heading beside a 44 close button, a back chevron when the
-     sheet has a step, content that scrolls under a hairline, the main action pinned to the bottom above the safe area.
+     sheet has a step, content that fades out under the header and above the footer (U1b), the main action pinned to the bottom above the safe area.
      Opaque: no glass in the content layer. Opens to content height, at most 92 percent of the visible height. A long
      title (a scanned product's name) wraps to a second line. -->
 <script lang="ts">
@@ -44,7 +44,7 @@
 <!-- repositionInputs off: on iOS it offsets the sheet by the keyboard height while iOS also pans the viewport -->
 <Drawer.Root bind:open shouldScaleBackground={false} repositionInputs={false} onOpenChange={(o) => { if (!o) onclose?.(); }}>
   <Drawer.Content class={Z[layer]} overlayClass={Z[layer]} data-testid={testid}>
-    <div class="flex items-center gap-1 pt-2 pr-3 pb-1 transition-shadow duration-[var(--d-ui)] {onback ? 'pl-3' : 'pl-6'} {scrolled ? 'shadow-[0_1px_0_var(--line)]' : ''}">
+    <div class="fade-under relative z-10 flex items-center gap-1 pt-2 pr-3 pb-1 [--fade:var(--surface)] {onback ? 'pl-3' : 'pl-6'}" data-scrolled={scrolled || undefined}>
       {#if onback}
         <button class="{icon} text-ink" aria-label={backLabel} onclick={onback} data-testid="sheet-back"><ChevronLeft size={24} strokeWidth={2} /></button>
       {/if}
@@ -62,7 +62,7 @@
       {@render children()}
     </div>
     {#if footer}
-      <div class="border-line border-t px-6 pt-3 pb-[max(16px,env(safe-area-inset-bottom))]">
+      <div class="fade-over relative px-6 pt-3 pb-[max(16px,env(safe-area-inset-bottom))] [--fade:var(--surface)]">
         {@render footer()}
       </div>
     {/if}

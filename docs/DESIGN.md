@@ -68,8 +68,8 @@ Two themes, same structure. Light is OneFin's light sheets, dark is its dark sec
 | --- | --- | --- |
 | Page | `--canvas` | The background of every screen. Safari tints its toolbars from it |
 | Cards and sheets | `--surface` | One level above the canvas |
-| Controls | `--surface-2`, `--surface-3` | Neutral buttons, inputs, chips, the wheel band, pressed states |
-| Text | `--ink`, `--ink-2`, `--ink-3` | Primary, secondary, and tertiary for large or non essential text only |
+| Controls | `--surface-2`, `--surface-3`, `--control-edge` | Neutral buttons, inputs, chips, the wheel band, pressed states. `--control-edge` is the 3 to 1 mark of a control known only by its shape: the switch's off track |
+| Text | `--ink`, `--ink-2`, `--ink-3` | Primary, secondary, and a third step for the second fact on a line (U1b: 4.5 to 1 on the page and cards) |
 | Edges | `--line`, `--line-strong` | Hairlines inside a card, the zone on a track |
 | Action | `--action` with `--on-action`, pressed `--action-press` | The flat ink pill (white on dark): the primary button, the stepper's keys and the dock's plus. `--shadow-action` is its soft drop |
 | Brand | `--accent` (fills), `--accent-ink` (words) and `--progress` (progress fills, lighter in dark to pass 3 to 1 on the empty track) with `--on-accent` | Violet icon tiles, links and highlighted words, progress (tracks, the onboarding bar, the trend line, the week bars), the one featured card on a screen, count badges (friend requests on the map button) and the avatar ring on map pins (S1b). Pressed `--accent-press` |
@@ -82,11 +82,12 @@ Two themes, same structure. Light is OneFin's light sheets, dark is its dark sec
 
 Rules:
 1. **Ink means act, violet is the brand, green means reached.** At most one ink primary pill on a screen or sheet, plus the dock's plus. Violet only in the brand uses above, with at most one solid violet featured card on a screen. Green only for a reached target.
-2. Selected chips, segments and choice cards are ink, as OneFin's selected option is black. Switches are ink when on.
+2. Selected chips, segments, choice cards and the week's day in view are ink, as OneFin's selected option is black. Switches are ink when on. Today, when another day is in view, keeps an ink ring.
 3. Progress is violet until it reaches its zone, then green. Over the zone it returns to violet.
-4. At most one gradient per screen, on its hero: the haze panel (Today, Your plan, Progress). Never on a button, a row, a chip or text. The landing page has its own gradients (section 13).
+4. At most one gradient per screen, on its hero: the haze panel (Today, Your plan, Progress). A sheet's one featured card fills with `--grad-feature` (the owner, U1b: the Add sheet's Photo, the supplement setup's Scan the tub). Never on any other button, a row, a chip or text. The landing page has its own gradients (section 13). Scroll edge fades (section 6) are a bar's colour going clear, not a gradient.
 5. Macros are not colour coded. They are told apart by label and position.
 6. Green on a light surface is a fill, never small text: words use `--success-ink`.
+7. **Contrast for controls (U1b, WCAG 1.4.11).** What identifies a control or shows its state has 3 to 1 against what is next to it, in both themes: a selected fill against the page, card or track; the switch's tracks and knob; the dock's selected tab on its pill; the stepper's keys. A labelled button is known by its label (4.5 to 1); its grey fill only groups it, but in dark the page, cards (their ring), grey fills and the dock's edge must still stand apart. `tests/unit/contrast.test.ts` checks every pair.
 
 ## 5. Type
 
@@ -113,7 +114,22 @@ Two faces, self hosted from their OFL packages and precached: Roboto Condensed 9
 ## 6. Space, shape, depth
 
 - **Grid.** 4 px. Page gutter 16 (`--gutter`). Inside cards and sheets 24 (`--inset`). Gap between cards 16. Gap between a label and its value 4. Row height at least 56.
-- **Radii.** OneFin's large, concentric corners: 8 for checkboxes, 16 for inputs, thumbnails, chips, small buttons, icon buttons and the wheel band, 20 for the large button and the segmented track, 24 for choice cards, tiles and stat tiles, 32 for cards, 40 for the top of sheets and the hero's haze panel, 48 for the hero card. Full for tracks, the dock, the dock's plus, the avatar and pill chips. A nested corner is the outer one minus the gap.
+- **Radii.** OneFin's large, concentric corners: 8 for checkboxes, 16 for inputs, thumbnails, chips, small buttons, icon buttons and the wheel band, 20 for the large button and the segmented track, 24 for choice cards, tiles, stat tiles, toasts and bars holding a button, 32 for cards, 40 for the top of sheets and corners nested in the hero card, 48 for the hero card. Full for tracks, the dock and its selected tab, the dock's plus, the avatar and pill chips.
+- **Corners nest, padding grows with the radius (U1b, the owner's feedback 2, 5, 8).** A filled shape 8 or less inside another's corner, the same gap on both sides, takes the outer radius less the gap: the hero card's 48 with 8 inside gives 40 to the haze panel's top corners and to the stat tiles' outer bottom corners; corners that face a sibling keep the inner shape's own radius (24). A shape further in keeps its own radius. Text and controls sit at least half a corner's radius from both of its edges. The pairs:
+
+| Radius | Padding at least | Used by |
+| --- | --- | --- |
+| 8 | 4 | checkboxes |
+| 16 | 8 | inputs, small buttons, chips, thumbnails, icon buttons, the wheel band |
+| 20 | 10 | the large button, the segmented track (its segments are 16, 4 inside) |
+| 24 | 12 | choice cards, tiles, stat tiles (16 inside, 20 at a 40 corner), toasts and the landing bar (a button 8 inside at 16) |
+| 32 | 16 | cards, 24 inside |
+| 40 | 20 | sheets' tops (24 inside), the haze panel (24 inside), stat tiles' outer corners |
+| 48 | the gap, 8 | the hero card, a shell that holds panels, not text; content set straight in it sits 24 from its edge |
+
+  `tests/e2e/app.spec.ts` "corners nest" checks Today (the hero card, the dock) and Progress in both themes.
+- **Scroll edges fade (U1b).** Content scrolling under the header or a sheet's header fades into the bar's colour over 16 px (`--fade-h`, the `fade-under` utility, shown once scrolled); above a pinned footer it fades the same way (`fade-over`). Never a hard edge or a hairline. The food map's panel fades with a mask.
+- **The status bar continues the top of the screen (U1b).** `topColour()` sets `theme-color` and the root's background (Safari 26 samples it): the landing hero's sky (`--sky-top`) on the landing page, the canvas everywhere else, onboarding included.
 - **Depth.** In light mode cards carry `--shadow-card`, OneFin's soft stats card shadow, and never a border with it. In dark mode cards have no shadow and a 1 px `--line` ring. Things that float (the dock, toasts, a dragged row) have `--shadow-float`. The ink pill and the dock's plus carry `--shadow-action`, a soft drop below them. No button has an inner light, a bevel, a rim, a gradient or a glow (`tests/e2e/app.spec.ts` sweeps every button for them).
 - **Content cards stay solid,** white or the dark surface, so their numbers stay readable. Nothing that carries a number you need to read is glass.
 - **Gradients.** At most one per screen, on its hero. `--grad-hero` is the aurora haze of OneFin's Premium and stats cards (lavender, blue, pink and cyan over white; violet, blue and magenta in dark), filling the hero's haze panel through the `haze` utility. The landing page's gradients are in section 13. No stop of the haze is stronger than lavender at 75 percent, so ink, `--ink-2` and `--success-ink` words pass on it. Nothing else has a gradient.
@@ -148,15 +164,16 @@ Start from the components in `src/lib/components/` and their gallery at `/galler
 | --- | --- |
 | Button | One height system. `lg` 56 for the screen's or sheet's main action, pinned at the bottom; `md` 48 for second actions in content; `sm` 36 on screen and 44 to tap, for inline actions in rows and cards. Variants: `primary`, OneFin's flat "Withdraw" pill: `--action` fill (ink, white on dark), `--on-action` label, `--shadow-action`, radius 20 at `lg` and 16 below, one per screen; `neutral`, the grey `--surface-2` pill for second actions; `plain`, a violet text link in `--accent-ink`; `danger`, flat with a `--danger` label. Pressed: the fill steps (`--action-press`, `--surface-3`) and the face scales to 0.97 in 120 ms. Disabled: the primary turns grey (`--surface-3`, `--ink-2` label, no drop); the others fade to 40 percent. No gradient, bevel or glow. Labels are verbs in Geist 600 |
 | Icon button | A 44 rounded square (radius 16). Action keys (the stepper's minus and plus) are ink with an `--on-action` glyph and turn `--surface-2` with an `--ink-3` glyph when disabled. Close, back, more and again are quiet: a glyph on nothing (or `--surface-2` for again), `--surface-2` when pressed. The camera's light is a solid dark square, since glass over a live picture would change with the theme. The avatar stays a circle |
-| Card | `--surface`, radius 32, padding 24, `--shadow-card` in light, a hairline ring in dark. The hero card (`hero`) is a white shell at radius 48 with 8 inside, holding the screen's haze panel (`haze`, radius 40, 16 inside) and, below it, grey stat tiles; text still sits 24 from the card's edge |
-| Stat tile | Inside the hero card: `--surface-2`, radius 24 (32 when wide), 16 inside. A Caption label, a value in Body 600 tabular with its unit in Caption, and a 6 high track at the bottom so a row of tiles stays level. Today's macros, Your plan's protein |
+| Card | `--surface`, radius 32, padding 24, `--shadow-card` in light, a ring of white at 10 percent in dark. The hero card (`hero`) is a white shell at radius 48 with 8 inside, holding the screen's haze panel (`haze`, top corners 40, 24 inside; bottom corners 24 when tiles follow) and, below it, grey stat tiles; text sits 32 from the card's edge in the panel and 24 below it |
+| Stat tile | Inside the hero card: `--surface-2`, radius 24 with its outer bottom corners 40 (U1b), 16 inside and 20 at the bottom. Your plan's wide protein tile is 24 above and 40 below, 24 inside, its figure in Display as a plan figure (section 5). A Caption label, a value in Body 600 tabular with its unit in Caption, and a 6 high track at the bottom so a row of tiles stays level. Today's macros, Your plan's protein |
 | Glass chip | A pill on the haze or a picture: the `glass` utility, Caption 600 in ink, 2 by 10 inside. The hero's day kind |
-| Featured card | At most one per screen: a solid `--accent` card at radius 24 with an `--on-accent` label and a translucent white icon tile. The Add sheet's Photo, the supplement setup's Scan the tub. Pressed `--accent-press` and 0.97 |
-| Row | A 48 px tile or thumbnail at radius 16, title in Body 600, one line of caption, trailing number in Body 600 tabular. At least 64 high in lists. Divided by hairlines inset to the text |
+| Featured card | At most one per screen (`data-featured`): a `--grad-feature` card at radius 24 (violet lit blue and plum, the same in both themes, the owner's U1b request) with an `--on-accent` label and a translucent white icon tile. The Add sheet's Photo, the supplement setup's Scan the tub. Pressed: darkens a step and 0.97 |
+| Row | A 48 px tile or thumbnail at radius 16, title in Body 600, one line of caption, trailing number in Body 600 tabular with its unit in Caption (calories always say kcal). At least 64 high in lists. Divided by hairlines inset to the text |
+| Facts | Two or more facts on one line ("12:30 \| Database", "60 min \| 240 kcal", "712 kcal \| 37 g protein"): a 1 px `--line-strong` divider one line high with 8 either side, never a comma or a middle dot; the facts after the first one step lighter (`--ink-3` in a caption, `--ink-2` after ink). Screen readers hear a comma. `Facts.svelte`. A list of like things (muscles) keeps commas |
 | Icon tile | 48 square (40 in choice cards and ways) at radius 16, in three tones as in OneFin's pricing: lavender (`tile`: `--accent-soft` with an ink glyph, lavender in dark) for rows and choices; violet (`bg-accent` with an `--on-accent` glyph) for feature icons, as on the landing page; white with a 1 px lavender edge and a violet glyph for shortcuts on grey, as the Add sheet's ways. Flat: no inner glow |
 | Chip | 44 high, radius 16, Callout 600, `--surface-2`. Selected: ink fill with canvas text |
-| Segmented control | A radius 20 track on `--surface-2` with 4 px padding, segments 44 high at radius 16; the selected segment is `--surface` with `--shadow-card`. At most four options |
-| Switch | 50 by 30, ink when on, `--surface-3` when off |
+| Segmented control | A radius 20 track on `--surface-2` with 4 px padding, segments 44 high at radius 16; the selected segment is ink with canvas text (U1b: a white segment was under 3 to 1 on its track). At most four options |
+| Switch | 50 by 30, ink when on, `--control-edge` when off; the knob is `--surface`, 3 to 1 on either track |
 | Track | The signature. A full radius bar, 14 high in the hero and 6 elsewhere, on `--track-bg`. The scale runs from 0 to 110 percent of the target. The on track zone is a slightly darker segment from its lower bound to the end. Fill is `--progress` violet, and turns `--success` inside the zone. Width animates over 420 ms |
 | Hero number | Hero style (Geist 500), a caption beneath ("of 2,460 kcal") and the counterpart on the right in Geist 600 at Heading size ("620 to go", or "On track" in `--success-ink`). Digits tween when the value changes |
 | Wheel | For bounded values: birth year, height, weight, goal weight, body fat. Five rows of `--wheel-row` (44 at default text), the selected row on a full width `--surface-2` band at radius 16; wheels set side by side (height and weight) share one band. Rows in Geist 600 at Heading size, tabular; the selected row ink, the rest `--ink-3`, the edges faded with a mask. The unit sits once, beside the band, in `--ink-2`. Native scroll snap does the momentum. A decimal value has a whole and a tenths column. Tapping the selected row, or Enter, swaps in a 16 px or larger text field for typing. Each column is a slider for assistive tech |
@@ -164,11 +181,11 @@ Start from the components in `src/lib/components/` and their gallery at `/galler
 | Stepper | Minus and plus as 44 ink rounded squares (grey when at a bound) around a number in Geist 600 at Heading size, which can be typed. Holding repeats. For small counts near a start: days, minutes, sets, reps, grams |
 | Number field | Exact, wide range values (Quick add): a native field with the number pad (`inputmode`), not `type="number"` |
 | Input | 56 high, radius 16, `--surface-2`, label in Caption above. Focus draws a 2 px ink ring |
-| Sheet | vaul Drawer. Top radius 40, grabber 36 by 5, title in Heading beside a 44 close button (a quiet rounded square), a back chevron on the left when the sheet has a step. The backdrop is the blurred `--scrim`. Content scrolls under a hairline; the main action is pinned to the bottom above the safe area. Opens to content height, at most 92 percent of the visible height |
-| Dock | A floating glass pill (`glass-bar`, a white edge, `--shadow-float`) with three tabs and, to its right, the 64 ink plus circle (white on dark) with `--shadow-action`, both 64 high, 12 above the safe area. Selected tab in ink with its label, others in `--ink-2` |
-| Header | 56 high, opaque canvas (no glass), the title in Title on the left, sync mark and avatar on the right. A hairline appears once content scrolls under it |
-| Week strip | Seven equal cells 64 high: weekday letter in Caption, the date in Body 600 tabular, a 5 px dot in `--success-ink` when that day was on track (`--success` on today's ink pill). Today is an ink pill at radius 24 |
-| Toast | Top centre inside the column, 16 from the edges, `--toast-bg` in both themes, radius 20, one line, optional Undo. One at a time |
+| Sheet | vaul Drawer. Top radius 40, grabber 36 by 5, title in Heading beside a 44 close button (a quiet rounded square), a back chevron on the left when the sheet has a step. The backdrop is the blurred `--scrim`. Content fades out under the header and above the footer (section 6); the main action is pinned to the bottom above the safe area. Opens to content height, at most 92 percent of the visible height |
+| Dock | A floating glass pill (`glass-bar`, a white edge, `--shadow-float`) with three tabs and, to its right, the 64 ink plus circle (white on dark) with `--shadow-action`, both 64 high, 12 above the safe area. The selected tab sits on a 48 high `--surface-2` pill 8 inside the dock, its icon and label in `--accent-ink` (U1b, the owner); others in `--ink-2` |
+| Header | 56 high, opaque canvas (no glass), the title in Title on the left, sync mark and avatar on the right. Content scrolling under it fades into the canvas (section 6) |
+| Week strip | Seven equal cells 64 high: weekday letter in Caption, the date in Body 600 tabular, a 5 px dot in `--success-ink` when that day was on track (`--success` on the ink pill). The day in view is an ink pill at radius 24; today, when another day is in view, keeps a 2 px ink ring |
+| Toast | Top centre inside the column, 16 from the edges, `--toast-bg` in both themes, radius 24 (Undo nests 8 inside at 16), one line, optional Undo. One at a time |
 | Source label | Caption text: Database, Estimate, Yours (the user's remembered numbers, N1) or Quick add. Estimate carries a small outlined circle before it. No colour |
 | Sync mark | An 8 px dot beside the avatar: hidden when idle, `--ink-3` pulsing when syncing, hollow when offline, `--attention` when it needs attention. Tapping it explains the state |
 | Empty state | A line of body text saying what will appear here and one button to make it appear. No illustrations |
@@ -203,7 +220,7 @@ The `design-critic` subagent checks screenshots against these, side by side with
 4. Type scale: every text matches a style in section 5. Display styles are condensed capitals; numbers are tabular.
 5. Alignment: content aligns to the 16 px gutter outside cards and the 24 px inset inside them. Numbers in a list align on the right edge.
 6. Spacing: gaps come from the 4 px grid, and equal things have equal gaps.
-7. Depth: cards are solid and carry only `--shadow-card` (light) or a hairline ring (dark); only the dock, toasts and dragged rows float. No button has a gradient, bevel or glow: the ink pill's only depth is `--shadow-action`, and tappable cards (choices), the selected segment and the week strip's picked day keep a card's `--shadow-card`, without which they vanish on the canvas. At most one gradient on the screen, on its hero; glass only where section 6 allows it.
+7. Depth: cards are solid and carry only `--shadow-card` (light) or a hairline ring (dark); only the dock, toasts and dragged rows float. No button has a gradient, bevel or glow: the ink pill's only depth is `--shadow-action`, and tappable cards (choices) keep a card's `--shadow-card`, without which they vanish on the canvas. At most one gradient on the screen, on its hero, plus a sheet's one featured card; glass only where section 6 allows it.
 8. Nothing from the banned list.
 9. Copy: sentence case in the words, no banned punctuation or words, numbers formatted with grouping and units.
 10. Touch: every control is at least 44 px and has a visible pressed state in the interaction screenshots. One button height per role (56, 48, 36 in 44).
@@ -212,6 +229,12 @@ The `design-critic` subagent checks screenshots against these, side by side with
 13. States: empty, loading and error states exist for the screen and follow sections 7 and 2.
 14. The spec: the screen contains what its section of `docs/SCREENS.md` lists, in that order.
 15. Identity: placed beside the owner's picks, the screen reads as the same family: condensed capitals for titles, the flat ink pill, solid white cards with big nested radii, grey stat tiles, the haze on the hero only, small glass chips, violet as the brand.
+16. Corners nest (U1b): a filled shape 8 or less inside another's corner has the outer radius less the gap, and no text or control sits closer to a corner than half its radius. Look at the hero card's haze and stat tiles, Your plan's protein tile, list cards, sheets, toasts and bars holding a button.
+17. Controls stand apart (U1b): in both themes, every selected state (chip, segment, choice, the week's day in view, the dock's tab) and every control known by its shape (switch, field focus) is plainly visible against what is next to it; in dark, the page, cards, grey buttons such as "Back to today", stat tiles and the dock's edge are told apart at a glance.
+18. Dock (U1b): the selected tab sits on a grey pill with its icon and label violet; the others are grey.
+19. Scroll edges (U1b): content under the header, a sheet's header or above a pinned footer fades into the bar's colour; no hard edge or hairline where it meets the bar.
+20. Facts (U1b): two facts on one line are set apart by the thin divider, never a comma, full stop or middle dot, and the second is one step lighter.
+21. Status bar (U1b): the area above the content continues the colour at the top of the screen (the sky on the landing page, the canvas elsewhere), with no band of another colour.
 
 ## 10. Motion and feedback
 
@@ -234,7 +257,7 @@ Fixed values from MOTION.md. With reduced motion set, every one becomes an insta
 
 ## 12. Accessibility
 
-- Text contrast 4.5 to 1 or better against its background, 3 to 1 for large text. `--ink-3` is for large or non essential text only. `tests/unit/contrast.test.ts` checks the token pairs.
+- Text contrast 4.5 to 1 or better against its background, 3 to 1 for large text. Since U1b `--ink-3` passes 4.5 to 1 on the page and cards, for the second fact on a line. What identifies a control or shows its state has 3 to 1 against its neighbours (section 4 rule 7). `tests/unit/contrast.test.ts` checks the token pairs in both themes.
 - The green fill of a reached track is about 1.8 to 1 on white. It is never the only signal: the value is always also text, and "On track" is also a word and a dot.
 - Every control has an accessible name. Sheets trap focus and restore it. The track exposes its value as text. Wheel columns are sliders with a value text ("168 cm") and arrow, page and home or end keys.
 - Pinch zoom stays enabled. Text size follows the device by default.

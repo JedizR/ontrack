@@ -1,4 +1,5 @@
-<!-- DESIGN.md section 7, Segmented control: a radius 20 track on surface-2, the selected segment raised on surface.
+<!-- DESIGN.md section 7, Segmented control: a radius 20 track on surface-2, the selected segment ink (section 4 rule 2;
+     U1b: a raised white segment was under 3 to 1 against its track, so the state did not show in dark).
      At most four options. Ported from watermelon: a radio group with arrow keys. -->
 <script lang="ts" generics="T extends string | number">
   import { haptic } from '$lib/haptics';
@@ -30,7 +31,7 @@
       role="radio"
       aria-checked={on}
       tabindex={on ? 0 : -1}
-      class="text-callout min-h-[var(--tap)] min-w-0 truncate rounded-sm px-2 font-semibold transition-[background-color,color,box-shadow] duration-[var(--d-ui)] ease-[var(--spring-default)] {on ? 'bg-surface dark:bg-surface-3 text-ink shadow-card' : 'text-ink-2 active:bg-surface-3'}"
+      class="text-callout min-h-[var(--tap)] min-w-0 truncate rounded-sm px-2 font-semibold transition-[background-color,color,box-shadow] duration-[var(--d-ui)] ease-[var(--spring-default)] {on ? 'bg-ink text-canvas' : 'text-ink-2 active:bg-surface-3'}"
       onclick={() => pick(o.value)}
       onkeydown={(e) => key(e, i)}
     >{o.label}</button>

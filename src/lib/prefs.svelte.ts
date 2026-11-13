@@ -90,10 +90,22 @@ export function applyFontSize() {
 
 const media = typeof matchMedia === 'function' ? matchMedia('(prefers-color-scheme: dark)') : null;
 export function applyTheme() {
+  document.documentElement.dataset.theme = prefs.theme === 'system' ? (media?.matches ? 'dark' : 'light') : prefs.theme;
+  paintTop();
+}
+
+// U1b: the status bar continues the colour at the top of the screen (the owner, feedback 1): the canvas, or the landing
+// hero's sky. theme-color for Safari up to 18, and the root's own background, which Safari 26 samples instead
+let top = '--canvas';
+export function topColour(token = '--canvas') {
+  top = token;
+  paintTop();
+}
+function paintTop() {
   const root = document.documentElement;
-  root.dataset.theme = prefs.theme === 'system' ? (media?.matches ? 'dark' : 'light') : prefs.theme;
-  // the status bar and browser chrome take the canvas token of the theme in use
-  const canvas = getComputedStyle(root).getPropertyValue('--canvas').trim();
-  if (canvas) document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.setAttribute('content', canvas));
+  const colour = getComputedStyle(root).getPropertyValue(top).trim();
+  if (!colour) return;
+  document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.setAttribute('content', colour));
+  root.style.backgroundColor = top === '--canvas' ? '' : colour;
 }
 media?.addEventListener('change', applyTheme);

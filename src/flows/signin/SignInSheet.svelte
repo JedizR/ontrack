@@ -103,7 +103,7 @@
   {#if step === 'email'}
     {#if google}
       <div class="mt-5">
-        <Button size="lg" full onclick={withGoogle} disabled={busy} data-testid="signin-google">
+        <Button full onclick={withGoogle} disabled={busy} data-testid="signin-google">
           <img src="/google.svg" alt="" class="size-5" />{t.signin.google}
         </Button>
       </div>

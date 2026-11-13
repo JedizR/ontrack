@@ -28,6 +28,7 @@
   import HeroNumber from '$lib/components/HeroNumber.svelte';
   import WeekStrip from '$lib/components/WeekStrip.svelte';
   import SourceLabel from '$lib/components/SourceLabel.svelte';
+  import Facts from '$lib/components/Facts.svelte';
   import Skeleton from '$lib/components/Skeleton.svelte';
   import TrainIcon from '$lib/components/TrainIcon.svelte';
   import ShakerIcon from '$lib/components/ShakerIcon.svelte';
@@ -136,13 +137,11 @@
   /** an entry edits in its amount step, so its scoops stay true; once its supplement is gone it edits as a meal */
   const bySupplement = (m: Meal) => m.method === 'supplement' && !!m.items[0]?.supplementId && !!db.get('supplement', m.items[0].supplementId);
   const kindOf = (s: Session) => t.train.types[s.type];
-  // the line under a session: its type only when the name says something else
+  // the facts under a session: its type only when the name says something else, then minutes, then its calories or Done
   const lineOf = (s: Session, status: string | undefined) => {
-    const same = s.name === kindOf(s);
-    if (status === 'skipped') return t.today.skippedLine;
-    if (status === 'done') return same ? t.today.doneShort(num(s.minutes)) : t.today.doneLine(kindOf(s), num(s.minutes));
-    const kcal = num(Math.round(sessionKcal(s, day!.plan.weightKg)));
-    return same ? t.today.sessionShort(num(s.minutes), kcal) : t.today.session(kindOf(s), num(s.minutes), kcal);
+    if (status === 'skipped') return [t.today.skippedLine];
+    const end = status === 'done' ? t.today.done : t.after.kcalN(num(Math.round(sessionKcal(s, day!.plan.weightKg))));
+    return [s.name !== kindOf(s) && kindOf(s), t.after.minN(num(s.minutes)), end];
   };
   const animate = first;
   onMount(() => { first = false; });
@@ -200,7 +199,8 @@
       <!-- the whole card opens How it is calculated; it holds no other control. OneFin's "Withdraw" card: the number on
            the screen's one haze panel with a glass chip for the day, then grey stat tiles for the macros -->
       <button type="button" class="block w-full text-left transition-transform duration-[var(--d-press)] active:scale-[0.98]" aria-describedby="hero-how" aria-haspopup="dialog" onclick={() => (sheets.how = true)} data-testid="hero-open">
-        <div class="haze rounded-sheet p-4">
+        <!-- U1b: corners in the shell's corners nest (48 less the 8 gap is 40); corners facing a sibling take the tile's 24 -->
+        <div class="haze rounded-t-sheet rounded-b-md p-6">
           <HeroNumber value={Math.round(day.eaten.kcal)} caption={t.after.ofKcal(num(day.target))} side={side.side} sideCaption={side.cap} reached={!side.cap} />
           <div class="mt-4"><Track hero value={day.eaten.kcal} target={day.target} zone={day.zone} label="{num(Math.round(day.eaten.kcal))} {t.after.ofKcal(num(day.target))}" /></div>
           <div class="text-caption text-ink-2 mt-3 flex items-center justify-between gap-4">
@@ -212,7 +212,7 @@
         <div class="mt-2 grid grid-cols-3 gap-2">
           {#each macros as m (m.key)}
             <!-- the track sits at the bottom of each tile, so the three stay level when a value wraps at large text -->
-            <div class="bg-surface-2 flex min-w-0 flex-col rounded-md px-4 pt-3 pb-4" data-testid="macro-{m.key}">
+            <div class="bg-surface-2 flex min-w-0 flex-col rounded-md px-4 pt-3 pb-5 first:rounded-bl-sheet last:rounded-br-sheet" data-testid="macro-{m.key}">
               <div class="text-caption text-ink-2">{m.label}</div>
               <div class="text-body num font-semibold">{num(Math.round(m.value))}{' '}<span class="text-caption text-ink-2 block font-medium whitespace-nowrap">{t.after.ofGrams(num(m.target))}</span></div>
               <div class="mt-auto pt-2"><Track value={m.value} target={m.target} zone={m.zone} label="{m.label} {num(Math.round(m.value))} {t.after.ofGrams(num(m.target))}" /></div>
@@ -281,7 +281,8 @@
 
     <Card list aria-label={t.today.training} data-testid="training" {...rise(3)}>
       {#each day.sessions as { session: s, status } (s.key)}
-        <Row title={s.name} caption={lineOf(s, status)} testid="session-{s.key}" wrap>
+        <Row title={s.name} testid="session-{s.key}" wrap>
+          {#snippet caption()}<Facts facts={lineOf(s, status)} />{/snippet}
           {#snippet leading()}<div class="tile grid size-full place-items-center"><TrainIcon /></div>{/snippet}
           {#snippet trailing()}
             <div class="flex flex-none items-center gap-1">
@@ -316,12 +317,13 @@
     <Card list aria-label={t.today.meals} data-testid="meals" {...rise(5)}>
       {#each meals as { id, data: m } (id)}
         {@const Icon = ICON[m.method]}
+        {#snippet source()}<SourceLabel source={bySupplement(m) ? 'typical' : mealSource(m.items)} />{/snippet}
         <SwipeRow ondelete={() => remove(id, m)} testid="meal">
-          <Row title={titleOf(m)} value={num(Math.round(totals(m.items).kcal))} onclick={() => openMeal(id, m)}>
+          <Row title={titleOf(m)} value={num(Math.round(totals(m.items).kcal))} unit={t.after.kcal} onclick={() => openMeal(id, m)}>
             {#snippet leading()}
               {#if m.thumb}<Thumb {id} class="size-full">{#snippet fallback()}{@render tile(Icon)}{/snippet}</Thumb>{:else}{@render tile(Icon)}{/if}
             {/snippet}
-            {#snippet caption()}{timeOf(m.at)}, {#if bySupplement(m)}{amountOf(m)}{#if m.items[0].source === 'typical'}, <SourceLabel source="typical" />{/if}{:else}<SourceLabel source={mealSource(m.items)} />{/if}{/snippet}
+            {#snippet caption()}<Facts facts={bySupplement(m) ? [timeOf(m.at), amountOf(m), m.items[0].source === 'typical' && source] : [timeOf(m.at), source]} />{/snippet}
           </Row>
         </SwipeRow>
       {:else}
