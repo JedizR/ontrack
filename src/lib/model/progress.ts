@@ -132,8 +132,8 @@ export function account(r: Records) {
   }
 
   /**
-   * The check-in on `date`. A program change made that day waits in tomorrow's plan; a raise or a lower keeps its
-   * exercise energy, so accepting never undoes it.
+   * The check-in on `date`. A program change or a Settings edit made that day waits in tomorrow's plan; a raise or a
+   * lower keeps its exercise energy, goal and pace (M9a), so accepting never undoes either.
    */
   function checkinOn(date: string): CheckinResult | null {
     const input = checkinInput(date);
@@ -143,7 +143,7 @@ export function account(r: Records) {
     const p = result.plan;
     if (!p || !next || next === input.plan) return result;
     const { sex, heightCm, experience } = r.profile;
-    const basis = { sex, heightCm, experience, weightKg: p.weightKg, goal: p.goal, ratePctPerWeek: p.ratePctPerWeek, maintainOnly: p.flags.includes('maintainOnly') };
+    const basis = { sex, heightCm, experience, weightKg: p.weightKg, goal: next.goal, ratePctPerWeek: next.ratePctPerWeek, maintainOnly: next.flags.includes('maintainOnly') };
     return { ...result, plan: planFromBaseline({ ...basis, bmr: p.bmr, baseline: p.baseline, eeeByWeekday: next.eeeByWeekday }) };
   }
 

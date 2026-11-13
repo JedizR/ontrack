@@ -63,22 +63,23 @@
 
   async function askYear() {
     const v = await picker.ask({ title: t.settings.birthYear, value: draft.birthYear, min: year - LIMITS.oldestAge, max: year - V.minAge, unit: '' });
-    if (v) edit({ birthYear: v });
+    if (v && v !== draft.birthYear) edit({ birthYear: v });
   }
   async function askHeight() {
     const metric = draft.units === 'metric';
     // shortcut: imperial height is one wheel of inches here, not onboarding's feet and inches pair; good enough to correct a height
     const inch = ftInToCm(0, 1);
     const [lo, hi] = LIMITS.heightCm;
+    const start = metric ? Math.round(draft.heightCm) : Math.round(draft.heightCm / inch);
     const v = await picker.ask({
       title: t.settings.height,
-      value: metric ? Math.round(draft.heightCm) : Math.round(draft.heightCm / inch),
+      value: start,
       min: metric ? lo : Math.ceil(lo / inch),
       max: metric ? hi : Math.floor(hi / inch),
       unit: metric ? t.after.cm : t.after.in,
       hint: metric ? undefined : heightText(draft.heightCm, 'imperial'),
     });
-    if (v) edit({ heightCm: metric ? v : Math.round(v * inch * 10) / 10 });
+    if (v && v !== start) edit({ heightCm: metric ? v : Math.round(v * inch * 10) / 10 }); // Save on an unchanged wheel keeps the exact height
   }
   async function askBodyFat() {
     const r = V.bodyFatRange;

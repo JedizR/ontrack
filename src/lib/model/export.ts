@@ -10,11 +10,11 @@ export const allJson = (records: Partial<Record<Collection, Rec[]>>, o: { versio
   JSON.stringify({ app: 'Ontrack', version: o.version, exportedAt: o.exportedAt, records }, null, 2);
 
 const HEAD = ['date', 'time', 'meal', 'food', 'grams', 'kcal', 'protein_g', 'carbs_g', 'fat_g', 'source', 'method'];
-/** A field as a spreadsheet reads it: quoted when it holds a comma, a quote or a line break; a leading = + - @ is
+/** A field as a spreadsheet reads it: quoted when it holds a comma, a quote or a line break; a leading = + - @, tab or return is
  * neutralised so the cell is text, never a formula. */
 function cell(v: string | number | undefined) {
   if (v === undefined) return '';
-  const s = typeof v === 'number' ? String(Math.round(v * 10) / 10) : /^[=+\-@]/.test(v) ? `'${v}` : v;
+  const s = typeof v === 'number' ? String(Math.round(v * 10) / 10) : /^[=+\-@\t\r]/.test(v) ? `'${v}` : v;
   return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }
 /** One line per item, oldest first, in the time of this device. */

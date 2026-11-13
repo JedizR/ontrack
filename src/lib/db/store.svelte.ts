@@ -151,9 +151,14 @@ export class Store {
   // M9a: thumbnails to delete here and on the server (a deleted meal's, a replaced profile photo), kept with when they
   // were asked so a sync round sends them once Undo has had its time, and only if nothing uses them again
   async dropThumb(mealId: string) {
-    if (!this.#idb || this.#dropq.some((d) => d.id === mealId)) return;
-    this.#dropq.push({ id: mealId, at: Date.now() });
+    if (!this.#idb) return;
+    // a second delete after an Undo starts the wait again
+    this.#dropq = [...this.#dropq.filter((d) => d.id !== mealId), { id: mealId, at: Date.now() }];
     await set('dropq', [...this.#dropq], this.#idb);
+  }
+  /** a live meal or the profile photo still shows this picture */
+  thumbUsed(id: string) {
+    return !!this.get('meal', id) || this.get('social', 'social')?.photo === id;
   }
   dropQueue() {
     return [...this.#dropq];

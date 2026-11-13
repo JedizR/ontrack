@@ -411,6 +411,8 @@ export async function signOut(force = false): Promise<'ok' | 'unsent'> {
   session.leaving = true;
   sync.stop();
   try {
+    // pictures waiting to leave storage go now, best effort: the queue is wiped with the phone's data (M9a)
+    for (const d of db.dropQueue()) if (!db.thumbUsed(d.id)) await session.backend?.dropThumb(d.id).catch(() => undefined);
     await session.backend?.auth.signOut().catch(() => undefined);
     await db.wipe();
   } finally {

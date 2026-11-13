@@ -19,7 +19,7 @@ export const easyDue = (o: { goal: string; time: string; eaten: number; target: 
  */
 export function easyAdds(foods: Food[], recent: string[], gap: number, mine: (id: string) => FoodMemory['per100'] | undefined): MealItem[] {
   const byId = new Map(foods.map((f) => [f.id, f]));
-  const ok = (f: Food | undefined): f is Food => !!f && f.tags.includes('dense') && !f.tags.includes('oil') && f.per100.kcal > 0;
+  const ok = (f: Food | undefined): f is Food => !!f && f.tags.includes('dense') && !f.tags.includes('oil') && (mine(f.id) ?? f.per100).kcal > 0;
   const picked = [...new Set([...recent, ...EASY_DEFAULTS])].map((id) => byId.get(id)).filter(ok).slice(0, COUNT);
   return picked.map((f) => {
     const per100 = mine(f.id);

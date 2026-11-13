@@ -1,7 +1,7 @@
 // Visual review: every screen in its main states -> screenshots/<screen>/<state>-<theme>-<device>.png
 //   pnpm screenshots -- --grep "shell"
 import { expect, test, type Page } from '@playwright/test';
-import { EMAIL, MEALS, SUPPLEMENTS, TODAY, fieldFill, onboard, open, openFresh, openSeeded, seedAccount, signIn, takePhoto, vision, wheelType, withPrefs } from './helpers';
+import { EMAIL, MEALS, SEED, SUPPLEMENTS, TODAY, fieldFill, onboard, open, openFresh, openSeeded, seedAccount, signIn, takePhoto, vision, wheelType, withPrefs } from './helpers';
 import { openMap, quietTiles, raise, scene } from './social';
 
 const SECTIONS = ['prefs', 'buttons', 'track', 'hero', 'rows', 'chips', 'sheets', 'wheel', 'week', 'feedback', 'states'];
@@ -825,6 +825,58 @@ for (const theme of ['light', 'dark'] as const) {
       });
 
       // Today composed from the real components
+      // M9a: Settings and its pages, the evening cards on Today, Finish day, and experience on Train
+      test('settings', async ({ page }) => {
+        const scrollSheet = (testid: string) => page.getByTestId(testid).evaluate((el) => el.scrollIntoView({ block: 'start' }));
+        await open(page);
+        await page.getByTestId('avatar').click();
+        await page.getByTestId('account-sheet').waitFor();
+        await shot(page, 'settings', 'main');
+        await scrollSheet('set-remind-meal');
+        await shot(page, 'settings', 'reminders');
+        await scrollSheet('set-export-all');
+        await shot(page, 'settings', 'data');
+        await page.getByTestId('set-profile').click();
+        await shot(page, 'settings', 'profile');
+        await page.getByTestId('sheet-back').click();
+        await page.getByTestId('set-goal-open').click();
+        await page.getByTestId('set-pace').getByRole('radio', { name: 'Lean' }).click();
+        await shot(page, 'settings', 'goal-changed');
+        await page.getByTestId('sheet-back').click();
+        await page.getByTestId('set-checkin').click();
+        await shot(page, 'settings', 'checkin-day');
+        await page.getByTestId('sheet-back').click();
+        await page.getByTestId('set-science').click();
+        await page.getByTestId('science-mifflin').click();
+        await shot(page, 'settings', 'science');
+      });
+
+      test('settings evening', async ({ page }) => {
+        await page.clock.setFixedTime(new Date(`${TODAY}T19:00:00+07:00`));
+        await seedAccount(page);
+        await page.goto('/');
+        await page.getByTestId('easy-card').getByTestId('easy-item').nth(2).waitFor();
+        await shot(page, 'settings', 'today-easy');
+        await page.clock.setFixedTime(new Date(`${TODAY}T20:30:00+07:00`));
+        await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
+        await page.getByTestId('day-finish').evaluate((el) => el.scrollIntoView({ block: 'center' }));
+        await shot(page, 'settings', 'today-finish');
+        await page.getByTestId('day-finish').click();
+        await shot(page, 'settings', 'today-finished');
+      });
+
+      test('settings nothing logged', async ({ page }) => {
+        await page.clock.setFixedTime(new Date(`${TODAY}T14:00:00+07:00`));
+        await seedAccount(page, { account: SEED.map((r) => (r.collection === 'plan' ? { ...r, data: { ...r.data, goal: 'lose', ratePctPerWeek: 0.5, delta: -330 } } : r)) });
+        await page.goto('/');
+        await page.getByTestId('nothing-card').waitFor();
+        await shot(page, 'settings', 'today-nothing');
+        await page.getByTestId('tab-1').click();
+        await page.getByTestId('train-experience').waitFor();
+        await page.getByTestId('train-experience').getByRole('button', { name: '1 to 3 years' }).click();
+        await shot(page, 'settings', 'train-experience');
+      });
+
       test('today composed', async ({ page }) => {
         await open(page, '/gallery/today');
         await shot(page, 'today', 'composed');

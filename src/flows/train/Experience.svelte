@@ -10,11 +10,16 @@
   import { prefs } from '$lib/prefs.svelte';
   import { saveSettings } from '$lib/actions';
   import { STRENGTH, type Goal } from '$lib/model/engine';
+  import { planFor } from '$lib/model/day';
+  import { addDays } from '$lib/model/dates';
+  import { view } from '$lib/view.svelte';
   import type { Profile, Session } from '../../../shared/records';
 
   let { sessions, goal }: { sessions: Session[]; goal: Goal } = $props();
   const profile = $derived(db.get('profile', 'profile'));
-  const shown = $derived(!prefs.liftAsked && goal !== 'gain' && !!profile && sessions.some((s) => STRENGTH.has(s.type)));
+  // a gain plan from tomorrow (a Settings edit today) counts as gaining: Settings asks experience for it
+  const next = $derived(planFor(db.live('plan'), addDays(view.today, 1))?.goal ?? goal);
+  const shown = $derived(!prefs.liftAsked && goal !== 'gain' && next !== 'gain' && !!profile && sessions.some((s) => STRENGTH.has(s.type)));
   let picked = $state<Profile['experience'] | null>(null);
   const LEVELS = ['beginner', 'intermediate', 'advanced'] as const;
 

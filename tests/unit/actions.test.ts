@@ -286,7 +286,7 @@ test('a deleted meal\'s thumbnail leaves the phone and storage once Undo has had
     deleteMeal(kept)();
     await engine.run();
     expect(await b.getThumb(gone)).not.toBeNull(); // Undo could still bring it back
-    vi.setSystemTime(Date.now() + 11_000);
+    vi.setSystemTime(Date.now() + 31_000);
     await engine.run();
     expect(await b.getThumb(gone)).toBeNull();
     expect(await db.thumb(gone)).toBeUndefined();
