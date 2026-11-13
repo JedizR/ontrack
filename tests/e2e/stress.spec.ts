@@ -141,16 +141,19 @@ async function walkOnboarding(page: Page, dir: string) {
   await page.getByTestId('landing').waitFor(); // checked at rest in checkAll
   await go('landing-start');
   await check('step-goal', 'goal');
-  await go('choice-lose');
+  await go('goal-more');
+  await go('choice-recomp');
+  await check('step-goal', 'goal-more');
+  await go('choice-lose'); await go('continue');
   await go('screen-medical');
   await check('step-screening', 'screening');
   await go('continue');
   await check('step-advice', 'advice');
   await go('back');
   await go('screen-medical');
-  await go('screen-none');
+  await go('screen-none'); await go('continue');
   await check('step-sex', 'sex');
-  await go('choice-female');
+  await go('choice-female'); await go('continue');
   await check('step-born', 'born');
   await wheelType(page, 'wheel-year', '2012');
   await go('continue');
@@ -164,11 +167,11 @@ async function walkOnboarding(page: Page, dir: string) {
   await check('step-body', 'body');
   await go('continue');
   await check('step-move', 'move');
-  await go('choice-light');
+  await go('choice-light'); await go('continue');
   await check('step-days', 'days');
-  await go('days-3');
+  await go('days-3'); await go('continue');
   await check('step-kind', 'kind');
-  await go('choice-lifting');
+  await go('choice-lifting'); await go('continue');
   await check('your-plan', 'plan');
   await page.getByTestId('plan-pace').getByRole('radio', { name: 'Faster' }).click();
   await checkPage(page, 'plan-faster', dir);

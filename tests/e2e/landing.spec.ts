@@ -1,7 +1,7 @@
 // L1, PRD F18: the landing page a signed-out visitor with no onboarding draft sees (SCREENS.md section 3). Each test is a
 // fresh browser in its own mock space.
 import { expect, test, type Page } from '@playwright/test';
-import { open, openFresh, seedAccount, signIn, space, startPlan, toLanding, useSpace, withPrefs } from './helpers';
+import { open, openFresh, seedAccount, signIn, space, startPlan, toLanding, useSpace, withPrefs, choose } from './helpers';
 
 const SECTIONS = ['landing-hero', 'landing-statement', 'landing-log', 'landing-train', 'landing-checkin', 'landing-sources', 'landing-cta'];
 
@@ -29,7 +29,7 @@ test('a new visitor sees the landing page, and Build your plan starts onboarding
   await startPlan(page);
   await expect(page.getByTestId('landing')).toHaveCount(0);
   // back from the first question is the landing page again, and Build your plan keeps the answer
-  await page.getByTestId('choice-gain').click();
+  await choose(page, 'choice-gain');
   await expect(page.getByTestId('step-screening')).toBeVisible();
   await page.getByTestId('back').click();
   await page.getByTestId('back').click();
