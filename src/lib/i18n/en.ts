@@ -62,6 +62,16 @@ export const en = {
         { title: 'Choose your next target', line: 'Once a week Ontrack proposes one, with the reason. Use it or keep yours. Nothing changes on its own.' },
       ],
     },
+    friends: {
+      tag: 'Friends',
+      title: "Your friends' meals, on a map.",
+      lead: 'Add friends by their handle. Share a meal to the map when you want to, and see where your friends ate theirs.',
+      points: [
+        { title: 'Friends by request', line: 'Find people by their handle. They see what you share only once you both say yes.' },
+        { title: 'Off until you share', line: 'Share to map is off for every photo. Your weight, targets and food log are never shared.' },
+        { title: 'Rounded, never tracked', line: 'A shared place is rounded to about 100 m on your phone. Ontrack never follows where you go.' },
+      ],
+    },
     sources: {
       tag: 'Sources',
       title: 'Every number shows its work.',
@@ -92,6 +102,7 @@ export const en = {
       supplement: 'Whey protein, two scoops with 242 ml of whole milk: 393 kcal and 55.9 g protein',
       train: 'Train: four strength sessions a week, adding 137 kcal a day on average',
       progress: 'Progress: the weight trend at 60 kg, gaining 0.1 percent a week against a target of 0.5',
+      map: 'The food map around Bangkok: photo pins with each friend\'s avatar, one with 2 more at the same spot, and Search for friends below',
       checkin: 'The weekly check-in proposing a raise to 2,560 kcal on training days and 2,320 on rest days',
     },
   },

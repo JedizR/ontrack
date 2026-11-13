@@ -17,6 +17,7 @@ Friends, profiles and the food map, the screen half, 12 to 13 November 2026. Una
 - **The Meal sheet's switch acts at once,** with a toast, not on Save changes: sharing is a separate act from correcting the items, and a switch that waits reads as broken. The sheet's copy follows it, so Save changes keeps it.
 - **A shared photo stays the 320 px thumbnail** (S1a). The meal photo sheet shows it at full width, as the Meal sheet already does for your own meals; a larger copy would double the storage and the deleting M9 must do. On the owner's list to judge on the phone.
 - **Requests from search:** Add without a profile opens Your profile, then sends the request once the profile has synced (the server only knows people with a published profile). Decline needs no confirm (the other person can ask again); Remove friend has a confirm step, since undoing it needs the other person's yes.
+- **The landing section is 04 Friends, after Check-in and before Sources** (BUILD-PLAN S1 step 6): the dark run to the end stays whole, and the three points answer the worry a food map raises (who sees it, where) before the sources. Its shot uses OpenFreeMap's real tiles (`E2E_REAL_TILES=1`), 80 KB against about 30 KB for the others, since the map's labels blur at lower quality; it loads lazily like the rest.
 - **Words:** no counts of friends or pins as goals, no "you have no friends", no "don't miss out". Empty states say what will appear and how (DESIGN.md section 2).
 
 ## U1a

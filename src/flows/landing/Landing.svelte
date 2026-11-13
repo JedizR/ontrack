@@ -1,6 +1,6 @@
 <!-- SCREENS.md section 3, the landing page (L1, PRD F18): what a signed-out visitor with no onboarding draft sees, in
      OneFin's landing style from the owner's picks (DESIGN.md section 13). The bar, the hero with Today in a phone, the
-     statement with inline pills, then Logging, Training (dark), Check-in and Sources (dark), the closing call and the
+     statement with inline pills, then Logging, Training (dark), Check-in, Friends and Sources (dark), the closing call and the
      footer. Every feature shows a real screen of the app (tests/e2e/landing-shots.spec.ts). Build your plan starts
      onboarding, Sign in opens the sign in sheet. A lazy chunk; motion follows MOTION.md and stops for reduced motion. -->
 <script lang="ts">
@@ -8,9 +8,12 @@
   import BookOpen from '@lucide/svelte/icons/book-open';
   import Camera from '@lucide/svelte/icons/camera';
   import Check from '@lucide/svelte/icons/check';
+  import Lock from '@lucide/svelte/icons/lock';
+  import MapPin from '@lucide/svelte/icons/map-pin';
   import Scale from '@lucide/svelte/icons/scale';
   import ScanBarcode from '@lucide/svelte/icons/scan-barcode';
   import TrendingUp from '@lucide/svelte/icons/trending-up';
+  import UserPlus from '@lucide/svelte/icons/user-plus';
   import Button from '$lib/components/Button.svelte';
   import TrainIcon from '$lib/components/TrainIcon.svelte';
   import Wordmark from '$lib/components/Wordmark.svelte';
@@ -32,6 +35,7 @@
   import trainShot from './shots/train.webp';
   import progressShot from './shots/progress.webp';
   import checkinShot from './shots/checkin.webp';
+  import mapShot from './shots/map.webp';
   import mark from '../../../design/brand/mark.svg?raw';
 
   const L = t.landing;
@@ -82,6 +86,7 @@
     { shot: trainShot, alt: L.alt.train, icon: TrainIcon },
     { shot: progressShot, alt: L.alt.progress, icon: TrendingUp },
   ].map((x, i) => ({ ...x, ...L.train.cards[i] }));
+  const FRIENDS = [UserPlus, MapPin, Lock].map((icon, i) => ({ icon, ...L.friends.points[i] }));
   // each number on the page cites the constant's own source, so the cards cannot drift from the engine
   const SOURCED = [
     { label: L.sources.resting, source: SOURCES[C.mifflin.source]?.short, wash: 'bg-(image:--wash-ink) text-on-night' },
@@ -236,10 +241,30 @@
       </div>
     </section>
 
-    <!-- the dark run to the end: 04 Sources on colour-washed cards (pick 10), the closing call, then the footer -->
+    <!-- 04 Friends (S1b): the food map in a phone, uncropped so its friends panel shows, beside what is shared and what never is -->
+    <section class="px-4 pb-28" data-testid="landing-friends">
+      {@render head('04', L.friends.tag, L.friends.title, L.friends.lead)}
+      <div class="mx-auto mt-12 grid max-w-[1100px] items-center gap-12 lg:grid-cols-2 lg:gap-16">
+        <Phone src={mapShot} alt={L.alt.map} class="mx-auto w-[min(100%,260px)]" />
+        <ul class="flex flex-col gap-8">
+          {#each FRIENDS as p, i (i)}
+            {@const Icon = p.icon}
+            <li class="step flex gap-5" use:inview={0.6} data-reveal>
+              <span class="bg-accent text-on-accent grid size-12 flex-none place-items-center rounded-sm" aria-hidden="true"><Icon size={24} /></span>
+              <div class="pt-1">
+                <h3 class="text-lead">{p.title}</h3>
+                <p class="text-body text-ink-2 mt-1">{p.line}</p>
+              </div>
+            </li>
+          {/each}
+        </ul>
+      </div>
+    </section>
+
+    <!-- the dark run to the end: 05 Sources on colour-washed cards (pick 10), the closing call, then the footer -->
     <div data-theme="dark" class="bg-canvas text-ink relative isolate overflow-clip rounded-t-xl">
       <section class="px-4 pt-24 pb-16" data-testid="landing-sources">
-        {@render head('04', L.sources.tag, L.sources.title, L.sources.lead)}
+        {@render head('05', L.sources.tag, L.sources.title, L.sources.lead)}
         <div class="mx-auto mt-12 grid max-w-[1200px] gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {#each SOURCED as c, i (i)}
             <article class="settle flex min-h-52 flex-col justify-between gap-8 rounded-lg p-6 {c.wash}" style:--tilt="{i % 2 ? 3 : -3}deg">
