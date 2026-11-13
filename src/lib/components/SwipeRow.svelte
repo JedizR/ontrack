@@ -99,7 +99,8 @@
     inert={dx !== -ACTION}
     aria-hidden={dx !== -ACTION}
   >
-    <button
+    <!-- only while open: closed, at no width, the button would sit past the screen's edge -->
+    {#if dx < 0}<button
       type="button"
       class="text-callout absolute inset-y-0 grid w-22 place-items-center content-center gap-0.5 font-semibold transition-[left] duration-[var(--d-settle)] ease-[var(--ease-out)]"
       style="left: {armed || gone ? 0 : Math.max(0, -dx - ACTION)}px"
@@ -107,6 +108,6 @@
       data-testid="swipe-delete"
     >
       <Trash size={20} strokeWidth={2} aria-hidden="true" />{t.today.delete}
-    </button>
+    </button>{/if}
   </div>
 </div>
