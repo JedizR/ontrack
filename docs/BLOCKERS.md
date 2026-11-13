@@ -32,6 +32,12 @@ Each entry: what is blocked, what Claude tried, the exact steps for you, and wha
 
 Each entry: what to look at (URL or screenshot paths), what to look for, and which milestone it belongs to.
 
+### L4: the landing rework, on your iPhone and desktop
+
+- **Where:** https://ontrack-black.vercel.app signed out (close and reopen the tab). Scroll videos, phone and desktop, light and dark, and before and after: branch `pr-assets`, `l4/`.
+- **iPhone, Safari 26:** no band or tint above or below the page at the top, mid-page (Logging, Training, Sources) or at the end (the bottom edge may briefly keep the previous section's colour while a new one rises); the hero chips and check-in cards read with no frosted layer, and touching a chip lights it and makes it grow; scrolling stays smooth with the glass and loops; the floating "Build your plan" turns white over dark sections.
+- **Desktop:** the nav is a 430 px centred capsule whose glass grows out of Sign in as you scroll; the footer's lanes, numbers and runners. Judge the motion by feel.
+
 ### P1: the new palette and gradients
 
 - **Where:** https://ontrack-black.vercel.app on the iPhone, light and dark (close and reopen the tab). Before and after: branch `pr-assets`, `p1/`.
