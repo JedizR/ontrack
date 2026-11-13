@@ -89,7 +89,10 @@ async function checkPage(page: Page, name: string, dir: string) {
   expect(await unpressed(page), `${name}: controls with no pressed state`).toEqual([]);
   // U2: every app screen and sheet; the landing page is L4's
   if (name !== 'landing') expect((await unnested(page)).bad, `${name}: corners that do not nest`).toEqual([]);
-  await page.screenshot({ path: `${dir}/${name}.png`, fullPage: true });
+  // a sheet is fixed to the screen: shoot what the phone shows, not the whole page behind it (behind Sign in, the
+  // landing at full length took 5 s of a 30 s test on CI)
+  const sheet = await page.locator('[role="dialog"][aria-modal="true"]').count();
+  await page.screenshot({ path: `${dir}/${name}.png`, fullPage: !sheet });
 }
 
 async function checkAll(page: Page, dir: string) {
