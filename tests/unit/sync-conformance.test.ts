@@ -190,6 +190,7 @@ describe.each(harnesses)('sync conformance: $name', (h) => {
     await z.dropThumb('meal-1');
     expect(await a.getThumb('meal-1')).not.toBeNull();
     await a.dropThumb('meal-1');
+    await h.renew?.(a); // Supabase's Storage CDN serves a download it cached for a token until that token changes (S1a)
     expect(await a.getThumb('meal-1')).toBeNull();
     await a.dropThumb('meal-1');
   });
