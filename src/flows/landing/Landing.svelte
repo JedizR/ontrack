@@ -328,7 +328,7 @@
   @media (prefers-reduced-motion: no-preference) { .tap:active { scale: 0.97; } }
   /* L3: the footer's Learn links scroll to these and focus them; the bar (8 + 52) and 8 more stay clear */
   section[id] { scroll-margin-top: calc(env(safe-area-inset-top) + var(--spacing) * 17); outline: none; }
-  /* the lead sits on the sky's violet top: full ink, not ink-2, keeps it at 4.5 to 1 */
+  /* the lead sits on the sky's photo (P1: mist, sand and peach, contrast.test.ts checks ink on all of it): full ink, not ink-2 */
   .hero-lead { color: var(--ink); }
 
   /* hidden until shown, in every motion setting; the slide itself only when motion is welcome */

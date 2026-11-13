@@ -74,10 +74,12 @@ test('dark steps stand apart', () => {
   expect(on(dark, 'glass-edge', 'canvas'), 'dock edge on page').toBeGreaterThanOrEqual(2);
 });
 
-// U1b: the featured card's gradient (the Add sheet's Photo) carries white words on every stop, in both themes
-test('words on the featured card', () => {
-  const at = css.indexOf('--grad-feature:');
-  for (const m of css.slice(at, css.indexOf(';', at)).matchAll(/#[0-9a-f]{6}/gi)) expect(ratio(parse(light['on-accent']), parse(m[0])), m[0]).toBeGreaterThanOrEqual(4.5);
+// U1b: the featured card's gradient (the Add sheet's Photo) carries white words on every stop, in both themes; P1: the
+// closing call's too
+test('words on the featured card and the closing call', () => {
+  const at = [...css.matchAll(/--grad-(feature|call):/g)].map((m) => m.index);
+  expect(at).toHaveLength(3);
+  for (const a of at) for (const m of css.slice(a, css.indexOf(';', a)).matchAll(/#[0-9a-f]{6}/gi)) expect(ratio(parse(light['on-accent']), parse(m[0])), m[0]).toBeGreaterThanOrEqual(4.5);
 });
 
 // P1: every photo gradient's eight colours (scripts/gradients.sh), each under the grain's mean (the site's noise: 9.5

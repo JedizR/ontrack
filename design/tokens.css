@@ -24,7 +24,8 @@
 
   /* Reached: green marks progress that reached its target. Nothing else is green. */
   --success: #19dba8;           /* the "+20,8%" chip: fills only */
-  --success-ink: #006644;       /* "On track" words and dots. #198669 fails 4.5 to 1 on the hero's lavender (derived) */
+  --success-ink: #006644;       /* "On track" words and dots (derived, darker than #198669 for the hero). On the photo haze
+                                   (P1) only the heading sized reached figure, large text at 3 to 1 */
   --success-soft: #daf9f1;      /* derived: 16 percent of the fill on white */
 
   /* Neutrals */
@@ -55,16 +56,17 @@
 
   /* Gradients: one per screen at most, on its hero. Never on a button, a row or text */
   /* P1, the owner's round 3: every gradient is a photo gradient made on photogradient.com from the palette (section 4),
-     each one its own eight points, all from the settings of the owner's example (scripts/gradients.sh). The first layer
+     each one its own eight points from the ten colours (the brand's violet or lavender in every one, as depth or an
+     accent), all from the settings of the owner's example (scripts/gradients.sh). The first layer
      is the site's grain, the CSS gradient beneath is the fallback; words on each are checked on its colours
      (contrast.test.ts) and on the image (landing.spec.ts) */
   --grain: url(./gradients/grain.webp) 0 0 / 128px;
-  /* the hero haze: the palette's light colours, mist and lavender cool at the top left, peach warm at the right. Secondary
-     words on it are ink at 73 percent (the `haze` utility), which matches ink-2 on white and keeps 4.5 to 1 on peach */
+  /* the hero haze: the palette's light colours, peach and sand warm at the top left, lavender and mist cool to the right
+     and below. Secondary words on it are ink at 73 percent (the `haze` utility): ink-2 on white, 4.5 to 1 on lavender */
   --grad-hero: var(--grain), url(./gradients/haze-light.webp) center / cover no-repeat,
-    radial-gradient(70% 100% at 0% 0%, #a7bedb 0%, transparent 70%),
-    radial-gradient(70% 120% at 100% 60%, #f9bba1 0%, transparent 70%),
-    radial-gradient(60% 90% at 0% 100%, #bebeff 0%, transparent 70%), #eddecc;
+    radial-gradient(70% 100% at 0% 0%, #f9bba1 0%, transparent 70%),
+    radial-gradient(70% 120% at 100% 20%, #bebeff 0%, transparent 70%),
+    radial-gradient(60% 90% at 70% 100%, #a7bedb 0%, transparent 70%), #ffffff;
   /* the screen's one featured card (U1b: the Add sheet's Photo): violet with steel and clay deepened, white words */
   --grad-feature: var(--grain), url(./gradients/feature-light.webp) center / cover no-repeat,
     radial-gradient(90% 120% at 100% 30%, #a95445 0%, transparent 70%),
@@ -186,10 +188,10 @@
      anchors it, and the page masks it to nothing at every edge (the `glow` utility), since its edges are only near the canvas */
   --glow: var(--grain), url(./gradients/glow.webp) center / 100% 100% no-repeat,
     radial-gradient(70% 50% at 50% 50%, #9c5e57 0%, rgba(56, 26, 201, 0.5) 45%, transparent 75%);
-  /* the check-in's field (pick 07): lavender led, with white, mist, heather, peach and coral */
+  /* the check-in's field (pick 07): lavender led, peach and white at the top right, coral below them, mist and heather */
   --grad-lavender: var(--grain), url(./gradients/panel.webp) center / cover no-repeat,
-    radial-gradient(60% 60% at 80% 75%, #f9bba1 0%, transparent 70%), radial-gradient(60% 60% at 60% 0%, #ffffff 0%, transparent 70%), #bebeff;
-  /* the closing call's panel, inside the dark run in both themes: clay and coral deepened, with steel, heather and violet */
+    radial-gradient(60% 60% at 60% 0%, #f9bba1 0%, transparent 70%), radial-gradient(60% 60% at 80% 70%, #f89183 0%, transparent 70%), #bebeff;
+  /* the closing call's panel, inside the dark run in both themes: heather and steel deepened, a band of clay and coral */
   --grad-call: var(--grain), url(./gradients/call.webp) center / cover no-repeat,
     radial-gradient(90% 120% at 80% 40%, #a95445 0%, transparent 70%),
     radial-gradient(60% 90% at 0% 0%, #486478 0%, transparent 70%), #121214;
@@ -205,9 +207,9 @@
   --liquid-white: rgba(255, 255, 255, 0.6);
   --liquid-white-rim: inset 1px 1px 0 rgba(255, 255, 255, 0.9), inset -1px -1px 0 rgba(255, 255, 255, 0.35);
   /* the colour-washed cards (pick 10): white words on ink, steel and clay (deepened), night words on sand */
-  --wash-ink: var(--grain), url(./gradients/wash-ink.webp) center / cover no-repeat, linear-gradient(160deg, #121214 0%, #3f5668 60%, #381ac9 100%);
-  --wash-steel: var(--grain), url(./gradients/wash-steel.webp) center / cover no-repeat, linear-gradient(160deg, #4a677c 0%, #445d70 50%, #381ac9 100%);
-  --wash-clay: var(--grain), url(./gradients/wash-clay.webp) center / cover no-repeat, linear-gradient(160deg, #a55244 0%, #9a4d40 50%, #381ac9 100%);
+  --wash-ink: var(--grain), url(./gradients/wash-ink.webp) center / cover no-repeat, linear-gradient(160deg, #121214 0%, #364957 60%, #381ac9 100%);
+  --wash-steel: var(--grain), url(./gradients/wash-steel.webp) center / cover no-repeat, linear-gradient(160deg, #4a677c 0%, #445d70 50%, #486478 100%);
+  --wash-clay: var(--grain), url(./gradients/wash-clay.webp) center / cover no-repeat, linear-gradient(160deg, #a55244 0%, #9a4d40 50%, #864439 100%);
   --wash-sand: var(--grain), url(./gradients/wash-sand.webp) center / cover no-repeat, linear-gradient(160deg, #eddecc 0%, #f9bba1 50%, #f89183 100%);
 }
 
