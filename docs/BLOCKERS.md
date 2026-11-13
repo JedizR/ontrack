@@ -32,6 +32,11 @@ Each entry: what is blocked, what Claude tried, the exact steps for you, and wha
 
 Each entry: what to look at (URL or screenshot paths), what to look for, and which milestone it belongs to.
 
+### L3: the top bar, the bending glass and the footer pull, on your iPhone
+
+- **Where:** https://ontrack-black.vercel.app signed out, in Safari (close and reopen the tab). Before and after, and two videos of the pull: branch `pr-assets`, `l3/`.
+- **Look for:** at the top, the status bar area shows the hero's sky, not a white bar, and the bar sits where it did; Sign in is the black pill; the glass is more blurred and the footer panels, source chips and mark tile bend the gradient at their edges; at the end of the page, drag up past the end and let go to open the footer (a short drag springs back), and it closes after you scroll back up.
+
 ### L2: the landing's glass and the photo gradients
 
 - **Where:** https://ontrack-black.vercel.app signed out, in Safari on the iPhone (light and dark) and on a desktop at 1440. Before and after: branch `pr-assets`, `l2/`.
