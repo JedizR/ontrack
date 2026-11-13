@@ -229,8 +229,6 @@ export function saveSettings(profile: Profile, next?: Plan) {
   if (next) savePlan(SCHEMAS.plan.parse(next) as Plan);
   saveProfile(profile);
 }
-/** Sends what is waiting now rather than after the usual pause (Settings' Sync now). */
-export const syncNow = () => sync.run();
 /** Every record this account holds, as a JSON file to share or save (F12). Photos stay out. */
 export function exportAll() {
   const records = Object.fromEntries(COLLECTIONS.map((c) => [c, db.live(c).map(({ id, updatedAt, data }) => ({ id, updatedAt, data }))]));
@@ -423,6 +421,9 @@ export async function signOut(force = false): Promise<'ok' | 'unsent'> {
     prefs.firstDay = null;
     prefs.suggestOff = false;
     prefs.liftAsked = false;
+    // the next account answers the photo and location notices for itself (M9a)
+    prefs.photoOk = false;
+    prefs.locationOk = false;
     location.reload();
   }
   return 'ok';

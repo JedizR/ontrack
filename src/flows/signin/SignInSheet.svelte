@@ -160,6 +160,11 @@
     </div>
   {/if}
 
+  <!-- SCREENS.md section 5: small print linking to Privacy and Terms (M9a); inline links keep 44 to tap through their padding -->
+  {@const [a, terms, b, privacy, c] = t.signin.legal}
+  <p class="text-caption text-ink-2 mt-4" data-testid="signin-legal">
+    {a}<a href="/terms.html" target="_blank" rel="noopener" class="text-accent-ink py-3 underline">{terms}</a>{b}<a href="/privacy.html" target="_blank" rel="noopener" class="text-accent-ink py-3 underline">{privacy}</a>{c}
+  </p>
 
   {#snippet footer()}
     {#if step === 'email'}

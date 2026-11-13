@@ -35,8 +35,9 @@
   let rate = $state(base.ratePctPerWeek);
 
   const next = $derived(nextPlan(base, was, { profile: draft, goal, rate }, { weightKg: latest, sessions, year, from }));
-  const moved = $derived(moves(base, next));
-  const changed = $derived(moved || JSON.stringify(draft) !== JSON.stringify(was));
+  // only what the user changed counts: a plan from an older engine version is not news on its own
+  const changed = $derived(goal !== base.goal || rate !== base.ratePctPerWeek || JSON.stringify(draft) !== JSON.stringify(was));
+  const moved = $derived(changed && moves(base, next));
   const targets = $derived(targetsOf(next, draft.sex, draft.calorieMode));
   const maintainOnly = base.flags.includes('maintainOnly');
   // goal and pace are judged at the plan's weight, the weight the plan's own pace was offered at

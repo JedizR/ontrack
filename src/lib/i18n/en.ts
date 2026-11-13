@@ -170,7 +170,6 @@ export const en = {
     easyTitle: (n: string) => `${n} kcal to go`,
     easyLine: 'These three cover it, about a third each.',
     easyAdd: (n: string) => `Add ${n} kcal`,
-    easyAdded: (name: string) => `${name} added`,
     nothingTitle: 'Nothing logged yet today',
     nothingLine: 'Log a meal with the plus button.',
     nothingAction: 'Add a meal',

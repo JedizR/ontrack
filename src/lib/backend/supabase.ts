@@ -42,7 +42,8 @@ export function createSupabaseBackend(sb: SupabaseClient, settingsUrl?: string, 
   let google: Promise<boolean> | null = null;
   /** null for an object that is missing or not the caller's to read: storage answers 400 or 404 for both */
   const download = async (path: string) => {
-    const r = await sb.storage.from(BUCKET).download(path);
+    // no-store: a friend's photo must not outlive the friendship in the browser's cache (S1b, M9a)
+    const r = await sb.storage.from(BUCKET).download(path, {}, { cache: 'no-store' });
     if (r.error) {
       const status = (r.error as { status?: number; statusCode?: string }).status ?? Number((r.error as { statusCode?: string }).statusCode);
       if (status === 400 || status === 404) return null;
@@ -116,7 +117,7 @@ export function createSupabaseBackend(sb: SupabaseClient, settingsUrl?: string, 
     },
 
     async putThumb(mealId, blob) {
-      check(await sb.storage.from(BUCKET).upload(`${await userId()}/${mealId}.jpg`, blob, { upsert: true, contentType: 'image/jpeg' }));
+      check(await sb.storage.from(BUCKET).upload(`${await userId()}/${mealId}.jpg`, blob, { upsert: true, contentType: 'image/jpeg', cacheControl: '0' }));
     },
     async getThumb(mealId) {
       return download(`${await userId()}/${mealId}.jpg`);

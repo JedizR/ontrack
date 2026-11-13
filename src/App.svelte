@@ -36,7 +36,7 @@
   let Account = $state<Component<{ open: boolean }> | null>(null);
   let Wheel = $state<Component | null>(null);
   async function loadSheets() {
-    const [s, a, k] = await Promise.all([import('./flows/signin/SignInSheet.svelte'), import('./settings/AccountSheet.svelte'), import('$lib/components/WheelSheet.svelte')]);
+    const [s, a, k] = await Promise.all([import('./flows/signin/SignInSheet.svelte'), import('./settings/SettingsSheet.svelte'), import('$lib/components/WheelSheet.svelte')]);
     [SignIn, Account, Wheel] = [s.default, a.default, k.default];
   }
   $effect(() => { if ((sheets.signin || sheets.account || picker.open) && !SignIn) void loadSheets(); });
