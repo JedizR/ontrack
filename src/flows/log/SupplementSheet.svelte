@@ -292,6 +292,7 @@
   function deleteEntry() {
     if (!mealId || !s) return;
     const n = s.name;
+    haptic();
     const undo = deleteMeal(mealId);
     close();
     undoToast(t.supplement.deleted(n), undo);

@@ -5,13 +5,15 @@
   import { onMount } from 'svelte';
   import Check from '@lucide/svelte/icons/check';
   import { t } from '$lib/i18n';
+  import { ms } from '$lib/haptics';
 
   let { training, ondone }: { training: boolean; ondone: () => void } = $props();
 
   const rows = $derived([t.onboarding.buildEnergy, training ? t.onboarding.buildDays : t.onboarding.buildEvery, t.onboarding.buildProtein]);
-  // a row ticks every 450 ms, the mark's check 300 ms after the last, then Your plan 500 ms later: 2.15 s in all
-  const AT = [1, 2, 3].map((i) => i * 450);
-  AT.push(AT[2] + 300, AT[2] + 800);
+  // a row ticks every beat (--d-beat, 450 ms), the mark pops in a settle (240 ms) after the last, and Your plan follows
+  // once it has popped (--d-pop, 520 ms): 2.11 s in all
+  const AT = [1, 2, 3].map((i) => i * ms('--d-beat'));
+  AT.push(AT[2] + ms('--d-settle'), AT[2] + ms('--d-settle') + ms('--d-pop'));
   let done = $state(0);
   onMount(() => {
     const ids = AT.map((ms, i) => setTimeout(() => (i < AT.length - 1 ? (done = i + 1) : ondone()), ms));
@@ -22,7 +24,7 @@
 <section class="flex min-h-svh flex-col justify-center px-4 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]" aria-label={t.onboarding.building} data-testid="building">
   <!-- the success mark: an empty disc that fills violet with its check once the rows are done (no ring: D2 keeps the track) -->
   <div class="bg-track relative size-16 rounded-full" aria-hidden="true">
-    <span class="bg-accent text-on-accent absolute inset-0 grid place-items-center rounded-full transition-[opacity,scale] duration-[var(--d-ui)] ease-[var(--spring-default)] {done > 3 ? 'scale-100 opacity-100' : 'scale-50 opacity-0'}" data-testid="build-mark">
+    <span class="bg-accent text-on-accent absolute inset-0 grid place-items-center rounded-full transition-[opacity,scale] duration-[var(--d-pop)] ease-[var(--spring-pop)] {done > 3 ? 'scale-100 opacity-100' : 'scale-50 opacity-0'}" data-testid="build-mark">
       <Check size={30} strokeWidth={2.75} />
     </span>
   </div>

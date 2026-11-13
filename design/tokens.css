@@ -18,6 +18,7 @@
   --accent-ink: #381ac9;        /* violet words: links and highlights */
   --progress: #381ac9;          /* the fill of a track, the onboarding bar, the trend line and week bars below their zone */
   --on-accent: #ffffff;
+  --on-accent-pick: #bebeff;    /* Violet/04: a picked choice's glyph on its violet tile (the owner, U1c). An icon: 3 to 1 */
   --accent-soft: #bebeff;       /* Violet/04: icon tiles and the hero haze. A surface, never a state */
   --on-accent-soft: #121214;
 
@@ -131,10 +132,20 @@
   --ease-framer: cubic-bezier(0.44, 0, 0.56, 1);
   --spring-default: linear(0, 0.0266, 0.0996, 0.1834, 0.2767, 0.3882, 0.4807, 0.5671, 0.6577, 0.7256, 0.7844, 0.8418, 0.8821, 0.915, 0.9453, 0.9652, 0.9804, 0.9934, 1.0011, 1.0064, 1.0098, 1.0119, 1.0125, 1.0124, 1.0117, 1.0107, 1.0096, 1.0082, 1.007, 1.0059, 1.0047, 1.0038, 1.003, 1.0022, 1.0017, 1.0012, 1.0008, 1.0005, 1.0003, 1.0001, 1);
   --spring-appear: linear(0, 0.0241, 0.0825, 0.1565, 0.2472, 0.3423, 0.4365, 0.5203, 0.6033, 0.6779, 0.7434, 0.7965, 0.8449, 0.8851, 0.918, 0.9427, 0.9638, 0.9799, 0.992, 1.0002, 1.0064, 1.0105, 1.0128, 1.0139, 1.0141, 1.0136, 1.0127, 1.0117, 1.0104, 1.009, 1.0077, 1.0065, 1.0054, 1.0044, 1.0035, 1.0027, 1.0021, 1.0015, 1.0011, 1.0007, 1);
+  --spring-pop: linear(0, 0.083, 0.2913, 0.5403, 0.798, 1.0025, 1.1532, 1.2312, 1.2517, 1.2269, 1.1722, 1.1089, 1.0476, 0.9947, 0.9598, 0.9405, 0.9367, 0.944, 0.9575, 0.9743, 0.9895, 1.002, 1.0108, 1.0151, 1.0159, 1.014, 1.0103, 1.0063, 1.0023, 0.9992, 0.9971, 0.9961, 0.996, 0.9966, 0.9975, 0.9985, 0.9995, 1.0003, 1.0008, 1.001, 1);
   --d-press: 120ms;
   --d-ui: 420ms;                /* with --spring-default */
   --d-move: 420ms;
   --d-appear: 600ms;            /* with --spring-appear, cut short: it has settled to the eye by then */
+  /* U1c: the rest of the motion set (DESIGN.md section 10). JavaScript reads these through dur() in haptics.ts */
+  --d-fade: 150ms;              /* a cross fade: the one motion reduced motion keeps */
+  --d-count: 400ms;             /* a number counting to its value, with --ease-out */
+  --d-settle: 240ms;            /* a dragged row or page settling once the finger lifts; a tab or page sliding in */
+  --d-leave: 280ms;             /* a row or card leaving: things go faster than they come */
+  --d-pop: 520ms;               /* a check popping in, with --spring-pop */
+  --d-beat: 450ms;              /* one step of a made-up wait: Building your plan's rows */
+  --d-step: 1600ms;             /* one step of a real wait: the words under a photo being read */
+  --d-sweep: 1800ms;            /* one pass of the light across a photo being read */
 
   /* Landing page (L1) only: OneFin's landing sections, which no app screen has (DESIGN.md section 13). The sizes follow
      OneFin's Heading 1 and Heading 3 (48 and 36 on a phone) and grow with the window */
@@ -142,7 +153,6 @@
   --t-section: calc(clamp(36px, 5.6vw, 88px) * var(--fs-display));
   --t-statement: calc(clamp(24px, 3.4vw, 48px) * var(--fs));
   --t-pill: 0.62em;             /* a word pill inside the statement, relative to it */
-  --spring-pop: linear(0, 0.083, 0.2913, 0.5403, 0.798, 1.0025, 1.1532, 1.2312, 1.2517, 1.2269, 1.1722, 1.1089, 1.0476, 0.9947, 0.9598, 0.9405, 0.9367, 0.944, 0.9575, 0.9743, 0.9895, 1.002, 1.0108, 1.0151, 1.0159, 1.014, 1.0103, 1.0063, 1.0023, 0.9992, 0.9971, 0.9961, 0.996, 0.9966, 0.9975, 0.9985, 0.9995, 1.0003, 1.0008, 1.001, 1);
   --spring-fly: linear(0, 0.0203, 0.0732, 0.1449, 0.2281, 0.3163, 0.4074, 0.4927, 0.5726, 0.6476, 0.7127, 0.77, 0.8207, 0.8626, 0.8976, 0.9264, 0.9503, 0.9687, 0.983, 0.9941, 1.002, 1.0075, 1.0113, 1.0135, 1.0145, 1.0147, 1.0143, 1.0135, 1.0124, 1.0111, 1.0098, 1.0085, 1.0072, 1.006, 1.005, 1.0041, 1.0032, 1.0025, 1.0019, 1.0014, 1);
   --spring-reveal: linear(0, 0.049, 0.1471, 0.2642, 0.3706, 0.4664, 0.55, 0.6217, 0.6858, 0.7366, 0.7794, 0.8152, 0.8453, 0.8719, 0.8927, 0.9102, 0.9249, 0.9371, 0.9479, 0.9564, 0.9635, 0.9695, 0.9744, 0.9788, 0.9823, 0.9852, 0.9876, 0.9896, 0.9914, 0.9928, 0.994, 0.995, 0.9958, 0.9965, 0.9971, 0.9976, 0.998, 0.9983, 0.9986, 0.9988, 1);
   /* the landing hero's sky at the top, where the status bar continues it (U1b): the first stop of --grad-sky */
@@ -178,6 +188,7 @@
   --accent: #5b4ff5;                           /* derived: Violet/01 lifted so a fill reads on the dark ground */
   --accent-press: #4a3fe0;
   --accent-ink: #a9a9ff;                       /* derived: violet words on dark */
+  --on-accent-pick: #d4d4ff;                   /* derived: Violet/04 lifted, so it keeps 3 to 1 on the lifted violet */
   --progress: #7b72ff;                         /* derived: 3.7 to 1 on the empty track, which #5b4ff5 is not */
   --accent-soft: rgba(170, 157, 236, 0.1);    /* the active row tint on dark */
   --on-accent-soft: #bebeff;

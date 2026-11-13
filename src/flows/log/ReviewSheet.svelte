@@ -18,7 +18,8 @@
   import { totals } from '$lib/model/day';
   import { stampOn } from '$lib/model/dates';
   import { num } from '$lib/model/format';
-  import { haptic } from '$lib/haptics';
+  import { fade } from 'svelte/transition';
+  import { dur, haptic, ms } from '$lib/haptics';
   import { toast } from 'svelte-sonner';
   import { t } from '$lib/i18n';
   import ItemList from './ItemList.svelte';
@@ -33,6 +34,15 @@
 
   type Status = 'loading' | 'ready' | Exclude<Analyzed, { ok: true }>['error'];
   let status = $state<Status>('loading');
+  // the step of the wait in words (U1c): the next every --d-step while a meal is being read, the last held
+  const STEPS = t.review.steps.length; // after the first line
+  let waited = $state(0);
+  $effect(() => {
+    if (status !== 'loading' || !sheets.review) return;
+    waited = 0;
+    const id = setInterval(() => { if (++waited >= STEPS) clearInterval(id); }, ms('--d-step'));
+    return () => clearInterval(id);
+  });
   let kind = $state<'photo' | 'text'>('photo');
   let photoUrl = $state<string | null>(null);
   let title = $state('');
@@ -71,6 +81,7 @@
     reset();
     kind = r.kind;
     status = 'loading';
+    waited = 0;
     let request: AnalyzeRequest;
     if (r.kind === 'text') request = { kind: 'text', text: r.text, localDate: view.today, locale: 'en' };
     else {
@@ -167,14 +178,22 @@
 <Sheet bind:open={() => sheets.review !== null, (v) => { if (!v) close(); }} title={t.review.title} layer="base" testid="review-sheet" footer={status === 'ready' ? footer : undefined}>
   {#if kind === 'photo'}
     {#if photoUrl}
-      <img src={photoUrl} alt={t.review.photo} class="shadow-card aspect-[4/3] w-full rounded-md object-cover" data-testid="review-photo" />
+      <!-- U1c: while it is read, a lavender line sweeps the photo, its band tinting what it has passed -->
+      <div class="shadow-card relative overflow-hidden rounded-md">
+        <img src={photoUrl} alt={t.review.photo} class="block aspect-[4/3] w-full object-cover" data-testid="review-photo" />
+        {#if status === 'loading'}<div class="scan-sweep" aria-hidden="true" data-testid="review-sweep" out:fade={{ duration: dur('--d-fade') }}></div>{/if}
+      </div>
     {:else if status === 'loading'}
       <Skeleton class="aspect-[4/3] w-full rounded-md" />
     {/if}
   {/if}
 
   {#if status === 'loading'}
-    <p class="text-callout text-ink-2 mt-4" role="status" data-testid="review-looking">{t.review.looking}</p>
+    <!-- the wait in words: what is being done, a step every --d-step, the last held until the answer -->
+    {@const said = [kind === 'photo' ? t.review.looking : t.review.reading, ...t.review.steps]}
+    <p class="text-callout text-ink-2 mt-4 grid" role="status" data-testid="review-looking">
+      {#key waited}<span class="[grid-area:1/1]" in:fade={{ duration: dur('--d-fade') }} out:fade={{ duration: dur('--d-fade') }}>{said[waited]}</span>{/key}
+    </p>
     <!-- the shapes of the name field and three item rows, so nothing jumps when they arrive -->
     <Skeleton class="mt-4 h-14 w-full rounded-sm" />
     <div class="mt-4">

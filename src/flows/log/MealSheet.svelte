@@ -3,6 +3,7 @@
      pinned totals with Save changes. Save as a meal and Delete at the end. -->
 <script lang="ts">
   import { untrack } from 'svelte';
+  import { haptic } from '$lib/haptics';
   import Sheet from '$lib/components/Sheet.svelte';
   import Facts from '$lib/components/Facts.svelte';
   import Button from '$lib/components/Button.svelte';
@@ -74,6 +75,7 @@
   }
   function remove() {
     if (!id) return;
+    haptic();
     const undo = deleteMeal(id);
     close();
     undoToast(t.toast.mealDeleted, undo);

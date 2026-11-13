@@ -4,6 +4,7 @@
      check-in opens the same steps and ends on what was decided. -->
 <script lang="ts">
   import Figure from '$lib/components/Figure.svelte';
+  import Count from '$lib/components/Count.svelte';
   import { untrack } from 'svelte';
   import { toast } from 'svelte-sonner';
   import Sheet from '$lib/components/Sheet.svelte';
@@ -12,6 +13,7 @@
   import { sheets } from '$lib/sheets.svelte';
   import { db } from '$lib/db/store.svelte';
   import { decideCheckin } from '$lib/actions';
+  import { haptic } from '$lib/haptics';
   import { accountOf } from '$lib/model/progress';
   import { effectiveRate, roundTarget, type CheckinResult, type PlanNumbers } from '$lib/model/engine';
   import { evenEee, planFor, targetWith, trainingDayEee } from '$lib/model/day';
@@ -84,6 +86,7 @@
   function decide(decision?: 'accepted' | 'kept') {
     if (shown && !shown.stored && !decided) {
       decided = true;
+      haptic();
       decideCheckin(shown.date, shown.result, decision);
       if (decision === 'accepted') toast(t.checkin.accepted);
     }
@@ -101,6 +104,9 @@
 >
   {#if shown && s}
     <p class="text-callout text-ink-2" data-testid="checkin-step">{t.checkin.steps[step]}</p>
+    <!-- U1c: each step rises in; the last one reveals the result, counting from today's target to the new one -->
+    {#key step}
+    <div class="appear">
     {#if step === 0}
       <div class="mt-3 flex items-end justify-between gap-4">
         <div>
@@ -128,13 +134,15 @@
       {/if}
     {:else if f}
       <p class="text-lead mt-3">{lead}</p>
-      <p class="text-display mt-2" data-testid="checkin-proposal">{num(f.main)}</p>
+      <p class="text-display mt-2" data-testid="checkin-proposal"><Count value={f.main} from={current && change ? figures(current).main : 0} /></p>
       <p class="text-caption text-ink-2 mt-1">{f.caption}</p>
       {#if f.rest != null}<p class="text-lead num mt-3" data-testid="checkin-rest">{t.plan.onRest(num(f.rest))}</p>{/if}
       {#if deciding}
-        <p class="text-callout text-ink-2 mt-4" data-testid="checkin-change">{change > 0 ? t.checkin.up(num(change)) : t.checkin.down(num(-change))}</p>
+        <p class="text-callout text-ink-2 mt-4 appear [--i:8]" data-testid="checkin-change">{change > 0 ? t.checkin.up(num(change)) : t.checkin.down(num(-change))}</p>
       {/if}
     {/if}
+    </div>
+    {/key}
   {/if}
 
   {#snippet footer()}

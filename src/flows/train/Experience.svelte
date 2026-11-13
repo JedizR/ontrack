@@ -2,6 +2,7 @@
      Onboarding asks only gaining lifters (O1); for everyone else it sets how much volume Train suggests (S11). A tap
      selects, Save keeps it (Not now leaves it as it is), and the card goes; it is asked once per phone. -->
 <script lang="ts">
+  import { collapse } from '$lib/haptics';
   import Card from '$lib/components/Card.svelte';
   import Chip from '$lib/components/Chip.svelte';
   import Button from '$lib/components/Button.svelte';
@@ -31,6 +32,7 @@
 </script>
 
 {#if shown}
+  <div in:collapse out:collapse={{ leave: true }}>
   <Card data-testid="train-experience">
     <p class="text-body font-semibold">{t.experience.q}</p>
     <p class="text-callout text-ink-2 mt-1">{t.experience.trainLine}</p>
@@ -44,4 +46,5 @@
       <Button variant="plain" size="sm" onclick={() => (prefs.liftAsked = true)} data-testid="experience-later">{t.suggest.later}</Button>
     </div>
   </Card>
+  </div>
 {/if}

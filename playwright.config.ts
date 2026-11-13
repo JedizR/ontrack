@@ -24,7 +24,7 @@ export default defineConfig({
     env: { VITE_BACKEND: 'mock', VISION_PROVIDER: 'mock' },
   },
   projects: [
-    { name: 'light', testMatch: /(app|sync|onboarding|landing|today|photo|train|progress|thai|supplements|scan|friends|settings)\.spec\.ts/, use: { ...phone, colorScheme: 'light' } },
+    { name: 'light', testMatch: /(app|sync|onboarding|landing|today|photo|train|progress|thai|supplements|scan|friends|settings|motion)\.spec\.ts/, use: { ...phone, colorScheme: 'light' } },
     { name: 'dark', testMatch: /app\.spec\.ts/, use: { ...phone, colorScheme: 'dark' } },
     // screenshots at scale 2: the same layout as the phone at scale 3, in less CI time
     { name: 'screens', testMatch: /screens\.spec\.ts/, use: { ...phone, deviceScaleFactor: 2 } },
@@ -43,6 +43,8 @@ export default defineConfig({
     },
     // O1's tap and time measure, printed for the pull request; not part of any gate
     { name: 'measure', testMatch: /measure\.spec\.ts/, use: { ...phone, colorScheme: 'light' } },
+    // U1c's eight main tasks, counted and timed; TASK_VIDEO=1 films them in light and dark. Not part of any gate
+    { name: 'tasks', testMatch: /tasks\.spec\.ts/, use: { ...phone, video: process.env.TASK_VIDEO ? 'on' : 'off' } },
     // the landing page's phone screens (L1): writes images only with LANDING_SHOTS=1
     { name: 'shots', testMatch: /landing-shots\.spec\.ts/, use: { ...phone } },
     // layout only, no touch input: Chromium, viewports set per describe

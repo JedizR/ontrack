@@ -53,7 +53,7 @@ function walker(page: Page) {
 }
 
 /** Building your plan (U1a): a fixed wait before Your plan, added to the model as it is. */
-const BUILDING_S = 2.15;
+const BUILDING_S = 2.11;
 
 function report(name: string, log: Log, ms: number) {
   const taps = log.reduce((a, s) => a + s.taps, 0);

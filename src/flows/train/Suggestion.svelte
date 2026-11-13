@@ -2,6 +2,7 @@
      week the answers made (its days, lifting or cardio or both) and the experience, in one tap with an undo, or Not now.
      Cardio only, or no training, with a gain goal: Minimal 2 days, for the two strength sessions a week (F10). -->
 <script lang="ts">
+  import { collapse } from '$lib/haptics';
   import Card from '$lib/components/Card.svelte';
   import Button from '$lib/components/Button.svelte';
   import { changeProgram, undoToast } from '$lib/actions';
@@ -35,6 +36,7 @@
 </script>
 
 {#if tpl}
+  <div in:collapse out:collapse={{ leave: true }}>
   <Card data-testid="train-suggest">
     <p class="text-body font-semibold">{t.suggest.title}</p>
     <p class="text-callout mt-1">{adds ? t.suggest.gainLine(tpl.name) : t.suggest.line(tpl.name, num(tpl.daysPerWeek))}</p>
@@ -44,4 +46,5 @@
       <Button variant="plain" size="sm" onclick={() => (prefs.suggestOff = true)} data-testid="suggest-later">{t.suggest.later}</Button>
     </div>
   </Card>
+  </div>
 {/if}

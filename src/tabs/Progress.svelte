@@ -4,6 +4,7 @@
 <script lang="ts">
   import { t } from '$lib/i18n';
   import Figure from '$lib/components/Figure.svelte';
+  import Count from '$lib/components/Count.svelte';
   import Card from '$lib/components/Card.svelte';
   import Facts from '$lib/components/Facts.svelte';
   import Button from '$lib/components/Button.svelte';
@@ -94,7 +95,7 @@
   <div data-testid={testid}>
     <p class="text-body font-semibold">{title}</p>
     <p class="text-caption text-ink-2"><Facts {facts} /></p>
-    <div class="mt-2"><Track {value} {target} {zone} label="{title}. {facts.join(', ')}" /></div>
+    <div class="mt-2"><Track grow {value} {target} {zone} label="{title}. {facts.join(', ')}" /></div>
   </div>
 {/snippet}
 
@@ -112,7 +113,8 @@
         <!-- a trend needs two weigh-ins in view; with fewer, the card is its empty state -->
         {#if trendNow != null && points.length > 1}
           <!-- always one decimal: a trend of 60.0 is a measurement, and the lighter tenth keeps 72.4 from reading as 724 -->
-          <p class="text-display mt-2" data-testid="progress-trend"><Figure text={inUnit(trendNow).toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} /></p>
+          <!-- U1c: the figures count up on arrival; the trend from where the chart starts, so the change itself moves -->
+          <p class="text-display mt-2" data-testid="progress-trend"><Count value={inUnit(trendNow)} from={points[0].trend} format={(v) => v.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}>{#snippet children(text)}<Figure {text} />{/snippet}</Count></p>
           <p class="text-caption text-ink-2 mt-1">{metric ? t.after.kg : t.after.lb} {t.after.trend}</p>
         {/if}
         <p class="mt-3 {rate != null ? 'text-callout' : 'text-body text-ink-2'}" data-testid="progress-rate">
@@ -132,11 +134,11 @@
         <p class="text-eyebrow text-ink-2">{t.progress.maintenance}</p>
         <div class="mt-2 flex flex-wrap gap-x-10 gap-y-4">
           <div>
-            <p class="text-display" data-testid="progress-measured">{num(roundTarget(measured))}</p>
+            <p class="text-display" data-testid="progress-measured"><Count value={roundTarget(measured)} from={0} /></p>
             <p class="text-caption text-ink-2 mt-1">{t.after.measured}</p>
           </div>
           <div>
-            <p class="text-display text-ink-2" data-testid="progress-formula">{num(roundTarget(formula))}</p>
+            <p class="text-display text-ink-2" data-testid="progress-formula"><Count value={roundTarget(formula)} from={0} /></p>
             <p class="text-caption text-ink-2 mt-1">{t.after.formula}</p>
           </div>
         </div>
@@ -147,7 +149,7 @@
     <Card aria-label={t.progress.intake} data-testid="progress-intake">
       <p class="text-eyebrow text-ink-2">{t.progress.intake}</p>
       {#if complete.length}
-        <p class="text-display mt-2" data-testid="progress-intake-avg">{num(Math.round(mean(complete.map((d) => d.intake))))}</p>
+        <p class="text-display mt-2" data-testid="progress-intake-avg"><Count value={mean(complete.map((d) => d.intake))} from={0} /></p>
         <p class="text-caption text-ink-2 mt-1">{t.after.kcalWeekAvg}</p>
         <div class="mt-4">
           <WeekBars weeks={bars} from={shortDate(weeks[0].start)} to={shortDate(today)} label={t.progress.bars(num(weeks.length))} />
@@ -180,7 +182,7 @@
     <Card aria-label={t.progress.training} data-testid="progress-training">
       <p class="text-eyebrow text-ink-2">{t.progress.training}</p>
       {#if training.planned}
-        <p class="text-display mt-2" data-testid="progress-sessions-done">{num(training.done)}</p>
+        <p class="text-display mt-2" data-testid="progress-sessions-done"><Count value={training.done} from={0} /></p>
         <p class="text-caption text-ink-2 mt-1">{t.after.ofPlanned(num(training.planned))}</p>
         <div class="mt-4">
           <WeekBars weeks={sessionBars} from={shortDate(weeks[0].start)} to={shortDate(today)} label={t.progress.sessionBars(num(weeks.length))} />
