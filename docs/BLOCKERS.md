@@ -23,6 +23,12 @@ Each entry: what is blocked, what Claude tried, the exact steps for you, and wha
 
 Each entry: what to look at (URL or screenshot paths), what to look for, and which milestone it belongs to.
 
+### S1: friends and the food map, with a second account
+
+- **Where:** https://ontrack-black.vercel.app in Safari on the iPhone, with two accounts (a private tab for the second). Screenshots: branch `pr-assets`, folder `s1/`.
+- **Do:** from one account, tap the map button in the header, set up a profile and search for the other by handle; accept on the second. Share three photo meals from different places with Share to map in the Review sheet.
+- **Look for:** each account sees only its own meals and its friend's; removing the friend or unsharing takes the pins away; places are rounded to about 100 m. Taste: the panel's drag, how sharp the 320 px photo is in the pin sheet, the dark map, and the landing's 04 Friends section.
+
 ### U1a: onboarding feel, once per new goal
 
 - **Where:** https://ontrack-black.vercel.app in Safari. Screenshot 10 of your iPhone pass shows a "How fast?" step from before O1, so the phone probably had an old copy cached: close Ontrack in Safari and open it again first. Videos: branch `pr-assets`, `u1/u1a-onboarding-light.webm` and `u1/u1a-onboarding-dark.webm`.
