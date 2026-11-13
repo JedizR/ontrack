@@ -145,12 +145,12 @@
             {/if}
           </div>
         {:else}
-          <p class="text-callout text-ink-2 mt-1">{t.train.noneListed}</p>
+          <p class="text-body text-ink-2 mt-1">{t.train.noneListed}</p>
         {/each}
         <Button variant="plain" class="-ml-5 mt-1" disabled={(s.exercises?.length ?? 0) >= MAX.exercises} onclick={() => (picking = true)} data-testid="exercise-add">{t.train.addExercise}</Button>
       </div>
       {#if !editing?.isNew}
-        <div><Button variant="danger" onclick={remove} data-testid="session-delete">{t.train.deleteSession}</Button></div>
+        <div><Button variant="danger" class="-ml-5" onclick={remove} data-testid="session-delete">{t.train.deleteSession}</Button></div>
       {/if}
     </div>
   {/if}

@@ -680,7 +680,7 @@ export const en = {
     setsLabel: 'Sets',
     repsFrom: 'Reps from',
     repsTo: 'Reps to',
-    noneListed: 'No exercises listed.',
+    noneListed: 'Exercises you add show here.',
     addExercise: 'Add exercise',
     deleteSession: 'Delete session',
     save: 'Save',
