@@ -85,9 +85,7 @@ async function checkPage(page: Page, name: string, dir: string) {
   expect(await clipped(page), `${name}: clipped text`).toEqual([]);
   expect(await smallTargets(page), `${name}: tap targets under 44 px`).toEqual([]);
   expect(await unnamed(page), `${name}: controls without an accessible name`).toEqual([]);
-  // shortcut: the landing page's Sign in and Build your plan have no pressed state yet, and L2 owns that page now; drop
-  // this exception when L2 gives them one
-  if (name !== 'landing') expect(await unpressed(page), `${name}: controls with no pressed state`).toEqual([]);
+  expect(await unpressed(page), `${name}: controls with no pressed state`).toEqual([]);
   await page.screenshot({ path: `${dir}/${name}.png`, fullPage: true });
 }
 
