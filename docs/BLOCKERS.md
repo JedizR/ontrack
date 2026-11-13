@@ -6,11 +6,6 @@ Everything that needs you, in one place. Newest first within each section.
 
 Each entry: what is blocked, what Claude tried, the exact steps for you, and what to tell Claude afterwards.
 
-### M9a: the support Gmail (done 13 November, kept for the record)
-
-- **Done:** the product address is `team.ontrackapp@gmail.com` (owner, 13 November). Privacy and Terms are approved and carry it; `VITE_SUPPORT_EMAIL` is set in Vercel; Supabase sends sign-in codes from it as "Ontrack" (declared in `supabase/config.toml`, the app password from `~/.config/ontrack/smtp-app-password`). A test code to that inbox was accepted on 13 November; that sign-in also created an unconfirmed account for the address.
-- **Your step, if you like:** look in that inbox for the Ontrack code (and its spam folder), so we know Gmail delivers it.
-
 ### Gemini's paid tier: check the credits are used
 
 - **Done (13 November):** the owner linked billing (a 150 baht prepayment). Fifteen concurrent requests to `gemini-3.6-flash` all answered, which the free tier refuses, so the key is on the paid tier. The app's daily cap is 150 photos (`AI_DAILY_GLOBAL_CAP`), about 60 baht a day at most. Privacy now describes the paid tier.
@@ -32,6 +27,12 @@ Each entry: what is blocked, what Claude tried, the exact steps for you, and wha
 ## Needs your eyes
 
 Each entry: what to look at (URL or screenshot paths), what to look for, and which milestone it belongs to.
+
+### M9b: the final device check, installed on your iPhone
+
+- **Where:** https://ontrack-black.vercel.app, added to the Home Screen from Safari (version 1.0.0 shows in Settings).
+- **Do:** sign in, onboard, and log by every method (photo, describe, search, quick add, scan, a supplement); weigh in; edit the program on Train; turn on airplane mode and log something, then turn it off (the sync mark should clear within about 10 s); switch theme and text size; export; sign out and back in, on a second device if you have one.
+- **Look for:** a cold start that feels under 1.5 s with your own data, every tap visibly pressing, and the food map now able to ask for your location.
 
 ### U1c: motion and feel, a day on your iPhone
 
@@ -207,6 +208,11 @@ Each entry: what to look at (URL or screenshot paths), what to look for, and whi
 - **Look for:** open it in Safari, Share, Add to Home Screen. The icon is the lime track on an ink tile. It opens full screen with no Safari bars. The header reads Today with the round avatar on the right. The floating dock shows Today, Train, Progress and the lime plus. Tapping or swiping changes the tab and its title. Switch the phone to dark mode and back. The plus and the avatar do nothing yet.
 
 ## Resolved during the run
+
+### M9a: the support Gmail (done 13 November, kept for the record)
+
+- **Done:** the product address is `team.ontrackapp@gmail.com` (owner, 13 November). Privacy and Terms are approved and carry it; `VITE_SUPPORT_EMAIL` is set in Vercel; Supabase sends sign-in codes from it as "Ontrack" (declared in `supabase/config.toml`, the app password from `~/.config/ontrack/smtp-app-password`). A test code to that inbox was accepted on 13 November; that sign-in also created an unconfirmed account for the address.
+- **Your step, if you like:** look in that inbox for the Ontrack code (and its spam folder), so we know Gmail delivers it.
 
 - **Google sign in (M3):** done by Claude after Yab came back (through the `yab` command; the MCP link stayed refused). Google Cloud project `ontrack` (`ontrack-514502`): consent screen "Ontrack", External, in Testing, test user `teenday.jedi@gmail.com`; Web client "Ontrack Supabase" with the Supabase callback. The client JSON is at `~/.config/ontrack/google-oauth-client.json` (mode 600). The Supabase Google provider is on (pushed with the CLI from a scratch config, so `supabase/config.toml` does not declare it and pushes leave it alone). Google linked the new project to your billing account on its own; you disabled billing on it.
 - **Email codes (M3):** you set Gmail SMTP in Supabase; Claude pushed the code template (`supabase/config.toml`, `supabase/templates/code.html`) and sent one test code to `teenday.jedi@gmail.com` (HTTP 200).
