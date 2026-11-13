@@ -40,7 +40,7 @@
       {#each MACROS as m (m.label)}
         <div class="bg-surface-2 flex min-w-0 flex-col rounded-md px-4 pt-3 pb-5 first:rounded-bl-sheet last:rounded-br-sheet">
           <div class="text-caption text-ink-2">{m.label}</div>
-          <div class="text-body num font-semibold">{m.value}{' '}<span class="text-caption text-ink-2 block font-medium whitespace-nowrap">{t.after.ofGrams(num(m.target))}</span></div>
+          <div class="text-subhead num">{m.value}{' '}<span class="text-caption text-ink-2 block font-medium whitespace-nowrap">{t.after.ofGrams(num(m.target))}</span></div>
           <div class="mt-auto pt-2"><Track value={m.value} target={m.target} zone={m.zone} label="{m.label} {m.value} {t.after.ofGrams(num(m.target))}" /></div>
         </div>
       {/each}
@@ -48,16 +48,17 @@
   </Card>
 
   <Card list aria-label={t.today.training}>
-    <Row title="Push day" wrap>
+    <p class="text-eyebrow text-ink-2 pt-5" aria-hidden="true">{t.today.training}</p>
+    <div><Row title="Push day" wrap>
       {#snippet caption()}<Facts facts={['Strength', t.after.minN('60'), t.after.kcalN('240')]} />{/snippet}
       {#snippet leading()}<div class="tile grid size-full place-items-center"><TrainIcon /></div>{/snippet}
       {#snippet trailing()}<Button size="sm">{t.today.done}</Button>{/snippet}
-    </Row>
+    </Row></div>
   </Card>
 
   <div class="mt-2 flex items-baseline justify-between">
     <h2 class="text-heading">{t.today.meals}</h2>
-    <span class="text-caption text-ink-2">{t.today.logged(String(MEALS.length))}</span>
+    <span class="text-callout text-ink-2">{t.today.logged(String(MEALS.length))}</span>
   </div>
   <Card list aria-label={t.today.meals}>
     {#each MEALS as m (m.name)}

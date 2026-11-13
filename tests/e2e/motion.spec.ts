@@ -33,6 +33,8 @@ async function quickAdd(page: Page, kcal: string, protein?: string) {
   await expect(page.getByTestId('quick-add')).toBeHidden();
 }
 const rowAt = async (page: Page, title: string) => {
+  // the swipe fires at a point on screen: bring the row clear of the dock first (U3's eyebrow moved the meals down)
+  await meals(page).filter({ hasText: title }).evaluate((el) => el.scrollIntoView({ block: 'center' }));
   const box = (await meals(page).filter({ hasText: title }).boundingBox())!;
   return { x: box.x + box.width - 40, y: box.y + box.height / 2 };
 };

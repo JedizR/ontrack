@@ -28,10 +28,11 @@
   {#each TEMPLATES as tpl, i (tpl.id)}
     {@const a = analysed[i]}
     <div class="bg-surface-2 rounded-lg p-6" data-testid="template-{tpl.id}">
-      <h3 class="text-body font-semibold">{tpl.name}</h3>
-      <p class="text-caption text-ink-2">{t.train.perWeek(num(tpl.daysPerWeek))}</p>
-      <p class="text-caption text-ink-2">{t.train.suits[tpl.id]}</p>
-      <p class="text-caption text-ink-2">{t.train.balanceOf(num(MUSCLES.filter((m) => a.muscles[m].band === 'inRange').length), num(MUSCLES.length), num(V.setsRange), num(V.setsHigh))}</p>
+      <!-- U3: four lines of one caption read as one grey block; now the days, the name, who it suits, then the numbers -->
+      <p class="text-eyebrow text-ink-2">{t.train.perWeek(num(tpl.daysPerWeek))}</p>
+      <h3 class="text-subhead mt-1">{tpl.name}</h3>
+      <p class="text-callout text-ink-2 mt-1">{t.train.suits[tpl.id]}</p>
+      <p class="text-caption text-ink-2 mt-2">{t.train.balanceOf(num(MUSCLES.filter((m) => a.muscles[m].band === 'inRange').length), num(MUSCLES.length), num(V.setsRange), num(V.setsHigh))}</p>
       {#if a.aerobicMinutes}<p class="text-caption text-ink-2" data-testid="template-cardio">{t.train.cardioOf(num(a.aerobicMinutes), num(V.aerobicMinutes.min), num(V.aerobicMinutes.max))}</p>{/if}
       <Button variant="plain" size="sm" class="mt-1 -ml-4" onclick={() => (confirm = tpl)} data-testid="template-use">{t.train.use}</Button>
     </div>

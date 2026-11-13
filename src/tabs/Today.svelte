@@ -24,6 +24,7 @@
   import Button from '$lib/components/Button.svelte';
   import Chip from '$lib/components/Chip.svelte';
   import Row from '$lib/components/Row.svelte';
+  import CardHead from '$lib/components/CardHead.svelte';
   import SwipeRow from '$lib/components/SwipeRow.svelte';
   import Track from '$lib/components/Track.svelte';
   import HeroNumber from '$lib/components/HeroNumber.svelte';
@@ -177,10 +178,7 @@
   {#if sync.status === 'auth'}
     <!-- SCREENS.md section 12, session expired: local data is untouched -->
     <Card data-testid="session-expired">
-      <p class="text-body font-semibold">{t.session.expired}</p>
-      <p class="text-callout text-ink-2 mt-1">
-        {session.wrongAccount && prefs.lastEmail ? t.session.wrongAccount(prefs.lastEmail) : t.session.expiredLead}
-      </p>
+      <CardHead title={t.session.expired} line={session.wrongAccount && prefs.lastEmail ? t.session.wrongAccount(prefs.lastEmail) : t.session.expiredLead} />
       <Button variant="primary" class="mt-4" onclick={() => (sheets.signin = true)} data-testid="session-signin">{t.shell.signIn}</Button>
     </Card>
   {/if}
@@ -222,7 +220,7 @@
               <div class="text-caption text-ink-2 flex items-center gap-1">
                 {m.label}{#key view.date}{#if m.zone && m.value >= m.zone[0] && m.value <= m.zone[1]}<span class="text-success-ink inline-grid" in:pop><Check size={14} strokeWidth={3} aria-hidden="true" /></span>{/if}{/key}
               </div>
-              <div class="text-body num font-semibold"><Count value={m.value} />{' '}<span class="text-caption text-ink-2 block font-medium whitespace-nowrap">{t.after.ofGrams(num(m.target))}</span></div>
+              <div class="text-subhead num"><Count value={m.value} />{' '}<span class="text-caption text-ink-2 block font-medium whitespace-nowrap">{t.after.ofGrams(num(m.target))}</span></div>
               <div class="mt-auto pt-2"><Track scope={view.date} value={m.value} target={m.target} zone={m.zone} label="{m.label} {num(Math.round(m.value))} {t.after.ofGrams(num(m.target))}" /></div>
             </div>
           {/each}
@@ -236,20 +234,16 @@
     {#key view.date}
     <div class="flex flex-col gap-4" in:fade={{ duration: dur('--d-fade') }}>
     {#if checkinCard}
+      <!-- U3: status cards, as Shop's order cards: the subject in the eyebrow, the status as the title, then why -->
       <div in:collapse out:collapse={{ leave: true }}><Card data-testid="checkin-card" {...rise(2)}>
-        <div class="flex items-center gap-3">
-          <div class="min-w-0 flex-1">
-            <p class="text-body font-semibold">{t.checkin.cardTitle}</p>
-            <p class="text-callout text-ink-2 mt-0.5">{t.checkin.cardLine}</p>
-          </div>
-          <Button size="sm" onclick={() => (sheets.checkin = view.today)} data-testid="checkin-open">{t.checkin.open}</Button>
-        </div>
+        <CardHead eyebrow={t.checkin.cardEyebrow} title={t.checkin.cardTitle} line={t.checkin.cardLine}>
+          {#snippet action()}<Button size="sm" onclick={() => (sheets.checkin = view.today)} data-testid="checkin-open">{t.checkin.open}</Button>{/snippet}
+        </CardHead>
       </Card></div>
     {:else if easyCard}
       <!-- F10: three calorie dense foods, together about the gap, each added in one tap -->
       <div in:collapse out:collapse={{ leave: true }}><Card data-testid="easy-card" {...rise(2)}>
-        <p class="text-body num font-semibold">{t.today.easyTitle(num(Math.round(gap)))}</p>
-        <p class="text-callout text-ink-2 mt-0.5">{t.today.easyLine}</p>
+        <CardHead eyebrow={t.today.easyEyebrow} title={t.today.easyTitle(num(Math.round(gap)))} line={t.today.easyLine} />
         <div class="mt-2 -mb-3">
           {#each easy as item (item.foodId)}
             <Row title={item.name} caption="{num(item.grams ?? 0)} {t.after.g}" wrap testid="easy-item">
@@ -260,19 +254,15 @@
       </Card></div>
     {:else if weighCard}
       <div in:collapse out:collapse={{ leave: true }}><Card data-testid="weigh-card" {...rise(2)}>
-        <div class="flex items-center gap-3">
-          <div class="min-w-0 flex-1">
-            <p class="text-body font-semibold">{t.weigh.promptTitle}</p>
-            <p class="text-callout text-ink-2 mt-0.5">{lastWeigh ? t.weigh.promptLast(num(daysBetween(lastWeigh, view.today))) : t.weigh.promptNone}</p>
-          </div>
-          <Button size="sm" onclick={() => weighIn(view.today)} data-testid="weigh-open">{t.weigh.action}</Button>
-        </div>
+        <CardHead eyebrow={t.weigh.promptEyebrow} title={lastWeigh ? t.weigh.promptTitle : t.weigh.promptFirst} line={lastWeigh ? t.weigh.promptLast(num(daysBetween(lastWeigh, view.today))) : t.weigh.promptNone}>
+          {#snippet action()}<Button size="sm" onclick={() => weighIn(view.today)} data-testid="weigh-open">{t.weigh.action}</Button>{/snippet}
+        </CardHead>
       </Card></div>
     {:else if firstCard}
       <!-- SCREENS.md section 4, after onboarding: a true head start (the plan is saved), then the two first habits -->
       {@const tomorrow = view.today === startDay}
       <div in:collapse out:collapse={{ leave: true }}><Card data-testid="first-day" {...rise(2)}>
-        <h2 class="text-body font-semibold">{t.firstDay.title}</h2>
+        <CardHead title={t.firstDay.title} />
         <ul class="mt-2 -mb-2 flex flex-col">
           {@render step(t.firstDay.saved, true)}
           {@render step(t.firstDay.meal, mealDone, () => (sheets.add = true), 'first-meal')}
@@ -281,17 +271,16 @@
       </Card></div>
     {:else if nothingCard}
       <div in:collapse out:collapse={{ leave: true }}><Card data-testid="nothing-card" {...rise(2)}>
-        <div class="flex items-center gap-3">
-          <div class="min-w-0 flex-1">
-            <p class="text-body font-semibold">{t.today.nothingTitle}</p>
-            <p class="text-callout text-ink-2 mt-0.5">{t.today.nothingLine}</p>
-          </div>
-          <Button size="sm" onclick={() => (sheets.add = true)} data-testid="nothing-add">{t.today.nothingAction}</Button>
-        </div>
+        <CardHead eyebrow={t.today.meals} title={t.today.nothingTitle} line={t.today.nothingLine}>
+          {#snippet action()}<Button size="sm" onclick={() => (sheets.add = true)} data-testid="nothing-add">{t.today.nothingAction}</Button>{/snippet}
+        </CardHead>
       </Card></div>
     {/if}
 
+    <!-- U3: one card names its subject with an eyebrow; the rows sit in their own box so the first has no hairline -->
     <Card list aria-label={t.today.training} data-testid="training" {...rise(3)}>
+      <p class="text-eyebrow text-ink-2 pt-5" aria-hidden="true">{t.today.training}</p>
+      <div>
       {#each day.sessions as { session: s, status } (s.key)}
         <Row title={s.name} testid="session-{s.key}" wrap>
           {#snippet caption()}<Facts facts={lineOf(s, status)} />{/snippet}
@@ -316,12 +305,13 @@
           {#snippet leading()}<div class="bg-surface-2 text-ink-2 grid size-full place-items-center"><TrainIcon /></div>{/snippet}
         </Row>
       {/each}
+      </div>
     </Card>
 
     <div {...rise(4)}>
       <div class="mt-2 flex items-baseline justify-between">
         <h2 class="text-heading">{t.today.meals}</h2>
-        {#if meals.length}<span class="text-caption text-ink-2" data-testid="meal-count">{t.today.logged(num(meals.length))}</span>{/if}
+        {#if meals.length}<span class="text-callout text-ink-2" data-testid="meal-count">{t.today.logged(num(meals.length))}</span>{/if}
       </div>
     </div>
     {#snippet tile(Icon: Component<{ size?: number; strokeWidth?: number }>)}

@@ -84,7 +84,7 @@
 
 {#snippet footer()}
   <div class="flex items-center gap-4">
-    <p class="text-body num min-w-0 flex-1 font-semibold" data-testid="meal-total"><Facts facts={[t.after.kcalN(num(Math.round(sum.kcal))), t.after.proteinN(num(Math.round(sum.protein)))]} rest="text-ink-2" /></p>
+    <p class="text-subhead num min-w-0 flex-1" data-testid="meal-total"><Facts facts={[t.after.kcalN(num(Math.round(sum.kcal))), t.after.proteinN(num(Math.round(sum.protein)))]} rest="text-ink-2" /></p>
     <Button variant="primary" size="lg" disabled={!items.length} onclick={save} data-testid="meal-save">{t.meal.save}</Button>
   </div>
 {/snippet}

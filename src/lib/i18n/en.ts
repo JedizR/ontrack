@@ -172,6 +172,7 @@ export const en = {
     how: 'How your target is calculated',
     delete: 'Delete',
     // F10 and F23 (M9a): the evening easy adds, the nothing logged reminder, and finishing a day
+    easyEyebrow: 'Easy adds',
     easyTitle: (n: string) => `${n} kcal to go`,
     easyLine: 'These three cover it, about a third each.',
     easyAdd: (n: string) => `Add ${n} kcal`,
@@ -284,8 +285,11 @@ export const en = {
   weigh: {
     title: 'Weigh in',
     hint: 'One a day. A new one replaces it.',
-    promptTitle: 'Time for a weigh-in',
-    promptLast: (n: string) => `Your last weigh-in was ${n} days ago. Your weekly check-in reads from them.`,
+    // U3: the subject is the card's eyebrow, so the title is its status
+    promptEyebrow: 'Weigh-in',
+    promptTitle: 'Time for a new one',
+    promptFirst: 'Time for your first',
+    promptLast: (n: string) => `Your last one was ${n} days ago. Your weekly check-in reads from them.`,
     promptNone: 'Your weekly check-in reads from your weigh-ins.',
     action: 'Weigh in',
     saved: (w: string) => `Weigh-in saved, ${w}`,
@@ -593,8 +597,9 @@ export const en = {
   /** O1: the Train tab's suggestion from the onboarding answers (onboarding RESEARCH section 5) */
   suggest: {
     title: 'Suggested for your week',
-    line: (name: string, days: string) => `${name} fits ${days} ${days === '1' ? 'day' : 'days'} a week.`,
-    gainLine: (name: string) => `${name} adds the two strength sessions a week that health guidelines advise.`,
+    // U3: the program's name is the card's title, so the line does not repeat it
+    line: (days: string) => `Fits ${days} ${days === '1' ? 'day' : 'days'} a week.`,
+    gainLine: 'Adds the two strength sessions a week that health guidelines advise.',
     use: 'Use this program',
     later: 'Not now',
   },
@@ -828,7 +833,8 @@ export const en = {
   },
   checkin: {
     title: 'Weekly check-in',
-    cardTitle: 'Your weekly check-in is ready',
+    cardEyebrow: 'Weekly check-in',
+    cardTitle: 'Ready to review',
     cardLine: 'What three weeks of weigh-ins and meals say about your target.',
     open: 'See the check-in',
     steps: ['Your last three weeks', 'What it means', 'Your next target'],

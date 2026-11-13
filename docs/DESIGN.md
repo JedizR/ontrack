@@ -108,15 +108,35 @@ Two faces, self hosted from their OFL packages and precached: Roboto Condensed 9
 | Heading | `--t-heading` | Roboto Condensed 900, 24 / 24, -0.03em, capitals | Section and sheet titles, the hero's counterpart |
 | Eyebrow | `--t-eyebrow` | Roboto Condensed 900, 14 / 14, capitals | Small labels over figures |
 | Lead | `--t-lead` | Geist 400, 18 / 27, -0.01em | Onboarding captions, Your plan's sentence |
+| Subhead | `--t-lead` (`text-subhead`) | Geist 600, 18 / 24, -0.02em | A card's title or status (U3), a stat tile's figure, a sheet's total |
 | Body | `--t-body` | Geist 400, 16 / 24, -0.02em; 600 for row titles | Default. Inputs are 16 or more |
-| Callout | `--t-callout` | Geist 400 to 600, 14 / 21, -0.01em | Buttons below `lg`, secondary rows, chips |
-| Caption | `--t-caption` | Geist 500, 12 / 18 | Captions under numbers, metadata, tab labels |
+| Callout | `--t-callout` | Geist 400 to 600, 14 / 21, -0.01em | Buttons below `lg`, chips, and the Meta line (U3): under a row's title, the line that explains a card |
+| Caption | `--t-caption` | Geist 500, 12 / 18 | Labels under figures, units, tab labels |
 
 - Capitals come only from `text-transform` on Title, Heading and Eyebrow. Strings in `en.ts` stay in sentence case. The ONTRACK wordmark is a drawing (section 1), not text.
 - Body sizes scale with the text size setting through `--fs`. Hero, Display, Title and Heading scale half as much (`--fs-display`).
 - Every number that can change uses tabular figures. Numbers in rows, steppers and wheels are Geist (`num`); the Hero number and its counterpart are Geist 500 and 600, not black (the picks' big numbers); Display numbers are the condensed face, as OneFin's prices.
 - Decimals read lighter: `Figure` sets the part after the point in `--ink-2` (the weight trend, the check-in rate), as OneFin's ".08". Not `--ink-3`, which fails on the haze.
 - Nothing below 12 px. Inputs are never below 16 px.
+
+### Hierarchy (U3)
+
+From Airbnb's and Shop's iOS screens (`ontrack-design/research/u3-mobbin/NOTES.md`): both read in three steps a card, title, meta, then the value or the action, and no two lines next to each other look alike. Inside the app, text takes five levels; the figures (Hero, Display) sit above them.
+
+| Level | Style | Colour | Used for |
+| --- | --- | --- | --- |
+| 1 Heading | Heading, condensed capitals 24 | ink | A screen's sections ("Meals", "Your week", "Check-ins") and a sheet's own title |
+| 2 Subhead | Subhead, Geist 600 18 | ink | A card's title, or its status on a status card; a stat tile's figure; a sheet's total |
+| 3 Body | Body 16: 600 for a row title, 400 for a sentence | ink | Row titles, sentences, inputs |
+| 4 Meta | Callout 14, 400 | `--ink-2`; a second fact `--ink-3` (`Facts`) | The line under a title or a row's title, the line that explains a card |
+| 5 Label | Eyebrow (condensed capitals 14) above; Caption (Geist 500 12) under | `--ink-2` | Eyebrow: the subject over a card's title or figure, a group in a sheet or in Settings. Caption: the label under a figure, a unit, a tab |
+
+Rules:
+1. **Three levels a card.** A card uses at most three levels of text besides its one figure: usually Label, Subhead and Meta, or in a list Body, Meta and the trailing value. The hero card counts each panel on its own.
+2. **Neighbours differ twice.** Two lines next to each other differ in at least two of size, weight and colour (16/600 ink over 14/400 `--ink-2`). Two lines that match are one level, and one of them goes.
+3. **One first thing.** Each card has one thing read first: its figure when it has one, its title when not. Nothing else on the card is as large.
+4. **Sections and eyebrows.** A Heading introduces what holds several cards or a list that grows (Meals, Your week). A single card names its subject with an Eyebrow inside it (Training, Weekly check-in). In a sheet the Heading is the sheet's title, so its groups take Eyebrows (Recent, Saved, Exercises), as Settings' and Friends' groups do.
+5. **Numbers and units.** The figure is ink, tabular and alone at its level. In a row or a sheet's amount its unit follows on the same baseline one level down in `--ink-2` ("510 kcal", the portion's "kcal"). When the figure is measured against something, the unit starts the line under it instead ("1,840" over "of 2,460 kcal", "84" over "of 108 g"), as Airbnb sets a price over "For 2 nights". Decimals read lighter (`Figure`). A number inside a sentence or a status title takes that line's style ("620 kcal to go").
 
 ## 6. Space, shape, depth
 
@@ -171,11 +191,11 @@ Start from the components in `src/lib/components/` and their gallery at `/galler
 | --- | --- |
 | Button | One height system. `lg` 56 for the screen's or sheet's main action, pinned at the bottom; `md` 48 for second actions in content; `sm` 36 on screen and 44 to tap, for inline actions in rows and cards. Variants: `primary`, OneFin's flat "Withdraw" pill: `--action` fill (ink, white on dark), `--on-action` label, `--shadow-action`, radius 20 at `lg` and 16 below, one per screen; `neutral`, the grey `--surface-2` pill for second actions; `plain`, a violet text link in `--accent-ink`; `danger`, flat with a `--danger` label. Pressed: the fill steps (`--action-press`, `--surface-3`) and the face scales to 0.97 in 120 ms. Disabled: the primary turns grey (`--surface-3`, `--ink-2` label, no drop); the others fade to 40 percent. No gradient, bevel or glow. Labels are verbs in Geist 600 |
 | Icon button | A 44 rounded square (radius 16). Action keys (the stepper's minus and plus) are ink with an `--on-action` glyph and turn `--surface-2` with an `--ink-3` glyph when disabled. Close, back, more and again are quiet: a glyph on nothing (or `--surface-2` for again), `--surface-2` when pressed. The camera's light is a solid dark square, since glass over a live picture would change with the theme. The avatar stays a circle |
-| Card | `--surface`, radius 32, padding 24, `--shadow-card` in light, a ring of white at 10 percent in dark. The hero card (`hero`) is a white shell at radius 48 with 8 inside, holding the screen's haze panel (`haze`, top corners 40, 24 inside; bottom corners 24 when tiles follow) and, below it, grey stat tiles; text sits 32 from the card's edge in the panel and 24 below it |
-| Stat tile | Inside the hero card: `--surface-2`, radius 24 with its outer bottom corners 40 (U1b), 16 inside and 20 at the bottom. Your plan's wide protein tile is 24 above and 40 below, 24 inside, its figure in Display as a plan figure (section 5). A Caption label, a value in Body 600 tabular with its unit in Caption, and a 6 high track at the bottom so a row of tiles stays level. Today's macros, Your plan's protein |
+| Card | `--surface`, radius 32, padding 24, `--shadow-card` in light, a ring of white at 10 percent in dark. The hero card (`hero`) is a white shell at radius 48 with 8 inside, holding the screen's haze panel (`haze`, top corners 40, 24 inside; bottom corners 24 when tiles follow) and, below it, grey stat tiles; text sits 32 from the card's edge in the panel and 24 below it. A card's head (`CardHead`, U3): an optional Eyebrow, the title in Subhead, an optional Meta line, an optional small action on the right |
+| Stat tile | Inside the hero card: `--surface-2`, radius 24 with its outer bottom corners 40 (U1b), 16 inside and 20 at the bottom. Your plan's wide protein tile is 24 above and 40 below, 24 inside, its figure in Display as a plan figure (section 5). A Caption label, a value in Subhead tabular (U3, was Body 600) with "of 108 g" in Caption under it, and a 6 high track at the bottom so a row of tiles stays level. Today's macros, Your plan's protein |
 | Glass chip | A pill on the haze or a picture: the `glass` utility, Caption 600 in ink, 2 by 10 inside. The hero's day kind |
 | Featured card | At most one per screen (`data-featured`): a `--grad-feature` card at radius 24 (violet with steel and clay deepened, P1; the owner's U1b request) with an `--on-accent` label and a translucent white icon tile. The Add sheet's Photo, the supplement setup's Scan the tub. Pressed: darkens a step and 0.97 |
-| Row | A 48 px tile or thumbnail at radius 16, title in Body 600, one line of caption, trailing number in Body 600 tabular with its unit in Caption (calories always say kcal). At least 64 high in lists. Divided by hairlines inset to the text |
+| Row | A 48 px tile or thumbnail at radius 16, title in Body 600, one Meta line (U3: Callout 400 in `--ink-2`, was Caption), trailing number in Body 600 tabular with its unit in Caption (calories always say kcal). At least 64 high in lists. Divided by hairlines inset to the text |
 | Facts | Two or more facts on one line ("12:30 \| Database", "60 min \| 240 kcal", "712 kcal \| 37 g protein"): a 1 px `--line-strong` divider one line high with 8 either side, never a comma or a middle dot; the facts after the first one step lighter (`--ink-3` in a caption, `--ink-2` after ink). Screen readers hear a comma. `Facts.svelte`. A list of like things (muscles) keeps commas |
 | Icon tile | 48 square (40 in choice cards and ways) at radius 16, in three tones as in OneFin's pricing: lavender (`tile`: `--accent-soft` with an ink glyph, lavender in dark) for rows and choices; violet (`bg-accent` with an `--on-accent` glyph) for feature icons, as on the landing page; white with a 1 px lavender edge and a violet glyph for shortcuts on grey, as the Add sheet's ways. Flat: no inner glow |
 | Chip | 44 high, radius 16, Callout 600, `--surface-2`. Selected: ink fill with canvas text |
@@ -197,6 +217,20 @@ Start from the components in `src/lib/components/` and their gallery at `/galler
 | Sync mark | An 8 px dot beside the avatar: hidden when idle, `--ink-3` pulsing when syncing, hollow when offline, `--attention` when it needs attention. Tapping it explains the state |
 | Empty state | A line of body text saying what will appear here and one button to make it appear. No illustrations |
 | Skeleton | Blocks in `--surface-2` at the final layout's sizes, with a slow opacity pulse |
+
+### Cards (U3)
+
+Five kinds, each with a fixed order, so a card's job shows before its words are read. Like things share one list card (Shop's order history, Airbnb's itinerary); an item gets a card of its own only when it has its own status or action (Shop's live order, Airbnb's trip).
+
+| Kind | Parts, in the order the eye takes them | Space | Corners | Where |
+| --- | --- | --- | --- | --- |
+| Hero | On the haze: the figure (Hero) with its caption, the counterpart, the track, the glass chip and its line. Below: stat tiles, a Caption label, the figure in Subhead, "of 108 g" in Caption, a track | Shell 8; panel 24 inside (32 from the card's edge); tiles 16 inside, 20 at the bottom | 48 shell; panel 40 then 24; tiles 24 then 40 | Today, Your plan, Progress's weight |
+| Summary | Eyebrow, the figure (Display) with a Caption under it, the chart or bars, a Meta line, one second action | 24 inside; Eyebrow to figure 8, figure to Caption 4, blocks 16 apart | 32; a button inside at 16 | Progress's Maintenance, Intake, Consistency, Training; Train's summary (its Eyebrow is the program) |
+| Status | Eyebrow (the subject), Subhead (the status), Meta (why it matters), then one action: a small button on the right, or the rows or steps it needs below | 24 inside; 4 between the head's lines, 16 from the head to what follows | 32 | Today's one card (check-in, easy adds, weigh-in, Getting started, nothing logged), Today's training, Train's analysis cards, session expired |
+| List | Rows only: a 48 tile, the title in Body 600, a Meta line, a trailing value (Body 600, its unit in Caption) or one control; hairlines inset to the text | 24 at the sides, 12 above and below each row, rows 64 high at least | 32; tiles and thumbnails 16 | Meals, Your week, Check-ins, History |
+| Featured | A translucent icon tile, a Body 600 label, a Caption line, on `--grad-feature` | 16 inside | 24; tile 16 at 16 inside | One a sheet: Add's Photo, Scan the tub |
+
+**One highlight.** An item stands apart by one means only: the haze (the hero), the gradient (a sheet's featured card), an ink fill (the day in view, a selected chip, today's day in Your week) or a pill (the hero's day chip). Never two at once, never by size alone inside a list, and at most one featured card a screen.
 
 ## 8. Banned
 

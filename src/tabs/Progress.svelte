@@ -94,7 +94,7 @@
   {@const facts = [line].flat()}
   <div data-testid={testid}>
     <p class="text-body font-semibold">{title}</p>
-    <p class="text-caption text-ink-2"><Facts {facts} /></p>
+    <p class="text-callout text-ink-2"><Facts {facts} /></p>
     <div class="mt-2"><Track grow {value} {target} {zone} label="{title}. {facts.join(', ')}" /></div>
   </div>
 {/snippet}
@@ -165,7 +165,7 @@
 
     <Card aria-label={t.progress.consistency} data-testid="progress-consistency">
       <p class="text-eyebrow text-ink-2">{t.progress.consistency}</p>
-      <p class="text-caption text-ink-2 mt-1">{t.progress.consistencyLine}</p>
+      <p class="text-callout text-ink-2 mt-1">{t.progress.consistencyLine}</p>
       <div class="mt-4 flex flex-col gap-4">
         {#each four as w, i (w.start)}
           <div role="img" aria-label={t.progress.weekOnTrack(t.progress.weeksAgo[i], num(w.onTrack))} data-testid="consistency-week">

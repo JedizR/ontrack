@@ -168,7 +168,7 @@
 
 {#snippet footer()}
   <div class="flex items-center gap-3">
-    <p class="text-body num min-w-0 flex-1 font-semibold" data-testid="review-total"><Facts facts={[t.after.kcalN(num(Math.round(sum.kcal))), t.after.proteinN(num(Math.round(sum.protein)))]} rest="text-ink-2" /></p>
+    <p class="text-subhead num min-w-0 flex-1" data-testid="review-total"><Facts facts={[t.after.kcalN(num(Math.round(sum.kcal))), t.after.proteinN(num(Math.round(sum.protein)))]} rest="text-ink-2" /></p>
     <span class="text-callout text-ink-2 flex-none" aria-hidden="true">{t.review.saveMeal}</span>
     <Switch bind:checked={keep} label={t.review.saveMeal} testid="review-keep" />
   </div>

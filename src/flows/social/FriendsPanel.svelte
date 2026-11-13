@@ -7,6 +7,7 @@
   import X from '@lucide/svelte/icons/x';
   import Button from '$lib/components/Button.svelte';
   import Row from '$lib/components/Row.svelte';
+  import CardHead from '$lib/components/CardHead.svelte';
   import Skeleton from '$lib/components/Skeleton.svelte';
   import { t } from '$lib/i18n';
   import { num } from '$lib/model/format';
@@ -192,8 +193,7 @@
         <Row title={social.name} caption={t.social.handle(social.handle)} leading={me} onclick={() => { sheets.profile = {}; }} testid="panel-me" />
       {:else}
         <div data-testid="panel-setup">
-          <p class="text-body font-semibold">{t.social.setup}</p>
-          <p class="text-callout text-ink-2 mt-1">{t.social.setupLine}</p>
+          <CardHead title={t.social.setup} line={t.social.setupLine} />
           <Button class="mt-3" onclick={() => { sheets.profile = {}; }} data-testid="panel-setup-open">{t.social.setupAction}</Button>
         </div>
       {/if}
