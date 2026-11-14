@@ -90,13 +90,8 @@ export const en = {
       account: 'Already have an account?',
     },
     footer: {
-      start: 'Start',
-      know: 'Good to know',
-      concept: 'A proof of concept for a product management class, for adults who train.',
-      top: 'Back to top',
+      keep: 'Keep your calories',
       year: 'Ontrack 2026',
-      learn: 'Learn',
-      contact: 'Contact and legal',
     },
     alt: {
       today: 'Today on a training day: 1,840 of 2,460 kcal eaten, 620 to go, with protein, carbs and fat below',

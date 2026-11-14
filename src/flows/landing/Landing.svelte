@@ -28,8 +28,7 @@
   import Footer from './Footer.svelte';
   import Phone from './Phone.svelte';
   import { inview, live, onscreen } from './inview';
-  import { CROP } from './shots';
-  import todayShot from './shots/today.webp';
+    import todayShot from './shots/today.webp';
   import photoShot from './shots/photo.webp';
   import scanShot from './shots/scan.webp';
   import thaiShot from './shots/thai.webp';
@@ -79,29 +78,29 @@
   const n = parts.filter((x) => 'word' in x).length;
   const darkPill = parts.reduce((last, x, k) => ('pill' in x ? k : last), -1);
   const TILES = [
-    { icon: Camera, at: 'top-8 left-[6%]', look: '-rotate-12 size-14', speed: -0.1 },
-    { icon: ScanBarcode, at: 'top-14 right-[7%]', look: 'rotate-[10deg] size-12', speed: -0.18 },
-    { icon: TrainIcon, at: 'bottom-10 left-[10%]', look: 'rotate-[14deg] size-12', speed: -0.06 },
-    { icon: Scale, at: 'right-[6%] bottom-16', look: '-rotate-6 size-16', speed: -0.14 },
+    { icon: Camera, at: 'top-6 left-[6%] sm:top-8', look: '-rotate-12 size-14', speed: -0.1 },
+    { icon: ScanBarcode, at: 'top-8 right-[7%] sm:top-14', look: 'rotate-[10deg] size-12', speed: -0.18 },
+    { icon: TrainIcon, at: 'bottom-4 left-[10%] sm:bottom-10', look: 'rotate-[14deg] size-12', speed: -0.06 },
+    { icon: Scale, at: 'right-[6%] bottom-6 sm:bottom-16', look: '-rotate-6 size-16', speed: -0.14 },
   ];
 
   const LOG = [
-    { shot: photoShot, alt: L.alt.photo, crop: CROP.photo },
-    { shot: scanShot, alt: L.alt.scan, crop: CROP.scan },
-    { shot: thaiShot, alt: L.alt.thai, crop: CROP.thai },
-    { shot: supplementShot, alt: L.alt.supplement, crop: CROP.supplement },
+    { shot: photoShot, alt: L.alt.photo },
+    { shot: scanShot, alt: L.alt.scan },
+    { shot: thaiShot, alt: L.alt.thai },
+    { shot: supplementShot, alt: L.alt.supplement },
   ].map((x, i) => ({ ...x, ...L.log.cards[i] }));
   const TRAIN = [
-    { shot: trainShot, alt: L.alt.train, icon: TrainIcon, crop: CROP.train, panel: 'bg-mist' },
-    { shot: progressShot, alt: L.alt.progress, icon: TrendingUp, crop: CROP.progress, panel: 'bg-peach' },
+    { shot: trainShot, alt: L.alt.train, icon: TrainIcon, panel: 'bg-mist' },
+    { shot: progressShot, alt: L.alt.progress, icon: TrendingUp, panel: 'bg-peach' },
   ].map((x, i) => ({ ...x, ...L.train.cards[i] }));
   const FRIENDS = [UserPlus, MapPin, Lock].map((icon, i) => ({ icon, ...L.friends.points[i] }));
   // each number on the page cites the constant's own source, so the cards cannot drift from the engine
   const SOURCED = [
-    { label: L.sources.resting, source: SOURCES[C.mifflin.source]?.short, wash: '[background:var(--wash-ink)] text-on-night' },
-    { label: L.sources.training, source: SOURCES[C.metStrength.source]?.short, wash: '[background:var(--wash-steel)] text-on-night' },
-    { label: L.sources.gain, source: SOURCES[C.gainPace.source]?.short, wash: '[background:var(--wash-clay)] text-on-night' },
-    { label: L.sources.thai, source: L.sources.thaiSource, wash: '[background:var(--wash-sand)] text-night' },
+    { label: L.sources.resting, source: SOURCES[C.mifflin.source]?.short, wash: '[background:var(--wash-1)] text-night' },
+    { label: L.sources.training, source: SOURCES[C.metStrength.source]?.short, wash: '[background:var(--wash-2)] text-night' },
+    { label: L.sources.gain, source: SOURCES[C.gainPace.source]?.short, wash: '[background:var(--wash-3)] text-night' },
+    { label: L.sources.thai, source: L.sources.thaiSource, wash: '[background:var(--wash-4)] text-night' },
   ];
 
   // the floating Build your plan: once the hero's action has scrolled away, until the closing call is on screen
@@ -140,13 +139,13 @@
 {/snippet}
 
 <div bind:this={root} class="bg-surface text-ink relative min-h-svh overflow-x-clip" data-testid="landing" data-edge="--surface">
-  <!-- the bar: Liquid Glass (L4) no wider than a phone, in the middle on a wide screen. It starts below the status bar, so
+  <!-- the bar: Liquid Glass (L4), the page's width less a 36 gutter (the owner took the 430 cap back). It starts below the status bar, so
        nothing fixed touches the top edge, where Safari 26 would fill its bar from it (L3, DECISIONS L4) -->
-  <header bind:this={bar} class="bar fixed inset-x-0 top-[calc(env(safe-area-inset-top)+8px)] z-30 px-4" data-over data-theme={barDark ? 'dark' : undefined}>
+  <header bind:this={bar} class="bar fixed inset-x-0 top-[calc(env(safe-area-inset-top)+8px)] z-30 px-9" data-over data-theme={barDark ? 'dark' : 'light'}>
     <!-- Sign in (sm, 36) sits 8 inside the 52 high capsule, so its round ends nest in the bar's (26 less 8) -->
     <!-- the light follows a mouse over the bar and a finger on it; it is drawn in the glass, not over the bar, since a
          rounded clip on the bar would cut the glass off from what is behind it -->
-    <nav class="text-ink relative isolate mx-auto flex h-13 max-w-[430px] items-center justify-between rounded-full pr-2 pl-5" aria-label={t.app.name} use:interactive data-testid="landing-bar">
+    <nav class="text-ink relative isolate mx-auto flex h-13 items-center justify-between rounded-full pr-2 pl-5" aria-label={t.app.name} use:interactive data-testid="landing-bar">
       <span class="bar-glass liquid liquid-touch absolute! inset-0 -z-10 rounded-full" data-on={y > 8 || undefined} aria-hidden="true"></span>
       <Wordmark class="h-5 w-fit" />
       <Button variant="primary" size="sm" onclick={signin} class="[&>span]:rounded-full" data-testid="landing-signin">{L.signin}</Button>
@@ -156,7 +155,7 @@
   <main>
     <!-- the hero: OneFin's sky as a photo gradient with grain (L2), the promise, the action, Today rising in an iPhone 16
          with two clear glass chips. L4: the words are drawn from the first frame and tumble into line -->
-    <section class="relative isolate px-4 pt-[calc(env(safe-area-inset-top)+120px)] lg:pt-44" data-testid="landing-hero" data-edge="--sky-top" use:live>
+    <section class="relative isolate px-4 pt-[calc(env(safe-area-inset-top)+120px)] pb-28 lg:pt-36" data-testid="landing-hero" data-edge="--sky-top" data-theme="light" use:live>
       <div class="absolute inset-0 -z-10 [background:var(--grad-sky)]" aria-hidden="true"></div>
       <div class="mx-auto grid max-w-[1200px] items-center gap-12 lg:grid-cols-[1.15fr_0.85fr] lg:gap-8">
         <div class="exit text-center lg:pb-24 lg:text-left" style:--up="-40px">
@@ -169,8 +168,8 @@
             <p class="text-caption pop" style:--d="0.75s">{L.noAccount}</p>
           </div>
         </div>
-        <div class="exit-tilt relative mx-auto w-[min(70vw,300px)] lg:w-[min(100%,340px)]">
-          <div class="rise"><div class="float" style:--t="8s"><Phone src={todayShot} alt={L.alt.today} eager crop={CROP.today} /></div></div>
+        <div class="exit-tilt relative mx-auto w-[min(70vw,300px)] lg:w-[min(100%,300px)]">
+          <div class="rise"><div class="float" style:--t="8s"><Phone src={todayShot} alt={L.alt.today} eager /></div></div>
           <!-- the chips float over the sky and the phone, as OneFin's "Direct pay" and "Paid" (glass-03): clear glass with
                their words over the phone's light screen, where they read in both themes (the first's icon over the
                bezel); they answer a touch -->
@@ -181,7 +180,7 @@
               </span>
             </div>
           </div>
-          <div class="drift absolute top-[60%] right-[8%] z-10" style:--speed="0.24" aria-hidden="true">
+          <div class="drift absolute top-[60%] -right-[0.5%] z-10" style:--speed="0.24" aria-hidden="true">
             <div class="bob" style:--t="5.8s" style:--d="-2s" style:--spin="-2deg">
               <span class="liquid-clear liquid-touch liquid-grow text-night fly text-callout flex rotate-[9deg] items-center gap-2 rounded-full py-1 pr-4 pl-1 font-semibold" style:--fx="120px" style:--fy="-80px" style:--fr="30deg" style:--d="0.7s" use:interactive>
                 <i class="bg-success text-night grid size-8 place-items-center rounded-full"><Check size={16} strokeWidth={3} /></i>{t.today.onTrack}
@@ -194,7 +193,7 @@
 
     <!-- the statement: big words with inline pills (pick 08), filling in as they scroll by, tilted violet tiles around that
          bob on their own and spin when touched -->
-    <section class="bg-surface relative z-10 -mt-14 rounded-t-xl px-6 py-28 lg:py-40" data-testid="landing-statement-section" use:live>
+    <section class="bg-surface relative z-10 -mt-14 rounded-t-xl px-6 py-32 lg:py-40" data-testid="landing-statement-section" use:live>
       {#each TILES as tile, i (i)}
         {@const Icon = tile.icon}
         <div class="drift absolute {tile.at}" style:--speed={tile.speed} aria-hidden="true">
@@ -214,27 +213,26 @@
       {@render head('01', L.log.tag, L.log.title, L.log.lead)}
       <div class="mx-auto mt-12 grid max-w-[1200px] gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {#each LOG as c, i (i)}
-          <article class="settle lean flex flex-col items-center overflow-clip rounded-xl px-6 pt-8 text-center {i === 0 ? 'feature text-on-accent' : 'bg-surface-2'}" style:--tilt={tilt(i + 1, 1.2)} style:--dx="{[-48, 56, -36, 64][i]}px" style:--dy="{120 + i * 10}px" use:lean>
+          <article class="settle lean flex flex-col items-center overflow-clip rounded-xl px-6 pt-8 pb-8 text-center {i === 0 ? 'feature text-ink' : 'bg-surface-2'}" style:--tilt={tilt(i + 1, 1.2)} style:--dx="{[-48, 56, -36, 64][i]}px" style:--dy="{120 + i * 10}px" use:lean>
             <h3 class="text-lead">{c.title}</h3>
-            <p class="text-callout mt-2 mb-6 max-w-[18rem] {i === 0 ? 'text-on-accent' : 'text-ink-2'}">{c.line}</p>
-            <!-- one crop for all four, so the phones start level: enough to reach each sheet's main controls -->
-            <div class="counter mt-auto w-[min(100%,240px)]" style:--tilt={tilt(i + 1, -0.8)}><Phone src={c.shot} alt={c.alt} crop={c.crop} /></div>
+            <p class="text-callout mt-2 mb-6 max-w-[18rem] text-ink-2">{c.line}</p>
+            <!-- every phone is the whole iPhone 16, so they all stand level -->
+            <div class="counter mt-auto w-[min(100%,240px)]" style:--tilt={tilt(i + 1, -0.8)}><Phone src={c.shot} alt={c.alt} /></div>
           </article>
         {/each}
       </div>
     </section>
 
-    <!-- 02 Training: a dark section with a glow (pick 06, 12); dark cards hold flat palette panels (P1) and settle as they come -->
+    <!-- 02 Training: a dark section (pick 06, 12), no glow (the owner); its cards, a step lighter than the page, hold flat palette panels (P1) and settle as they come -->
     <section class="px-2 sm:px-4" id="training" tabindex="-1" data-testid="landing-train" use:live>
       <div data-theme="dark" data-edge="--canvas" class="bg-canvas text-ink relative isolate overflow-clip rounded-xl px-4 pt-20 pb-24">
-        <div class="glow breathe absolute inset-x-0 bottom-0 -z-10 h-3/4 translate-y-1/2" style:--t="9s" aria-hidden="true"></div>
         {@render head('02', L.train.tag, L.train.title, L.train.lead)}
         <div class="mx-auto mt-12 grid max-w-[1000px] gap-4 md:grid-cols-2 md:gap-6">
           {#each TRAIN as c, i (i)}
             {@const Icon = c.icon}
-            <article class="settle lean bg-surface rounded-xl p-2 pb-8" style:--tilt="{i ? 9 : -9}deg" style:--dx="{i ? 64 : -64}px" style:--dy="110px" use:lean>
-              <div class="{c.panel} flex justify-center overflow-clip rounded-sheet px-8 pt-8">
-                <div class="counter w-[min(100%,240px)]" style:--tilt="{i ? -6 : 6}deg"><Phone src={c.shot} alt={c.alt} crop={c.crop} /></div>
+            <article class="settle lean rounded-xl bg-[color-mix(in_srgb,var(--surface)_65%,var(--surface-2))] p-2 pb-8" style:--tilt="{i ? 9 : -9}deg" style:--dx="{i ? 64 : -64}px" style:--dy="110px" use:lean>
+              <div class="{c.panel} flex justify-center overflow-clip rounded-sheet px-8 pt-8 pb-8">
+                <div class="counter w-[min(100%,240px)]" style:--tilt="{i ? -6 : 6}deg"><Phone src={c.shot} alt={c.alt} /></div>
               </div>
               <div class="mt-6 flex items-center justify-between px-4">
                 <span class="bg-accent text-on-accent wiggle grid size-12 place-items-center rounded-sm" style:--t="6.5s" style:--d="{-i * 3}s" aria-hidden="true"><Icon size={24} /></span>
@@ -252,18 +250,18 @@
     <section class="px-4 pt-24 pb-28" id="check-in" tabindex="-1" data-testid="landing-checkin" use:live>
       {@render head('03', L.checkin.tag, L.checkin.title, L.checkin.lead)}
       <div class="mx-auto mt-12 grid max-w-[1100px] items-center gap-10 lg:grid-cols-2 lg:gap-16">
-        <div class="settle text-night relative isolate flex justify-center overflow-clip rounded-xl px-6 pt-12 [background:var(--grad-lavender)]" style:--tilt="-5deg" style:--dx="-24px" style:--dy="90px">
+        <div class="settle text-night relative isolate flex justify-center overflow-clip rounded-xl px-6 pt-12 pb-8 [background:var(--grad-lavender)]" style:--tilt="-5deg" style:--dx="-24px" style:--dy="90px">
           {#each [1, 0.72, 0.44] as r, i (r)}
             <span class="absolute top-[38%] left-1/2 -z-10 aspect-square -translate-1/2" style:width="{r * 100}%" aria-hidden="true"><span class="breathe border-on-night/60 block size-full rounded-full border" style:--t="{5 + i * 1.4}s" style:--d="{-i * 1.7}s"></span></span>
           {/each}
-          <Phone src={checkinShot} alt={L.alt.checkin} crop={CROP.checkin} class="w-[min(100%,250px)]" />
+          <Phone src={checkinShot} alt={L.alt.checkin} class="w-[min(100%,250px)]" />
           <!-- decoration in the check-in's own words: its first step and what vector F's account hears -->
           <div class="bob absolute top-[27%] left-2" style:--t="5.2s" style:--d="-1s" aria-hidden="true">
             <span class="liquid-clear liquid-touch liquid-grow text-night text-callout block max-w-[11rem] -rotate-6 rounded-md px-4 py-3 text-left" use:interactive>
               <i class="bg-accent mb-1 block size-2 rounded-full"></i>{t.checkin.steps[0]}
             </span>
           </div>
-          <div class="bob absolute right-2 bottom-[7%]" style:--t="6.1s" style:--d="-3s" style:--spin="-2deg" aria-hidden="true">
+          <div class="bob absolute right-2 bottom-[17%]" style:--t="6.1s" style:--d="-3s" style:--spin="-2deg" aria-hidden="true">
             <span class="liquid-clear liquid-touch liquid-grow text-night text-callout block max-w-[12rem] rotate-6 rounded-md px-4 py-3 text-left" use:interactive>
               <i class="bg-accent mb-1 block size-2 rounded-full"></i>{t.checkin.pace.gain.raise}
             </span>
@@ -288,7 +286,7 @@
     <section class="px-4 pb-28" id="friends" tabindex="-1" data-testid="landing-friends" use:live>
       {@render head('04', L.friends.tag, L.friends.title, L.friends.lead)}
       <div class="mx-auto mt-12 grid max-w-[1100px] items-center gap-12 lg:grid-cols-2 lg:gap-16">
-        <div class="settle mx-auto w-[min(100%,260px)]" style:--tilt="-8deg" style:--dx="-56px" style:--dy="80px"><Phone src={mapShot} alt={L.alt.map} crop={CROP.map} /></div>
+        <div class="settle mx-auto w-[min(100%,260px)]" style:--tilt="-8deg" style:--dx="-56px" style:--dy="80px"><Phone src={mapShot} alt={L.alt.map} /></div>
         <ul class="flex flex-col gap-8">
           {#each FRIENDS as p, i (i)}
             {@const Icon = p.icon}
@@ -328,7 +326,7 @@
         <h2 class="text-poster flex flex-col items-center">
           {#each L.cta.words as w, i (i)}<span class="slide block {i === 1 ? 'text-on-accent-soft' : ''}" style:--from="{[-40, 70, -25][i]}vw" style:--r={tilt(i + 2, 1.5)}>{w}</span>{/each}
         </h2>
-        <div class="settle text-on-accent relative mx-auto mt-10 flex max-w-[34rem] flex-col items-center rounded-xl px-6 py-10 [background:var(--grad-call)]" style:--tilt="4deg" style:--dy="100px" style:--s="0.86">
+        <div class="settle text-ink relative mx-auto mt-10 flex max-w-[34rem] flex-col items-center rounded-xl px-6 py-10 [background:var(--grad-call)]" data-theme="light" style:--tilt="4deg" style:--dy="100px" style:--s="0.86">
           <span class="spin" use:inview data-reveal aria-hidden="true">
             <span class="liquid-clear liquid-touch liquid-grow float mb-6 grid size-16 place-items-center rounded-md [--liquid-tint:var(--accent)] [--liquid-tint-share:30%] [&>svg]:size-11" style:--t="6s" use:interactive>{@html mark}</span>
           </span>
@@ -339,16 +337,20 @@
         <p class="text-body text-ink-2 mt-6">{L.cta.account} <button type="button" class="tap link-line text-accent-ink active:bg-surface-2 min-h-11 rounded-xs px-1 font-semibold" onclick={signin}>{L.signin}</button></p>
       </section>
 
-      <!-- the footer (L4): a normal footer, the lanes of a running track -->
-      <Footer onstart={start} onsignin={signin} />
+      <!-- the footer (L5): a quote, the line with the wordmark, the essentials -->
+      <Footer />
       </div>
     </div>
   </main>
 
-  <!-- Build your plan, floating once the hero's action has gone by: the ink pill alone. L4: held 16 above the bottom and
-       shown and hidden in place, so it never touches the bottom edge, where Safari 26 would fill its bar from it -->
-  <div bind:this={float} class="float-cta fixed bottom-[max(1rem,calc(env(safe-area-inset-bottom)+0.5rem))] left-1/2 z-30 w-[min(calc(100%-2rem),24rem)] -translate-x-1/2" data-over data-theme={floatDark ? 'dark' : undefined} data-shown={floating || undefined} inert={!floating} data-testid="landing-float">
-    <Button variant="primary" size="lg" full onclick={start}>{L.start}</Button>
+  <!-- Build your plan, floating once the hero's action has gone by: the ink pill on the bar's glass, 8 inside it as Sign in is.
+       L4: held 16 above the bottom and shown and hidden in place, so it never touches the bottom edge, where Safari 26 would
+       fill its bar from it -->
+  <div bind:this={float} class="float-cta fixed bottom-[max(1rem,calc(env(safe-area-inset-bottom)+0.5rem))] left-1/2 z-30 w-[min(calc(100%-2rem),24rem)] -translate-x-1/2" data-over data-theme={floatDark ? 'dark' : 'light'} data-shown={floating || undefined} inert={!floating} data-testid="landing-float">
+    <div class="relative isolate rounded-[calc(var(--r-control)+0.5rem)] p-2" use:interactive>
+      <span class="liquid liquid-touch absolute! inset-0 -z-10 rounded-[calc(var(--r-control)+0.5rem)]" aria-hidden="true"></span>
+      <Button variant="primary" size="lg" full onclick={start}>{L.start}</Button>
+    </div>
   </div>
 </div>
 
@@ -372,22 +374,23 @@
     .bar-glass { transition: opacity 0.2s var(--ease-out), scale 0.7s var(--spring-pop); }
 
     /* M1, L4: the bar settles in from just below its place, never passing the top edge, where Safari 26 would take
-       its colour for the status bar and keep it */
-    .bar { animation: drop 0.9s var(--spring-appear) 0.15s both; }
-    @keyframes drop { from { opacity: 0; translate: 0 12px; scale: 0.94; } }
+       its colour for the status bar and keep it. No opacity in it: a fading ancestor is a backdrop root in Chromium, and the
+       bar's glass would blur nothing */
+    .bar { animation: drop 0.9s var(--spring-appear) 0.15s backwards; }
+    @keyframes drop { from { translate: 0 12px; scale: 0.94; } }
     /* M2, L4: the promise is drawn from the first frame (it is the largest paint) and each word tumbles into line from
        its own tilt, on OneFin's bouncy spring */
-    .hero-word { animation: tumble 1.1s var(--spring-pop) both; animation-delay: calc(var(--i) * 45ms); }
-    @keyframes tumble { from { translate: 0 0.32em; rotate: var(--r); scale: 0.9; } }
-    .hero-lead { animation: up 0.8s var(--ease-out) 0.35s both; }
-    @keyframes up { from { opacity: 0; translate: 0 16px; } }
+    .hero-word { animation: tumble 1.1s var(--spring-pop) backwards; animation-delay: calc(var(--i) * 45ms); }
+    @keyframes tumble { from { translate: 0 0.32em; rotate: var(--r); scale: 0.9; filter: blur(14px); } }
+    .hero-lead { animation: up 0.8s var(--ease-out) 0.35s backwards; }
+    @keyframes up { from { opacity: 0; translate: 0 16px; filter: blur(10px); } }
     /* M3: the action pops on OneFin's bouncy spring */
-    .pop { animation: pop 1.36s var(--spring-pop) both; animation-delay: var(--d, 0.45s); }
-    @keyframes pop { from { opacity: 0; scale: 0.5; translate: 0 40px; } }
+    .pop { animation: pop 1.36s var(--spring-pop) backwards; animation-delay: var(--d, 0.45s); }
+    @keyframes pop { from { opacity: 0; scale: 0.5; translate: 0 40px; filter: blur(10px); } }
     /* M4: the phone rises with a tilt, drawn from the first frame; M5: its chips fly in from tilted offsets */
-    .rise { animation: rise 2.2s var(--spring-fly) 0.1s both; }
+    .rise { animation: rise 2.2s var(--spring-fly) 0.1s backwards; }
     @keyframes rise { from { translate: 0 120px; rotate: 7deg; } }
-    .fly { animation: fly 2.35s var(--spring-fly) both; animation-delay: var(--d); }
+    .fly { animation: fly 2.35s var(--spring-fly) backwards; animation-delay: var(--d); }
     @keyframes fly { from { opacity: 0; translate: var(--fx) var(--fy); rotate: var(--fr); } }
 
     /* recipe B, once in view: headline words drop in from their own tilts, stickers pop, steps and points swing in from

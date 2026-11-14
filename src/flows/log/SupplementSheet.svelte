@@ -353,8 +353,8 @@
       <p class="text-body">{t.supplement.tubLine}</p>
       <!-- the tub first: Scan is the step's featured way, the one violet featured card, as on the Add sheet (U1b) -->
       <div class="grid grid-cols-2 gap-3">
-        <button type="button" class="feature text-on-accent active:brightness-90 active:scale-[0.97] {tiles}" onclick={scanTub} data-featured data-testid="tub-scan">
-          <span class="bg-on-accent/20 grid size-10 place-items-center rounded-sm"><ScanBarcode size={22} strokeWidth={2} /></span>
+        <button type="button" class="feature text-ink active:brightness-90 active:scale-[0.97] {tiles}" onclick={scanTub} data-featured data-testid="tub-scan">
+          <span class="bg-ink/10 grid size-10 place-items-center rounded-sm"><ScanBarcode size={22} strokeWidth={2} /></span>
           <span><span class="text-body block font-semibold">{t.supplement.scanTub}</span><span class="text-caption block">{t.supplement.scanTubLine}</span></span>
         </button>
         <button type="button" class="bg-surface-2 active:bg-surface-3 active:scale-[0.97] {tiles}" onclick={photoTub} data-testid="tub-photo">

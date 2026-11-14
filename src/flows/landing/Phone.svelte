@@ -1,14 +1,12 @@
 <!-- A real screen of the app in an iPhone 16 drawn in CSS (DESIGN.md section 13, L2): the night bezel, the status bar with
-     its time and the Dynamic Island, then the screen below it, so the app never touches the top of the phone. Sizes are
-     the iPhone 16's published ones (393 by 852 points, a 54 point status bar, the island 126 by 37 at 11 from the top,
-     about 55 point screen corners) as shares of the phone's width: 1 point is 0.233 cqw. `crop` shows only the top share
-     of the phone, fading into what is behind it. -->
+     its time and the Dynamic Island, then the screen below it. The box is the phone's own 71.6 by 147.6 mm (Apple's
+     published outer size, the owner's exact ratio), so every phone is the same shape at any width. Measures are shares of
+     the phone's width: the display is 64.9 by 140.7 mm, so the bezel is 4.7 at the sides and 4.8 above and below, the
+     screen's corners 12.7 (55 points of 393), the status bar 54 points (12.45), the island 126 by 37 points at 11 from the
+     top. The screenshot under the status bar is 393 by 798 points (tests/e2e/landing-shots.spec.ts), the rest of the screen. -->
 <script lang="ts">
   import { t } from '$lib/i18n';
-  import { TALL, screenShare } from './shots';
-  let { src, alt, crop = 1, eager = false, class: cls = '' }: { src: string; alt: string; crop?: number; eager?: boolean; class?: string } = $props();
-  // L4: the screenshot is stored cut to the share of the screen that shows (shots.ts), and its box takes that shape
-  const h = $derived(Math.round(844 * screenShare(crop)));
+  let { src, alt, eager = false, class: cls = '' }: { src: string; alt: string; eager?: boolean; class?: string } = $props();
   const loading = $derived(eager ? 'eager' : 'lazy');
   // the status bar continues the screen's own top: the colour of its first rows, read once the screenshot has loaded
   let top = $state<string>();
@@ -22,12 +20,12 @@
   }
 </script>
 
-<div class="@container {cls} {crop < 1 ? 'overflow-clip [mask-image:linear-gradient(to_bottom,black_75%,transparent)]' : ''}" style:aspect-ratio={crop < 1 ? `100 / ${(TALL * crop).toFixed(1)}` : undefined}>
-  <div class="bg-night ring-line-strong rounded-[17cqw] p-[4.2cqw] ring-1 ring-inset">
-    <div class="bg-surface-2 overflow-clip rounded-[12.8cqw]">
-      <div class="text-night relative h-[12.6cqw]" style:background-color={top} aria-hidden="true">
+<div class="@container {cls}" style:aspect-ratio="71.6 / 147.6">
+  <div class="bg-night ring-line-strong box-border h-full rounded-[17.4cqw] px-[4.7cqw] py-[4.8cqw] ring-1 ring-inset">
+    <div class="bg-surface-2 flex h-full flex-col overflow-clip rounded-[12.7cqw]">
+      <div class="text-night relative h-[12.45cqw] flex-none" style:background-color={top} aria-hidden="true">
         <span class="num absolute top-[6.9cqw] left-[16cqw] -translate-y-1/2 text-[4cqw] leading-none font-semibold">{t.landing.phoneTime}</span>
-        <span class="bg-night absolute top-[2.6cqw] left-1/2 h-[8.7cqw] w-[29.4cqw] -translate-x-1/2 rounded-full"></span>
+        <span class="bg-night absolute top-[2.54cqw] left-1/2 h-[8.53cqw] w-[29.06cqw] -translate-x-1/2 rounded-full"></span>
         <svg viewBox="0 0 70 13" class="absolute top-[6.9cqw] right-[7.5cqw] w-[16.5cqw] -translate-y-1/2" fill="currentColor">
           <!-- signal, wifi and battery, as iOS draws them -->
           <rect x="0" y="8" width="3" height="4" rx="1" /><rect x="4.5" y="6" width="3" height="6" rx="1" /><rect x="9" y="3.5" width="3" height="8.5" rx="1" /><rect x="13.5" y="1" width="3" height="11" rx="1" />
@@ -35,8 +33,8 @@
           <rect x="44" y="1.5" width="22" height="10" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.4" /><rect x="46" y="3.5" width="18" height="6" rx="1.5" /><rect x="67" y="4.8" width="1.6" height="3.4" rx="0.8" fill-opacity="0.4" />
         </svg>
       </div>
-      <!-- the screenshots are a 390 by 844 phone at 1.6 times, cut to what shows: the size gives the box its shape before they load -->
-      <img {src} {alt} width="390" height={h} {loading} fetchpriority={eager ? 'high' : 'auto'} decoding="async" onload={sample} class="block h-auto w-full" />
+      <!-- the screenshots are 393 by 798 points at 1.6 times, under the status bar -->
+      <img {src} {alt} width="393" height="798" {loading} fetchpriority={eager ? 'high' : 'auto'} decoding="async" onload={sample} class="block min-h-0 w-full flex-1 object-cover object-top" />
     </div>
   </div>
 </div>

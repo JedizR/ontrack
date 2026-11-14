@@ -275,7 +275,7 @@ test('no gradient, bevel or glow on any button on the landing page', async ({ pa
   await openFresh(page);
   const landing = await unflat(page);
   expect(landing.bad).toEqual([]);
-  expect(landing.checked).toBeGreaterThanOrEqual(6);
+  expect(landing.checked).toBeGreaterThanOrEqual(4); // L5: the footer is links now, not buttons
 });
 
 test('corners nest on every tab, a sheet, a toast and a pressed row', async ({ page }) => {
