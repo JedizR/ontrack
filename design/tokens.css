@@ -3,7 +3,7 @@
    and SITE-EXTRACT.md; "derived" marks a value OneFin does not have. Contrast is checked by tests/unit/contrast.test.ts.
    The theme is set on <html data-theme="light|dark"> before first paint. */
 
-:root {
+:root, [data-theme="light"], .haze, .feature {
   color-scheme: light;
 
   /* Action: the flat ink pill ("Withdraw"), white on dark. Primary buttons, action icon buttons and the dock's plus */
@@ -67,10 +67,10 @@
     radial-gradient(70% 100% at 0% 0%, #f9bba1 0%, transparent 70%),
     radial-gradient(70% 120% at 100% 20%, #bebeff 0%, transparent 70%),
     radial-gradient(60% 90% at 70% 100%, #a7bedb 0%, transparent 70%), #ffffff;
-  /* the screen's one featured card (U1b: the Add sheet's Photo): violet with steel and clay deepened, white words */
+  /* the screen's one featured card (U1b: the Add sheet's Photo): lavender, peach and coral, night words (the owner, 14 November) */
   --grad-feature: var(--grain), url(./gradients/feature-light.webp) center / cover no-repeat,
-    radial-gradient(90% 120% at 100% 30%, #a95445 0%, transparent 70%),
-    radial-gradient(70% 90% at 50% 0%, #486478 0%, transparent 70%), #381ac9;
+    radial-gradient(90% 120% at 100% 30%, #f9bba1 0%, transparent 70%),
+    radial-gradient(70% 90% at 50% 0%, #bebeff 0%, transparent 70%), #f89183;
 
   /* Depth */
   --shadow-card: 0 4px 8px rgba(8, 7, 49, 0.06), 0 14px 14px rgba(8, 7, 49, 0.05);       /* Stats card */
@@ -184,17 +184,13 @@
      the words, coral and heather under the phone */
   --grad-sky: var(--grain), url(./gradients/sky-light.webp) center / cover no-repeat,
     linear-gradient(180deg, #a7bedb 0%, #ffffff 25%, #eddecc 50%, #f9bba1 72%, #f89183 100%);
-  /* the glow of the dark sections (pick 06, 09): violet, coral and clay deepened, brightest at its middle, where the page
-     anchors it, and the page masks it to nothing at every edge (the `glow` utility), since its edges are only near the canvas */
-  --glow: var(--grain), url(./gradients/glow.webp) center / 100% 100% no-repeat,
-    radial-gradient(70% 50% at 50% 50%, #9c5e57 0%, rgba(56, 26, 201, 0.5) 45%, transparent 75%);
   /* the check-in's field (pick 07): lavender led, peach and white at the top right, coral below them, mist and heather */
   --grad-lavender: var(--grain), url(./gradients/panel.webp) center / cover no-repeat,
     radial-gradient(60% 60% at 60% 0%, #f9bba1 0%, transparent 70%), radial-gradient(60% 60% at 80% 70%, #f89183 0%, transparent 70%), #bebeff;
-  /* the closing call's panel, inside the dark run in both themes: heather and steel deepened, a band of clay and coral */
+  /* the closing call's panel, inside the dark run in both themes: light, calm, night words (the owner, 14 November) */
   --grad-call: var(--grain), url(./gradients/call.webp) center / cover no-repeat,
-    radial-gradient(90% 120% at 80% 40%, #a95445 0%, transparent 70%),
-    radial-gradient(60% 90% at 0% 0%, #486478 0%, transparent 70%), #121214;
+    radial-gradient(90% 120% at 80% 40%, #f89183 0%, transparent 70%),
+    radial-gradient(60% 90% at 0% 0%, #a7bedb 0%, transparent 70%), #f9bba1;
   /* L4: Liquid Glass after callstack/liquid-glass, which wraps iOS 26's UIGlassEffect: "regular" blurs and tints what is
      behind (the bar, which anything scrolls under); "clear" only lifts it, with no frosted fill, where the words already
      read; both catch the light at the rim, and an interactive one lights up under the finger. The solid stands in
@@ -206,12 +202,17 @@
   --liquid-rim: inset 0 1px 0 rgba(255, 255, 255, 0.95), inset 1px 0 0 rgba(255, 255, 255, 0.5), inset 0 -1px 0 rgba(255, 255, 255, 0.22), inset 0 0 12px rgba(255, 255, 255, 0.32);
   --liquid-light: rgba(255, 255, 255, 0.75);
   --shadow-liquid: 0 2px 6px rgba(8, 7, 49, 0.08), 0 10px 24px rgba(8, 7, 49, 0.1);
-  /* the colour-washed cards (pick 10): white words on ink, steel and clay (deepened), night words on sand */
-  --wash-ink: var(--grain), url(./gradients/wash-ink.webp) center / cover no-repeat, linear-gradient(160deg, #121214 0%, #364957 60%, #381ac9 100%);
-  --wash-steel: var(--grain), url(./gradients/wash-steel.webp) center / cover no-repeat, linear-gradient(160deg, #4a677c 0%, #445d70 50%, #486478 100%);
-  --wash-clay: var(--grain), url(./gradients/wash-clay.webp) center / cover no-repeat, linear-gradient(160deg, #a55244 0%, #9a4d40 50%, #864439 100%);
-  --wash-sand: var(--grain), url(./gradients/wash-sand.webp) center / cover no-repeat, linear-gradient(160deg, #eddecc 0%, #f9bba1 50%, #f89183 100%);
+  /* the colour-washed cards (Sources): four calm photo gradients from the hero's palette, night words on every one (the owner,
+     14 November: light and fresh, never dark, the same in both themes) */
+  --wash-1: var(--grain), url(./gradients/wash-1.webp) center / cover no-repeat, linear-gradient(160deg, #a7bedb 0%, #f9bba1 55%, #f89183 100%);
+  --wash-2: var(--grain), url(./gradients/wash-2.webp) center / cover no-repeat, linear-gradient(160deg, #a7bedb 0%, #f9bba1 55%, #f89183 100%);
+  --wash-3: var(--grain), url(./gradients/wash-3.webp) center / cover no-repeat, linear-gradient(160deg, #a7bedb 0%, #f9bba1 55%, #f89183 100%);
+  --wash-4: var(--grain), url(./gradients/wash-4.webp) center / cover no-repeat, linear-gradient(160deg, #a7bedb 0%, #f9bba1 55%, #f89183 100%);
 }
+
+/* a light island (data-theme="light" inside a dark page, the haze, the featured card): ink words, and secondary words at 73
+   percent, which holds 4.5 to 1 across a photo gradient (docs/DESIGN.md section 4) */
+[data-theme="light"]:not(:root), .haze, .feature { --ink-2: var(--haze-ink-2); color: var(--ink); }
 
 /* the root in the dark theme, and any element marked dark: the landing page's dark sections in either theme */
 :root[data-theme="dark"], [data-theme="dark"] {
@@ -258,23 +259,11 @@
   --toast-bg: #292929;                         /* Neutral/04 */
   --scrim: rgba(0, 0, 0, 0.4);
 
-  /* P1: the same palette deepened toward night, so white words and the dark ink-2 keep 4.5 to 1 */
-  --grad-hero: var(--grain), url(./gradients/haze-dark.webp) center / cover no-repeat,
-    radial-gradient(70% 100% at 100% 100%, #733c33 0%, transparent 70%),
-    radial-gradient(60% 90% at 0% 100%, #381ac9 0%, transparent 70%),
-    radial-gradient(60% 90% at 70% 0%, #384c5a 0%, transparent 70%), #121214;
-  --grad-feature: var(--grain), url(./gradients/feature-dark.webp) center / cover no-repeat,
-    radial-gradient(70% 100% at 100% 0%, #90493d 0%, transparent 70%),
-    radial-gradient(70% 100% at 60% 60%, #381ac9 0%, transparent 70%), #121214;
-  --grad-sky: var(--grain), url(./gradients/sky-dark.webp) center / cover no-repeat,
-    radial-gradient(60% 50% at 0% 20%, #381ac9 0%, transparent 70%),
-    linear-gradient(180deg, #121214 0%, #3a505f 30%, #364957 55%, #733c33 85%, #121214 100%);
   --liquid-fill: rgba(30, 30, 34, 0.62);
   --liquid-solid: #2c2a3c;
   --liquid-rim: inset 0 1px 0 rgba(255, 255, 255, 0.4), inset 1px 0 0 rgba(255, 255, 255, 0.18), inset 0 -1px 0 rgba(255, 255, 255, 0.08), inset 0 0 12px rgba(255, 255, 255, 0.08);
   --liquid-light: rgba(255, 255, 255, 0.4);
   --shadow-liquid: 0 10px 24px rgba(0, 0, 0, 0.35);
-  --sky-top: #343d4c;
 
   --shadow-card: 0 0 0 1px rgba(255, 255, 255, 0.1);                       /* U1b: the ring that sets a card off the page */
   --shadow-float: 0 1px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1);   /* Carousel Feature Card */

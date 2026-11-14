@@ -1,5 +1,5 @@
-// The landing page's phone screens (L1): real screens of the app on the mock backend, in the light theme, as a 390 by
-// 844 iPhone shows them, as WebP (cwebp, from Homebrew's webp). Run after a change to the look, commit the images, and
+// The landing page's phone screens (L1): real screens of the app on the mock backend, in the light theme, as an iPhone 16
+// shows them under its status bar (393 by 798), as WebP (cwebp, from Homebrew's webp). Run after a change to the look, commit the images, and
 // update t.landing.alt where a number changed:
 //   LANDING_SHOTS=1 E2E_REAL_TILES=1 pnpm exec playwright test --project=shots
 // (E2E_REAL_TILES draws the food map with OpenFreeMap's real tiles, so the map shot needs the network)
@@ -7,16 +7,15 @@ import { execFileSync } from 'node:child_process';
 import { expect, test, type Page } from '@playwright/test';
 import { MEALS, SUPPLEMENTS, open, openSeeded, vision, withPrefs } from './helpers';
 import { openMap, scene } from './social';
-import { CROP, screenShare } from '../../src/flows/landing/shots';
 
 test.skip(!process.env.LANDING_SHOTS, 'writes src/flows/landing/shots/; set LANDING_SHOTS=1');
-test.use({ colorScheme: 'light', viewport: { width: 390, height: 844 }, deviceScaleFactor: 1.6 });
+test.use({ colorScheme: 'light', viewport: { width: 393, height: 798 }, deviceScaleFactor: 1.6 });
 
-// L4: cut to the share of the screen its phone shows (src/flows/landing/shots.ts), so the page loads no more than it draws
-const shot = async (page: Page, name: keyof typeof CROP) => {
+// the whole screen under the status bar, 393 by 798 points (an iPhone 16's 393 by 852 less its 54 point status bar)
+const shot = async (page: Page, name: string) => {
   await page.waitForTimeout(500); // sheets and fades settle
   const png = test.info().outputPath(`${name}.png`);
-  await page.screenshot({ path: png, clip: { x: 0, y: 0, width: 390, height: Math.round(844 * screenShare(CROP[name])) } });
+  await page.screenshot({ path: png, clip: { x: 0, y: 0, width: 393, height: 798 } });
   execFileSync('cwebp', ['-quiet', '-q', '80', png, '-o', `src/flows/landing/shots/${name}.webp`]);
 };
 const settled = (page: Page, id: string) => expect(page.getByTestId(id)).toHaveCSS('transform', 'none');

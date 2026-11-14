@@ -134,8 +134,8 @@
       {#each WAYS as w (w.key)}
         {@const Icon = w.icon}
         {@const main = w.key === 'photo'}
-        <button type="button" class="{main ? 'feature text-on-accent col-span-2 min-h-20 flex-row items-center active:brightness-90' : 'bg-surface-2 active:bg-surface-3 min-h-26 flex-col items-start justify-between'} flex gap-3 rounded-md p-4 text-left transition-[transform,background-color,filter] duration-[var(--d-press)] active:scale-[0.97]" onclick={() => go(w.key)} data-featured={main || undefined} data-testid="add-{w.key}">
-          <span class="{main ? 'bg-on-accent/20' : 'bg-surface text-accent-ink ring-accent-soft ring-1'} grid size-10 place-items-center rounded-sm"><Icon size={22} strokeWidth={2} /></span>
+        <button type="button" class="{main ? 'feature text-ink col-span-2 min-h-20 flex-row items-center active:brightness-90' : 'bg-surface-2 active:bg-surface-3 min-h-26 flex-col items-start justify-between'} flex gap-3 rounded-md p-4 text-left transition-[transform,background-color,filter] duration-[var(--d-press)] active:scale-[0.97]" onclick={() => go(w.key)} data-featured={main || undefined} data-testid="add-{w.key}">
+          <span class="{main ? 'bg-ink/10' : 'bg-surface text-accent-ink ring-accent-soft ring-1'} grid size-10 place-items-center rounded-sm"><Icon size={22} strokeWidth={2} /></span>
           <span>
             <span class="text-body block font-semibold">{w.label}</span>
             <span class="text-caption {main ? '' : 'text-ink-2'} block">{w.line}</span>

@@ -6,7 +6,7 @@ import { readFileSync } from 'node:fs';
 const css = readFileSync('design/tokens.css', 'utf8');
 const block = (sel: string) => css.slice(css.indexOf(`${sel} {`), css.indexOf('}', css.indexOf(`${sel} {`)));
 const vars = (b: string) => Object.fromEntries([...b.matchAll(/--([\w-]+):\s*(#[0-9a-f]{6}|rgba\([^)]+\))/gi)].map((m) => [m[1], m[2]]));
-const light = vars(block(':root'));
+const light = vars(block(':root, [data-theme="light"], .haze, .feature'));
 // the dark block also applies to any element marked dark (the landing page's dark sections)
 const dark = { ...light, ...vars(block('[data-theme="dark"]')) };
 
@@ -74,12 +74,12 @@ test('dark steps stand apart', () => {
   expect(on(dark, 'glass-edge', 'canvas'), 'dock edge on page').toBeGreaterThanOrEqual(2);
 });
 
-// U1b: the featured card's gradient (the Add sheet's Photo) carries white words on every stop, in both themes; P1: the
-// closing call's too
+// U1b, the owner (14 November): the featured card's gradient (the Add sheet's Photo) and the closing call's are light and
+// carry ink words on every stop; both sit in a light island (`data-theme="light"`, `.feature`), so the words are dark in both themes
 test('words on the featured card and the closing call', () => {
   const at = [...css.matchAll(/--grad-(feature|call):/g)].map((m) => m.index);
-  expect(at).toHaveLength(3);
-  for (const a of at) for (const m of css.slice(a, css.indexOf(';', a)).matchAll(/#[0-9a-f]{6}/gi)) expect(ratio(parse(light['on-accent']), parse(m[0])), m[0]).toBeGreaterThanOrEqual(4.5);
+  expect(at).toHaveLength(2);
+  for (const a of at) for (const m of css.slice(a, css.indexOf(';', a)).matchAll(/#[0-9a-f]{6}/gi)) expect(ratio(parse(light.ink), parse(m[0])), m[0]).toBeGreaterThanOrEqual(4.5);
 });
 
 // P1: every photo gradient's eight colours (scripts/gradients.sh), each under the grain's mean (the site's noise: 9.5
@@ -87,18 +87,14 @@ test('words on the featured card and the closing call', () => {
 // `haze-ink-2`; the reached figure on the haze is heading sized, large text. The images are measured in landing.spec.ts.
 const PHOTOS: Record<string, [string, typeof light, number][]> = {
   'haze-light': [['ink', light, 4.5], ['haze-ink-2', light, 4.5], ['success-ink', light, 3]],
-  'haze-dark': [['ink', dark, 4.5], ['haze-ink-2', dark, 4.5], ['success-ink', dark, 3]],
-  'feature-light': [['on-accent', light, 4.5]],
-  'feature-dark': [['on-accent', dark, 4.5]],
+  'feature-light': [['ink', light, 4.5]],
   'sky-light': [['ink', light, 4.5], ['accent-ink', light, 3]],
-  'sky-dark': [['ink', dark, 4.5], ['accent-ink', dark, 3]],
-  glow: [['on-night', light, 4.5]],
   panel: [['night', light, 4.5]],
-  'wash-ink': [['on-night', light, 4.5]],
-  'wash-steel': [['on-night', light, 4.5]],
-  'wash-clay': [['on-night', light, 4.5]],
-  'wash-sand': [['night', light, 4.5]],
-  call: [['on-night', light, 4.5]],
+  'wash-1': [['night', light, 4.5]],
+  'wash-2': [['night', light, 4.5]],
+  'wash-3': [['night', light, 4.5]],
+  'wash-4': [['night', light, 4.5]],
+  call: [['ink', light, 4.5]],
 };
 test('words on the photo gradients', () => {
   const rows = [...readFileSync('scripts/gradients.sh', 'utf8').matchAll(/^#= (\S+)([^|]*)/gm)].filter((m) => m[1] !== 'grain');
@@ -124,13 +120,10 @@ test('words on the landing washes, panels and sky', () => {
   // the hero's sky: ink words on every stop of the light one, white on the dark one, violet headline words as large text
   for (const c of stops('grad-sky')) expect(ratio(parse(light.ink), c), 'grad-sky').toBeGreaterThanOrEqual(4.5);
   for (const c of stops('grad-sky')) expect(ratio(parse(light['accent-ink']), c), 'grad-sky violet').toBeGreaterThanOrEqual(3);
-  for (const c of stops('grad-sky', css.indexOf('[data-theme="dark"] {'))) expect(ratio(parse(dark.ink), c), 'dark grad-sky').toBeGreaterThanOrEqual(4.5);
-  for (const c of stops('grad-sky', css.indexOf('[data-theme="dark"] {'))) expect(ratio(parse(dark['accent-ink']), c), 'dark grad-sky violet').toBeGreaterThanOrEqual(3);
-  for (const w of ['wash-ink', 'wash-steel', 'wash-clay']) for (const c of stops(w)) expect(ratio(parse(light['on-night']), c), w).toBeGreaterThanOrEqual(4.5);
+  for (const w of ['wash-1', 'wash-2', 'wash-3', 'wash-4']) for (const c of stops(w)) expect(ratio(parse(light.night), c), w).toBeGreaterThanOrEqual(4.5);
   // L4: words on the bar's regular glass over the darkest thing that can pass under it, unblurred: night in the light
   // scheme, white in the dark one, which the bar takes over the dark sections; the photo gradients themselves are measured
   // in landing.spec.ts
   expect(ratio(parse(light.ink), over(parse(light['liquid-fill']), parse(light.night))), 'liquid-fill').toBeGreaterThanOrEqual(4.5);
   expect(ratio(parse(dark.ink), over(parse(dark['liquid-fill']), parse('#ffffff'))), 'dark liquid-fill').toBeGreaterThanOrEqual(4.5);
-  for (const c of stops('wash-sand')) expect(ratio(parse(light.night), c), 'wash-sand').toBeGreaterThanOrEqual(4.5);
 });

@@ -119,18 +119,14 @@ test('the photo gradients keep their words readable', async ({ page }) => {
   const CASES: [string, string[], string[]][] = [
     // image, words that need 4.5 to 1, words that need 3 to 1
     ['haze-light', ['night', 'ink2'], ['success']],
-    ['haze-dark', ['white', 'white80'], ['successDark']],
-    ['feature-light', ['white'], []],
-    ['feature-dark', ['white'], []],
-    ['call', ['white'], []],
+    ['feature-light', ['night'], []],
+    ['call', ['night'], []],
     ['sky-light', ['night'], ['violet']],
-    ['sky-dark', ['white'], ['violetDark']],
-    ['glow', ['white'], []],
     ['panel', ['night'], []],
-    ['wash-ink', ['white'], []],
-    ['wash-steel', ['white'], []],
-    ['wash-clay', ['white'], []],
-    ['wash-sand', ['night'], []],
+    ['wash-1', ['night'], []],
+    ['wash-2', ['night'], []],
+    ['wash-3', ['night'], []],
+    ['wash-4', ['night'], []],
   ];
   const lin = (v: number) => ((v /= 255) <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4);
   const lum = (c: number[]) => 0.2126 * lin(c[0]) + 0.7152 * lin(c[1]) + 0.0722 * lin(c[2]);
@@ -162,23 +158,28 @@ test('the photo gradients keep their words readable', async ({ page }) => {
   }
 });
 
-// L4, the owner: a normal footer, no pull to open. At the end of the page it is all there: the four lanes with their
-// links; a Learn link takes focus to its section, and Back to top goes to the top
-test('the footer is all on the page, and its links go where they say', async ({ page }) => {
+// L5, the owner: a short footer. "Keep your calories" over the wordmark, both lines the same width, then the essentials:
+// contact, Privacy, Terms, the year (far left), the version (far right) and the small print
+test('the footer is the line over the wordmark and the essentials', async ({ page }) => {
   await openFresh(page);
   await toEnd(page);
   const footer = page.getByTestId('landing-footer');
-  for (const lane of ['Start', 'Learn', 'Good to know', 'Contact and legal']) await expect(footer.getByRole('heading', { name: lane })).toBeVisible();
-  await expect(footer.getByRole('link', { name: 'Privacy' })).toBeInViewport();
-  await footer.getByRole('button', { name: 'Training' }).click();
-  await expect(page.locator('#training')).toBeFocused();
-  await expect(page.locator('#training')).toBeInViewport();
-  await toEnd(page);
-  await page.getByTestId('landing-top').click();
-  await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
-  await toEnd(page);
-  await footer.getByRole('button', { name: 'Sign in' }).click();
-  await expect(page.getByTestId('signin-sheet')).toBeVisible();
+  await expect(footer.getByRole('heading', { name: 'Keep your calories' })).toBeVisible();
+  await expect(footer.getByText('Ontrack gives general wellness guidance, not medical advice.', { exact: true })).toBeVisible();
+  for (const name of ['team.ontrackapp@gmail.com', 'Privacy', 'Terms']) await expect(footer.getByRole('link', { name })).toBeInViewport();
+  // the two lines are as wide as each other, and the line fits its column
+  const w = await footer.evaluate((f) => { const h = f.querySelector('.keep')!; const r = document.createRange(); r.selectNodeContents(h); return [r.getBoundingClientRect().width, f.querySelector('svg')!.getBoundingClientRect().width, h.clientWidth]; });
+  expect(w[0]).toBeLessThanOrEqual(w[2] + 1);
+  expect(Math.abs(w[0] - w[1])).toBeLessThan(w[1] * 0.03);
+  // the year at the far left and the version at the far right, on a phone as well
+  for (const size of [{ width: 1440, height: 900 }, { width: 390, height: 664 }]) {
+    await page.setViewportSize(size);
+    await toEnd(page);
+    const at = await footer.evaluate((f) => { const bar = f.querySelector('.border-t')!.getBoundingClientRect(); const [year, version] = [...f.querySelectorAll('.border-t > span')].map((s) => s.getBoundingClientRect()); const nav = f.querySelector('nav')!.getBoundingClientRect(); return { left: year.left - bar.left, right: bar.right - version.right, sameLine: Math.abs(year.top - version.top) < 4, belowLinks: year.top >= nav.bottom - 1 }; });
+    expect(at.left, `year at ${size.width}`).toBeLessThan(2);
+    expect(at.right, `version at ${size.width}`).toBeLessThan(2);
+    if (size.width < 500) { expect(at.sameLine).toBe(true); expect(at.belowLinks).toBe(true); }
+  }
 });
 
 // L4, the owner's bars (DECISIONS L4, from WebKit's source): Safari 26 fills its top or bottom bar with a solid colour only
@@ -206,7 +207,7 @@ test('nothing fixed touches the bars, and the page takes the colour of the secti
   await expect.poll(bg).toEqual([surface, surface]);
   expect(await atEdges()).toEqual([]);
   // the floating action is the ink pill on light, and the white one over a dark section (ink means act, white on dark)
-  await expect(page.getByTestId('landing-float')).not.toHaveAttribute('data-theme');
+  await expect(page.getByTestId('landing-float')).toHaveAttribute('data-theme', 'light');
   await page.evaluate(() => { const el = document.querySelector('[data-testid="landing-train"]')!; scrollTo(0, el.getBoundingClientRect().top + scrollY + 400); });
   await expect(page.getByTestId('landing-float')).toHaveAttribute('data-theme', 'dark');
   // a dark section in the light theme: its own canvas, and the bar turns dark over it
@@ -218,14 +219,14 @@ test('nothing fixed touches the bars, and the page takes the colour of the secti
   await toEnd(page);
   await expect.poll(bg).toEqual([night, night]);
   expect(await atEdges()).toEqual([]);
-  // the bar: 8 below the top as before; the owner: Sign in is the ink pill, in a bar no wider than a phone
+  // the bar: 8 below the top as before; the owner: Sign in is the ink pill, in a bar as wide as the page
   const bar = page.getByTestId('landing').locator('header');
   await expect.poll(() => bar.evaluate((h) => [h.getBoundingClientRect().top, h.querySelector('nav')!.getBoundingClientRect().top])).toEqual([8, 8]);
   await page.evaluate(() => scrollTo(0, 0));
   const ink = await colour('--action');
   await expect.poll(() => page.getByTestId('landing-signin').evaluate((b) => getComputedStyle(b.querySelector('span') ?? b).backgroundColor)).toBe(ink);
   await page.setViewportSize({ width: 1440, height: 900 });
-  expect(await page.getByTestId('landing-bar').evaluate((n) => n.getBoundingClientRect().width)).toBe(430);
+  expect(await page.getByTestId('landing-bar').evaluate((n) => n.getBoundingClientRect().width)).toBe(1440 - 72);
   await page.setViewportSize({ width: 390, height: 664 });
   await startPlan(page);
   const canvas = await colour('--canvas');

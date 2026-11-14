@@ -1,4 +1,4 @@
-/* L4, the landing page only (DESIGN.md section 13): Liquid Glass after callstack/liquid-glass, the glow, and the motion
+/* L4, the landing page only (DESIGN.md section 13): Liquid Glass after callstack/liquid-glass, and the motion
    the bar, the sections and the footer share. Its own stylesheet in the landing's chunk, so the app never loads it. */
 
 /* Liquid Glass. callstack/liquid-glass wraps iOS 26's UIGlassEffect: `effect` regular, clear or none, a `tintColor`, a
@@ -51,12 +51,6 @@
 }
 @media (hover: hover) { .liquid-touch:hover::after, :hover > .liquid-touch::after { opacity: 0.5; } }
 .liquid-touch[data-pressed]::after { opacity: 1; }
-
-/* the glow of the dark sections: brightest at its middle and faded to nothing at every edge (L2, the owner's glow bug) */
-.glow {
-  background: var(--glow);
-  mask-image: radial-gradient(closest-side, black 40%, transparent);
-}
 
 /* every tap on the page has a pressed state (PRD section 8, DESIGN.md section 10): the fill steps in the markup, and the
    face scales to 0.97 over --d-press when motion is welcome; the bar's, the sections' and the footer's alike */
