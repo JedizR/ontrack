@@ -1,0 +1,27 @@
+{
+ "name": "Rice with fried egg",
+ "sources": [
+  "https://www.eatingthaifood.com/thai-basil-chicken-recipe-pad-kra-pao-gai/",
+  "https://rachelcooksthai.com/pad-kaprow-moo/"
+ ],
+ "ingredients": [
+  {
+   "food": "rice-white",
+   "grams": 200
+  },
+  {
+   "food": "egg-fried",
+   "grams": 46
+  },
+  {
+   "food": "oil-vegetable",
+   "grams": 8
+  },
+  {
+   "food": "fish-sauce",
+   "grams": 3
+  }
+ ],
+ "yield_g": 257,
+ "notes": "A plate of 200 g of cooked rice with one Thai crisp fried egg: 46 g cooked, 8 g more oil than the plain fried egg row (Eating Thai Food fries 1 egg in 2 tablespoons of oil), and a splash of fish sauce."
+}

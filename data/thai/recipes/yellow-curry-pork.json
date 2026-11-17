@@ -1,0 +1,47 @@
+{
+ "name": "Yellow curry with pork",
+ "sources": [
+  "https://rachelcooksthai.com/yellow-curry-with-chicken-and-potato/",
+  "https://rachelcooksthai.com/green-curry-with-chicken-and-eggplant/"
+ ],
+ "ingredients": [
+  {
+   "food": "curry-paste-yellow",
+   "grams": 14
+  },
+  {
+   "food": "coconut-milk",
+   "grams": 90
+  },
+  {
+   "food": "water",
+   "grams": 80
+  },
+  {
+   "food": "sugar",
+   "grams": 3
+  },
+  {
+   "food": "fish-sauce",
+   "grams": 4
+  },
+  {
+   "food": "potato-boiled",
+   "grams": 60
+  },
+  {
+   "food": "onion",
+   "grams": 20
+  },
+  {
+   "food": "carrot",
+   "grams": 20
+  },
+  {
+   "food": "pork-tenderloin",
+   "grams": 70
+  }
+ ],
+ "yield_g": 325,
+ "notes": "Rachel Cooks Thai yellow curry with chicken and potato (4 bowls: 1 can coconut milk, 2 tbsp paste, 1 cup chicken, 2 potatoes, 1/2 onion, 1 cup baby corn) with pork; carrot stands in for baby corn. Per bowl 90 g of coconut milk, 14 g of paste, 80 g of water, 70 g of cooked pork."
+}

@@ -185,15 +185,31 @@
   &::placeholder { color: var(--ink-3); }
   &:focus-visible { box-shadow: 0 0 0 2px var(--ink); }
 }
-/* Glass (DESIGN.md section 6): a small chip over colour or a picture. Blur, a translucent fill, a 1 px white edge and a
-   soft drop; without blur the solid fill stands in. */
-@utility glass {
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-edge);
-  box-shadow: var(--shadow-glass);
-  -webkit-backdrop-filter: var(--blur-glass);
-  backdrop-filter: var(--blur-glass);
-  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { background: var(--glass-solid); }
+/* Liquid Glass. callstack/liquid-glass wraps iOS 26's UIGlassEffect: `effect` regular, clear or none, a `tintColor`, a
+   `colorScheme`, `interactive`, and a container that merges nearby glass. The web version, light enough for a phone
+   without a GPU: one backdrop filter per glass and no SVG filter, so nothing is redrawn while the page scrolls but the
+   blur itself.
+   - regular: blurs and tints what is behind; for the bar, which anything scrolls under, so its words always read
+   - clear: lifts what is behind (a little blur, more saturation and light) with no frosted fill, for chips and cards
+     whose words already read over what is under them (the owner)
+   - both catch the light at the rim: bright at the top, faint at the foot, an inner glow at the edges
+   - `--liquid-tint` tints either one, as tintColor does; `data-theme` on a glass is its colorScheme */
+.liquid, .liquid-clear {
+  box-shadow: var(--liquid-rim), var(--shadow-liquid);
+  background-color: color-mix(in srgb, var(--liquid-tint, transparent) var(--liquid-tint-share, 0%), var(--liquid-base));
+}
+.liquid {
+  --liquid-base: var(--liquid-fill);
+  -webkit-backdrop-filter: var(--liquid-blur);
+  backdrop-filter: var(--liquid-blur);
+}
+.liquid-clear {
+  --liquid-base: transparent;
+  -webkit-backdrop-filter: var(--liquid-clear);
+  backdrop-filter: var(--liquid-clear);
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .liquid, .liquid-clear { --liquid-base: var(--liquid-solid); }
 }
 /* U2: a row whose pressed grey runs edge to edge. In a list card (Card's `list`, 4 px above and below its rows) the first
    and last rows carry their fill 4 px further, into that padding, so the grey meets the card's edge and the card's clip
@@ -210,16 +226,6 @@
   }
   &::before { top: calc(-1 * var(--s-1)); }
   &::after { bottom: calc(-1 * var(--s-1)); }
-}
-/* The dock: glass with more fill, since rows scroll under it. U2: its edge is drawn inside it, taking no room, so the
-   selected tab's pill sits 8 from the dock's outer edge on every side, 48 high, and the two full radii nest (32, 24). */
-@utility glass-bar {
-  background: var(--bar-bg);
-  outline: 1px solid var(--glass-edge);
-  outline-offset: -1px;
-  -webkit-backdrop-filter: var(--blur-bar);
-  backdrop-filter: var(--blur-bar);
-  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { background: var(--bar-solid); }
 }
 /* U1b: content that scrolls under a bar fades into the bar's colour (--fade) over --fade-h, instead of meeting a hard
    edge. fade-under hangs below a header and shows with data-scrolled; fade-over sits above a pinned footer. The bar's
@@ -253,13 +259,37 @@
 @utility feature {
   background: var(--grad-feature);
 }
+/* a scroller with no visible bar (the week strip: it slides and snaps, the bar would only add noise) */
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+}
 /* Fade in and up once, on the first paint of a session (Today's cards). Reduced motion shows the end state. */
 @utility appear {
-  animation: appear var(--d-appear) var(--spring-appear) both;
+  animation: appear var(--d-appear) var(--spring-appear) backwards;
   animation-delay: calc(var(--i, 0) * 40ms);
 }
 @keyframes appear {
   from { opacity: 0; translate: 0 8px; }
+}
+/* O2: onboarding's entrance, as the landing page's own: a settle with a short blur, in order by --i, once. `backwards`
+   leaves no layer behind when it ends. Reduced motion collapses it to the end state (the rule at the foot of this file). */
+@utility rise {
+  animation: rise var(--d-appear) var(--spring-appear) backwards;
+  animation-delay: calc(var(--i, 0) * 70ms);
+}
+@keyframes rise {
+  from { opacity: 0; translate: 0 14px; filter: blur(10px); }
+}
+/* O2: a block that settles in as it scrolls into view (inview.ts sets data-inview), as the landing page's sections do.
+   Without motion (reduced, or before the script runs) it is simply there. */
+@utility reveal {
+  opacity: 0;
+  translate: 0 24px;
+  filter: blur(8px);
+  transition: opacity var(--d-appear) var(--ease-out), translate var(--d-appear) var(--spring-appear), filter var(--d-appear) var(--ease-out);
+  &[data-inview] { opacity: 1; translate: 0 0; filter: none; }
+  @media (prefers-reduced-motion: reduce) { opacity: 1; translate: none; filter: none; }
 }
 /* U1c: a photo being read. A flat lavender band with a bright edge sweeps down and back; no gradient (DESIGN.md
    section 8). Under reduced motion it is not drawn at all: a looping animation would keep running */
@@ -346,3 +376,20 @@
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-delay: 0ms !important; transition-duration: 0.01ms !important; }
 }
+
+/* The Add composer's example line: the next one rises in as the last lifts away, both in one grid cell. */
+@keyframes swap-in { from { opacity: 0; translate: 0 70%; } }
+@keyframes swap-out { to { opacity: 0; translate: 0 -70%; } }
+.swap-in { animation: swap-in var(--d-move) var(--ease-out) both; }
+.swap-out { animation: swap-out var(--d-move) var(--ease-out) both; }
+
+/* R2: a meal just logged lands with a violet glow that fades (Today), so the eye finds the new row */
+@keyframes landed { from { background-color: color-mix(in srgb, var(--accent-soft) 70%, var(--surface)); } }
+.landed { animation: landed 1.6s var(--ease-out); }
+
+/* R2: Today's session box turning the action's ink after Done, as a circle growing from the button (--x, --y) */
+@keyframes ink-in { from { clip-path: circle(0 at var(--x) var(--y)); } to { clip-path: circle(150% at var(--x) var(--y)); } }
+.ink-in { animation: ink-in 560ms var(--ease-out) both; }
+/* and Undo, the same circle closing back into the button */
+@keyframes ink-out { from { clip-path: circle(150% at var(--x) var(--y)); } to { clip-path: circle(0 at var(--x) var(--y)); } }
+.ink-out { animation: ink-out 380ms var(--ease-out) both; }

@@ -97,7 +97,7 @@ test('two friends: request, accept, share, see the pin, open it, unshare, remove
   await expect(pin).toContainText('Basil pork with rice and fried egg');
   await expect(pin.getByTestId('pin-who')).toContainText('Nan');
   await expect(pin.getByTestId('pin-who')).toContainText('Today, ');
-  await expect(pin.getByTestId('pin-kcal')).toHaveText('712');
+  await expect(pin.getByTestId('pin-kcal')).toHaveText('752'); // R2: 1 tsp of oil by default
   await expect(pin.getByTestId('pin-nutrition')).toContainText('g protein');
   await expect(pin.getByTestId('shared-photo')).toBeVisible();
   await expect(pin.getByTestId('pin-unshare')).toHaveCount(0);

@@ -1,9 +1,10 @@
 // The Vercel functions on the dev server for `pnpm dev:live`, through the same handlers. On the mock backend,
-// dev/mock-backend.ts answers /api/account and /api/analyze instead.
+// dev/mock-backend.ts answers /api/account, /api/analyze and /api/coach instead.
 import { loadEnv, type Plugin } from 'vite';
 import { toMiddleware } from './mock-backend.ts';
 import { account } from '../server/handlers/account.ts';
 import { analyze } from '../server/handlers/analyze.ts';
+import { coach } from '../server/handlers/coach.ts';
 
 export function devApi(): Plugin {
   return {
@@ -14,6 +15,7 @@ export function devApi(): Plugin {
       for (const [k, v] of Object.entries(loadEnv(s.config.mode, process.cwd(), ['VISION_', 'GEMINI_', 'AI_']))) process.env[k] ??= v;
       s.middlewares.use('/api/account', toMiddleware(account));
       s.middlewares.use('/api/analyze', toMiddleware((r) => analyze(r)));
+      s.middlewares.use('/api/coach', toMiddleware((r) => coach(r)));
     },
   };
 }

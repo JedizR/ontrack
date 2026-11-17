@@ -12,9 +12,9 @@ export const PREFS_KEY = 'ot-ui';
 
 /** F23: which reminder cards Today shows, and from what time the nothing logged card does */
 export type Remind = { meal: boolean; mealAt: string; weigh: boolean; checkin: boolean; easy: boolean };
-interface Saved { theme: Theme; fontSize: FontSize; tab: Tab; lastUser: string | null; lastEmail: string | null; draft: Draft | null; photoOk: boolean; firstDay: string | null; suggestOff: boolean; locationOk: boolean; remind: Remind; thai: boolean | null; liftAsked: boolean }
+interface Saved { theme: Theme; fontSize: FontSize; tab: Tab; lastUser: string | null; lastEmail: string | null; draft: Draft | null; photoOk: boolean; firstDay: string | null; suggestOff: boolean; gapFolded: boolean; locationOk: boolean; remind: Remind; thai: boolean | null; liftAsked: boolean }
 const DEFAULTS: Saved = {
-  theme: 'system', fontSize: 'system', tab: 0, lastUser: null, lastEmail: null, draft: null, photoOk: false, firstDay: null, suggestOff: false, locationOk: false,
+  theme: 'system', fontSize: 'system', tab: 0, lastUser: null, lastEmail: null, draft: null, photoOk: false, firstDay: null, suggestOff: false, gapFolded: false, locationOk: false,
   remind: { meal: true, mealAt: '13:00', weigh: true, checkin: true, easy: true }, thai: null, liftAsked: false,
 };
 const load = (): Saved => {
@@ -49,6 +49,9 @@ class Prefs {
   /** "Not now" on Train's suggested program (O1) */
   get suggestOff() { return this.#s.suggestOff; }
   set suggestOff(v: boolean) { this.#s.suggestOff = v; this.#save(); }
+  /** R2: Today's suggestions folded to their title line (the owner's chevron) */
+  get gapFolded() { return this.#s.gapFolded; }
+  set gapFolded(v: boolean) { this.#s.gapFolded = v; this.#save(); }
   /** the one sentence about location was shown before the first location prompt (S1b, F17) */
   get locationOk() { return this.#s.locationOk; }
   set locationOk(v: boolean) { this.#s.locationOk = v; this.#save(); }

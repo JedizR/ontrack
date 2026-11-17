@@ -1,0 +1,39 @@
+{
+ "name": "Nam tok with grilled beef",
+ "sources": [
+  "https://rachelcooksthai.com/moo-nam-tok/",
+  "https://www.eatingthaifood.com/nam-tok-recipe/"
+ ],
+ "ingredients": [
+  {
+   "food": "beef-grilled-thai",
+   "grams": 100
+  },
+  {
+   "food": "shallot",
+   "grams": 15
+  },
+  {
+   "food": "coriander",
+   "grams": 8
+  },
+  {
+   "food": "mint",
+   "grams": 8
+  },
+  {
+   "food": "fish-sauce",
+   "grams": 8
+  },
+  {
+   "food": "lime",
+   "grams": 12
+  },
+  {
+   "food": "rice-white-dry",
+   "grams": 8
+  }
+ ],
+ "yield_g": 159,
+ "notes": "Rachel Cooks Thai beef waterfall (8 oz flank or sirloin for 4) and Eating Thai Food's nam tok (250 g grilled beef a plate). Per plate 100 g of grilled beef; the seasoning is the same as the pork."
+}

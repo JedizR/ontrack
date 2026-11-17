@@ -1,0 +1,51 @@
+{
+ "name": "Basil fried rice with chicken",
+ "sources": [
+  "https://rachelcooksthai.com/holy-basil-fried-rice/",
+  "https://www.eatingthaifood.com/thai-basil-chicken-recipe-pad-kra-pao-gai/"
+ ],
+ "ingredients": [
+  {
+   "food": "rice-white",
+   "grams": 200
+  },
+  {
+   "food": "egg-raw",
+   "grams": 50
+  },
+  {
+   "food": "chicken-ground",
+   "grams": 60
+  },
+  {
+   "food": "garlic",
+   "grams": 8
+  },
+  {
+   "food": "chili",
+   "grams": 6
+  },
+  {
+   "food": "holy-basil",
+   "grams": 15
+  },
+  {
+   "food": "long-beans",
+   "grams": 20
+  },
+  {
+   "food": "oyster-sauce",
+   "grams": 10
+  },
+  {
+   "food": "soy-sauce",
+   "grams": 8
+  },
+  {
+   "food": "oil-vegetable",
+   "grams": 18
+  }
+ ],
+ "yield_g": 375,
+ "notes": "As the pork basil fried rice, with minced chicken (Eating Thai Food uses chicken breast for kra pao gai)."
+}

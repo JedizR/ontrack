@@ -12,8 +12,11 @@
   import { session } from '$lib/session.svelte';
   import { sync } from '$lib/sync/engine.svelte';
   import { logOpen, sheets } from '$lib/sheets.svelte';
+  import { trackKeyboard } from '$lib/keyboard';
   import { view } from '$lib/view.svelte';
-  import { dayTitle } from '$lib/model/dates';
+  import { dayTitleShort } from '$lib/model/dates';
+  import { checkinDueOn } from '$lib/model/progress';
+  import { ids } from '../shared/records';
   import { picker } from '$lib/picker.svelte';
   import { db } from '$lib/db/store.svelte';
   import { refreshFriends, waiting } from '$lib/friends.svelte';
@@ -48,6 +51,11 @@
   const loadCheckin = async () => { Checkin ??= (await import('./flows/checkin/CheckinSheet.svelte')).default; };
   $effect(() => { if (sheets.checkin && !Checkin) void loadCheckin(); });
   const add = () => (db.ready ? (sheets.add = true) : (sheets.signin = true));
+  // R2: the check-in waiting is a dot on Progress, where it lives (the bell is gone)
+  const checkinDue = $derived.by(() => {
+    const p = db.ready ? db.get('profile', 'profile') : undefined;
+    return !!p && checkinDueOn(db.live('plan'), p.checkinWeekday, view.today) && !db.get('checkin', ids.checkin(view.today));
+  });
   // the food map and friends (S1b): a full screen layer over the shell, its own chunk; MapLibre loads inside it
   let FoodMap = $state<Component | null>(null);
   const loadMap = async () => { FoodMap ??= (await import('./flows/social/FoodMap.svelte')).default; };
@@ -106,6 +114,8 @@
   // the header's dot: an expired session and a failing sync both need attention
   const MARK: Record<typeof sync.status, SyncState> = { idle: 'idle', syncing: 'syncing', offline: 'offline', error: 'attention', auth: 'attention' };
 
+  // the iOS keyboard covers the bottom of the page: sheets and the onboarding bar lift by it (R1)
+  onMount(() => trackKeyboard());
   onMount(() => {
     applyTheme();
     applyFontSize();
@@ -145,7 +155,7 @@
 <!-- inert under the food map, a modal layer over the shell -->
 <div class="bg-canvas relative mx-auto flex min-h-svh w-full max-w-[480px] flex-col overflow-x-clip" inert={!!FoodMap && sheets.friends}>
   <Header
-    title={prefs.tab === 0 && view.past ? dayTitle(view.date) : TITLES[prefs.tab]}
+    title={prefs.tab === 0 && view.past ? dayTitleShort(view.date) : TITLES[prefs.tab]}
     sync={MARK[sync.status]}
     signedIn={!!session.user}
     onaccount={() => (session.user ? (sheets.account = true) : (sheets.signin = true))}
@@ -166,7 +176,7 @@
     </div>
   </main>
 
-  <Dock tab={prefs.tab} onselect={(i) => void go(i)} onadd={add} {swipeOpts} />
+  <Dock tab={prefs.tab} onselect={(i) => void go(i)} onadd={add} {swipeOpts} dots={[false, false, checkinDue && prefs.tab !== 2]} />
 </div>
 {/if}
 

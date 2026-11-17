@@ -1,0 +1,59 @@
+{
+ "name": "Pad woon sen with chicken",
+ "sources": [
+  "https://rachelcooksthai.com/pad-woonsen/",
+  "https://www.recipetineats.com/thai-glass-noodles-pad-woon-sen/"
+ ],
+ "ingredients": [
+  {
+   "food": "noodles-glass",
+   "grams": 40
+  },
+  {
+   "food": "water",
+   "grams": 110
+  },
+  {
+   "food": "egg-raw",
+   "grams": 50
+  },
+  {
+   "food": "garlic",
+   "grams": 6
+  },
+  {
+   "food": "onion",
+   "grams": 20
+  },
+  {
+   "food": "carrot",
+   "grams": 20
+  },
+  {
+   "food": "spring-onion",
+   "grams": 8
+  },
+  {
+   "food": "oyster-sauce",
+   "grams": 10
+  },
+  {
+   "food": "soy-sauce",
+   "grams": 8
+  },
+  {
+   "food": "fish-sauce",
+   "grams": 3
+  },
+  {
+   "food": "oil-vegetable",
+   "grams": 15
+  },
+  {
+   "food": "chicken-thigh",
+   "grams": 64
+  }
+ ],
+ "yield_g": 336,
+ "notes": "Rachel Cooks Thai pad woonsen (4 plates: 120 g dry glass noodles, 1/2 cup chicken, 2 eggs, 1/2 cup carrots, 1 tbsp each of oyster and thin soy sauce) and RecipeTin Eats' pad woon sen. Per plate 40 g of dry noodles, which take up about 110 g of water; oil 15 g; protein is the cooked weight."
+}

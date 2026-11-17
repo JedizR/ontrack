@@ -2,6 +2,7 @@
 // model, the schema check, resolution against the food table) and prints what came back with the time each took.
 //   pnpm eval:vision <photo folder> [<output folder for the raw replies>]
 //   pnpm eval:vision --label <folder of nutrition label photos>   (B1: the label reader, printed values only)
+//   pnpm eval:vision --text <cases.json> [<output folder>]   (R2: described meals, each scored on the id it should reach)
 // shortcut: resizes with macOS `sips`; the evaluation runs on the owner's Mac, not in CI
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
@@ -13,13 +14,38 @@ import { resolveItems } from '../server/vision/resolve.ts';
 import { labelOutput, toLabel } from '../server/vision/label.ts';
 
 const label = process.argv.includes('--label');
-const [dir, out] = process.argv.slice(2).filter((a) => a !== '--label');
+const text = process.argv.includes('--text');
+const [dir, out] = process.argv.slice(2).filter((a) => !a.startsWith('--'));
 if (!dir) throw new Error('usage: pnpm eval:vision <photo folder> [<output folder>]');
 if (out) mkdirSync(out, { recursive: true });
 const tmp = mkdtempSync(join(tmpdir(), 'ontrack-eval-'));
 const provider = await visionProvider();
 const PAUSE_MS = 6000; // the free tier allows about 10 requests a minute
 const times: number[] = [];
+
+if (text) {
+  // one call a case; right when an item resolves to the expected id
+  const cases = JSON.parse(readFileSync(dir, 'utf8')) as { text: string; expect: string }[];
+  let right = 0;
+  for (const [n, c] of cases.entries()) {
+    let line;
+    try {
+      const raw = await provider.analyze({ text: c.text, locale: 'en', signal: AbortSignal.timeout(60_000) });
+      if (out) writeFileSync(join(out, `${n}.json`), JSON.stringify({ case: c, raw }, null, 2));
+      const parsed = modelOutput.safeParse(raw);
+      const ids = parsed.success ? resolveItems(parsed.data.items).map((i) => i.foodId ?? 'estimate') : ['schema mismatch'];
+      const ok = ids.includes(c.expect);
+      right += +ok;
+      line = `${ok ? 'right' : 'WRONG'}  ${c.text}  ->  ${ids.join(', ')}${ok ? '' : `  (expected ${c.expect})`}`;
+    } catch (e) {
+      line = `failed  ${c.text}  ${(e as { status?: number }).status ?? ''} ${String((e as Error).message).slice(0, 120)}`;
+    }
+    console.log(line);
+    await new Promise((r) => setTimeout(r, PAUSE_MS));
+  }
+  console.log(`\n${provider.model}: ${right} of ${cases.length} right`);
+  process.exit(0);
+}
 
 for (const f of readdirSync(dir).filter((n) => /\.(jpe?g|png|heic)$/i.test(n)).sort()) {
   const jpeg = join(tmp, `${f}.jpg`);

@@ -1,0 +1,19 @@
+{
+ "name": "Thai omelet with rice",
+ "sources": [
+  "https://rachelcooksthai.com/thai-omelet/",
+  "https://www.eatingthaifood.com/thai-omelet-recipe-kai-jeow-moo-sab/"
+ ],
+ "ingredients": [
+  {
+   "food": "khai-jeow",
+   "grams": 121
+  },
+  {
+   "food": "rice-white",
+   "grams": 200
+  }
+ ],
+ "yield_g": 321,
+ "notes": "The omelet above on 200 g of cooked rice, the khao khai jeow plate."
+}

@@ -206,7 +206,7 @@
 </script>
 
 {#snippet round(label: string, testid: string, onclick: () => void, Icon: typeof ChevronLeft)}
-  <button type="button" class="glass text-ink pointer-events-auto grid size-12 place-items-center rounded-full transition-transform duration-[var(--d-press)] active:scale-[0.97]" aria-label={label} {onclick} data-testid={testid}>
+  <button type="button" class="liquid text-ink pointer-events-auto grid size-12 place-items-center rounded-full transition-transform duration-[var(--d-press)] active:scale-[0.97]" aria-label={label} {onclick} data-testid={testid}>
     <Icon size={24} strokeWidth={2} aria-hidden="true" />
   </button>
 {/snippet}
@@ -238,7 +238,7 @@
               </span>
               <svg class="fill-on-night -mt-px block h-2 w-4" viewBox="0 0 16 8" aria-hidden="true"><path d="M0 0h16L8 8z" /></svg>
               {#if c.more.length}
-                <span class="glass text-caption text-ink num mt-1 rounded-full px-2.5 py-0.5 font-semibold whitespace-nowrap" data-testid="pin-more">{t.social.more(num(c.more.length))}</span>
+                <span class="liquid text-caption text-ink num mt-1 rounded-full px-2.5 py-0.5 font-semibold whitespace-nowrap" data-testid="pin-more">{t.social.more(num(c.more.length))}</span>
               {/if}
             </button>
           </div>

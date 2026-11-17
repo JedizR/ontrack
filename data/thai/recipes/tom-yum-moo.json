@@ -1,0 +1,56 @@
+{
+ "name": "Tom yum with pork",
+ "sources": [
+  "https://rachelcooksthai.com/tom-yum-chicken-soup/",
+  "https://rachelcooksthai.com/tom-yum-goong/",
+  "https://www.eatingthaifood.com/tom-yum-soup-recipe/"
+ ],
+ "ingredients": [
+  {
+   "food": "pork-tenderloin",
+   "grams": 70
+  },
+  {
+   "food": "water",
+   "grams": 200
+  },
+  {
+   "food": "lemongrass",
+   "grams": 8
+  },
+  {
+   "food": "chili",
+   "grams": 3
+  },
+  {
+   "food": "mushroom-straw",
+   "grams": 40
+  },
+  {
+   "food": "tomato",
+   "grams": 20
+  },
+  {
+   "food": "shallot",
+   "grams": 10
+  },
+  {
+   "food": "fish-sauce",
+   "grams": 8
+  },
+  {
+   "food": "lime",
+   "grams": 15
+  },
+  {
+   "food": "chili-paste-roasted",
+   "grams": 8
+  },
+  {
+   "food": "coriander",
+   "grams": 3
+  }
+ ],
+ "yield_g": 366,
+ "notes": "Rachel Cooks Thai tom yum chicken (4 bowls: 4 cups broth, 3 to 5 chillies, 2 lemongrass, 1/2 lb chicken, 1/2 cup mushrooms, 1 tbsp fish sauce, 2 tbsp lime juice, 2 tbsp roasted chilli paste) and tom yum goong (3 bowls: 4 cups water, 10 to 12 shrimp, 1/2 cup straw mushrooms), Eating Thai Food's tom yum. Per bowl 200 g of water or broth and 70 g of protein; galangal and kaffir lime leaves are left out as inedible or under 3 g."
+}

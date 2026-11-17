@@ -6,13 +6,16 @@
 # ratio is its colour mixed 9.5 percent toward a random grey, which is the tile's random grey at 9.5 percent alpha, so the
 # result is the site's export, kept crisp at any size and at a fraction of the weight of baking it into each image.
 #
-# Each row: name, width, height (image px), noise, then eight points "colour x y" (0 to 1 from the top left, the site's
+# Each row: name, width, height (image px), noise, optionally the site's blend as `gt=N ws=N` (Gradient Style and Warp Shape
+# by index; the defaults, 4 and 3, are Sharp Bézier and Worley Noise; R1 gave the hero haze `gt=1 ws=4`, Soft Bézier with an
+# FBM warp, for a smoother blend, 0 Simple, 1 Soft Bézier, 2 Mesh Static, 3 Mesh Grid, 4 Sharp Bézier; warps 0 Simplex,
+# 1 Circular, 2 Value, 3 Worley, 4 FBM, 5 Voronoi, 6 Domain Warping, 7 Waves, 8 Smooth), then eight points "colour x y" (0 to 1 from the top left, the site's
 # positions; Worley warp shows each colour up and left of its point), then the palette names. Light gradients use the
 # palette as it is (docs/DESIGN.md section 4); a name "@k" is that colour deepened to k over night (#121214), for the dark
 # theme and for white words. Every row has the brand: violet (#381AC9) or lavender (#BEBEFF), as depth or an accent; the
 # note after "brand:" says which sits where (its point, and the part of the image it shows in). The words each one
 # carries are checked in tests/unit/contrast.test.ts (these colours) and tests/e2e/landing.spec.ts (the images).
-#= haze-light     800 480 0   A7BEDB 0.30 0.20  FFFFFF 0.62 0.18  BEBEFF 0.95 0.28  F9BBA1 0.18 0.62  F9BBA1 0.64 0.64  EDDECC 0.40 0.45  F9BBA1 0.92 0.92  EDDECC 0.22 1.00  | mist snow lavender peach peach sand peach sand; the reached green holds 3 to 1 on all of it (coral would not); brand: lavender at 0.95 0.28 (top right)
+#= haze-light     800 480 0   gt=1 ws=4   A7BEDB 0.15 0.15  FFFFFF 0.50 0.10  BEBEFF 0.88 0.18  F9BBA1 0.20 0.55  F7B3C9 0.58 0.58  F9BBA1 0.92 0.60  EDDECC 0.28 0.95  F4A3BC 0.82 0.96  | mist snow lavender peach pink peach sand rose  brand: lavender at the top right, the cool end; pink through the middle and right (R1, the owner: a bit of pink and another blend)
 #= feature-light  640 800 0   BEBEFF 0.30 0.18  A7BEDB 0.78 0.12  FFFFFF 0.52 0.40  F9BBA1 0.92 0.45  F89183 0.45 0.74  BEBEFF 0.14 0.92  F9BBA1 0.80 1.00  EDDECC 0.98 0.86  | lavender mist snow peach coral lavender peach sand; brand: lavender at 0.30 0.18 (top left), lavender at 0.14 0.92 (bottom left)
 #= sky-light     1200 800 0   A7BEDB 0.45 0.20  FFFFFF 0.75 0.25  6C9BBB 1.00 0.15  EDDECC 0.62 0.52  F9BBA1 0.95 0.55  BEBEFF 0.28 0.60  F89183 0.78 0.92  A69EB4 0.38 1.00  | mist snow steel sand peach lavender coral heather; brand: lavender at 0.28 0.60 (middle left)
 #= panel          800 800 0   BEBEFF 0.30 0.25  F9BBA1 0.70 0.22  FFFFFF 1.00 0.30  BEBEFF 0.55 0.60  A7BEDB 0.20 0.90  F89183 0.85 0.80  BEBEFF 0.55 1.00  A69EB4 1.00 1.00  | lavender peach snow lavender mist coral lavender heather; brand: lavender at 0.30 0.25 (top left), lavender at 0.55 0.60 (centre), lavender at 0.55 1.00 (bottom centre)
@@ -37,9 +40,11 @@ only=" $* "
 sed -n 's/^#= //p' "$0" | cut -d'|' -f1 | while read -r name w h noise rest; do
   case "$only" in "  " | *" $name "*) ;; *) continue ;; esac
   set -- $rest
+  gt=4 ws=3
+  while case "$1" in gt=*|ws=*) true ;; *) false ;; esac; do eval "$1"; shift; done
   cols='' pos=''
   while [ $# -gt 0 ]; do cols="$cols\"#$1\","; pos="$pos$2,$3,"; shift 3; done
-  job="{\"name\":\"$name\",\"w\":$w,\"h\":$h,\"noise\":$noise,\"colors\":[${cols%,}],\"pos\":[${pos%,}]}"
+  job="{\"gt\":$gt,\"ws\":$ws,\"name\":\"$name\",\"w\":$w,\"h\":$h,\"noise\":$noise,\"colors\":[${cols%,}],\"pos\":[${pos%,}]}"
   cat > "$tmp/job.js" <<EOF
 const J = $job;
 const t = $tab ? tab($tab) : open('https://photogradient.com/');
@@ -71,7 +76,7 @@ t.eval(\`document.body.dataset.job = \${JSON.stringify(J.name)}; delete document
 // a change of randomNumber makes the site place its points again, from positions when it is 0
 set({ randomNumber: 1 });
 sleep(300);
-set({ randomNumber: 0, gradientTypeIndex: 4, warpShapeIndex: 3, warpRatio: 0.4, warpSize: 1, noiseRatio: J.noise,
+set({ randomNumber: 0, gradientTypeIndex: J.gt, warpShapeIndex: J.ws, warpRatio: 0.4, warpSize: 1, noiseRatio: J.noise,
   numberPoints: 8, colors: J.colors.map((value, i) => ({ id: J.name + i, value })), positions: J.pos, bgColor: J.colors[0],
   customWidth: J.w / 2, customHeight: J.h / 2, widthExport: J.w / 2, heightExport: J.h / 2 });
 sleep(700);

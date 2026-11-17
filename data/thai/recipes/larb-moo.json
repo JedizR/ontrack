@@ -1,0 +1,43 @@
+{
+ "name": "Larb with pork",
+ "sources": [
+  "https://rachelcooksthai.com/larb-moo/",
+  "https://www.eatingthaifood.com/thai-larb-recipe/"
+ ],
+ "ingredients": [
+  {
+   "food": "pork-ground",
+   "grams": 100
+  },
+  {
+   "food": "water",
+   "grams": 15
+  },
+  {
+   "food": "shallot",
+   "grams": 15
+  },
+  {
+   "food": "mint",
+   "grams": 8
+  },
+  {
+   "food": "coriander",
+   "grams": 8
+  },
+  {
+   "food": "fish-sauce",
+   "grams": 8
+  },
+  {
+   "food": "lime",
+   "grams": 12
+  },
+  {
+   "food": "rice-white-dry",
+   "grams": 6
+  }
+ ],
+ "yield_g": 172,
+ "notes": "Rachel Cooks Thai larb moo (4 small servings: 1 cup ground pork, 2 tbsp shallot, 1/4 cup each of mint and cilantro, 1 tbsp each of fish sauce, lime juice and toasted rice powder) and Eating Thai Food's larb moo. Per plate 100 g of cooked mince; toasted rice powder is counted as dry rice, chilli flakes and spring onion are left out as under 3 g."
+}

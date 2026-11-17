@@ -43,6 +43,14 @@ export const saveProfile = (p: Profile) => write('profile', ids.profile(), p);
 /** A new plan never replaces an old one: the plan for a date is the newest with effectiveFrom on or before it. */
 export const savePlan = (p: Plan) => write('plan', uid(), p).id;
 export const saveProgram = (p: Program) => write('program', ids.program(), p);
+/** R1: the goal weight on the plan in effect on a day, in place; it moves no target. Null clears it. */
+export function setGoalWeight(date: string, kg: number | null) {
+  const recs = db.live('plan');
+  const rec = recs.find((r) => r.data === planFor(recs, date));
+  if (!rec) return;
+  const { goalWeightKg: _was, ...rest } = rec.data;
+  write('plan', rec.id, kg ? { ...rest, goalWeightKg: kg } : rest);
+}
 export const logWeight = (date: string, kg: number) => write('weight', ids.weight(date), { date, kg });
 export const deleteWeight = (date: string) => remove('weight', ids.weight(date));
 export const saveMeal = (m: Meal, id: string = uid()) => write('meal', id, m).id;
@@ -92,6 +100,11 @@ export function rememberFoods(items: MealItem[]) {
 }
 /** Forgets the user's numbers for a food: it goes back to the table's or the model's. */
 export const forgetFood = (key: string) => remove('food', key);
+/** R1: the saved meal that holds a meal's foods, if any (the same foods in the same order), so Save can be a toggle. */
+export function savedFor(m: Pick<Meal, 'items'>): string | null {
+  const sig = (items: MealItem[]) => JSON.stringify(items.map((i) => [i.name, Math.round(i.kcal), i.grams ?? 0]));
+  return db.live('saved').find((r) => sig(r.data.items) === sig(m.items))?.id ?? null;
+}
 export const saveAsMeal = (m: Meal, title: string) => saveSaved({ title, items: m.items, uses: 0, lastUsedAt: m.at });
 /** A supplement set up from its label, or changes to one (N2, F21). Returns its id. */
 export const saveSupplement = (s: Supplement, id: string = uid()) => write('supplement', id, s).id;
@@ -158,41 +171,54 @@ export async function findProduct(code: string, fresh = false): Promise<Found> {
 }
 const kept = (p: Program) => p.sessions.map(({ exercises: _, ...s }) => s);
 /**
- * A changed program, with a plan from tomorrow whose exercise energy follows it: today and every day before keep their
- * targets and sessions (BUILD-PLAN M7). Plans from before plans kept their sessions get the old program's first.
- * Returns the undo: the old program back, the new plan gone.
+ * A changed program, with a plan from today whose exercise energy follows it (R2, the owner: the target moves at once);
+ * every day before keeps its targets and sessions. A plan already waiting for a later day (a check-in accepted today, an
+ * edit made before R2 under "from tomorrow") is written again on its own day with the new program, keeping its own
+ * numbers, so the change is not lost when that day comes. Plans from before plans kept their sessions get the old
+ * program's first. Returns the undo: the old program back, the new plans gone.
  */
 export function changeProgram(p: Program) {
   recSchema.parse({ collection: 'program', id: ids.program(), updatedAt: 0, data: SCHEMAS.program.parse(p) }); // before any write
   const was = JSON.parse(JSON.stringify(db.get('program', 'program') ?? { name: '', sessions: [] })) as Program; // a plain copy, for undo
   const profile = db.get('profile', 'profile');
   const plans = db.live('plan');
-  const current = planFor(plans, addDays(today(), 1));
-  let id: string | null = null;
-  if (profile && current) {
+  const made: string[] = [];
+  if (profile) {
     for (const r of [...plans].sort((a, b) => a.updatedAt - b.updatedAt)) if (!r.data.sessions) write('plan', r.id, { ...r.data, sessions: kept(was) });
-    const numbers = planFromBaseline({
-      sex: profile.sex,
-      heightCm: profile.heightCm,
-      experience: profile.experience,
-      weightKg: current.weightKg,
-      goal: current.goal,
-      ratePctPerWeek: current.ratePctPerWeek,
-      maintainOnly: current.flags.includes('maintainOnly'),
-      bmr: current.bmr,
-      baseline: current.baseline,
-      eeeByWeekday: eeeByWeekday(p.sessions, current.weightKg),
-    });
-    const { goalWeightKg, tdeeSource } = current;
-    id = savePlan({ ...numbers, effectiveFrom: addDays(today(), 1), ...(goalWeightKg ? { goalWeightKg } : {}), tdeeSource, source: 'edit', sessions: kept(p) });
+    // today, then each later day a plan already starts on: the plan in effect that day, with this program's energy
+    const from = today();
+    const days = [from, ...new Set(plans.map((r) => r.data.effectiveFrom).filter((d) => d > from).sort())];
+    for (const date of days) {
+      const base = planFor(db.live('plan'), date);
+      if (!base) continue;
+      const numbers = planFromBaseline({
+        sex: profile.sex,
+        heightCm: profile.heightCm,
+        experience: profile.experience,
+        weightKg: base.weightKg,
+        goal: base.goal,
+        ratePctPerWeek: base.ratePctPerWeek,
+        maintainOnly: base.flags.includes('maintainOnly'),
+        bmr: base.bmr,
+        baseline: base.baseline,
+        eeeByWeekday: eeeByWeekday(p.sessions, base.weightKg),
+      });
+      const { goalWeightKg, tdeeSource } = base;
+      made.push(savePlan({ ...numbers, effectiveFrom: date, ...(goalWeightKg ? { goalWeightKg } : {}), tdeeSource, source: 'edit', sessions: kept(p) }));
+    }
   }
   saveProgram(p);
   return () => {
     saveProgram(was);
-    if (id) remove('plan', id);
+    for (const id of made) remove('plan', id);
   };
 }
-export const logSession = (l: SessionLog) => write('slog', ids.slog(l.date, l.sessionKey), l);
+export const logSession = (l: SessionLog) => {
+  const id = ids.slog(l.date, l.sessionKey);
+  // a plain Done keeps the sets already logged that day; Skipped clears them
+  const kept = l.status === 'done' && !l.workout ? db.get('slog', id)?.workout : undefined;
+  return write('slog', id, kept ? { ...l, workout: copy(kept) } : l);
+};
 export const clearSessionLog = (date: string, key: string) => remove('slog', ids.slog(date, key));
 export const saveCheckin = (c: Checkin) => write('checkin', ids.checkin(c.date), c);
 /**

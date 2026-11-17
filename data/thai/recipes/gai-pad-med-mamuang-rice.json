@@ -1,0 +1,19 @@
+{
+ "name": "Stir fried chicken with cashew nuts with rice",
+ "sources": [
+  "https://www.eatingthaifood.com/thai-cashew-chicken-recipe/",
+  "https://rachelcooksthai.com/chicken-with-roasted-chili-paste-and-basil/"
+ ],
+ "ingredients": [
+  {
+   "food": "gai-pad-med-mamuang",
+   "grams": 190
+  },
+  {
+   "food": "rice-white",
+   "grams": 200
+  }
+ ],
+ "yield_g": 390,
+ "notes": "The dish above over 200 g of cooked rice."
+}

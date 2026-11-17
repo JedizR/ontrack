@@ -1,0 +1,19 @@
+{
+ "name": "Red curry with pork on rice",
+ "sources": [
+  "https://rachelcooksthai.com/red-curry-with-pumpkin/",
+  "https://rachelcooksthai.com/red-curry-pork-belly-water-spinach/"
+ ],
+ "ingredients": [
+  {
+   "food": "red-curry-pork",
+   "grams": 283
+  },
+  {
+   "food": "rice-white",
+   "grams": 200
+  }
+ ],
+ "yield_g": 483,
+ "notes": "The curry above over 200 g of cooked rice."
+}

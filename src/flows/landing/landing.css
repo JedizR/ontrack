@@ -1,32 +1,7 @@
 /* L4, the landing page only (DESIGN.md section 13): Liquid Glass after callstack/liquid-glass, and the motion
    the bar, the sections and the footer share. Its own stylesheet in the landing's chunk, so the app never loads it. */
 
-/* Liquid Glass. callstack/liquid-glass wraps iOS 26's UIGlassEffect: `effect` regular, clear or none, a `tintColor`, a
-   `colorScheme`, `interactive`, and a container that merges nearby glass. The web version, light enough for a phone
-   without a GPU: one backdrop filter per glass and no SVG filter, so nothing is redrawn while the page scrolls but the
-   blur itself.
-   - regular: blurs and tints what is behind; for the bar, which anything scrolls under, so its words always read
-   - clear: lifts what is behind (a little blur, more saturation and light) with no frosted fill, for chips and cards
-     whose words already read over what is under them (the owner)
-   - both catch the light at the rim: bright at the top, faint at the foot, an inner glow at the edges
-   - `--liquid-tint` tints either one, as tintColor does; `data-theme` on a glass is its colorScheme */
-.liquid, .liquid-clear {
-  box-shadow: var(--liquid-rim), var(--shadow-liquid);
-  background-color: color-mix(in srgb, var(--liquid-tint, transparent) var(--liquid-tint-share, 0%), var(--liquid-base));
-}
-.liquid {
-  --liquid-base: var(--liquid-fill);
-  -webkit-backdrop-filter: var(--liquid-blur);
-  backdrop-filter: var(--liquid-blur);
-}
-.liquid-clear {
-  --liquid-base: transparent;
-  -webkit-backdrop-filter: var(--liquid-clear);
-  backdrop-filter: var(--liquid-clear);
-}
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .liquid { --liquid-base: var(--liquid-solid); }
-}
+/* Liquid Glass (the two materials, `liquid` and `liquid-clear`) lives in app.css: the whole app uses it. */
 
 /* interactive: the light under the pointer (glass.ts moves it), brighter while pressed; with `liquid-grow` the glass
    also grows under the finger. A blurred dot that only moves and fades, so it costs no repaint. A glass behind content

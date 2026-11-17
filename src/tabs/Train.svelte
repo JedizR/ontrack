@@ -3,30 +3,50 @@
      recommendations with their sources, cardio minutes against the guideline, and how to arrange days with both
      lifting and cardio. -->
 <script lang="ts">
-  import GripVertical from '@lucide/svelte/icons/grip-vertical';
+  import type { Component } from 'svelte';
+  import Repeat from '@lucide/svelte/icons/repeat';
+  import HeartPulse from '@lucide/svelte/icons/heart-pulse';
+  import Volleyball from '@lucide/svelte/icons/volleyball';
+  import PersonStanding from '@lucide/svelte/icons/person-standing';
+  import Footprints from '@lucide/svelte/icons/footprints';
   import Plus from '@lucide/svelte/icons/plus';
+  import Check from '@lucide/svelte/icons/check';
+  import { sheets } from '$lib/sheets.svelte';
+  import { logSession } from '$lib/actions';
+  import { haptic } from '$lib/haptics';
   import { t } from '$lib/i18n';
   import { collapse } from '$lib/haptics';
   import Card from '$lib/components/Card.svelte';
   import CardHead from '$lib/components/CardHead.svelte';
   import Facts from '$lib/components/Facts.svelte';
   import Button from '$lib/components/Button.svelte';
+  import Disclosure from '$lib/components/Disclosure.svelte';
   import Track from '$lib/components/Track.svelte';
+  import WeekRing from '$lib/components/WeekRing.svelte';
+  import MuscleMap from '$lib/components/MuscleMap.svelte';
+  import { MUSCLE_STEPS } from '$lib/data/body';
+  import Row from '$lib/components/Row.svelte';
+  import Count from '$lib/components/Count.svelte';
+  import Dumbbell from '@lucide/svelte/icons/dumbbell';
   import EmptyState from '$lib/components/EmptyState.svelte';
   import { db } from '$lib/db/store.svelte';
   import { view } from '$lib/view.svelte';
   import { changeProgram, undoToast } from '$lib/actions';
   import { planFor } from '$lib/model/day';
-  import { weekdayOf } from '$lib/model/dates';
+  import { addDays, shortDate, weekdayOf } from '$lib/model/dates';
+  import { heaviest, muscleSets, totals, weekLevels } from '$lib/model/workout';
+  import { weightText } from '$lib/model/units';
   import { num } from '$lib/model/format';
   import { analyseProgram, eeeByWeekday, MUSCLES, U, V, type Finding, type HybridPoint, type SourceId } from '$lib/model/engine';
   import { LIBRARY } from '$lib/data/exercises';
   import { SOURCES } from '$lib/data/sources';
   import SessionSheet from '../flows/train/SessionSheet.svelte';
   import TemplatesSheet from '../flows/train/TemplatesSheet.svelte';
+  import ProgramAiSheet from '../flows/train/ProgramAiSheet.svelte';
+  import Sparkles from '@lucide/svelte/icons/sparkles';
   import Suggestion from '../flows/train/Suggestion.svelte';
   import Experience from '../flows/train/Experience.svelte';
-  import type { Program, Session } from '../../shared/records';
+  import { ids, type Program, type Session } from '../../shared/records';
 
   const profile = $derived(db.get('profile', 'profile'));
   const plans = $derived(db.live('plan'));
@@ -40,12 +60,54 @@
   const perDay = $derived(plan ? eeeByWeekday(sessions, plan.weightKg).reduce((a, b) => a + b, 0) / U.daysPerWeek : 0);
   const analysis = $derived(plan && profile ? analyseProgram(sessions, { goal: plan.goal, experience: profile.experience, library: LIBRARY }) : null);
   // rows under the range first (section 8), each group in the usual order
-  const muscles = $derived(analysis ? [...MUSCLES].sort((a, b) => Number(analysis.muscles[a].sets >= V.setsRange) - Number(analysis.muscles[b].sets >= V.setsRange)) : []);
+  const groups = $derived(
+    analysis
+      ? [
+          { key: 'below', title: t.train.below, rows: MUSCLES.filter((m) => analysis.muscles[m].sets < V.setsRange) },
+          { key: 'within', title: t.train.within, rows: MUSCLES.filter((m) => analysis.muscles[m].sets >= V.setsRange) },
+        ].filter((g) => g.rows.length)
+      : [],
+  );
   const recs = $derived(analysis?.recommendations.slice(0, 3) ?? []);
+
+  // R1: this week as the program has it, and what is up next (Fitbit's weekly goal, Nike Training Club's next workout)
+  const monday = $derived(addDays(view.today, -todayIs));
+  const statusOf = (s: Session) => db.get('slog', ids.slog(addDays(monday, s.weekday), s.key))?.status;
+  const weekDone = $derived(sessions.filter((s) => statusOf(s) === 'done').length);
+  const next = $derived.by(() => {
+    const sorted = [...sessions].sort((a, b) => a.weekday - b.weekday);
+    const upcoming = sorted.find((s) => s.weekday >= todayIs && !statusOf(s));
+    const s = upcoming ?? sorted[0];
+    return s ? { s, today: !!upcoming && s.weekday === todayIs } : null;
+  });
+  const exercisesOf = (s: Session) => program.sessions.find((x) => x.key === s.key)?.exercises?.length ?? 0;
+  const canStart = (s: Session) => (s.type === 'strength' || s.type === 'circuit') && exercisesOf(s) > 0;
+  const namesOf = (s: Session) => (program.sessions.find((x) => x.key === s.key)?.exercises ?? []).map((e) => LIBRARY[e.exerciseId]?.name ?? e.exerciseId);
+
+  // R2, Strava's strength activity: the body, lit by the sets logged this week; before any, by the program's plan
+  const logs = $derived(db.live('slog').map((r) => r.data));
+  const thisWeek = $derived(logs.filter((l) => l.date >= monday && l.date <= view.today && l.workout).map((l) => l.workout!));
+  const logged = $derived(muscleSets(thisWeek, LIBRARY));
+  const planned = $derived(analysis ? Object.fromEntries(MUSCLES.map((m) => [m, analysis.muscles[m].sets])) : {});
+  const fromLogs = $derived(thisWeek.length > 0);
+  const levels = $derived(weekLevels(fromLogs ? logged : planned));
+  // this week in two numbers, Strava's "This week" row: sets logged and kg lifted
+  const weekSets = $derived(thisWeek.reduce((a, w) => a + totals(w).sets, 0));
+  const weekKg = $derived(thisWeek.reduce((a, w) => a + totals(w).volumeKg, 0));
+  const litNames = $derived((Object.keys(levels) as (keyof typeof M)[]).map((m) => M[m]).join(', '));
+  // the heaviest weight per exercise from the sets logged on Today, the most recent first (moved here from Progress)
+  const bestLifts = $derived([...heaviest(logs).entries()].sort((a, b) => b[1].date.localeCompare(a[1].date)).slice(0, 4));
+  function startNext() {
+    if (!next) return;
+    haptic();
+    if (canStart(next.s)) sheets.workout = { date: view.today, key: next.s.key };
+    else logSession({ date: view.today, sessionKey: next.s.key, status: 'done' });
+  }
 
   const MAX_SESSIONS = 28; // the record schema's limit
   let editing = $state<{ session: Session; isNew: boolean } | null>(null);
   let templates = $state(false);
+  let aiOpen = $state(false);
   let why = $state<string | null>(null);
   const edit = (s: Session) => (editing = { session: $state.snapshot(s), isNew: false });
   const add = (weekday: number) => sessions.length < MAX_SESSIONS && (editing = { session: { key: crypto.randomUUID().slice(0, 8), weekday, name: '', type: 'strength', minutes: 60, intensity: 'moderate' }, isNew: true });
@@ -70,33 +132,7 @@
     return p.kind === 'spaceOut' ? t.train.hybridPoints.spaceOut(days, num(p.value ?? 0)) : t.train.hybridPoints[p.kind](days);
   }
 
-  // drag a session by its handle to another day; the rows of the day under the finger light up
-  let drag = $state<{ key: string; from: number; y0: number; dy: number; over: number } | null>(null);
-  let dragged = false;
-  function down(e: PointerEvent, s: Session) {
-    if (e.button !== 0) return;
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-    drag = { key: s.key, from: s.weekday, y0: e.clientY, dy: 0, over: s.weekday };
-    dragged = false;
-  }
-  function move(e: PointerEvent) {
-    if (!drag) return;
-    drag.dy = e.clientY - drag.y0;
-    if (Math.abs(drag.dy) > 4) dragged = true;
-    const key = drag.key;
-    const row = document.elementsFromPoint(e.clientX, e.clientY).map((el) => el.closest<HTMLElement>('[data-day]')).find((el) => el && el.dataset.key !== key);
-    if (row) drag.over = Number(row.dataset.day);
-  }
-  function up() {
-    if (!drag) return;
-    const { key, from, over } = drag;
-    drag = null;
-    if (over !== from) undoToast(t.train.saved, changeProgram({ name: program.name, sessions: sessions.map((s) => (s.key === key ? { ...s, weekday: over } : s)) }));
-  }
-
-  // rows are 64 high: a 48 day tile and 8 above and below; the hairline starts where the text does
-  const hairline = '[&+&]:before:bg-line [&+&]:before:absolute [&+&]:before:top-0 [&+&]:before:right-0 [&+&]:before:left-16 [&+&]:before:h-px';
-  const pressable = 'bleed active:bg-surface-2 -ml-6 flex min-h-16 min-w-0 flex-1 items-center gap-4 py-2 pl-6 text-left transition-colors duration-[var(--d-press)]';
+  const TYPE_ICON: Record<Session['type'], Component<{ size?: number; strokeWidth?: number }>> = { strength: Dumbbell, circuit: Repeat, cardio: HeartPulse, sport: Volleyball, mobility: PersonStanding, walk: Footprints };
 </script>
 
 <!-- one sentence and its Why, which shows the source in place -->
@@ -112,105 +148,169 @@
   </div>
 {/snippet}
 
-{#snippet day(d: number)}
-  <span class="text-caption grid size-12 flex-none place-items-center rounded-sm font-semibold {d === todayIs ? 'bg-ink text-canvas' : 'bg-surface-2'}">{t.train.weekdaysShort[d]}</span>
+
+{#snippet programCard()}
+  <Card data-testid="train-summary">
+    {#if sessions.length}
+      <p class="text-eyebrow text-ink-2" data-testid="train-program">{program.name || t.train.ownProgram}</p>
+      <p class="text-callout mt-1" role="group" aria-label={t.train.summary(num(sessions.length), num(minutes))}>
+        <span class="text-subhead num" data-testid="train-sessions">{num(sessions.length)}</span> <span class="text-ink-2">{t.after.sessionsWeek(num(sessions.length))}</span>
+        <span class="text-ink-2" aria-hidden="true"> | </span>
+        <span class="text-subhead num" data-testid="train-minutes">{num(minutes)}</span> <span class="text-ink-2">{t.after.minutesWeek}</span>
+      </p>
+      <div class="border-line mt-4 flex items-center gap-3 border-t pt-4">
+        <p class="text-callout text-ink-2 min-w-0 flex-1">{t.train.adds(num(Math.round(perDay)))}</p>
+        <Button size="sm" onclick={() => (templates = true)} data-testid="train-change">{t.train.change}</Button>
+      </div>
+      {#if pending}<p class="text-caption text-ink-2 mt-3" data-testid="train-pending">{t.train.fromTomorrow}</p>{/if}
+    {:else}
+      <EmptyState text={t.today.noProgram} action={t.train.pick} onaction={() => (templates = true)} />
+    {/if}
+  </Card>
 {/snippet}
 
-<section aria-label={t.tabs.train} data-testid="tab-train" class="flex flex-col gap-4 pt-1">
+<section aria-label={t.tabs.train} data-testid="tab-train" class="flex flex-col gap-3 pt-2 [@media(max-height:620px)]:pt-0">
   {#if !plan || !profile}
     <p class="text-ink-2" data-testid="no-plan">{t.today.noPlan}</p>
   {:else}
-    <Card data-testid="train-summary">
-      {#if sessions.length}
-        <!-- U3: a summary card, the program its eyebrow, the two figures first, then what they add -->
-        <p class="text-eyebrow text-ink-2" data-testid="train-program">{program.name || t.train.ownProgram}</p>
-        <div class="mt-2 flex gap-10" role="group" aria-label={t.train.summary(num(sessions.length), num(minutes))}>
-          <div aria-hidden="true">
-            <p class="text-display" data-testid="train-sessions">{num(sessions.length)}</p>
-            <p class="text-caption text-ink-2 mt-1">{t.after.sessionsWeek(num(sessions.length))}</p>
+    <!-- R1, from what a lifter opens Train to do: 1. what is next, and can I start (the big card, with this week's pills);
+         2. the week; 3. the program in one compact row, the analysis collapsed. No program yet: choosing one comes first -->
+    {#if !sessions.length}{@render programCard()}{/if}
+    {#if next}
+      <!-- R2, the owner's one card with small boxes (as Today's): what is next on the featured panel with the week's ring
+           and the one action, then the week on the body and in two numbers. The boxes at the card's corners nest in it -->
+      <section class="bg-surface shadow-card flex flex-col gap-2 rounded-xl p-2" aria-label={t.train.upNext}>
+        <div class="feature text-ink rounded-t-sheet {analysis?.hasExercises || fromLogs ? 'rounded-b-md' : 'rounded-b-sheet'} p-5 [background:var(--grad-feature)] [@media(max-height:620px)]:p-4" data-testid="train-next">
+          <div class="flex items-start gap-3">
+            <div class="min-w-0 flex-1">
+              <p class="text-eyebrow">{next.today ? t.train.nextToday : t.train.weekdays[next.s.weekday]}</p>
+              <h2 class="text-heading mt-1">{next.s.name}</h2>
+              <p class="text-callout mt-1"><Facts facts={[t.train.types[next.s.type], t.after.minN(num(next.s.minutes)), exercisesOf(next.s) > 0 && t.train.exN(num(exercisesOf(next.s)))]} /></p>
+            </div>
+            <div class="flex flex-none flex-col items-center gap-1" data-testid="train-week-pills">
+              <WeekRing done={weekDone} planned={sessions.length} size={48} label={t.train.ringLabel(num(weekDone), num(sessions.length))} />
+              <span class="text-caption num font-semibold" aria-hidden="true">{num(weekDone)}/{num(sessions.length)}</span>
+            </div>
           </div>
-          <div aria-hidden="true">
-            <p class="text-display" data-testid="train-minutes">{num(minutes)}</p>
-            <p class="text-caption text-ink-2 mt-1">{t.after.minutesWeek}</p>
+          {#if namesOf(next.s).length}<p class="text-callout mt-2 line-clamp-1 opacity-80">{namesOf(next.s).join(', ')}</p>{/if}
+          <div class="mt-4 flex items-center gap-3 [@media(max-height:620px)]:mt-3">
+            {#if next.today}
+              <Button variant="primary" onclick={startNext} data-testid="train-start">{canStart(next.s) ? t.workout.start : t.today.done}</Button>
+            {:else}
+              <Button variant="surface" onclick={() => edit(next.s)} data-testid="train-next-open">{t.train.look}</Button>
+            {/if}
           </div>
         </div>
-        <div class="mt-4 flex items-center gap-3">
-          <p class="text-callout text-ink-2 min-w-0 flex-1">{t.train.adds(num(Math.round(perDay)))}</p>
-          <Button size="sm" onclick={() => (templates = true)} data-testid="train-change">{t.train.change}</Button>
+
+        {#if analysis?.hasExercises || fromLogs}
+          <div class="grid grid-cols-3 grid-rows-2 gap-2">
+            <!-- the week on the body: three violet steps by sets per muscle (S11 bands) -->
+            <div class="bg-surface-2 rounded-bl-sheet col-span-2 row-span-2 flex min-w-0 flex-col rounded-md px-4 pt-3 pb-5" data-testid="train-muscles">
+              <div class="flex items-baseline justify-between gap-2">
+                <p class="text-caption text-ink-2 font-semibold">{fromLogs ? t.train.muscles7 : t.train.musclesPlanned}</p>
+                <span class="text-caption text-ink-2 num">{num(Object.keys(levels).length)}/{num(MUSCLES.length)}</span>
+              </div>
+              <MuscleMap level={levels} sex={profile.sex} label={t.train.mapLabel(litNames)} class="mt-2 h-36 flex-1 [@media(max-height:620px)]:h-28" />
+              <!-- inset from the 40 corner, so a wrapped legend at large text stays inside its curve -->
+              <div class="text-caption text-ink-2 mt-2 flex flex-wrap justify-center gap-x-3 px-4" aria-hidden="true">
+                {#each [t.train.legendLow(num(V.setsBuilding)), t.train.legendMid(num(V.setsBuilding), num(V.setsRange - 1)), t.train.legendHigh(num(V.setsRange))] as l, i (l)}
+                  <span class="inline-flex items-center gap-1 whitespace-nowrap"><i class="size-2 rounded-full" style="background: {MUSCLE_STEPS[i + 1]}"></i>{l}</span>
+                {/each}
+              </div>
+            </div>
+            <div class="bg-surface-2 flex min-w-0 flex-col justify-end rounded-md px-4 py-3" data-testid="train-week-sets">
+              <p class="text-caption text-ink-2">{t.train.setsWeek}</p>
+              <p class="text-subhead num"><Count value={weekSets} /></p>
+            </div>
+            <div class="bg-surface-2 rounded-br-sheet flex min-w-0 flex-col justify-end rounded-md px-4 py-3" data-testid="train-week-kg">
+              <p class="text-caption text-ink-2">{t.train.liftedWeek}</p>
+              <p class="text-subhead num whitespace-nowrap"><Count value={weekKg} format={(v) => weightText(v, profile.units, 0)} /></p>
+            </div>
+          </div>
+        {/if}
+      </section>
+    {/if}
+
+    {#if bestLifts.length}
+      <Card list aria-label={t.workout.bestLifts} data-testid="train-lifts">
+        <p class="text-eyebrow text-ink-2 pt-5">{t.workout.bestLifts}</p>
+        <div>
+          {#each bestLifts as [id, b] (id)}
+            <Row title={LIBRARY[id]?.name ?? id} caption={t.workout.bestLine(shortDate(b.date))} value={weightText(b.kg, profile.units)} unit="x {num(b.reps)}">
+              {#snippet leading()}<div class="tile grid size-full place-items-center"><Dumbbell size={22} strokeWidth={2} aria-hidden="true" /></div>{/snippet}
+            </Row>
+          {/each}
         </div>
-        {#if pending}<p class="text-body mt-2" data-testid="train-pending">{t.train.fromTomorrow}</p>{/if}
-      {:else}
-        <EmptyState text={t.today.noProgram} action={t.train.pick} onaction={() => (templates = true)} />
-      {/if}
-    </Card>
+      </Card>
+    {/if}
+
     <Suggestion {sessions} goal={plan.goal} experience={profile.experience} />
     <Experience {sessions} goal={plan.goal} />
 
-    <h2 class="text-heading mt-2">{t.train.week}</h2>
-    <Card list aria-label={t.train.week} data-testid="train-week">
-      {#each t.train.weekdays as dayName, d (dayName)}
-        {@const list = sessions.filter((s) => s.weekday === d)}
-        {@const lit = drag !== null && drag.over === d && drag.over !== drag.from ? 'bg-surface-2' : ''}
-        {#each list as s, i (s.key)}
-          {@const lifted = drag?.key === s.key}
-          <!-- a day's later sessions (lifting then cardio) sit under its tile, with no hairline: one day reads as one row -->
-          <div
-            class="relative flex items-center {hairline} {i ? 'before:hidden' : ''} {lifted ? 'bg-surface shadow-float z-10 -mx-6 rounded-md px-6' : lit}"
-            style={lifted ? `transform: translateY(${drag?.dy}px)` : undefined}
-            data-day={d}
-            data-key={s.key}
-            data-testid="train-day-{d}"
-          >
-            <button type="button" class={pressable} aria-label="{d === todayIs ? t.train.dayToday(dayName) : dayName}, {s.name}" onclick={() => edit(s)} data-testid="train-session">
-              {#if i}<span class="size-12 flex-none"></span>{:else}{@render day(d)}{/if}
-              <span class="min-w-0 flex-1">
-                <span class="text-body line-clamp-2 block font-semibold">{s.name}</span>
-                <span class="text-callout text-ink-2 block"><Facts facts={[t.train.types[s.type], t.after.minN(num(s.minutes))]} /></span>
-              </span>
-            </button>
-            <button
-              type="button"
-              class="text-ink-2 active:bg-surface-2 -mr-3 grid size-11 flex-none cursor-grab touch-none place-items-center rounded-full transition-colors duration-[var(--d-press)]"
-              aria-label={t.train.move(s.name)}
-              data-no-swipe
-              onpointerdown={(e) => down(e, s)}
-              onpointermove={move}
-              onpointerup={up}
-              onpointercancel={() => (drag = null)}
-              onclick={() => { if (!dragged) edit(s); dragged = false; }}
-              data-testid="train-handle"
-            >
-              <GripVertical size={24} strokeWidth={2} />
-            </button>
-          </div>
-        {:else}
-          <div class="relative flex items-center {hairline} {lit}" data-day={d} data-testid="train-day-{d}">
-            <button type="button" class={pressable} aria-label={t.train.restOn(d === todayIs ? t.train.dayToday(dayName) : dayName)} onclick={() => add(d)} data-testid="train-rest">
-              {@render day(d)}
-              <span class="text-body text-ink-2 min-w-0 flex-1">{t.train.rest}</span>
-              <Plus class="text-ink-2 mr-0.5 flex-none" size={24} strokeWidth={2} aria-hidden="true" />
-            </button>
+    <!-- R2, the owner: the week takes a row, not a page. A column a day: its letter, an icon for each session (the type
+         as a picture, green once done this week), the day's minutes. An icon opens its session; an empty day's plus adds
+         one. Today wears the ink ring -->
+    <section class="bg-surface shadow-card rounded-lg px-3 pt-4 pb-3" aria-label={t.train.week} data-testid="train-week">
+      <div class="flex items-baseline justify-between gap-3 px-1">
+        <h2 class="text-subhead">{t.train.week}</h2>
+        <span class="text-caption text-ink-2 num"><Facts facts={[t.train.sessionsN(num(sessions.length)), t.after.minN(num(minutes))]} /></span>
+      </div>
+      <div class="mt-3 grid grid-cols-7 gap-1">
+        {#each t.train.weekdays as dayName, d (dayName)}
+          {@const list = sessions.filter((s) => s.weekday === d)}
+          <div class="flex min-w-0 flex-col items-center gap-1 rounded-md py-2 {d === todayIs ? 'ring-ink ring-2 ring-inset' : ''}" data-testid="train-day-{d}">
+            <span class="text-caption font-semibold {d === todayIs ? 'text-ink' : 'text-ink-2'}">{t.week.letters[d]}</span>
+            {#each list as s (s.key)}
+              {@const Icon = TYPE_ICON[s.type]}
+              {@const done = statusOf(s) === 'done'}
+              <button type="button" class="grid size-11 place-items-center rounded-full transition-[background-color,transform] duration-[var(--d-press)] active:scale-[0.95] {done ? 'bg-success text-night' : s.type === 'strength' || s.type === 'circuit' ? 'bg-ink text-canvas' : 'bg-lavender text-night'}" aria-label="{d === todayIs ? t.train.dayToday(dayName) : dayName}, {s.name}" onclick={() => edit(s)} data-testid="train-session">
+                <Icon size={20} strokeWidth={2.25} />
+                <span class="sr-only">{s.name !== t.train.types[s.type] ? `${s.name} ` : ''}{t.train.types[s.type]}, {t.after.minN(num(s.minutes))}</span>
+              </button>
+            {:else}
+              <button type="button" class="text-ink-3 active:bg-surface-2 grid size-11 place-items-center rounded-full border border-dashed border-[var(--line-strong)] transition-colors duration-[var(--d-press)]" aria-label={t.train.restOn(d === todayIs ? t.train.dayToday(dayName) : dayName)} onclick={() => add(d)} data-testid="train-rest">
+                <Plus size={18} strokeWidth={2.25} aria-hidden="true" />
+              </button>
+            {/each}
+            <span class="text-caption text-ink-2 num">{list.length ? num(list.reduce((a, s) => a + s.minutes, 0)) : ''}</span>
           </div>
         {/each}
-      {/each}
-      <Button variant="plain" class="-ml-5 mb-2" disabled={sessions.length >= MAX_SESSIONS} onclick={() => add(todayIs)} data-testid="train-add">{t.train.addSession}</Button>
-    </Card>
+      </div>
+      <div class="text-caption text-ink-2 mt-1 flex flex-wrap justify-center gap-x-3 gap-y-1" aria-hidden="true">
+        <span class="inline-flex items-center gap-1"><i class="bg-ink size-2 rounded-full"></i>{t.train.legendLift}</span>
+        <span class="inline-flex items-center gap-1"><i class="bg-lavender size-2 rounded-full"></i>{t.train.legendCardio}</span>
+        <span class="inline-flex items-center gap-1"><i class="bg-success size-2 rounded-full"></i>{t.today.done}</span>
+      </div>
+      <div class="mt-1 flex flex-wrap items-center justify-between gap-x-2">
+        <Button variant="plain" size="sm" class="-ml-2" disabled={sessions.length >= MAX_SESSIONS} onclick={() => add(todayIs)} data-testid="train-add">{t.train.addSession}</Button>
+        <!-- R2: the coach changes the week from a sentence -->
+        <Button variant="plain" size="sm" class="-mr-2" onclick={() => (aiOpen = true)} data-testid="program-ai-open"><Sparkles size={16} strokeWidth={2.25} aria-hidden="true" />{t.aiProgram.open}</Button>
+      </div>
+    </section>
+
+    {#if sessions.length}{@render programCard()}{/if}
 
     {#if analysis}
       <h2 class="text-heading mt-2">{t.train.analysis}</h2>
       {#if analysis.hasExercises}
+        <!-- R1: ten rows are detail, so the card says how many muscles are in the range and opens on a tap -->
         <Card aria-label={t.train.balance} data-testid="train-balance">
-          <CardHead level={3} title={t.train.balance} line={t.train.balanceLine(num(V.setsRange), num(V.setsHigh))} />
-          <div class="mt-4 flex flex-col gap-3">
-            {#each muscles as m (m)}
-              {@const sets = analysis.muscles[m].sets}
-              <div class="grid grid-cols-[6.5em_1fr_2.5em] items-center gap-3" data-testid="muscle-{m}">
-                <span class="text-callout">{M[m]}</span>
-                <Track value={sets} target={V.setsHigh} zone={[V.setsRange, V.setsHigh]} label="{M[m]} {t.train.sets(num(sets, 1))}" />
-                <span class="text-callout num text-right font-semibold">{num(sets, 1)}</span>
+          <Disclosure title={t.train.balance} line={t.train.balanceOf(num(MUSCLES.filter((m) => analysis.muscles[m].band === 'inRange').length), num(MUSCLES.length), num(V.setsRange), num(V.setsHigh))}>
+            <p class="text-callout text-ink-2">{t.train.balanceLine(num(V.setsRange), num(V.setsHigh))}</p>
+            {#each groups as g (g.key)}
+              <p class="text-eyebrow text-ink-2 mt-5 mb-3" data-testid="muscle-group-{g.key}">{g.title}</p>
+              <div class="flex flex-col gap-3">
+                {#each g.rows as m (m)}
+                  {@const sets = analysis.muscles[m].sets}
+                  <div class="grid grid-cols-[6.5em_1fr_2.5em] items-center gap-3" data-testid="muscle-{m}">
+                    <span class="text-callout">{M[m]}</span>
+                    <Track value={sets} target={V.setsHigh} zone={[V.setsRange, V.setsHigh]} label="{M[m]} {t.train.sets(num(sets, 1))}" />
+                    <span class="text-callout num text-right font-semibold">{num(sets, 1)}</span>
+                  </div>
+                {/each}
               </div>
             {/each}
-          </div>
+          </Disclosure>
         </Card>
       {:else}
         <Card data-testid="train-balance-empty">
@@ -218,22 +318,23 @@
         </Card>
       {/if}
 
-      <Card list aria-label={t.train.analysis} data-testid="train-recs">
-        {#each recs as f (`${f.kind}${f.muscle ?? ''}`)}
-          {@render point(`${f.kind}${f.muscle ?? ''}`, sentence(f), f.source, 'rec')}
-        {:else}
-          <p class="text-body text-ink-2 py-4">{t.train.allGood}</p>
-        {/each}
-        <div class="border-line border-t py-4" data-testid="train-cardio">
-          <div class="flex items-baseline justify-between gap-3">
-            <span class="text-body font-semibold">{t.train.cardio}</span>
-            <span class="text-callout text-ink-2 text-right">{t.train.cardioLine(num(analysis.aerobicMinutes), num(V.aerobicMinutes.min), num(V.aerobicMinutes.max))}</span>
-          </div>
-          <div class="mt-2">
-            <Track value={analysis.aerobicMinutes} target={V.aerobicMinutes.max} zone={[V.aerobicMinutes.min, V.aerobicMinutes.max]} label="{t.train.cardio} {t.train.cardioLine(num(analysis.aerobicMinutes), num(V.aerobicMinutes.min), num(V.aerobicMinutes.max))}" />
-          </div>
-          {#each analysis.notes as n (n.kind)}<p class="text-callout text-ink-2 mt-2">{sentence(n)}</p>{/each}
+      <Card list aria-label={t.train.suggestions} data-testid="train-recs">
+        <CardHead level={3} class="pt-5 pb-4" title={t.train.suggestions} line={t.train.suggestionsLine} />
+        <div class="border-line border-t">
+          {#each recs as f (`${f.kind}${f.muscle ?? ''}`)}
+            {@render point(`${f.kind}${f.muscle ?? ''}`, sentence(f), f.source, 'rec')}
+          {:else}
+            <p class="text-body text-ink-2 flex items-center gap-3 py-4"><Check class="text-success-ink flex-none" size={20} strokeWidth={2.5} aria-hidden="true" />{t.train.allGood}</p>
+          {/each}
         </div>
+      </Card>
+
+      <Card aria-label={t.train.cardio} data-testid="train-cardio">
+        <CardHead level={3} title={t.train.cardio} line={t.train.cardioLine(num(analysis.aerobicMinutes), num(V.aerobicMinutes.min), num(V.aerobicMinutes.max))} />
+        <div class="mt-4">
+          <Track value={analysis.aerobicMinutes} target={V.aerobicMinutes.max} zone={[V.aerobicMinutes.min, V.aerobicMinutes.max]} label="{t.train.cardio} {t.train.cardioLine(num(analysis.aerobicMinutes), num(V.aerobicMinutes.min), num(V.aerobicMinutes.max))}" />
+        </div>
+        {#each analysis.notes as n (n.kind)}<p class="text-callout text-ink-2 mt-3">{sentence(n)}</p>{/each}
       </Card>
 
       {#if analysis.hybrid.length}
@@ -248,5 +349,6 @@
 
     <SessionSheet bind:editing {program} weightKg={plan.weightKg} />
     <TemplatesSheet bind:open={templates} goal={plan.goal} experience={profile.experience} />
+    <ProgramAiSheet bind:open={aiOpen} {program} goal={plan.goal} experience={profile.experience} today={view.today} />
   {/if}
 </section>

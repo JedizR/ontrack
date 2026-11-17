@@ -2,6 +2,24 @@
 
 Changes to a doc's decision, and choices made on the owner's behalf. Newest first, one line each: what, why.
 
+## R2
+
+The whole app reorganised, 17 November 2026: Opus with the owner on localhost; research in `ontrack-design/research/r2/`; full list in `docs/R2-PLAN.md`.
+- **Every page leads with one card of small boxes,** fitting one screen at 390 by 664. The owner tried separate bento tiles and chose this.
+- **Today's figure is kcal eaten,** with what is left as the counterpart (the owner, over Cal AI's "left").
+- **Three tabs, no bell.** Its notices act where they live; a check-in waiting is a dot on Progress.
+- **The plus logs a meal, the weigh-in and today's session.**
+- **Progress is chart first,** with four metrics. Calories out is the plan's baseline plus the energy of sessions done (formula, not measured).
+- **Program changes apply from today,** with tomorrow's plan's numbers. The owner wanted targets to follow at once.
+- **A program change also rewrites plans already waiting for a later day,** keeping each one's own numbers (found checking the owner's data: edits made under "from tomorrow" would otherwise win from tomorrow).
+- **The store's `updatedAt` passes every record it holds,** so same-day plans order by when they were written.
+- **The AI coach writes words with number slots;** the server rejects digits and the app fills the engine's numbers. The AI never sets a target.
+- **Thai dishes not in a database are computed from recipes** of sourced ingredients (`recipe:` rows); the model writes compositions, never nutrition.
+- **A Thai plate resolves by dish, protein and extras;** table items never ask about oil. Retrieval and embeddings were rejected (`docs/AI-THAI.md`).
+- **An item that may hide oil starts at 1 tsp** (the owner: Thai cooking uses oil).
+- **Goal weight is its own onboarding step,** with the healthy range from the engine's BMI bounds.
+- **Muscle map path data** comes from react-native-body-highlighter (MIT), vendored as data.
+
 ## U3
 
 Text hierarchy and cards, 14 November 2026, a separate session from `docs/briefs/U3-text-and-cards.md`. Research: 16 Mobbin searches over Airbnb's and Shop's iOS screens, 55 cited in `ontrack-design/research/u3-mobbin/NOTES.md`.

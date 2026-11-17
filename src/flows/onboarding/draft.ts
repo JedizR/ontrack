@@ -7,13 +7,13 @@ import {
 import { TEMPLATES, type TrainKind } from '$lib/data/templates';
 import { weekdayOf, yearOf } from '$lib/model/dates';
 import { targetParts, trainingDayEee } from '$lib/model/day';
-import { kgToLb, regionUnits, type Units } from '$lib/model/units';
+import { kgToLb, type Units } from '$lib/model/units';
 import { t } from '$lib/i18n';
 import type { Plan, Profile, Program, Session, Weight } from '../../../shared/records';
 
 export type Screening = { pregnant: boolean; medical: boolean; eatingDisorder: boolean };
 export type Screen =
-  | 'welcome' | 'goal' | 'screening' | 'advice' | 'sex' | 'born' | 'young' | 'body' | 'move' | 'days' | 'kind' | 'experience' | 'plan';
+  | 'welcome' | 'goal' | 'screening' | 'advice' | 'sex' | 'born' | 'young' | 'body' | 'goalWeight' | 'move' | 'days' | 'kind' | 'experience' | 'plan';
 
 /**
  * The two goals behind "Not what you're looking for?" (U1a), each an engine goal with one rule: Gain weight is the gain
@@ -49,7 +49,7 @@ export type Draft = {
   saved?: true;
 };
 
-export const fresh = (): Draft => ({ at: 'welcome', units: regionUnits() });
+export const fresh = (): Draft => ({ at: 'welcome', units: 'metric' }); // O2, the owner: metric first, whatever the region
 
 type Before = Omit<Draft, 'at'> & { at: Screen | 'train' | 'pace'; train?: { kind: 'custom'; days: number; type: string } | { kind: 'template'; id: string } | { kind: 'later' } };
 /** A draft saved before O1 (its training step and pace screen), in O1's terms: the answers kept, the screen moved on. */
@@ -89,7 +89,7 @@ export function weightWheel(units: Units, minKg: number = LIMITS.weightKg[0], ma
   return { min: Math.ceil(shown(minKg)) / 10, max: Math.floor(shown(maxKg)) / 10 };
 }
 /** The nine questions in order. The advice and age screens belong to the question before them. */
-export const STEPS: Screen[] = ['goal', 'screening', 'sex', 'born', 'body', 'move', 'days', 'kind', 'experience'];
+export const STEPS: Screen[] = ['goal', 'screening', 'sex', 'born', 'body', 'goalWeight', 'move', 'days', 'kind', 'experience'];
 
 export const flagged = (d: Draft) => !!d.screening && (d.screening.pregnant || d.screening.medical || d.screening.eatingDisorder);
 export const ageOf = (d: Draft, year: number) => year - (d.birthYear ?? year);
@@ -104,7 +104,11 @@ export function route(d: Draft, year: number): Screen[] {
   if (flagged(d)) r.push('advice');
   r.push('sex', 'born');
   if (d.birthYear && ageOf(d, year) < V.minAge) return [...r, 'young'];
-  r.push('body', 'move', 'days');
+  r.push('body');
+  // R2, the owner: a goal weight as its own step when the goal is to change weight
+  // unanswered counts as yes, so the step count can only shrink as answers come in
+  if ((d.goal ?? 'gain') !== 'maintain' && !flagged(d)) r.push('goalWeight');
+  r.push('move', 'days');
   if (d.days !== 0) r.push('kind');
   if (asksExperience(d)) r.push('experience');
   return [...r, 'plan'];

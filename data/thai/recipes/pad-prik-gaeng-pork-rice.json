@@ -1,0 +1,19 @@
+{
+ "name": "Pad prik gaeng pork with rice",
+ "sources": [
+  "https://www.eatingthaifood.com/thai-gai-pad-prik-gaeng-recipe-%e0%b8%a7%e0%b8%b4%e0%b8%98%e0%b8%b5%e0%b8%97%e0%b8%b3-%e0%b9%84%e0%b8%81%e0%b9%88%e0%b8%9c%e0%b8%b1%e0%b8%94%e0%b8%9e%e0%b8%a3%e0%b8%b4%e0%b8%81%e0%b9%81%e0%b8%81/",
+  "https://importfood.com/recipes/main-courses/recipe/158-stir-fried-pork-pad-ped-mu"
+ ],
+ "ingredients": [
+  {
+   "food": "pad-prik-gaeng-pork",
+   "grams": 177
+  },
+  {
+   "food": "rice-white",
+   "grams": 200
+  }
+ ],
+ "yield_g": 377,
+ "notes": "The dish above over 200 g of cooked rice."
+}

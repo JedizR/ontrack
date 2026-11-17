@@ -2,6 +2,24 @@
 
 What the vision model got right and wrong on real photos, and what changed because of it. Newest first.
 
+## R2, 17 November 2026: Thai variants from text, before and after the dish fields
+
+**What changed.** The model now reports each Thai dish's `dish`, `protein` and `extras`, and `server/vision/thai.ts` resolves them to the table's variant (`docs/AI-THAI.md`). The food table grew from 670 to 910, then 983 foods (thai-foods, the same day), adding the kra pao, pad see ew and rad na proteins.
+
+**Method.** `pnpm eval:vision --text tests/fixtures/vision/thai-eval.json`: 30 descriptions, 21 in Thai script or romanised as a vendor would write them (กะเพราหมูสับไข่ดาว, kaprao goong khai dao, krapow talay), 9 as sentences; 13 proteins and plain, rice and rice with egg plates. A case is right when an item resolves to its expected id. Before: a frozen copy of the old prompt, schema and resolver, run on the 910 food table. After: this branch on the 983 food table (every expected id is in both). `gemini-3.6-flash`, minimal thinking, one call a case, 60 calls in all, none failed. Scored again offline from the saved replies.
+
+| | Before | After |
+| --- | --- | --- |
+| Cases right | 30 of 30 | 30 of 30 |
+| Right from the model's `food_id` alone | 30 of 30 | 30 of 30 |
+| Right with every `food_id` removed (the new resolver on names and dish fields) | 30 of 30 | 30 of 30 |
+
+**Reading it.**
+- From text, the catalog in the prompt already finds the variant once the table has it: the gain on these cases came from the table, not the resolver, and no case moved. The dish fields cost nothing in accuracy.
+- The resolver is the safety net: on both passes' replies it reaches every case with the model's ids taken away, so a null or wrong `food_id` (a stale id after a correction, a Thai name the model did not map) still lands on the table.
+- The model filled the new fields as asked: dish "Pad kra pao" and protein "minced pork" for กะเพราหมูสับไข่ดาว, rice implied by the fried egg, `dish` null for khao man kai. It flagged hidden fat on every plate; all resolved to the table, so none asks about oil.
+- Not measured: photos (no calls left in the 60), where protein is a visual guess and the fields should matter more. Run the eight Thai photos (N1) next.
+
 ## M9b, 13 November 2026: the N1 Thai rerun on the paid key
 
 N1's eight Thai photos, the same method (`pnpm eval:vision`, `gemini-3.6-flash`, minimal thinking, provider call timed from the Mac), now on the billed key and the 670 food table of N3. One request each, all eight answered, no 429 or 503.

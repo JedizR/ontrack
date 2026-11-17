@@ -42,6 +42,9 @@ export function atTime(date: string, hhmm: string) {
 const TITLE = new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
 /** "Monday, Nov 9": a day as a screen title. */
 export const dayTitle = (date: string) => TITLE.format(local(date));
+const TITLE_SHORT = new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+/** "Mon, Nov 9": a day as the big title on top of Today (R1: three letters, the owner's call). */
+export const dayTitleShort = (date: string) => TITLE_SHORT.format(local(date));
 /** When something logged now on `date` happened: now, or this clock time on a past day. */
 export const stampOn = (date: string) => (date === today() ? nowIso() : atTime(date, timeOf(nowIso())));
 const SHORT = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' });

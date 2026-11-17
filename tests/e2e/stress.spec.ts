@@ -40,8 +40,8 @@ const smallTargets = (page: Page) => page.evaluate(() => [...document.querySelec
 
 /** Text cut off inside a box (truncate or overflow hidden). */
 const clipped = (page: Page) => page.evaluate(() => [...document.querySelectorAll<HTMLElement>('main *, header *, nav *, [data-vaul-drawer] *, [data-onboarding] *')]
-  // screen reader only text is a 1 px box on purpose
-  .filter((el) => el.childElementCount === 0 && (el.textContent ?? '').trim() && el.scrollWidth > el.clientWidth + 1 && getComputedStyle(el).overflow !== 'visible' && !el.closest('.sr-only'))
+  // screen reader only text is a 1 px box on purpose; [data-ellipsis] is an example line the owner chose to cut with an ellipsis (R1, the Add composer)
+  .filter((el) => el.childElementCount === 0 && (el.textContent ?? '').trim() && el.scrollWidth > el.clientWidth + 1 && getComputedStyle(el).overflow !== 'visible' && !el.closest('.sr-only, [data-ellipsis]'))
   .map((el) => (el.textContent ?? '').trim().slice(0, 20)));
 
 /** Text spilling out of a button (its box is narrower than its label). */
@@ -212,6 +212,8 @@ async function walkOnboarding(page: Page, dir: string) {
   await wheelType(page, 'wheel-weight', '82');
   await check('step-body', 'body');
   await go('continue');
+  await check('step-goal-weight', 'goal-weight'); // R2: the goal weight with the healthy range
+  await go('continue');
   await check('step-move', 'move');
   await go('choice-light'); await go('continue');
   await check('step-days', 'days');
@@ -273,7 +275,7 @@ async function walkLogging(page: Page, dir: string, part: (typeof LOGGING)[numbe
     await sheet('supplement-sheet', 'supplement-label', 'supplement-save');
     await close('supplement-sheet');
     await page.getByTestId('add').click();
-    await page.getByTestId('supplement-new').click();
+    await page.getByTestId('supplement-entry').click(); // R2: the plus beside the pinned whey and creatine
     await sheet('supplement-sheet', 'supplement-kinds');
     await page.getByTestId('kind-whey').click();
     await checkPage(page, 'supplement-source', dir);

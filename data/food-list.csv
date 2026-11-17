@@ -91,7 +91,7 @@ lamb-ground,Ground lamb,lamb mince|minced lamb|kofta,172544,1 serving:85|100 g:1
 turkey-breast,Roast turkey breast,turkey|turkey breast|roast turkey,174516,1 serving:85|1 cup:140|100 g:100,protein
 turkey-ground,Ground turkey,turkey mince|minced turkey,171506,1 serving:85|1 patty:82|100 g:100,protein
 turkey-deli,Sliced turkey,deli turkey|turkey slices|turkey ham|lunch meat,172941,1 slice:16|100 g:100,protein
-duck,Roast duck,duck|peking duck|ped yang|duck with skin|เป็ดย่าง,172409,1 serving:85|1 cup:140|100 g:100,thai|protein|dense
+duck,Roast duck,duck|peking duck|duck with skin|เป็ดอบ|เป็ดปักกิ่ง,172409,1 serving:85|1 cup:140|100 g:100,thai|protein|dense
 duck-meat,Duck breast,skinless duck|duck meat,172411,1 serving:85|100 g:100,protein
 salmon,Salmon,salmon fillet|baked salmon|grilled salmon|pla salmon,175168,1 fillet:178|1 serving:85|100 g:100,protein
 salmon-wild,Wild salmon,sockeye salmon|wild caught salmon,173692,1 fillet:155|1 serving:85|100 g:100,protein
@@ -120,7 +120,7 @@ scallops,Scallops,scallop|hoy shell,167742,1 serving:85|100 g:100,protein
 egg-boiled,Boiled egg,egg|eggs|hard boiled egg|soft boiled egg|khai tom|kai tom|ไข่ต้ม,owner:H18,1 large:50|1 medium:44|1 cup chopped:136|100 g:100,thai|protein
 egg-fried,Fried egg,khai dao|kai dao|sunny side up|fried eggs|ไข่ดาว,173423,1 large:46|100 g:100,thai|protein
 egg-scrambled,Scrambled eggs,scrambled egg|scramble,172187,1 large egg:61|1 cup:220|100 g:100,protein
-egg-omelette,Omelette,omelet|khai jiao|kai jeow|thai omelette|ไข่เจียว,172185,1 large egg:61|100 g:100,thai|protein
+egg-omelette,Omelette,omelet|khai jiao|ออมเล็ต|ไข่ออมเล็ต,172185,1 large egg:61|100 g:100,thai|protein
 egg-poached,Poached egg,poached eggs,172186,1 large:50|100 g:100,protein
 egg-raw,Raw egg,whole egg|fresh egg|egg raw,171287,1 large:50|1 medium:44|1 extra large:56|100 g:100,protein
 egg-white,Egg white,egg whites|liquid egg white|albumen,172183,1 large:33|1 cup:243|100 g:100,protein
@@ -268,7 +268,7 @@ radish,Radish,radishes|red radish,169276,1 medium:4.5|1 cup sliced:116|100 g:100
 daikon,Daikon,white radish|mooli|hua chai thao|oriental radish|หัวไชเท้า,168452,1 cup slices:147|100 g:100,thai
 leek,Leek,leeks,169246,1 leek:89|100 g:100,
 coriander,Coriander leaves,cilantro|phak chi|pak chee|chinese parsley|ผักชี,169997,1 tbsp:1|1/4 cup:4|9 sprigs:20|100 g:100,thai
-basil,Basil,thai basil|holy basil|bai horapa|bai krapao|kaprao|กะเพรา|โหระพา,172232,1 tbsp chopped:5.3|1 cup:15|100 g:100,thai
+basil,Basil,thai basil|holy basil|bai horapa|bai krapao|กะเพรา|โหระพา,172232,1 tbsp chopped:5.3|1 cup:15|100 g:100,thai
 lemongrass,Lemongrass,ta khrai|takrai|citronella|ตะไคร้,168573,1 tbsp:4.8|1 stalk:20|100 g:100,thai
 mixed-veg,Mixed vegetables,frozen vegetables|mixed veg,170472,1 cup:182|1/2 cup:91|100 g:100,
 artichoke,Artichoke,globe artichoke|artichoke hearts,168386,1 medium:120|1/2 cup hearts:84|100 g:100,
@@ -280,7 +280,7 @@ seaweed,Nori seaweed,nori|seaweed|laver|seaweed snack|kim,168458,1 sheet:3|10 sh
 tofu-firm,Firm tofu,tofu|tao hu|tauhu|bean curd|tahu|เต้าหู้,172475,1/2 cup:126|1/4 block:81|100 g:100,thai|protein
 tofu-regular,Tofu,regular tofu|medium tofu|tao hu khao,172476,1/2 cup:124|1/4 block:116|100 g:100,protein
 tofu-silken,Silken tofu,soft tofu,172449,1 piece:120|1 cup:248|100 g:100,protein
-tofu-fried,Fried tofu,tofu puffs|tao hu tod|deep fried tofu|เต้าหู้ทอด,172451,1 piece:13|1 oz:28|100 g:100,thai|protein|dense
+tofu-fried,Fried tofu,tofu puffs|deep fried tofu|เต้าหู้ทอดกรอบ,172451,1 piece:13|1 oz:28|100 g:100,thai|protein|dense
 tempeh,Tempeh,tempe,172467,1/2 cup:83|1 serving:85|100 g:100,protein
 edamame,Edamame,soybeans in pods|green soybeans|thua lueang|edamame beans,168411,1 cup shelled:155|1/2 cup:78|100 g:100,protein
 lentils,Lentils,cooked lentils|dal|dhal|daal|red lentils|green lentils,172421,1 cup:198|1/2 cup:99|100 g:100,protein
@@ -366,7 +366,7 @@ coconut-cream,Coconut cream,hua kati|hua gati|thick coconut milk|หัวกะ
 creamer,Coffee creamer,non dairy creamer|coffee mate|creamer powder,171263,1 tsp:2|1 tbsp:6|100 g:100,
 honey,Honey,nam phueng|raw honey,169640,1 tbsp:21|1 tsp:7|100 g:100,
 sugar,Sugar,white sugar|granulated sugar|caster sugar|nam tan|table sugar,169655,1 tsp:4.2|1 tbsp:12.5|1 sachet:2.8|100 g:100,
-sugar-brown,Brown sugar,palm sugar|nam tan pip|coconut sugar|demerara|น้ำตาลปี๊บ,168833,1 tsp:4.6|1 tbsp:14|100 g:100,thai
+sugar-brown,Brown sugar,palm sugar|nam tan pip|demerara|น้ำตาลทรายแดง,168833,1 tsp:4.6|1 tbsp:14|100 g:100,thai
 jam,Jam,jelly|preserves|strawberry jam|marmalade,169641,1 tbsp:20|1 tsp:7|100 g:100,
 maple-syrup,Maple syrup,syrup|pancake syrup,169661,1 tbsp:20|1/4 cup:83|100 g:100,
 nutella,Chocolate hazelnut spread,nutella|choc spread|chocolate spread,168000,1 tbsp:19|2 tbsp:37|100 g:100,dense
@@ -442,7 +442,7 @@ soy-protein-powder,Soy protein powder,plant protein|plant protein powder|vegan p
 trail-mix,Trail mix,scroggin|student mix|gorp|nut and raisin mix,167561,1/4 cup:38|1 handful:30|100 g:100,dense
 trail-mix-choc,Trail mix with chocolate,chocolate trail mix|fruit and nut mix,167969,1/4 cup:37|1 handful:30|100 g:100,dense
 banana-chips,Banana chips,kluay chip|dried banana chips|กล้วยฉาบ,168849,1 oz:28|1 small bag:42|100 g:100,thai|dense
-pork-rinds,Pork rinds,pork scratchings|chicharron|kap moo|khaep mu|แคบหมู,167961,1 oz:28|1 small bag:14|100 g:100,thai|protein
+pork-rinds,Pork rinds,pork scratchings|chicharron|kap moo|khaep mu|หนังหมูทอด|หนังหมูทอดกรอบ,167961,1 oz:28|1 small bag:14|100 g:100,thai|protein
 water,Water,tap water|bottled water|nam|nam plao|mineral water,173647,1 glass:250|1 bottle:500|1 litre:1000,drink
 coffee,Black coffee,coffee|americano|long black|filter coffee|kafae dam|drip coffee,171890,1 cup:237|1 mug:350|100 g:100,drink
 espresso,Espresso,shot of espresso|ristretto,171891,1 shot:30|1 double:60|100 g:100,drink
@@ -516,9 +516,9 @@ pad-thai,Pad thai,phat thai|pad thai tofu|ผัดไทย|ผัดไทย�
 pad-thai-chicken,Pad thai with chicken,pad thai gai|phat thai kai|ผัดไทยไก่,2708806,1 plate:350|100 g:100,thai|staple
 pad-thai-shrimp,Pad thai with shrimp,pad thai goong|pad thai kung|pad thai seafood|ผัดไทยกุ้ง|ผัดไทยกุ้งสด,2708807,1 plate:350|100 g:100,thai|staple
 pad-thai-meat,Pad thai with pork or beef,pad thai moo|pad thai with meat|ผัดไทยหมู,2708808,1 plate:350|100 g:100,thai|staple
-kra-pao-pork,Pad kra pao pork,pad kaprao moo|pad krapow moo|kaprao moo|basil pork|ผัดกะเพราหมู|กะเพราหมูสับ,F06100052,1 serving:130|100 g:100,thai|protein
+kra-pao-pork,Pad kra pao pork,kra pao|kaprao|krapow|gaprao|ka prao|pad kra pao|pad kaprao|pad krapow|pad gaprao|ผัดกะเพรา|basil pork|pad kaprao moo|pad krapow moo|kaprao moo|ผัดกะเพราหมู|กะเพราหมู,F06100052,1 serving:130|100 g:100,thai|protein
 kra-pao-beef,Pad kra pao beef,pad kaprao nuea|pad krapow nuea|basil beef|ผัดกะเพราเนื้อ,F06040020,1 serving:140|100 g:100,thai|protein
-kra-pao-pork-rice,Pad kra pao pork with rice,khao kra pao moo|khao pad kaprao moo|basil pork rice|ข้าวกะเพราหมู|ข้าวผัดกะเพราหมู,F05100143,1 plate:330|100 g:100,thai|staple
+kra-pao-pork-rice,Pad kra pao pork with rice,khao kra pao moo|khao pad kaprao moo|basil pork rice|ข้าวกะเพราหมู,F05100143,1 plate:330|100 g:100,thai|staple
 kra-pao-pork-rice-egg,Pad kra pao pork with rice and fried egg,khao kra pao moo khai dao|basil pork rice with egg|ข้าวกะเพราหมูไข่ดาว,F05100144,1 plate:375|100 g:100,thai|staple
 kra-pao-beef-rice,Pad kra pao beef with rice,khao kra pao nuea|basil beef rice|ข้าวกะเพราเนื้อ,F05100141,1 plate:340|100 g:100,thai|staple
 kra-pao-beef-rice-egg,Pad kra pao beef with rice and fried egg,khao kra pao nuea khai dao|ข้าวกะเพราเนื้อไข่ดาว,F05100142,1 plate:385|100 g:100,thai|staple
@@ -617,7 +617,7 @@ kiao-kung-nam,Shrimp wonton soup,kiao kung nam|kiao nam|เกี๊ยวกุ
 khanom-jeen-nam-ya,Khanom jeen nam ya,rice noodles with fish curry|kanom jeen|ขนมจีน|ขนมจีนน้ำยา,inmu:T39,1 plate:350|100 g:100,thai|staple
 khanom-jeen-nam-ngiao,Khanom jeen nam ngiao,kanom jeen nam ngeaw|ขนมจีนน้ำเงี้ยว,inmu:T37,1 bowl:400|100 g:100,thai|staple
 khanom-jeen-nam-prik,Khanom jeen nam prik,ขนมจีนน้ำพริก,owner:T38,1 plate:350|100 g:100,thai|staple
-rad-na-moo,Rad na with pork,rat na moo|rad na gai|ราดหน้าหมู|ราดหน้าไก่,owner:T13,1 plate:450|100 g:100,thai|staple
+rad-na-moo,Rad na with pork,rat na moo|ราดหน้าหมู,owner:T13,1 plate:450|100 g:100,thai|staple
 rad-na-kung,Rad na with shrimp,rat na kung|ราดหน้ากุ้ง,owner:T12,1 plate:450|100 g:100,thai|staple
 mee-krob,Mee krob,crispy rice noodles|หมี่กรอบ,inmu:T131,1 plate:100|100 g:100,thai|dense
 hoi-tod,Hoi tod,mussel omelette|oyster omelette|crispy mussel pancake|หอยทอด,inmu:T133,1 plate:250|100 g:100,thai
@@ -669,3 +669,316 @@ rice-black-sticky,Black sticky rice,khao niao dam|ข้าวเหนียว
 nam-krachiap,Roselle drink,nam krachiap|roselle juice|hibiscus drink|น้ำกระเจี๊ยบ,owner:Q11,1 glass:250|1 bottle:350|100 g:100,thai|drink
 nam-kek-huay,Chrysanthemum drink,nam kek huay|chrysanthemum tea|น้ำเก็กฮวย,owner:Q43,1 glass:250|1 bottle:350|100 g:100,thai|drink
 nam-nom-khao-pod,Corn milk,nam nom khao pod|corn milk drink|น้ำนมข้าวโพด|นมข้าวโพด,owner:Q49,1 glass:250|100 g:100,thai|drink
+yellow-curry-beef,Yellow curry with beef,kaeng kari nuea|gaeng kari beef|แกงกะหรี่เนื้อ|แกงกระหรี่เนื้อ,inmu:T180,1 bowl:250|100 g:100,thai
+kurma-curry-chicken,Kurma curry with chicken,kaeng kuruma|gaeng kurma gai|korma|แกงกรุหม่าไก่|แกงกุรุหม่า,inmu:T181,1 bowl:250|100 g:100,thai
+kaeng-khanun,Young jackfruit curry,gaeng khanun|kaeng nangka|แกงขนุน|แกงขนุนอ่อน,inmu:T286,1 bowl:200|100 g:100,thai
+kaeng-khi-lek,Cassia leaf curry,gaeng khi lek|khilek curry|แกงขี้เหล็ก,inmu:T287,1 bowl:200|100 g:100,thai
+kaeng-tai-pla,Southern fermented fish curry,gaeng tai pla|kaeng tai pla|แกงไตปลา,inmu:T288,1 bowl:200|100 g:100,thai
+kaeng-bon,Taro stem curry,gaeng bon|แกงบอน,inmu:T289,1 bowl:200|100 g:100,thai
+kaeng-moo-chamuang,Pork curry with garcinia leaves,gaeng moo cha muang|kaeng mu chamuang|แกงหมูชะมวง,inmu:T291,1 bowl:200|100 g:100,thai
+kaeng-hoi-khom-central,River snail curry central style,gaeng hoi khom|แกงหอยขม,inmu:T292,1 bowl:200|100 g:100,thai
+kaeng-hoi-khom-isan,River snail soup northeastern style,gaeng hoi khom isan|แกงหอยขมอีสาน,inmu:T293,1 bowl:200|100 g:100,thai
+kaeng-luang-pla,Southern yellow sour soup with fish,gaeng leung pla|kaeng lueang pla|แกงเหลืองปลา|แกงส้มปลา,inmu:T294,1 bowl:250|100 g:100,thai
+kaeng-om-pla,Gaeng om with fish,kaeng om pla|northern spicy soup fish|แกงอ่อมปลา,inmu:T296,1 bowl:250|100 g:100,thai
+sator-pad-kai,Stir fried stink beans with chicken,sator pad prik|stink bean stir fry|petai stir fry|สะตอผัดไก่|สะตอผัดกะปิ,inmu:T298,1 plate:150|100 g:100,thai
+kaeng-jued-fak,Wax gourd soup,gaeng jued fak|kaeng chuet fak|แกงจืดฟัก,inmu:T71,1 bowl:300|100 g:100,thai
+tom-yum-pla-duk,Tom yum with catfish,tom yum catfish|tom yam pla duk|ต้มยำปลาดุก,inmu:T301,1 bowl:300|100 g:100,thai
+pad-prik-gaeng-tua-fak-yao,Stir fried long beans with red curry paste,pad prik gaeng tua fak yao|long bean red curry stir fry|ผัดพริกแกงถั่วฝักยาว,inmu:T223,1 plate:150|100 g:100,thai
+nuea-satay,Beef satay,satay beef|sate beef|สะเต๊ะเนื้อ|เนื้อสะเต๊ะ,inmu:T302,1 stick:35|5 sticks:175|100 g:100,thai|protein
+kuay-tiew-gaeng-nuea,Rice noodles with beef curry,guay teow kaeng nuea|kuay tiew khak|ก๋วยเตี๋ยวแกงเนื้อ,inmu:T6,1 bowl:400|100 g:100,thai|staple
+khanom-jeen-sao-nam,Khanom jeen sao nam,kanom jeen sao nam|rice noodles with pineapple and coconut|ขนมจีนซาวน้ำ,inmu:T36,1 plate:250|100 g:100,thai|staple
+khanom-jeen-nam-ya-tai,Khanom jeen nam ya southern style,kanom jeen nam ya pak tai|ขนมจีนน้ำยาปักษ์ใต้,inmu:T40,1 plate:300|100 g:100,thai|staple
+khao-klong-kra-pao-moo,Brown rice with basil pork,brown rice kra pao|ข้าวกล้องกะเพราหมู|ข้าวกล้องผัดกะเพรา,inmu:T197,1 plate:350|100 g:100,thai|staple
+khao-rice-berry-kra-pao-kai,Purple rice with basil chicken,riceberry kra pao|ข้าวไรซ์เบอร์รี่กะเพราไก่|ข้าวกล้องหอมนิลกะเพราไก่,inmu:T199,1 plate:350|100 g:100,thai|staple
+khao-klong-moo-tod-kratiem,Brown rice with garlic fried pork,brown rice moo tod kratiem|ข้าวกล้องหมูทอดกระเทียม,inmu:T198,1 plate:350|100 g:100,thai|staple
+khao-klong-gaeng-phed-kai,Brown rice with red curry chicken,brown rice red curry|ข้าวกล้องแกงเผ็ดไก่,inmu:T195,1 plate:350|100 g:100,thai|staple
+khao-pad-klong-kung,Fried brown rice with shrimp,brown rice fried rice shrimp|ข้าวกล้องผัดกุ้ง|ข้าวผัดข้าวกล้องกุ้ง,inmu:T201,1 plate:300|100 g:100,thai|staple
+khao-kai-pad-king-krueang-nai,Rice with chicken offal and ginger,khao kai krueang nai pad king|ข้าวไก่เครื่องในผัดขิง,inmu:T45,1 plate:350|100 g:100,thai|staple
+khao-ob-pong-kari,Curry powder rice,khao ob pong kari|yellow rice|ข้าวอบผงกะหรี่|ข้าวหุงผงกะหรี่,inmu:T208,1 plate:250|100 g:100,thai|staple
+bak-jang,Bak jang,zongzi|sticky rice dumpling|bah chang|บะจ่าง|ข้าวต้มมัดไส้หมู,inmu:T220,1 piece:150|100 g:100,thai|staple
+ba-mee-luk-chin-nam,Egg noodle soup with meatballs,bamee luk chin|ba mee luk chin nam|บะหมี่ลูกชิ้นน้ำ,inmu:T153,1 bowl:350|100 g:100,thai|staple
+kuay-tiew-ped-nam,Rice noodle soup with duck,guay teow ped|kuay tiew ped|เส้นเล็กเป็ดน้ำ,inmu:T154,1 bowl:400|100 g:100,thai|staple
+sen-lek-nuea-nam,Small rice noodle soup with beef,sen lek nuea nam|ก๋วยเตี๋ยวเส้นเล็กเนื้อน้ำ|เส้นเล็กเนื้อ,inmu:T105,1 bowl:400|100 g:100,thai|staple
+sen-mee-nuea-nam,Thin rice noodle soup with beef,sen mee nuea nam|ก๋วยเตี๋ยวเส้นหมี่เนื้อน้ำ|เส้นหมี่เนื้อ,inmu:T115,1 bowl:400|100 g:100,thai|staple
+sen-mee-luk-chin-nuea-nam,Thin rice noodle soup with beef balls,sen mee luk chin nuea|ก๋วยเตี๋ยวเส้นหมี่ลูกชิ้นเนื้อน้ำ|เส้นหมี่ลูกชิ้น,inmu:T122,1 bowl:400|100 g:100,thai|staple
+sen-lek-luk-chin-nuea-haeng,Dry small rice noodles with beef balls,sen lek luk chin haeng|ก๋วยเตี๋ยวเส้นเล็กลูกชิ้นเนื้อแห้ง,inmu:T110,1 plate:250|100 g:100,thai|staple
+sen-mee-pad-moo-khai,Fried thin rice noodles with pork and egg,sen mee pad see ew|mee pad soy sauce|ผัดหมี่ซีอิ๊ว|หมี่ผัดหมู,inmu:T312,1 plate:300|100 g:100,thai|staple
+mee-ka-thi,Mee ka ti,mee kati|rice noodles in coconut sauce|หมี่กะทิ,inmu:T132,1 plate:250|100 g:100,thai|staple
+khao-griap-pak-mo,Khao griap pak mo,khao kriab pak mor|steamed rice skin dumplings|ข้าวเกรียบปากหม้อ,inmu:T254,1 plate:150|100 g:100,thai
+poh-pia-tod-kung,Fried spring roll with shrimp,poh pia tod kung|fried spring rolls shrimp|ปอเปี๊ยะทอดกุ้ง,inmu:T95,1 roll:40|3 rolls:120|100 g:100,thai|dense
+khanom-jeeb-kung,Steamed shrimp dumpling,har gow|ka nom jeeb kung|ขนมจีบกุ้ง|ฮะเก๋า,inmu:T241,1 piece:25|4 pieces:100|100 g:100,thai
+khanom-jeeb-kai,Steamed chicken dumpling,siu mai chicken|ka nom jeeb kai|ขนมจีบไก่,inmu:T242,1 piece:25|4 pieces:100|100 g:100,thai
+sai-krok-thai,Thai style pork sausage,sai krok moo|thai sausage|ไส้กรอกหมู|ไส้กรอกไทย,inmu:T232,1 piece:50|100 g:100,thai|dense
+sai-krok-isan-tod,Fried sai krok isan,fried sour sausage|ไส้กรอกอีสานทอด,inmu:T128,1 piece:40|100 g:100,thai|dense
+na-tang,Na tang,naa tang|nah tang|หน้าตั้ง|ข้าวเกรียบหน้าตั้ง,inmu:T281,1 serving:60|100 g:100,thai
+miang-kham,Miang kham,miang kum|leaf wrapped bites|เมี่ยงคำ,inmu:T272,1 piece:15|5 pieces:75|100 g:100,thai|dense
+murtabak-beef,Murtabak with beef,martabak beef|มะตะบะเนื้อ,inmu:T269,1 piece:200|100 g:100,thai
+murtabak-banana,Murtabak with banana,martabak banana|มะตะบะกล้วย,inmu:T270,1 piece:150|100 g:100,thai
+tao-hu-tod,Fried tofu,tofu fried|tao hu tod|เต้าหู้ทอด,inmu:T343,1 piece:30|100 g:100,thai|dense
+pheuak-tod,Fried taro,taro fritters|pheuak tod|เผือกทอด,inmu:T365,1 piece:30|100 g:100,thai|dense
+man-tod,Fried sweet potato,man tod|sweet potato fritters|มันเทศทอด|มันทอด,inmu:T374,1 piece:30|100 g:100,thai|dense
+durian-chips,Durian chips,crispy durian|ทุเรียนทอด|ทุเรียนทอดกรอบ,inmu:T356,1 small bag:50|100 g:100,thai|dense
+jackfruit-chips,Jackfruit chips,crispy jackfruit|ขนุนทอด|ขนุนอบกรอบ,inmu:T330,1 small bag:50|100 g:100,thai|dense
+squid-snack,Seasoned squid strips,dried squid snack|pla muek yang|ปลาหมึกอบกรอบ|หมึกอบ,inmu:T362,1 small bag:30|100 g:100,thai|dense
+khao-tan,Khao tan,rice cracker|khao taen|ข้าวแต๋น,inmu:T332,1 piece:30|100 g:100,thai|dense
+kluay-chueam,Banana in syrup,kluay cheuam|boiled banana in syrup|กล้วยเชื่อม,inmu:T313,1 serving:120|100 g:100,thai
+khanom-ko,Khanom ko,kanom ko|ขนมโค,inmu:T315,1 piece:30|3 pieces:90|100 g:100,thai|dense
+khanom-jak,Khanom jak,kanom jak|coconut black rice cake|ขนมจาก,inmu:T240,1 piece:40|100 g:100,thai|dense
+khanom-tian,Khanom tian,kanom tian|ขนมเทียน,inmu:T246,1 piece:40|100 g:100,thai|dense
+khanom-ba-din,Khanom ba din,kanom badin|thai butter cake|ขนมบดิน,inmu:T247,1 piece:40|100 g:100,thai|dense
+khanom-ba-bin,Khanom ba bin,kanom babin|ขนมบะบิ่น,inmu:T248,1 piece:50|100 g:100,thai|dense
+khanom-la,Khanom la,kanom la|ขนมละ,inmu:T316,1 piece:30|100 g:100,thai|dense
+khanom-sai-sai,Khanom sai sai,kanom sai sai|ขนมใส่ไส้,inmu:T253,1 piece:40|100 g:100,thai|dense
+sa-rim,Sa rim,sarim|mung bean noodles in coconut milk|ซ่าหริ่ม,inmu:T164,1 bowl:200|100 g:100,thai
+tako-haew,Tako haew,tako water chestnut|ตะโก้แห้ว|ตะโก้,inmu:T140,1 cup:60|100 g:100,thai|dense
+tao-suan,Tao suan,tao suan dessert|เต้าส่วน,inmu:T261,1 bowl:200|100 g:100,thai
+tong-muan,Tong muan,crispy egg roll|egg roll biscuit|ทองม้วน,inmu:T263,1 piece:10|5 pieces:50|100 g:100,thai|dense
+puek-kuan,Taro pudding,khanom puek|taro dessert|เผือกกวน|ขนมเผือก,inmu:T265,1 piece:60|100 g:100,thai|dense
+med-khanun,Med khanun,mock jackfruit seeds|เม็ดขนุน,inmu:T158,1 piece:20|3 pieces:60|100 g:100,thai|dense
+taan-loon-chueam,Toddy palm in syrup,luk taan cheuam|ลูกตาลเชื่อม|ลอนตาลเชื่อม,inmu:T151,1 serving:100|100 g:100,thai
+toddy-palm-jelly,Toddy palm jelly,wun luk taan|วุ้นลูกตาล,inmu:T275,1 cup:100|100 g:100,thai
+pandan-jelly,Pandan jelly,wun bai toey|วุ้นใบเตย,inmu:T276,1 cup:100|100 g:100,thai
+young-coconut-jelly,Young coconut jelly,wun maprao on|วุ้นมะพร้าวอ่อน,inmu:T277,1 cup:100|100 g:100,thai
+sangkhaya-bai-toey,Thai custard with pandan,sangkaya bai toey|สังขยาใบเตย,inmu:T278,1 serving:80|100 g:100,thai|dense
+sakoo-tua-dum,Sago and black bean in coconut syrup,sakoo tua dam|สาคูถั่วดำ,inmu:T280,1 bowl:150|100 g:100,thai
+nata-de-coco,Nata de coco in syrup,wun maprao|coconut jelly in syrup|วุ้นมะพร้าว|วุ้นน้ำมะพร้าว,inmu:T324,1 cup:100|100 g:100,thai
+kra-ya-sart,Kra ya sart,krayasat|sticky rice sesame sweet|กระยาสารท,inmu:T235,1 piece:30|100 g:100,thai|dense
+khanom-buang-wan,Khanom buang with sweet cream,kanom buang cream|ขนมเบื้องไส้ครีม|ขนมเบื้องหวาน,inmu:T251,1 piece:20|3 pieces:60|100 g:100,thai|dense
+pizza-seafood,Seafood pizza,seafood pizza|พิซซ่าทะเล,inmu:S28,1 slice:100|100 g:100,
+pizza-hawaiian,Hawaiian pizza,hawaiian pizza|พิซซ่าฮาวายเอี้ยน,inmu:S36,1 slice:100|100 g:100,
+pizza-supreme,Supreme pizza,super supreme pizza|พิซซ่าหน้าซุปเปอร์,inmu:S25,1 slice:100|100 g:100,
+hot-dog,Hot dog in a bun,hotdog|frankfurter roll|ฮอทดอก,inmu:S38,1 hot dog:110|100 g:100,
+hamburger-chicken,Chicken burger,chicken hamburger|เบอร์เกอร์ไก่,inmu:S34,1 burger:150|100 g:100,
+sandwich-chicken,Chicken sandwich,chicken sandwich bakery|แซนด์วิชไก่,inmu:S6,1 sandwich:120|100 g:100,
+sandwich-fish,Fish sandwich bakery,tuna sandwich|แซนด์วิชปลา|แซนด์วิชทูน่า,inmu:S7,1 sandwich:120|100 g:100,
+doughnut-jam,Jam filled doughnut,jam donut|strawberry donut|โดนัทไส้แยม,inmu:S30,1 doughnut:70|100 g:100,
+rotiboy-bun,Coffee bun,rotiboy|mexican bun|coffee bun|โรตีบอย|ขนมปังกาแฟ,inmu:S33,1 bun:80|100 g:100,dense
+pork-minced-fried,Fried minced pork,moo sap pad|stir fried minced pork|หมูสับผัด|หมูสับทอด,inmu:F103,100 g:100|1 serving:70,thai|protein
+pork-tenderloin-fried,Fried pork tenderloin,moo san nai tod|สันในหมูทอด,inmu:F90,100 g:100|1 serving:80,thai|protein
+pork-shoulder-fried,Fried pork shoulder,moo san kor tod|fried pork neck|สันคอหมูทอด|ไหล่หมูทอด,inmu:F96,100 g:100|1 serving:80,thai|protein
+pork-belly-fried,Fried pork belly,moo sam chan tod|หมูสามชั้นทอด,inmu:F71,100 g:100|1 serving:80,thai|protein
+beef-grilled-thai,Grilled beef,nuea yang|grilled steak thai|เนื้อย่าง|เนื้อวัวย่าง,inmu:F145,100 g:100|1 serving:100,thai|protein
+beef-minced-grilled,Grilled minced beef,nuea sap yang|เนื้อสับย่าง,inmu:F143,100 g:100|1 serving:70,thai|protein
+chicken-minced-grilled,Grilled minced chicken,kai sap yang|ไก่สับย่าง,inmu:F136,100 g:100|1 serving:70,thai|protein
+chicken-thigh-fried,Fried chicken thigh,kai tod sapa|ไก่ทอดสะโพก|สะโพกไก่ทอด,inmu:F21,1 piece:90|100 g:100,thai|protein
+chicken-drumstick-fried,Fried chicken drumstick,kai tod nong|น่องไก่ทอด,inmu:F13,1 piece:80|100 g:100,thai|protein
+chicken-breast-fried-skin,Fried chicken breast with skin,kai tod ok|อกไก่ทอด,inmu:F31,1 piece:110|100 g:100,thai|protein
+duck-grilled,Grilled duck,ped yang|roast duck thai|เป็ดย่าง,inmu:F117,100 g:100|1 serving:100,thai|protein
+pork-skin-crispy,Crispy pork skin,kaep moo|kaeb moo|pork crackling|แคบหมูกรอบ,inmu:F47,1 small bag:30|100 g:100,thai|dense
+nuea-dad-diao,Sun dried beef,nuea dad diao|nuea kem|เนื้อแดดเดียว|เนื้อเค็ม,inmu:F142,100 g:100|1 serving:60,thai|dense
+luk-chin-moo-tod,Fried pork meatballs,luk chin moo tod|ลูกชิ้นหมูทอด,inmu:F154,1 stick:60|5 balls:75|100 g:100,thai|protein
+luk-chin-nuea-yang,Grilled beef meatballs,luk chin nuea yang|luk chin ping|ลูกชิ้นเนื้อปิ้ง|ลูกชิ้นปิ้ง,inmu:F182,1 stick:60|5 balls:75|100 g:100,thai|protein
+luk-chin-nuea-tod,Fried beef meatballs,luk chin nuea tod|ลูกชิ้นเนื้อทอด,inmu:F148,5 balls:75|100 g:100,thai|protein
+sai-krok-moo-tod,Fried pork sausage,sai krok moo tod|ไส้กรอกหมูทอด,inmu:F161,1 piece:50|100 g:100,thai|dense
+pla-nin-tod,Fried tilapia,pla nin tod|fried tilapia whole|ปลานิลทอด,inmu:G99,1 fish:200|100 g:100,thai|protein
+pla-nin-neung,Steamed tilapia,pla nin neung|steamed tilapia|ปลานิลนึ่ง,inmu:G212,1 fish:200|100 g:100,thai|protein
+pla-kapong-tod,Fried red snapper,pla kapong tod|fried sea bass|ปลากะพงทอด,inmu:G31,1 serving:150|100 g:100,thai|protein
+pla-kapong-neung,Steamed red snapper,pla kapong neung|steamed fish lime|pla neung manao|ปลากะพงนึ่ง|ปลานึ่งมะนาว,inmu:G32,1 serving:150|100 g:100,thai|protein
+pla-kao-tod,Fried grouper,pla kao tod|ปลาเก๋าทอด,inmu:G35,1 serving:150|100 g:100,thai|protein
+pla-kao-neung,Steamed grouper,pla kao neung|ปลาเก๋านึ่ง,inmu:G36,1 serving:150|100 g:100,thai|protein
+pla-jarahed-tod,Fried silver pomfret,pla jarahed tod|pla jalamet|ปลาจาระเม็ดทอด,inmu:G40,1 serving:150|100 g:100,thai|protein
+pla-jarahed-neung,Steamed silver pomfret,pla jarahed neung|ปลาจาระเม็ดนึ่ง,inmu:G41,1 serving:150|100 g:100,thai|protein
+pla-chon-neung,Steamed snakehead fish,pla chon neung|ปลาช่อนนึ่ง,inmu:G49,1 serving:150|100 g:100,thai|protein
+pla-chon-tod,Fried snakehead fish,pla chon tod|ปลาช่อนทอด,inmu:G209,1 serving:150|100 g:100,thai|protein
+pla-duk-tod,Fried catfish,pla duk tod|ปลาดุกทอด,inmu:G75,1 serving:150|100 g:100,thai|protein
+pla-duk-yang,Grilled catfish,pla duk yang|pla duk pao|ปลาดุกย่าง,inmu:G76,1 serving:150|100 g:100,thai|protein
+pla-tu-tod,Fried mackerel,pla tu tod|fried short mackerel|ปลาทูทอดกรอบ,inmu:G95,1 fish:80|100 g:100,thai|protein
+pla-tu-neung,Steamed mackerel,pla tu neung|ปลาทูนึ่ง,inmu:G86,1 fish:80|100 g:100,thai|protein
+pla-sikun-tod,Fried trevally,pla si kun tod|ปลาสีกุนทอด,inmu:G129,1 fish:100|100 g:100,thai|protein
+pla-sikun-yang,Grilled trevally,pla si kun yang|ปลาสีกุนย่าง,inmu:G131,1 fish:100|100 g:100,thai|protein
+pla-sawai-neung,Steamed striped catfish,pla sawai neung|ปลาสวายนึ่ง,inmu:G127,1 serving:150|100 g:100,thai|protein
+pla-salid-tod,Fried salted gourami,pla salid tod|pla sa lit|ปลาสลิดทอด,inmu:G121,1 fish:60|100 g:100,thai|protein
+pla-salid-yang,Grilled salted gourami,pla salid yang|ปลาสลิดย่าง,inmu:G122,1 fish:60|100 g:100,thai|protein
+hoi-malaeng-phu-neung,Steamed mussels,hoi malaeng phu neung|hoi malang poo|หอยแมลงภู่นึ่ง,inmu:G223,1 serving:150|100 g:100,thai|protein
+hoi-lai-pad,Stir fried clams,hoi lai pad prik pao|หอยลายผัดพริกเผา|หอยลายผัด,inmu:G224,1 plate:150|100 g:100,thai|protein
+nam-khing,Ginger drink,nam khing|ginger tea|น้ำขิง,inmu:Q44,1 glass:250|100 g:100,thai|drink
+nam-tan-sod,Fresh palm sap,nam tan sod|palm juice|น้ำตาลสด|น้ำตาลโตนด,inmu:Q46,1 glass:250|100 g:100,thai|drink
+nam-rak-bua,Lotus root drink,nam rak bua|น้ำรากบัว,inmu:Q52,1 glass:250|100 g:100,thai|drink
+nam-wan-hang-jorakhe,Aloe vera drink,aloe vera juice|น้ำว่านหางจระเข้,inmu:Q25,1 can:250|100 g:100,thai|drink
+nam-farang,Guava juice,guava juice|น้ำฝรั่ง,inmu:Q47,1 glass:250|100 g:100,thai|drink
+nam-mangkhut,Mangosteen juice,mangosteen juice|น้ำมังคุด,inmu:Q51,1 glass:250|100 g:100,thai|drink
+nam-mamuang,Mango juice,mango juice|น้ำมะม่วง,inmu:Q50,1 glass:250|100 g:100,thai|drink
+nam-makhuea-thet,Tomato juice,tomato juice|น้ำมะเขือเทศ,inmu:Q18,1 glass:250|100 g:100,thai|drink
+holy-basil,Holy basil,kra pao leaves|kaprao leaves|holy basil leaves|thai holy basil|ใบกะเพรา,owner:N3,1 handful:20|100 g:100,thai
+curry-paste-green,Green curry paste,kaeng khiao wan paste|nam prik gaeng khiao wan|น้ำพริกแกงเขียวหวาน|พริกแกงเขียวหวาน,inmu:N95,1 tbsp:17|100 g:100,thai
+curry-paste-red,Red curry paste,kaeng phet paste|nam prik gaeng daeng|น้ำพริกแกงแดง|พริกแกงเผ็ด,inmu:N96,1 tbsp:17|100 g:100,thai
+curry-paste-panang,Panang curry paste,nam prik gaeng panang|น้ำพริกแกงพะแนง,inmu:N97,1 tbsp:17|100 g:100,thai
+curry-paste-massaman,Massaman curry paste,nam prik gaeng massaman|น้ำพริกแกงมัสมั่น,inmu:N100,1 tbsp:17|100 g:100,thai
+curry-paste-yellow,Yellow curry paste,nam prik gaeng leung|น้ำพริกแกงเหลือง|น้ำพริกแกงกะหรี่,inmu:N99,1 tbsp:17|100 g:100,thai
+curry-paste-sour,Sour curry paste,nam prik gaeng som|น้ำพริกแกงส้ม,inmu:N101,1 tbsp:17|100 g:100,thai
+sugar-palm,Palm sugar,coconut sugar|nam tan peep|nam tan maprao|น้ำตาลมะพร้าว|น้ำตาลปี๊บ,inmu:M8,1 tbsp:12|100 g:100,thai
+shrimp-paste,Shrimp paste,kapi|ka pi|belacan|กะปิ,inmu:N43,1 tsp:5|100 g:100,thai
+soy-sauce-sweet,Sweet soy sauce,kecap manis|dark sweet soy|see ew wan|ซีอิ๊วหวาน|ซีอิ๊วดำหวาน,inmu:N142,1 tbsp:18|100 g:100,thai
+chili-paste-roasted,Roasted chilli paste,nam prik pao|nam prik phao|thai chili jam|น้ำพริกเผา,owner:N102,1 tbsp:17|100 g:100,thai
+rice-flour,Rice flour,khao pang|แป้งข้าวเจ้า,owner:A80,1 tbsp:9|100 g:100,thai
+cornstarch,Cornstarch,corn flour|tapioca starch|pang man|pang khao pod|แป้งข้าวโพด|แป้งมัน,169698,1 tbsp:8|100 g:100,
+mint,Mint leaves,spearmint|sa ra nae|สะระแหน่,173475,1 handful:10|100 g:100,
+mushroom-straw,Straw mushrooms,het fang|เห็ดฟาง,168582,1 cup:150|100 g:100,
+pbj-sandwich,Peanut butter and jelly sandwich,pbj|pb and j|peanut butter jelly sandwich|peanut butter sandwich,2707554,1 sandwich:110|100 g:100,dense
+gyro-sandwich,Gyro sandwich,gyro|doner kebab|shawarma wrap|kebab wrap|kebab,2706962,1 sandwich:250|100 g:100,
+quesadilla,Cheese quesadilla,quesadilla|cheese quesadilla,2708591,1 piece:170|100 g:100,
+caesar-salad,Caesar salad without dressing,caesar salad|romaine salad,2709591,1 bowl:200|100 g:100,
+chicken-salad-sandwich,Chicken salad sandwich,chicken mayo sandwich|chicken sandwich cold,2706990,1 sandwich:150|100 g:100,
+garlic-bread,Garlic bread,garlic toast|garlic baguette,2707626,1 slice:40|100 g:100,dense
+sushi-mixed,Sushi,sushi roll|maki|nigiri|ซูชิ,2708959,8 pieces:240|1 piece:30|100 g:100,
+sushi-roll-avocado,Avocado sushi roll,avocado maki|avocado roll|california roll vegetarian,2708960,6 pieces:150|100 g:100,
+club-sandwich,Chicken club sandwich,club sandwich|grilled chicken bacon sandwich,170752,1 sandwich:250|100 g:100,
+blt-sandwich,Bacon lettuce and tomato sandwich,blt|bacon sandwich,2706979,1 sandwich:150|100 g:100,
+turkey-sandwich,Turkey sandwich,turkey sandwich white bread|turkey sub bread,2706981,1 sandwich:150|100 g:100,
+ham-sandwich,Ham sandwich,ham sandwich white bread|ham toastie,2706964,1 sandwich:150|100 g:100,
+egg-salad,Egg salad,egg mayo|egg mayonnaise|egg salad spread,2707182,1 serving:100|100 g:100,dense
+tuna-salad,Tuna salad,tuna mayo|tuna mayonnaise|tuna sandwich filling,175160,1 serving:150|100 g:100,
+corn-dog,Corn dog,corndog|hot dog on a stick,2707044,1 piece:90|100 g:100,dense
+pulled-pork,Pulled pork in barbecue sauce,bbq pulled pork|pulled pork bbq,173344,1 serving:120|100 g:100,
+pulled-pork-sandwich,Pulled pork sandwich,bbq pork sandwich|pulled pork burger,2706975,1 sandwich:200|100 g:100,
+veggie-burger-patty,Veggie burger patty,vegetarian burger|soy burger|plant based patty,2707473,1 patty:80|100 g:100,protein
+mozzarella-sticks,Mozzarella sticks,fried cheese sticks|cheese sticks fried,169015,4 sticks:110|100 g:100,dense
+scrambled-eggs-cheese,Scrambled eggs with cheese,cheesy scrambled eggs|cheese omelette,2707207,1 serving:120|100 g:100,protein
+egg-white-omelet,Egg white omelet,egg white omelette|egg white scramble,2707283,1 omelet:120|100 g:100,protein
+breakfast-sausage,Breakfast sausage,breakfast sausage links|brekkie sausage,174616,2 links:50|100 g:100,dense
+turkey-bacon,Turkey bacon,turkey bacon rashers|turkey rasher,2706135,1 slice:10|3 slices:30|100 g:100,protein
+cinnamon-roll,Cinnamon roll,cinnabon style roll|sweet roll,167940,1 roll:90|100 g:100,dense
+crepe-chocolate,Chocolate crepe,crepe chocolate|nutella crepe|เครปช็อกโกแลต,2708036,1 crepe:80|100 g:100,
+crepe-fruit,Fruit crepe,crepe fruit|banana crepe|เครปผลไม้,2708037,1 crepe:80|100 g:100,
+bruschetta,Bruschetta,tomato bruschetta|tomato toast,2707652,1 piece:50|100 g:100,
+potato-salad,Potato salad,potato mayo salad|salad potato,169269,1 serving:150|100 g:100,
+creamy-pasta,Creamy pasta,cream sauce pasta|carbonara|pasta alfredo|fettuccine alfredo,2708855,1 plate:300|100 g:100,
+alfredo-sauce,Alfredo sauce,white sauce|cream pasta sauce,2705809,1/2 cup:125|100 g:100,
+minestrone,Minestrone soup,minestrone|vegetable pasta soup,171550,1 bowl:300|100 g:100,
+clam-chowder,Clam chowder,manhattan clam chowder|clam soup,171151,1 bowl:300|100 g:100,
+chili-con-carne,Chili con carne with beans,chili con carne|beef chili|chilli con carne,172097,1 bowl:300|100 g:100,
+meatballs-italian,Italian style meatballs,meatballs|beef meatballs|spaghetti meatballs,171638,4 balls:100|100 g:100,protein
+dragon-fruit,Dragon fruit,pitaya|pitahaya|แก้วมังกร,2709234,1 cup:170|1 fruit:300|100 g:100,thai
+jujube,Jujube,ber|chinese date|red date|พุทรา,168151,1 fruit:20|100 g:100,thai
+sapodilla,Sapodilla,lamut|sapota|ละมุด,167759,1 fruit:170|100 g:100,thai
+soursop,Soursop,graviola|custard apple soursop|ทุเรียนเทศ,167761,1 cup:225|100 g:100,thai
+cranberries,Cranberries,fresh cranberries|cranberry,171722,1 cup:100|100 g:100,
+mulberries,Mulberries,mulberry|มัลเบอร์รี่,169913,1 cup:140|100 g:100,
+mango-dried,Dried mango,mango dried|dried mango strips|มะม่วงอบแห้ง|มะม่วงกวน,2709205,1 handful:30|100 g:100,thai|dense
+apple-dried,Dried apple,apple chips dried|apple rings,171691,1 handful:30|100 g:100,dense
+cappuccino,Cappuccino,cappuccino coffee|cap,2710472,1 cup:240|100 g:100,drink
+latte,Latte,caffe latte|flat white|milk coffee|ลาเต้,2710386,1 cup:350|100 g:100,drink
+iced-latte,Iced latte,iced cafe latte|latte iced|ลาเต้เย็น,2710431,1 glass:400|100 g:100,drink
+milkshake-chocolate,Chocolate milkshake,chocolate shake|choc milkshake|มิลค์เชคช็อกโกแลต,170883,1 shake:400|100 g:100,drink|dense
+milkshake-vanilla,Vanilla milkshake,vanilla shake|มิลค์เชควานิลลา,170884,1 shake:400|100 g:100,drink|dense
+protein-shake-rtd,Ready to drink protein shake,protein shake bottle|rtd protein|high protein shake,173170,1 bottle:330|100 g:100,drink|protein
+oat-milk,Oat milk,oat drink|oatly style|นมโอ๊ต,2705412,1 cup:240|100 g:100,drink
+cranberry-juice,Cranberry juice,cranberry juice unsweetened|น้ำแครนเบอร์รี่,168117,1 glass:250|100 g:100,drink
+kombucha,Kombucha,fermented tea|kombucha tea|คอมบูชา,2710509,1 bottle:350|100 g:100,drink
+tonic-water,Tonic water,tonic|schweppes tonic,171869,1 can:330|100 g:100,drink
+root-beer,Root beer,rootbeer|a and w style|root beer soda,171871,1 can:355|100 g:100,drink
+club-soda,Club soda,soda water|sparkling water|plain soda water|โซดา,174842,1 can:330|100 g:100,drink
+pina-colada,Pina colada,piña colada|colada cocktail,168752,1 glass:240|100 g:100,drink
+pancake-syrup,Pancake syrup,table syrup|waffle syrup|breakfast syrup,2710273,1 tbsp:20|100 g:100,dense
+chicken-canned,Canned chicken breast,canned chicken|tinned chicken|chicken in can,171110,1 can:140|100 g:100,protein
+chicken-breast-raw,Raw chicken breast,chicken breast raw|uncooked chicken breast|raw chicken|อกไก่ดิบ|อกไก่,171077,1 breast:170|100 g:100,thai
+chicken-thigh-raw,Raw chicken thigh with skin,chicken thigh raw|uncooked chicken thigh|สะโพกไก่ดิบ,172385,1 thigh:115|100 g:100,thai
+chicken-drumstick-raw,Raw chicken drumstick with skin,chicken drumstick raw|uncooked drumstick|น่องไก่ดิบ,172373,1 drumstick:100|100 g:100,thai
+beef-ground-95-raw,Raw lean ground beef,lean mince raw|raw beef mince 5 percent|เนื้อบดดิบ,171790,100 g:100|1 patty:113,thai
+beef-round-raw,Raw beef top round,beef round raw|raw topside|เนื้อสะโพกดิบ,168712,100 g:100|1 steak:170,thai
+beef-sirloin-raw,Raw beef top sirloin,sirloin raw|raw sirloin steak|เนื้อสันนอกดิบ,168726,100 g:100|1 steak:200,thai
+pork-tenderloin-raw,Raw pork tenderloin,pork fillet raw|raw pork tenderloin|สันในหมูดิบ,168249,100 g:100|1 piece:250,thai
+pork-loin-raw,Raw pork loin chop boneless,pork loin raw|raw pork chop|สันนอกหมูดิบ,168263,100 g:100|1 chop:150,thai
+turkey-ground-raw,Raw lean ground turkey,turkey mince raw|raw turkey mince,172850,100 g:100|1 patty:113,
+salmon-raw,Raw salmon fillet,salmon fillet raw|raw salmon|ปลาแซลมอนดิบ|แซลมอน,175167,1 fillet:150|100 g:100,thai
+cod-raw,Raw cod fillet,cod raw|raw cod|ปลาค็อด,171955,1 fillet:150|100 g:100,thai
+tilapia-raw,Raw tilapia fillet,tilapia raw|raw tilapia|ปลานิลดิบ,175176,1 fillet:120|100 g:100,thai
+tuna-raw,Raw yellowfin tuna,tuna steak raw|raw tuna|ปลาทูน่าสด,175159,1 steak:150|100 g:100,thai
+shrimp-raw,Raw shrimp,prawns raw|raw prawns|raw shrimp|กุ้งดิบ|กุ้งสด,174210,100 g:100|10 shrimp:150,thai
+kra-pao-minced-pork,Pad kra pao minced pork,kra pao minced pork|pad kra pao minced pork|kaprao minced pork|krapow minced pork|gaprao minced pork|pad kaprao minced pork|holy basil minced pork|ผัดกะเพราหมูสับ|กะเพราหมูสับ,recipe:kra-pao-minced-pork,1 plate:144|100 g:100,thai|protein
+kra-pao-minced-pork-rice,Pad kra pao minced pork with rice,kra pao minced pork rice|kra pao minced pork with rice|kaprao minced pork rice|krapow minced pork rice|khao kra pao minced pork|basil minced pork rice|ข้าวกะเพราหมูสับ|ข้าวราดกะเพราหมูสับ,recipe:kra-pao-minced-pork-rice,1 plate:344|100 g:100,thai|staple
+kra-pao-minced-pork-rice-egg,Pad kra pao minced pork with rice and fried egg,kra pao minced pork rice egg|kra pao minced pork with rice and fried egg|kaprao minced pork fried egg|krapow minced pork khai dao|khao kra pao minced pork khai dao|ข้าวกะเพราหมูสับไข่ดาว|กะเพราหมูสับไข่ดาว,recipe:kra-pao-minced-pork-rice-egg,1 plate:398|100 g:100,thai|staple
+kra-pao-crispy-pork,Pad kra pao crispy pork,kra pao crispy pork|pad kra pao crispy pork|kaprao crispy pork|krapow crispy pork|gaprao crispy pork|pad kaprao crispy pork|holy basil crispy pork|ผัดกะเพราหมูกรอบ|กะเพราหมูกรอบ,recipe:kra-pao-crispy-pork,1 plate:133|100 g:100,thai|protein
+kra-pao-crispy-pork-rice,Pad kra pao crispy pork with rice,kra pao crispy pork rice|kra pao crispy pork with rice|kaprao crispy pork rice|krapow crispy pork rice|khao kra pao crispy pork|basil crispy pork rice|ข้าวกะเพราหมูกรอบ|ข้าวราดกะเพราหมูกรอบ,recipe:kra-pao-crispy-pork-rice,1 plate:333|100 g:100,thai|staple
+kra-pao-crispy-pork-rice-egg,Pad kra pao crispy pork with rice and fried egg,kra pao crispy pork rice egg|kra pao crispy pork with rice and fried egg|kaprao crispy pork fried egg|krapow crispy pork khai dao|khao kra pao crispy pork khai dao|ข้าวกะเพราหมูกรอบไข่ดาว|กะเพราหมูกรอบไข่ดาว,recipe:kra-pao-crispy-pork-rice-egg,1 plate:387|100 g:100,thai|staple
+kra-pao-duck,Pad kra pao duck,kra pao duck|pad kra pao duck|kaprao duck|krapow duck|gaprao duck|pad kaprao duck|holy basil duck|ผัดกะเพราเป็ด|กะเพราเป็ด,recipe:kra-pao-duck,1 plate:144|100 g:100,thai|protein
+kra-pao-duck-rice,Pad kra pao duck with rice,kra pao duck rice|kra pao duck with rice|kaprao duck rice|krapow duck rice|khao kra pao duck|basil duck rice|ข้าวกะเพราเป็ด|ข้าวราดกะเพราเป็ด,recipe:kra-pao-duck-rice,1 plate:344|100 g:100,thai|staple
+kra-pao-duck-rice-egg,Pad kra pao duck with rice and fried egg,kra pao duck rice egg|kra pao duck with rice and fried egg|kaprao duck fried egg|krapow duck khai dao|khao kra pao duck khai dao|ข้าวกะเพราเป็ดไข่ดาว|กะเพราเป็ดไข่ดาว,recipe:kra-pao-duck-rice-egg,1 plate:398|100 g:100,thai|staple
+kra-pao-shrimp,Pad kra pao shrimp,kra pao shrimp|pad kra pao shrimp|kaprao shrimp|krapow shrimp|gaprao shrimp|pad kaprao shrimp|holy basil shrimp|ผัดกะเพรากุ้ง|กะเพรากุ้ง,recipe:kra-pao-shrimp,1 plate:144|100 g:100,thai|protein
+kra-pao-shrimp-rice,Pad kra pao shrimp with rice,kra pao shrimp rice|kra pao shrimp with rice|kaprao shrimp rice|krapow shrimp rice|khao kra pao shrimp|basil shrimp rice|ข้าวกะเพรากุ้ง|ข้าวราดกะเพรากุ้ง,recipe:kra-pao-shrimp-rice,1 plate:344|100 g:100,thai|staple
+kra-pao-shrimp-rice-egg,Pad kra pao shrimp with rice and fried egg,kra pao shrimp rice egg|kra pao shrimp with rice and fried egg|kaprao shrimp fried egg|krapow shrimp khai dao|khao kra pao shrimp khai dao|ข้าวกะเพรากุ้งไข่ดาว|กะเพรากุ้งไข่ดาว,recipe:kra-pao-shrimp-rice-egg,1 plate:398|100 g:100,thai|staple
+kra-pao-squid,Pad kra pao squid,kra pao squid|pad kra pao squid|kaprao squid|krapow squid|gaprao squid|pad kaprao squid|holy basil squid|ผัดกะเพราปลาหมึก|กะเพราปลาหมึก,recipe:kra-pao-squid,1 plate:166|100 g:100,thai|protein
+kra-pao-squid-rice,Pad kra pao squid with rice,kra pao squid rice|kra pao squid with rice|kaprao squid rice|krapow squid rice|khao kra pao squid|basil squid rice|ข้าวกะเพราปลาหมึก|ข้าวราดกะเพราปลาหมึก,recipe:kra-pao-squid-rice,1 plate:366|100 g:100,thai|staple
+kra-pao-squid-rice-egg,Pad kra pao squid with rice and fried egg,kra pao squid rice egg|kra pao squid with rice and fried egg|kaprao squid fried egg|krapow squid khai dao|khao kra pao squid khai dao|ข้าวกะเพราปลาหมึกไข่ดาว|กะเพราปลาหมึกไข่ดาว,recipe:kra-pao-squid-rice-egg,1 plate:420|100 g:100,thai|staple
+kra-pao-mixed-seafood,Pad kra pao mixed seafood,kra pao mixed seafood|pad kra pao mixed seafood|kaprao mixed seafood|krapow mixed seafood|gaprao mixed seafood|pad kaprao mixed seafood|holy basil mixed seafood|ผัดกะเพราทะเล|กะเพราทะเล,recipe:kra-pao-mixed-seafood,1 plate:171|100 g:100,thai|protein
+kra-pao-mixed-seafood-rice,Pad kra pao mixed seafood with rice,kra pao mixed seafood rice|kra pao mixed seafood with rice|kaprao mixed seafood rice|krapow mixed seafood rice|khao kra pao mixed seafood|basil mixed seafood rice|ข้าวกะเพราทะเล|ข้าวราดกะเพราทะเล,recipe:kra-pao-mixed-seafood-rice,1 plate:371|100 g:100,thai|staple
+kra-pao-mixed-seafood-rice-egg,Pad kra pao mixed seafood with rice and fried egg,kra pao mixed seafood rice egg|kra pao mixed seafood with rice and fried egg|kaprao mixed seafood fried egg|krapow mixed seafood khai dao|khao kra pao mixed seafood khai dao|ข้าวกะเพราทะเลไข่ดาว|กะเพราทะเลไข่ดาว,recipe:kra-pao-mixed-seafood-rice-egg,1 plate:425|100 g:100,thai|staple
+kra-pao-tofu,Pad kra pao tofu,kra pao tofu|pad kra pao tofu|kaprao tofu|krapow tofu|gaprao tofu|pad kaprao tofu|holy basil tofu|ผัดกะเพราเต้าหู้|กะเพราเต้าหู้,recipe:kra-pao-tofu,1 plate:172|100 g:100,thai|protein
+kra-pao-tofu-rice,Pad kra pao tofu with rice,kra pao tofu rice|kra pao tofu with rice|kaprao tofu rice|krapow tofu rice|khao kra pao tofu|basil tofu rice|ข้าวกะเพราเต้าหู้|ข้าวราดกะเพราเต้าหู้,recipe:kra-pao-tofu-rice,1 plate:372|100 g:100,thai|staple
+kra-pao-tofu-rice-egg,Pad kra pao tofu with rice and fried egg,kra pao tofu rice egg|kra pao tofu with rice and fried egg|kaprao tofu fried egg|krapow tofu khai dao|khao kra pao tofu khai dao|ข้าวกะเพราเต้าหู้ไข่ดาว|กะเพราเต้าหู้ไข่ดาว,recipe:kra-pao-tofu-rice-egg,1 plate:426|100 g:100,thai|staple
+kra-pao-kai-rice-egg,Pad kra pao chicken with rice and fried egg,kra pao chicken rice egg|kaprao gai khai dao|krapow gai kai dao|ข้าวกะเพราไก่ไข่ดาว|กะเพราไก่ไข่ดาว,recipe:kra-pao-kai-rice-egg,1 plate:384|100 g:100,thai|staple
+khao-pad-pu,Fried rice with crab,khao pad pu|crab fried rice|thai crab fried rice|ข้าวผัดปู,recipe:khao-pad-pu,1 plate:373|100 g:100,thai|staple
+khao-pad-talay,Fried rice with mixed seafood,khao pad talay|seafood fried rice|ข้าวผัดทะเล|ข้าวผัดซีฟู้ด,recipe:khao-pad-talay,1 plate:388|100 g:100,thai|staple
+khao-pad-pla-muek,Fried rice with squid,khao pad pla muek|squid fried rice|ข้าวผัดปลาหมึก,recipe:khao-pad-pla-muek,1 plate:383|100 g:100,thai|staple
+khao-pad-moo-krob,Fried rice with crispy pork,khao pad moo krob|crispy pork fried rice|ข้าวผัดหมูกรอบ,recipe:khao-pad-moo-krob,1 plate:364|100 g:100,thai|staple
+khao-pad-moo-sap,Fried rice with minced pork,khao pad moo sap|minced pork fried rice|ข้าวผัดหมูสับ,recipe:khao-pad-moo-sap,1 plate:369|100 g:100,thai|staple
+khao-pad-kra-pao-moo,Basil fried rice with pork,khao pad kra pao moo|basil fried rice pork|holy basil fried rice pork|ข้าวผัดกะเพราหมู,recipe:khao-pad-kra-pao-moo,1 plate:375|100 g:100,thai|staple
+khao-pad-kra-pao-kai,Basil fried rice with chicken,khao pad kra pao gai|basil fried rice chicken|holy basil fried rice chicken|ข้าวผัดกะเพราไก่,recipe:khao-pad-kra-pao-kai,1 plate:375|100 g:100,thai|staple
+khao-pad-kaeng-khiao-wan-kai,Green curry fried rice with chicken,green curry fried rice|khao pad gaeng keow wan|ข้าวผัดแกงเขียวหวาน,recipe:khao-pad-kaeng-khiao-wan-kai,1 plate:340|100 g:100,thai|staple
+pad-see-ew-chicken,Pad see ew with chicken,pad see ew chicken|pad siew chicken|phat si io chicken|ผัดซีอิ๊วไก่|ก๋วยเตี๋ยวผัดซีอิ๊วไก่,recipe:pad-see-ew-chicken,1 plate:408|100 g:100,thai|staple
+pad-see-ew-beef,Pad see ew with beef,pad see ew beef|pad siew beef|phat si io beef|ผัดซีอิ๊วเนื้อ|ก๋วยเตี๋ยวผัดซีอิ๊วเนื้อ,recipe:pad-see-ew-beef,1 plate:405|100 g:100,thai|staple
+pad-see-ew-shrimp,Pad see ew with shrimp,pad see ew shrimp|pad siew shrimp|phat si io shrimp|ผัดซีอิ๊วกุ้ง|ก๋วยเตี๋ยวผัดซีอิ๊วกุ้ง,recipe:pad-see-ew-shrimp,1 plate:405|100 g:100,thai|staple
+pad-see-ew-mixed-seafood,Pad see ew with mixed seafood,pad see ew mixed seafood|pad siew mixed seafood|phat si io mixed seafood|ผัดซีอิ๊วทะเล|ก๋วยเตี๋ยวผัดซีอิ๊วทะเล,recipe:pad-see-ew-mixed-seafood,1 plate:428|100 g:100,thai|staple
+pad-see-ew-crispy-pork,Pad see ew with crispy pork,pad see ew crispy pork|pad siew crispy pork|phat si io crispy pork|ผัดซีอิ๊วหมูกรอบ|ก๋วยเตี๋ยวผัดซีอิ๊วหมูกรอบ,recipe:pad-see-ew-crispy-pork,1 plate:401|100 g:100,thai|staple
+pad-see-ew-tofu,Pad see ew with tofu,pad see ew tofu|pad siew tofu|phat si io tofu|ผัดซีอิ๊วเต้าหู้|ก๋วยเตี๋ยวผัดซีอิ๊วเต้าหู้,recipe:pad-see-ew-tofu,1 plate:428|100 g:100,thai|staple
+pad-kee-mao-chicken,Pad kee mao with chicken,pad kee mao chicken|drunken noodles chicken|pad ki mao chicken|ผัดขี้เมาไก่|ก๋วยเตี๋ยวผัดขี้เมาไก่,recipe:pad-kee-mao-chicken,1 plate:386|100 g:100,thai|staple
+pad-kee-mao-beef,Pad kee mao with beef,pad kee mao beef|drunken noodles beef|pad ki mao beef|ผัดขี้เมาเนื้อ|ก๋วยเตี๋ยวผัดขี้เมาเนื้อ,recipe:pad-kee-mao-beef,1 plate:382|100 g:100,thai|staple
+pad-kee-mao-shrimp,Pad kee mao with shrimp,pad kee mao shrimp|drunken noodles shrimp|pad ki mao shrimp|ผัดขี้เมากุ้ง|ก๋วยเตี๋ยวผัดขี้เมากุ้ง,recipe:pad-kee-mao-shrimp,1 plate:382|100 g:100,thai|staple
+pad-kee-mao-mixed-seafood,Pad kee mao with mixed seafood,pad kee mao mixed seafood|drunken noodles mixed seafood|pad ki mao mixed seafood|ผัดขี้เมาทะเล|ก๋วยเตี๋ยวผัดขี้เมาทะเล,recipe:pad-kee-mao-mixed-seafood,1 plate:405|100 g:100,thai|staple
+pad-kee-mao-crispy-pork,Pad kee mao with crispy pork,pad kee mao crispy pork|drunken noodles crispy pork|pad ki mao crispy pork|ผัดขี้เมาหมูกรอบ|ก๋วยเตี๋ยวผัดขี้เมาหมูกรอบ,recipe:pad-kee-mao-crispy-pork,1 plate:378|100 g:100,thai|staple
+rad-na-chicken,Rad na with chicken,rad na chicken|rat na chicken|lad na chicken|ราดหน้าไก่,recipe:rad-na-chicken,1 plate:482|100 g:100,thai|staple
+rad-na-crispy-pork,Rad na with crispy pork,rad na crispy pork|rat na crispy pork|lad na crispy pork|ราดหน้าหมูกรอบ,recipe:rad-na-crispy-pork,1 plate:474|100 g:100,thai|staple
+rad-na-fish,Rad na with fish,rad na fish|rat na fish|lad na fish|ราดหน้าปลา,recipe:rad-na-fish,1 plate:482|100 g:100,thai|staple
+pad-prik-gaeng-pork,Pad prik gaeng pork,pad prik gaeng pork|pad ped pork|red curry stir fry pork|ผัดพริกแกงหมู|ผัดเผ็ดหมู,recipe:pad-prik-gaeng-pork,1 plate:177|100 g:100,thai|protein
+pad-prik-gaeng-pork-rice,Pad prik gaeng pork with rice,pad prik gaeng pork rice|pad ped pork rice|ข้าวผัดพริกแกงหมู|ข้าวราดผัดพริกแกงหมู,recipe:pad-prik-gaeng-pork-rice,1 plate:377|100 g:100,thai|staple
+pad-prik-gaeng-beef,Pad prik gaeng beef,pad prik gaeng beef|pad ped beef|red curry stir fry beef|ผัดพริกแกงเนื้อ|ผัดเผ็ดเนื้อ,recipe:pad-prik-gaeng-beef,1 plate:173|100 g:100,thai|protein
+pad-prik-gaeng-beef-rice,Pad prik gaeng beef with rice,pad prik gaeng beef rice|pad ped beef rice|ข้าวผัดพริกแกงเนื้อ|ข้าวราดผัดพริกแกงเนื้อ,recipe:pad-prik-gaeng-beef-rice,1 plate:373|100 g:100,thai|staple
+pad-prik-gaeng-crispy-pork,Pad prik gaeng crispy pork,pad prik gaeng crispy pork|pad ped crispy pork|red curry stir fry crispy pork|ผัดพริกแกงหมูกรอบ|ผัดเผ็ดหมูกรอบ,recipe:pad-prik-gaeng-crispy-pork,1 plate:168|100 g:100,thai|protein
+pad-prik-gaeng-crispy-pork-rice,Pad prik gaeng crispy pork with rice,pad prik gaeng crispy pork rice|pad ped crispy pork rice|ข้าวผัดพริกแกงหมูกรอบ|ข้าวราดผัดพริกแกงหมูกรอบ,recipe:pad-prik-gaeng-crispy-pork-rice,1 plate:368|100 g:100,thai|staple
+pad-prik-gaeng-duck,Pad prik gaeng duck,pad prik gaeng duck|pad ped duck|red curry stir fry duck|ผัดพริกแกงเป็ด|ผัดเผ็ดเป็ด,recipe:pad-prik-gaeng-duck,1 plate:173|100 g:100,thai|protein
+pad-prik-gaeng-duck-rice,Pad prik gaeng duck with rice,pad prik gaeng duck rice|pad ped duck rice|ข้าวผัดพริกแกงเป็ด|ข้าวราดผัดพริกแกงเป็ด,recipe:pad-prik-gaeng-duck-rice,1 plate:373|100 g:100,thai|staple
+pad-prik-gaeng-shrimp,Pad prik gaeng shrimp,pad prik gaeng shrimp|pad ped shrimp|red curry stir fry shrimp|ผัดพริกแกงกุ้ง|ผัดเผ็ดกุ้ง,recipe:pad-prik-gaeng-shrimp,1 plate:173|100 g:100,thai|protein
+pad-prik-gaeng-shrimp-rice,Pad prik gaeng shrimp with rice,pad prik gaeng shrimp rice|pad ped shrimp rice|ข้าวผัดพริกแกงกุ้ง|ข้าวราดผัดพริกแกงกุ้ง,recipe:pad-prik-gaeng-shrimp-rice,1 plate:373|100 g:100,thai|staple
+pad-prik-gaeng-squid,Pad prik gaeng squid,pad prik gaeng squid|pad ped squid|red curry stir fry squid|ผัดพริกแกงปลาหมึก|ผัดเผ็ดปลาหมึก,recipe:pad-prik-gaeng-squid,1 plate:195|100 g:100,thai|protein
+pad-prik-gaeng-fish,Pad prik gaeng fish,pad prik gaeng fish|pad ped fish|red curry stir fry fish|ผัดพริกแกงปลา|ผัดเผ็ดปลา,recipe:pad-prik-gaeng-fish,1 plate:177|100 g:100,thai|protein
+pad-prik-gaeng-tofu,Pad prik gaeng tofu,pad prik gaeng tofu|pad ped tofu|red curry stir fry tofu|ผัดพริกแกงเต้าหู้|ผัดเผ็ดเต้าหู้,recipe:pad-prik-gaeng-tofu,1 plate:201|100 g:100,thai|protein
+gai-pad-med-mamuang,Stir fried chicken with cashew nuts,gai pad med mamuang|kai pad met mamuang himmaphan|cashew chicken|ไก่ผัดเม็ดมะม่วงหิมพานต์|ไก่ผัดเม็ดมะม่วง,recipe:gai-pad-med-mamuang,1 plate:190|100 g:100,thai|protein
+gai-pad-med-mamuang-rice,Stir fried chicken with cashew nuts with rice,cashew chicken rice|gai pad med mamuang rice|ข้าวไก่ผัดเม็ดมะม่วง|ข้าวไก่ผัดเม็ดมะม่วงหิมพานต์,recipe:gai-pad-med-mamuang-rice,1 plate:390|100 g:100,thai|staple
+khai-jeow,Thai omelet,khai jeow|kai jeow|kai jiao|thai omelette|deep fried omelet|ไข่เจียว,recipe:khai-jeow,1 omelet:121|100 g:100,thai|protein
+khai-jeow-moo-sap,Thai omelet with minced pork,khai jeow moo sap|kai jeow moo sub|omelet minced pork|ไข่เจียวหมูสับ,recipe:khai-jeow-moo-sap,1 omelet:140|100 g:100,thai|protein
+khai-jeow-kung,Thai omelet with shrimp,khai jeow kung|omelet shrimp|ไข่เจียวกุ้ง,recipe:khai-jeow-kung,1 omelet:144|100 g:100,thai|protein
+khai-jeow-pu,Thai omelet with crab,khai jeow pu|crab omelet|ไข่เจียวปู,recipe:khai-jeow-pu,1 omelet:158|100 g:100,thai|protein
+khai-jeow-rice,Thai omelet with rice,khai jeow rice|ข้าวไข่เจียว,recipe:khai-jeow-rice,1 plate:321|100 g:100,thai|staple
+khai-jeow-moo-sap-rice,Thai omelet with minced pork on rice,khai jeow moo sap rice|ข้าวไข่เจียวหมูสับ,recipe:khai-jeow-moo-sap-rice,1 plate:340|100 g:100,thai|staple
+khai-jeow-kung-rice,Thai omelet with shrimp on rice,khai jeow kung rice|ข้าวไข่เจียวกุ้ง,recipe:khai-jeow-kung-rice,1 plate:344|100 g:100,thai|staple
+khai-jeow-pu-rice,Thai omelet with crab on rice,khai jeow pu rice|ข้าวไข่เจียวปู,recipe:khai-jeow-pu-rice,1 plate:358|100 g:100,thai|staple
+khao-kai-dao,Rice with fried egg,khao kai dao|khao khai dao|rice and fried egg|rice fried egg|ข้าวไข่ดาว,recipe:khao-kai-dao,1 plate:257|100 g:100,thai|staple
+khao-niao-kai-yang,Grilled chicken with sticky rice,khao niao gai yang|sticky rice grilled chicken|ไก่ย่างข้าวเหนียว,recipe:khao-niao-kai-yang,1 set:270|100 g:100,thai|staple
+larb-moo,Larb with pork,larb moo|laab moo|lahb moo|minced pork salad|ลาบหมู,recipe:larb-moo,1 plate:172|100 g:100,thai|protein
+larb-kai,Larb with chicken,larb gai|larb kai|laab gai|minced chicken salad|ลาบไก่,recipe:larb-kai,1 plate:172|100 g:100,thai|protein
+nam-tok-moo,Nam tok with grilled pork,nam tok moo|moo nam tok|waterfall pork salad|น้ำตกหมู|หมูน้ำตก,recipe:nam-tok-moo,1 plate:159|100 g:100,thai|protein
+nam-tok-nuea,Nam tok with grilled beef,nam tok nuea|beef waterfall salad|น้ำตกเนื้อ|เนื้อน้ำตก,recipe:nam-tok-nuea,1 plate:159|100 g:100,thai|protein
+moo-ping,Moo ping,moo ping|mu ping|grilled pork skewers|thai pork skewers|หมูปิ้ง,recipe:moo-ping,1 stick:35|3 sticks:105|100 g:100,thai|protein
+moo-ping-khao-niao,Moo ping with sticky rice,moo ping sticky rice|khao niao moo ping|หมูปิ้งข้าวเหนียว,recipe:moo-ping-khao-niao,1 set:205|100 g:100,thai|staple
+green-curry-beef,Green curry with beef,gaeng keow wan beef|kaeng khiao wan beef|thai green curry beef|แกงเขียวหวานเนื้อ,recipe:green-curry-beef,1 bowl:301|100 g:100,thai|protein
+green-curry-beef-rice,Green curry with beef on rice,khao rad gaeng keow wan beef|green curry beef rice|ข้าวราดแกงเขียวหวานเนื้อ,recipe:green-curry-beef-rice,1 plate:501|100 g:100,thai|staple
+green-curry-shrimp,Green curry with shrimp,gaeng keow wan shrimp|kaeng khiao wan shrimp|thai green curry shrimp|แกงเขียวหวานกุ้ง,recipe:green-curry-shrimp,1 bowl:301|100 g:100,thai|protein
+green-curry-shrimp-rice,Green curry with shrimp on rice,khao rad gaeng keow wan shrimp|green curry shrimp rice|ข้าวราดแกงเขียวหวานกุ้ง,recipe:green-curry-shrimp-rice,1 plate:501|100 g:100,thai|staple
+green-curry-fish,Green curry with fish,gaeng keow wan fish|kaeng khiao wan fish|thai green curry fish|แกงเขียวหวานปลา,recipe:green-curry-fish,1 bowl:301|100 g:100,thai|protein
+green-curry-fish-rice,Green curry with fish on rice,khao rad gaeng keow wan fish|green curry fish rice|ข้าวราดแกงเขียวหวานปลา,recipe:green-curry-fish-rice,1 plate:501|100 g:100,thai|staple
+red-curry-pork,Red curry with pork,gaeng phed pork|gaeng daeng pork|kaeng phet pork|thai red curry pork|แกงเผ็ดหมู|แกงแดงหมู,recipe:red-curry-pork,1 bowl:283|100 g:100,thai|protein
+red-curry-pork-rice,Red curry with pork on rice,khao rad gaeng phed pork|red curry pork rice|ข้าวราดแกงเผ็ดหมู,recipe:red-curry-pork-rice,1 plate:483|100 g:100,thai|staple
+red-curry-roast-duck,Red curry with roast duck,gaeng phed roast duck|gaeng daeng roast duck|kaeng phet roast duck|thai red curry roast duck|แกงเผ็ดเป็ดย่าง|แกงแดงเป็ดย่าง,recipe:red-curry-roast-duck,1 bowl:283|100 g:100,thai|protein
+red-curry-roast-duck-rice,Red curry with roast duck on rice,khao rad gaeng phed roast duck|red curry roast duck rice|ข้าวราดแกงเผ็ดเป็ดย่าง,recipe:red-curry-roast-duck-rice,1 plate:483|100 g:100,thai|staple
+red-curry-beef,Red curry with beef,gaeng phed beef|gaeng daeng beef|kaeng phet beef|thai red curry beef|แกงเผ็ดเนื้อ|แกงแดงเนื้อ,recipe:red-curry-beef,1 bowl:283|100 g:100,thai|protein
+red-curry-shrimp,Red curry with shrimp,gaeng phed shrimp|gaeng daeng shrimp|kaeng phet shrimp|thai red curry shrimp|แกงเผ็ดกุ้ง|แกงแดงกุ้ง,recipe:red-curry-shrimp,1 bowl:283|100 g:100,thai|protein
+panang-curry-beef,Panang curry with beef,panang nuea|phanaeng neua|panang beef|แกงพะแนงเนื้อ|พะแนงเนื้อ,recipe:panang-curry-beef,1 bowl:221|100 g:100,thai|protein
+panang-curry-beef-rice,Panang curry with beef on rice,khao rad panang nuea|panang beef rice|ข้าวราดพะแนงเนื้อ,recipe:panang-curry-beef-rice,1 plate:421|100 g:100,thai|staple
+yellow-curry-pork,Yellow curry with pork,gaeng kari moo|kaeng kari mu|yellow curry pork|แกงกะหรี่หมู,recipe:yellow-curry-pork,1 bowl:325|100 g:100,thai|protein
+tom-yum-pla,Tom yum with fish,tom yum pla|tom yam fish|ต้มยำปลา,recipe:tom-yum-pla,1 bowl:366|100 g:100,thai|protein
+tom-yum-moo,Tom yum with pork,tom yum moo|tom yam pork|ต้มยำหมู,recipe:tom-yum-moo,1 bowl:366|100 g:100,thai|protein
+tom-yum-talay,Tom yum with mixed seafood,tom yum talay|tom yam seafood clear|ต้มยำทะเล,recipe:tom-yum-talay,1 bowl:385|100 g:100,thai|protein
+pad-woon-sen-chicken,Pad woon sen with chicken,pad woon sen chicken|stir fried glass noodles chicken|ผัดวุ้นเส้นไก่,recipe:pad-woon-sen-chicken,1 plate:336|100 g:100,thai|staple
+pad-woon-sen-pork,Pad woon sen with pork,pad woon sen pork|stir fried glass noodles pork|ผัดวุ้นเส้นหมู,recipe:pad-woon-sen-pork,1 plate:336|100 g:100,thai|staple
+pad-woon-sen-shrimp,Pad woon sen with shrimp,pad woon sen shrimp|stir fried glass noodles shrimp|ผัดวุ้นเส้นกุ้ง,recipe:pad-woon-sen-shrimp,1 plate:332|100 g:100,thai|staple
+cha-yen-cream,Thai iced tea with half and half,thai iced tea cream|thai iced tea with cream|ชาเย็นใส่ครีม,recipe:cha-yen-cream,1 glass:387|100 g:100,thai|drink

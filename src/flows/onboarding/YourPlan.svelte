@@ -1,4 +1,4 @@
-<!-- SCREENS.md section 4, Your plan (O1): the target counting up from the last "number so far", protein, the pace as a
+<!-- SCREENS.md section 4, Your plan (O1, O2): the target counting up from nothing, protein, carbs and fat counting in behind it, the pace as a
      live control with what to expect, the training the answers set and where to change it, how the target was
      calculated (each line opens its source), fine tuning, any guardrail in one line, and Save this plan. Computed before
      it renders: no loading screen. -->
@@ -12,16 +12,17 @@
   import Button from '$lib/components/Button.svelte';
   import Switch from '$lib/components/Switch.svelte';
   import Segmented from '$lib/components/Segmented.svelte';
-  import { U, V, floorFor, guardrails, plan } from '$lib/model/engine';
+  import Disclosure from '$lib/components/Disclosure.svelte';
+  import { inview } from '../landing/inview';
+  import { U, V, dayMacros, floorFor, guardrails, plan } from '$lib/model/engine';
   import { evenEee, kgPerWeek, targetParts, targetWith, trainingDayEee } from '$lib/model/day';
   import { kgToLb, lbToKg, weightText } from '$lib/model/units';
   import { num } from '$lib/model/format';
   import { picker } from '$lib/picker.svelte';
   import { db } from '$lib/db/store.svelte';
-  import { dur } from '$lib/haptics';
+  import { ms } from '$lib/haptics';
   import Breakdown from '../plan/Breakdown.svelte';
-  import { shown } from './SoFar.svelte';
-  import { t } from '$lib/i18n';
+    import { t } from '$lib/i18n';
   import { LIMITS, START, goalWeightOf, inputOf, minGoalWeightKg, paceChoices, programOf, weightWheel, type Draft } from './draft';
 
   let { d, year, set, back, onsave }: {
@@ -46,12 +47,29 @@
     n.goal === 'maintain' || Math.round(kg * 10) === 0 ? t.plan.expectHold : (n.goal === 'lose' ? t.plan.expectLose : t.plan.expectGain)(weightText(kg, d.units)),
   );
 
-  // the payoff: the hero counts up from the number the user watched grow (400 ms), then follows each pace tapped
-  const hero = new Tween(untrack(() => shown.last || parts.total), { duration: dur('--d-count'), easing: cubicOut });
-  $effect(() => { hero.target = parts.total; });
-  // protein counts up with it on arrival (U1a)
-  const protein = new Tween(0, { duration: dur('--d-count'), easing: cubicOut });
-  $effect(() => { protein.target = n.proteinG; });
+  // the payoff of the wait: the target counts up from nothing over --d-reveal, then follows each pace tapped (--d-count);
+  // protein, carbs and fat count in behind it, one after another. A number changing is text, not motion, so these play
+  // under reduced motion too: the owner asked to see the count (O2)
+  function counter(value: () => number, delay = 0) {
+    const tween = new Tween(0, { duration: ms('--d-reveal'), easing: cubicOut });
+    let arrived = false;
+    $effect(() => {
+      const v = value();
+      untrack(() => {
+        tween.set(v, arrived ? { duration: ms('--d-count'), delay: 0 } : { delay });
+        arrived = true;
+      });
+    });
+    return tween;
+  }
+  const hero = counter(() => parts.total);
+  const macros = $derived(dayMacros(n, parts.total));
+  const tiles = $derived([
+    { key: 'protein', label: t.today.protein, g: macros.proteinG },
+    { key: 'carbs', label: t.today.carbs, g: macros.carbsG },
+    { key: 'fat', label: t.today.fat, g: macros.fatG },
+  ]);
+  const counts = [counter(() => tiles[0].g, 250), counter(() => tiles[1].g, 400), counter(() => tiles[2].g, 550)];
 
   // the pace, live (replaces the Pace screen): only the paces the guardrails allow, with why one is missing
   const c = $derived(paceChoices(d, year));
@@ -75,6 +93,8 @@
       : t.plan.both(num(lift.length), num(cardio.length));
     return `${line} ${t.plan.change}`;
   });
+
+  const trainingLine = $derived(sessions.length ? t.plan.trainingShort(num(sessions.length)) : t.plan.noTrainingShort);
 
   const pct = (share: number) => num(share * U.percent);
   const flags = $derived(
@@ -126,7 +146,7 @@
     {/if}
 
     <!-- the screen's hero: the target on the haze panel, protein on a grey stat tile beneath, as the "Withdraw" card -->
-    <Card hero data-testid="plan-hero">
+    <Card hero data-testid="plan-hero" class="rise" style="--i: 0">
       <!-- U1b: corners in the shell's corners are 40 (48 less the 8 gap), corners facing each other 24 -->
       <div class="haze rounded-t-sheet rounded-b-md p-6">
         <p class="text-hero" aria-hidden="true">{num(Math.round(hero.current))}</p>
@@ -134,20 +154,33 @@
         <p class="text-caption text-ink-2 mt-1">{matched ? t.after.kcalTraining : t.after.kcalDay}</p>
         {#if matched}<p class="text-lead num mt-3" data-testid="plan-rest">{t.plan.onRest(num(rest))}</p>{/if}
       </div>
-      <div class="bg-surface-2 appear rounded-t-md rounded-b-sheet mt-2 p-6" style="--i: 2">
-        <p class="text-display" aria-hidden="true">{num(Math.round(protein.current))}</p>
-        <p class="sr-only" data-testid="plan-protein">{num(n.proteinG)}</p>
-        <p class="text-caption text-ink-2 mt-1">{t.after.proteinDay}</p>
+      <div class="mt-2 grid grid-cols-3 gap-2">
+        {#each tiles as m, i (m.key)}
+          <div class="bg-surface-2 flex min-h-20 min-w-0 flex-col justify-between rounded-md px-4 pt-3 pb-4 first:rounded-bl-sheet last:rounded-br-sheet" data-testid="plan-tile-{m.key}">
+            <p class="text-caption text-ink-2">{m.label}</p>
+            <p class="text-subhead num" aria-hidden="true">{num(Math.round(counts[i].current))}<span class="text-caption text-ink-2 font-medium">{' '}{t.after.g}</span></p>
+            <p class="sr-only" data-testid="plan-{m.key}">{num(m.g)}</p>
+          </div>
+        {/each}
       </div>
     </Card>
 
+    <!-- the goal weight, its own section (O2) -->
+    <div class="reveal" use:inview>
+      <Card list aria-label={t.plan.goalWeight}>
+        <Row title={t.plan.goalWeight} caption={t.plan.goalWeightHint} value={goalWeightOf(d) ? weightText(goalWeightOf(d)!, d.units) : t.plan.noneYet} chevron onclick={askGoalWeight} testid="tune-goalweight" />
+      </Card>
+    </div>
+
     {#if c.options.length}
-      <h2 class="text-heading mt-4">{t.pace.q}</h2>
-      <div data-testid="plan-pace">
-        <Segmented label={t.pace.q} value={c.picked} options={c.options.map((o) => ({ value: o.rate, label: t.pace[o.name] }))} onchange={(rate) => set({ rate })} />
+      <div class="reveal flex flex-col gap-3" use:inview>
+        <h2 class="text-heading mt-2">{t.pace.q}</h2>
+        <div data-testid="plan-pace">
+          <Segmented label={t.pace.q} value={c.picked} options={c.options.map((o) => ({ value: o.rate, label: t.pace[o.name] }))} onchange={(rate) => set({ rate })} />
+        </div>
       </div>
     {/if}
-    <div class="flex flex-col gap-2">
+    <div class="reveal flex flex-col gap-2" use:inview>
       <p class="text-lead" data-testid="plan-expect">{expect} {t.plan.estimate}</p>
       {#if d.aim === 'recomp' && n.goal === 'lose'}<p class="text-callout text-ink-2" data-testid="plan-recomp">{t.plan.recomp}</p>{/if}
       {#if faster}
@@ -156,25 +189,31 @@
       {#if c.why}<p class="text-callout text-ink-2" data-testid="pace-why">{WHY[c.why]}</p>{/if}
     </div>
 
-    <h2 class="text-heading mt-4">{t.plan.yourTraining}</h2>
-    <p class="text-body -mt-2" data-testid="plan-training">{training}</p>
-
-    <h2 class="text-heading mt-4">{t.plan.how}</h2>
-    <p class="text-callout text-ink-2 -mt-2">{matched ? t.plan.howTraining : t.plan.howEven}</p>
-    <Card list data-testid="plan-breakdown"><Breakdown {parts} goal={n.goal} rate={n.ratePctPerWeek} {bodyFat} /></Card>
-
-    <h2 class="text-heading mt-4">{t.plan.tune}</h2>
-    <Card list>
-      <Row title={t.plan.bodyFat} value={d.bodyFatPct ? `${num(d.bodyFatPct, 1)} ${t.after.percent}` : t.plan.noneYet} onclick={askBodyFat} testid="tune-bodyfat" />
-      <Row title={t.plan.goalWeight} value={goalWeightOf(d) ? weightText(goalWeightOf(d)!, d.units) : t.plan.noneYet} onclick={askGoalWeight} testid="tune-goalweight" />
-      <Row title={t.plan.even}>
-        {#snippet trailing()}<Switch checked={!!d.even} label={t.plan.even} onchange={(even) => set({ even })} testid="tune-even" />{/snippet}
-      </Row>
-    </Card>
+    <!-- what is behind the number, closed until asked for (O2) -->
+    <div class="reveal" use:inview>
+      <Card list>
+        <Disclosure title={t.plan.yourTraining} line={trainingLine} testid="plan-training-box">
+          <p class="text-body" data-testid="plan-training">{training}</p>
+        </Disclosure>
+        <div class="border-line border-t">
+          <Disclosure title={t.plan.how} line={matched ? t.plan.howTraining : t.plan.howEven} testid="plan-how">
+            <div class="-mx-6 px-6" data-testid="plan-breakdown"><Breakdown {parts} goal={n.goal} rate={n.ratePctPerWeek} {bodyFat} /></div>
+          </Disclosure>
+        </div>
+        <div class="border-line border-t">
+          <Disclosure title={t.plan.tune} testid="plan-tune">
+            <Row title={t.plan.bodyFat} value={d.bodyFatPct ? `${num(d.bodyFatPct, 1)} ${t.after.percent}` : t.plan.noneYet} onclick={askBodyFat} testid="tune-bodyfat" />
+            <Row title={t.plan.even}>
+              {#snippet trailing()}<Switch checked={!!d.even} label={t.plan.even} onchange={(even) => set({ even })} testid="tune-even" />{/snippet}
+            </Row>
+          </Disclosure>
+        </div>
+      </Card>
+    </div>
     {#each flags as f (f)}<p class="text-callout text-attention" data-testid="plan-flag">{f}</p>{/each}
+    {#if !db.ready}<p class="text-caption text-ink-2 mt-2 text-center" data-testid="plan-save-line">{t.plan.saveLine}</p>{/if}
   </div>
   {#snippet footer()}
     <Button variant="primary" size="lg" full onclick={onsave} data-testid="plan-save">{t.plan.save}</Button>
-    {#if !db.ready}<p class="text-caption text-ink-2 pb-1 text-center" data-testid="plan-save-line">{t.plan.saveLine}</p>{/if}
   {/snippet}
 </Step>

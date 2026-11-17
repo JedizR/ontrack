@@ -1,0 +1,23 @@
+{
+ "name": "Pad kra pao chicken with rice and fried egg",
+ "sources": [
+  "https://rachelcooksthai.com/pad-kaprow-moo/",
+  "https://www.eatingthaifood.com/thai-basil-chicken-recipe-pad-kra-pao-gai/"
+ ],
+ "ingredients": [
+  {
+   "food": "kra-pao-kai-rice",
+   "grams": 330
+  },
+  {
+   "food": "egg-fried",
+   "grams": 46
+  },
+  {
+   "food": "oil-vegetable",
+   "grams": 8
+  }
+ ],
+ "yield_g": 384,
+ "notes": "The Thai FCD rice plate (INMU T54, 330 g) with a Thai fried egg: one large egg (46 g cooked) fried crisp, 8 g of the pan oil on it (Eating Thai Food: 1 egg, 2 tablespoons of oil for frying)."
+}

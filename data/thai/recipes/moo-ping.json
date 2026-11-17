@@ -1,0 +1,39 @@
+{
+ "name": "Moo ping",
+ "sources": [
+  "https://rachelcooksthai.com/thai-grilled-pork-skewers/",
+  "https://www.eatingthaifood.com/platter-of-thai-style-grilled-pork-sticks-moo-ping/"
+ ],
+ "ingredients": [
+  {
+   "food": "pork-tenderloin",
+   "grams": 100
+  },
+  {
+   "food": "garlic",
+   "grams": 4
+  },
+  {
+   "food": "oyster-sauce",
+   "grams": 7
+  },
+  {
+   "food": "soy-sauce",
+   "grams": 6
+  },
+  {
+   "food": "sugar-palm",
+   "grams": 7
+  },
+  {
+   "food": "sugar",
+   "grams": 2
+  },
+  {
+   "food": "milk-whole",
+   "grams": 25
+  }
+ ],
+ "yield_g": 136,
+ "notes": "Rachel Cooks Thai grilled pork skewers (1.5 lb pork tenderloin, 10 garlic cloves, 2 tbsp each of thin soy and oyster sauce, 1.5 tbsp palm sugar, 1 tsp sugar, 1 cup whole milk for 4): per 100 g of cooked pork about a seventh of that marinade is eaten. Vendors use fattier neck; the page uses tenderloin and so does the recipe. Grilling takes about 10 percent of the weight."
+}

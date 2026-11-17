@@ -10,10 +10,12 @@
 //   the date read and a checksum in data/thai/pages.json. Missing pages are fetched; a changed page fails the build.
 //   Energy or carbohydrate a Thai row lacks is derived by Atwater and marked `derived`; a row whose energy and macros
 //   disagree is left out, with the reason.
+// - A recipe, `recipe:<id>`: data/thai/recipes/<id>.json lists a dish's sourced ingredients (food ids from this table) and
+//   the weight of the dish as served; the build works out its values per 100 g (data/thai/recipes/README.md).
 // Nobody types a nutrient value. The build fails on a missing id or nutrient.
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import type { Food, FoodTag } from '../src/lib/data/foods';
 import { V } from '../src/lib/model/engine/constants.ts';
@@ -44,6 +46,7 @@ const SG_DIR = 'data/sgfoodid';
 const SG_API = 'https://pphtpc.hpb.gov.sg/bff/v1/food-portal/foods/details/';
 const SG_ID = /^[A-Z]\d{8}$/;
 const TH_DIR = 'data/thai';
+const RECIPES_DIR = 'data/thai/recipes';
 const OWNER_FILE = 'owner/nutrition_dataset.csv';
 const REQUIRED = ['kcal', 'protein', 'carbs', 'fat'] as const;
 const TAGS: FoodTag[] = ['dense', 'protein', 'drink', 'oil', 'staple', 'thai'];
@@ -70,14 +73,61 @@ export function csvLine(line: string): string[] {
 
 const list = (s: string) => s.split('|').map((x) => x.trim()).filter(Boolean);
 
-/** The curated list joined with the tables' nutrients. Throws one error listing every problem found. */
-export function buildFoods(listCsv: string, tables: Table[]): Food[] {
+/** A dish worked out from its ingredients (data/thai/recipes/<id>.json). `grams` of each ingredient are in the state of its
+ * food row (a raw row, raw grams; a cooked row, cooked grams); `yield_g` is the weight of the dish as served. */
+export type Recipe = { name: string; sources: string[]; ingredients: Array<{ food: string; grams: number }>; yield_g: number; notes: string };
+type Per100 = Food['per100'];
+
+/** Why a recipe file cannot be used, or nothing. A dish never weighs much more than what went in, nor less than half. */
+export function recipeProblem(r: Recipe): string | undefined {
+  if (!r || typeof r !== 'object') return 'is not an object';
+  if (!r.name?.trim()) return 'has no name';
+  if (!Array.isArray(r.sources) || r.sources.length < 2 || new Set(r.sources).size !== r.sources.length || r.sources.some((u) => !/^https?:\/\/\S+$/.test(u))) return 'needs at least 2 different source URLs';
+  if (!r.notes?.trim()) return 'has no notes';
+  if (!Array.isArray(r.ingredients) || !r.ingredients.length || r.ingredients.some((i) => !i || typeof i.food !== 'string' || !(i.grams > 0) || !Number.isFinite(i.grams))) return 'needs ingredients as { food, grams > 0 }';
+  if (!(r.yield_g > 0) || !Number.isFinite(r.yield_g)) return 'needs yield_g > 0';
+  const total = r.ingredients.reduce((n, i) => n + i.grams, 0);
+  if (r.yield_g > total * 1.2 || r.yield_g < total * 0.5) return `yields ${r.yield_g} g from ${Math.round(total)} g of ingredients: between half and 1.2 times is possible`;
+}
+
+/** A recipe's values per 100 g of the dish as served: the sum over its ingredients of per100 x grams / 100, times
+ * 100 / yield_g, from the ingredients' own rows. Energy to a whole kcal, the rest to two decimals; fibre only when every
+ * ingredient has it. A recipe states no nutrient: this is the only place its numbers are made. */
+export function recipeValues(r: Recipe, byId: ReadonlyMap<string, Per100>): Per100 {
+  const sum = { kcal: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 };
+  let fiber = true;
+  for (const { food, grams } of r.ingredients) {
+    const p = byId.get(food);
+    if (!p) throw new Error(`recipe "${r.name}": ingredient ${food} is not in the table`);
+    for (const k of ['kcal', 'protein', 'carbs', 'fat'] as const) sum[k] += (p[k] * grams) / 100;
+    if (p.fiber === undefined) fiber = false;
+    else sum.fiber += (p.fiber * grams) / 100;
+  }
+  const k = 100 / r.yield_g;
+  return { kcal: Math.round(sum.kcal * k), protein: r2(sum.protein * k), carbs: r2(sum.carbs * k), fat: r2(sum.fat * k), ...(fiber && { fiber: r2(sum.fiber * k) }) };
+}
+
+/** Every data/thai/recipes/<id>.json, by id (the file name). */
+export function readRecipes(dir: string): Map<string, Recipe> {
+  const out = new Map<string, Recipe>();
+  if (!existsSync(dir)) return out;
+  for (const file of readdirSync(dir).filter((f) => f.endsWith('.json')).sort()) {
+    const id = file.slice(0, -'.json'.length);
+    try { out.set(id, JSON.parse(readFileSync(`${dir}/${file}`, 'utf8')) as Recipe); } catch (e) { throw new Error(`${dir}/${file}: ${e instanceof Error ? e.message : e}`); }
+  }
+  return out;
+}
+
+/** The curated list joined with the tables' nutrients, and its `recipe:<id>` rows worked out from their ingredients. Throws
+ * one error listing every problem found. */
+export function buildFoods(listCsv: string, tables: Table[], recipes: ReadonlyMap<string, Recipe> = new Map()): Food[] {
   const lines = listCsv.split(/\r?\n/).filter((l) => l.trim());
   const errors: string[] = [];
   if (lines[0]?.trim() !== HEADER) errors.push(`header must be: ${HEADER}`);
   const ids = new Set<string>();
   const sourceIds = new Set<string>();
-  const foods: Food[] = [];
+  const foods: Array<Food | undefined> = []; // a recipe's slot is filled once its ingredients are
+  const later: Array<{ at: number; row: number; food: Omit<Food, 'per100' | 'source'>; recipe: string }> = [];
   for (const [n, line] of lines.slice(1).entries()) {
     const row = n + 2;
     const f = csvLine(line);
@@ -89,16 +139,15 @@ export function buildFoods(listCsv: string, tables: Table[]): Food[] {
     ids.add(id);
     sourceIds.add(source);
     if (!name) errors.push(`row ${row}: ${id} has no name`);
-    const table = tables.find((t) => t.ids.has(source));
-    if (!table) { errors.push(`row ${row}: ${id} source_id ${source} is not in ${tables.map((t) => t.name).join(' or ')}`); continue; }
-    const out = table.excluded?.get(source);
-    if (out) { errors.push(`row ${row}: ${id} (${table.name} ${source}) is left out: ${out}`); continue; }
+    const isRecipe = source.startsWith('recipe:');
+    const table = isRecipe ? undefined : tables.find((t) => t.ids.has(source));
+    if (!isRecipe && !table) { errors.push(`row ${row}: ${id} source_id ${source} is not in ${tables.map((t) => t.name).join(' or ')}`); continue; }
+    const out = table?.excluded?.get(source);
+    if (out) { errors.push(`row ${row}: ${id} (${table!.name} ${source}) is left out: ${out}`); continue; }
 
-    const values = table.values.get(source) ?? {};
-    const missing = REQUIRED.filter((k) => values[k] === undefined);
-    if (missing.length) { errors.push(`row ${row}: ${id} (${table.name} ${source}) has no ${missing.join(', ')}`); continue; }
-    const per100: Food['per100'] = { kcal: values.kcal!, protein: values.protein!, carbs: values.carbs!, fat: values.fat! };
-    if (values.fiber !== undefined) per100.fiber = values.fiber;
+    const values = table?.values.get(source) ?? {};
+    const missing = isRecipe ? [] : REQUIRED.filter((k) => values[k] === undefined);
+    if (missing.length) { errors.push(`row ${row}: ${id} (${table!.name} ${source}) has no ${missing.join(', ')}`); continue; }
 
     const parsed = list(portions).map((p) => {
       const at = p.lastIndexOf(':');
@@ -108,11 +157,36 @@ export function buildFoods(listCsv: string, tables: Table[]): Food[] {
     const tagList = list(tags) as FoodTag[];
     const badTags = tagList.filter((t) => !TAGS.includes(t));
     if (badTags.length) errors.push(`row ${row}: ${id} has unknown tags ${badTags.join(', ')}`);
+    const food = { id, name, aliases: list(aliases).map((a) => a.toLowerCase()), portions: parsed, tags: tagList };
 
-    foods.push({ id, name, aliases: list(aliases).map((a) => a.toLowerCase()), per100, portions: parsed, tags: tagList, source: { set: table.set, id: source, ...table.cite?.get(source) } });
+    if (isRecipe) { later.push({ at: foods.length, row, food, recipe: source.slice('recipe:'.length) }); foods.push(undefined); continue; }
+    const per100: Food['per100'] = { kcal: values.kcal!, protein: values.protein!, carbs: values.carbs!, fat: values.fat! };
+    if (values.fiber !== undefined) per100.fiber = values.fiber;
+    foods.push({ ...food, per100, source: { set: table!.set, id: source, ...table!.cite?.get(source) } });
+  }
+
+  // recipes, once the foods they are made of are: a recipe may use another recipe's dish, in any order in the list
+  const known = new Map(foods.flatMap((f) => (f ? [[f.id, f.per100] as const] : [])));
+  for (let todo = later; todo.length; ) {
+    const waiting = todo.filter((w) => {
+      const r = recipes.get(w.recipe);
+      const label = `row ${w.row}: ${w.food.id} (recipe:${w.recipe})`;
+      if (!r) { errors.push(`${label} has no file ${RECIPES_DIR}/${w.recipe}.json`); return false; }
+      const bad = recipeProblem(r);
+      if (bad) { errors.push(`${label} ${bad}`); return false; }
+      const unknown = r.ingredients.filter((i) => !ids.has(i.food));
+      if (unknown.length) { errors.push(`${label} has ingredients that are not in the list: ${unknown.map((i) => i.food).join(', ')}`); return false; }
+      if (r.ingredients.some((i) => !known.has(i.food))) return true;
+      const per100 = recipeValues(r, known);
+      known.set(w.food.id, per100);
+      foods[w.at] = { ...w.food, per100, source: { set: 'recipe', id: `recipe:${w.recipe}`, url: r.sources[0] } };
+      return false;
+    });
+    if (waiting.length === todo.length) { errors.push(`recipes that wait on each other or on a row that failed: ${waiting.map((w) => w.food.id).join(', ')}`); break; }
+    todo = waiting;
   }
   if (errors.length) throw new Error(`food list has ${errors.length} problem(s):\n${errors.join('\n')}`);
-  return foods;
+  return foods as Food[];
 }
 
 /** A USDA table's ids and the five nutrients for the foods on the list. */
@@ -342,7 +416,7 @@ async function main() {
   tables.push(readOwner(owner));
   tables.push(await inmuPages(thai, [...wanted].filter((id) => id.startsWith('inmu:')).map((id) => id.slice('inmu:'.length))));
   for (const t of tables.filter((t) => t.excluded?.size)) console.log(`${t.name}: ${t.excluded!.size} rows left out\n${[...t.excluded!].map(([id, why]) => `  ${id}: ${why}`).join('\n')}`);
-  const foods = buildFoods(csv, tables);
+  const foods = buildFoods(csv, tables, readRecipes(`${root}${RECIPES_DIR}`));
   writeFileSync(`${root}src/lib/data/foods.json`, `${JSON.stringify(foods)}\n`);
   console.log(`wrote ${foods.length} foods to src/lib/data/foods.json`);
 }

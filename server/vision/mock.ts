@@ -31,6 +31,10 @@ export const mockProvider: VisionProvider = {
   async analyze(i) {
     if (i.label) return fixture('label-snack');
     const said = (i.text ?? i.hint ?? '').toLowerCase();
+    // a correction (the owner's AI fix): the sentence names the dish, so the mock answers with that fixture
+    const fix = i.hint ?? said.split('correction:')[1];
+    const named = fix && Object.entries({ 'pad thai': 'pad-thai', basil: 'basil-pork', chicken: 'chicken-rice', oats: 'oats-banana' }).find(([k]) => fix.toLowerCase().includes(k));
+    if (named) return fixture(named[1]);
     if (said.includes('not food')) return fixture('not-food');
     if (said.includes('fail')) return fixture('fail');
     const h = createHash('sha256').update(i.image ?? said).digest();

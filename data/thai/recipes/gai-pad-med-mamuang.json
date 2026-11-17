@@ -1,0 +1,59 @@
+{
+ "name": "Stir fried chicken with cashew nuts",
+ "sources": [
+  "https://www.eatingthaifood.com/thai-cashew-chicken-recipe/",
+  "https://rachelcooksthai.com/chicken-with-roasted-chili-paste-and-basil/"
+ ],
+ "ingredients": [
+  {
+   "food": "chicken-breast-grilled",
+   "grams": 80
+  },
+  {
+   "food": "cashews-roasted",
+   "grams": 20
+  },
+  {
+   "food": "onion",
+   "grams": 25
+  },
+  {
+   "food": "pepper-red",
+   "grams": 15
+  },
+  {
+   "food": "spring-onion",
+   "grams": 8
+  },
+  {
+   "food": "chili-paste-roasted",
+   "grams": 10
+  },
+  {
+   "food": "oyster-sauce",
+   "grams": 8
+  },
+  {
+   "food": "soy-sauce",
+   "grams": 5
+  },
+  {
+   "food": "sugar",
+   "grams": 4
+  },
+  {
+   "food": "garlic",
+   "grams": 6
+  },
+  {
+   "food": "oil-vegetable",
+   "grams": 20
+  },
+  {
+   "food": "flour",
+   "grams": 5
+  }
+ ],
+ "yield_g": 190,
+ "notes": "Eating Thai Food (200 g chicken breast, 1 tbsp cassava flour, 1/3 cup oil for frying everything, 4 garlic cloves, onion, roasted chilli paste, oyster and soy sauce for 2 plates) and Rachel Cooks Thai's chicken with roasted chilli paste (thighs, onion, peppers, 4 tbsp paste). Per plate 20 g of oil absorbed of the 1/3 cup used for frying; cashews 20 g."
+}

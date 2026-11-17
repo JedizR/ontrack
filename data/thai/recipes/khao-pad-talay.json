@@ -1,0 +1,67 @@
+{
+ "name": "Fried rice with mixed seafood",
+ "sources": [
+  "https://rachelcooksthai.com/thai-fried-rice/",
+  "https://rachelcooksthai.com/thai-crab-fried-rice/"
+ ],
+ "ingredients": [
+  {
+   "food": "rice-white",
+   "grams": 200
+  },
+  {
+   "food": "egg-raw",
+   "grams": 50
+  },
+  {
+   "food": "garlic",
+   "grams": 6
+  },
+  {
+   "food": "onion",
+   "grams": 15
+  },
+  {
+   "food": "oil-vegetable",
+   "grams": 18
+  },
+  {
+   "food": "fish-sauce",
+   "grams": 6
+  },
+  {
+   "food": "soy-sauce",
+   "grams": 8
+  },
+  {
+   "food": "sugar",
+   "grams": 2
+  },
+  {
+   "food": "tomato",
+   "grams": 15
+  },
+  {
+   "food": "spring-onion",
+   "grams": 8
+  },
+  {
+   "food": "coriander",
+   "grams": 5
+  },
+  {
+   "food": "shrimp",
+   "grams": 25
+  },
+  {
+   "food": "squid",
+   "grams": 35
+  },
+  {
+   "food": "mussels",
+   "grams": 15
+  }
+ ],
+ "yield_g": 388,
+ "notes": "Rachel Cooks Thai: 3 cups (about 475 g) of cooked jasmine rice, 2 eggs, 2 garlic cloves, 3 tbsp shallot, 1 tbsp fish sauce, 1 tbsp soy sauce for 3 plates; the crab version 3 cups rice, 1/2 cup crab meat, 2 eggs for 4. A street plate holds 200 g of rice, one egg and 1.5 tablespoons of oil (18 g); the pages leave the oil out. Protein is the cooked weight, 55 g."
+}

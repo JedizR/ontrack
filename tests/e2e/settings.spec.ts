@@ -161,12 +161,8 @@ test('the sign in sheet carries the small print', async ({ page }) => {
 
 test('reminders (F23): nothing logged from the set time, each card turned off in Settings', async ({ page }) => {
   await openAt(page, '14:00', { records: [{ collection: 'weight', id: `weight:${TODAY}`, updatedAt: 2, deleted: true, data: { date: TODAY, kg: 60 } }] });
-  // the weigh-in prompt comes first; off, the nothing logged card shows in its place
+  // the weigh-in is a standing card (R1), not a reminder: the bell lists its prompt and the switch turns that off
   await expect(page.getByTestId('weigh-card')).toBeVisible();
-  await settings(page);
-  await sheet(page).getByRole('switch', { name: 'No weigh-in for 3 days' }).click();
-  await close(page);
-  await expect(page.getByTestId('weigh-card')).toBeHidden();
   await expect(page.getByTestId('nothing-card')).toContainText('Nothing logged yet today');
   await settings(page);
   await sheet(page).getByTestId('set-remind-at').fill('15:00');

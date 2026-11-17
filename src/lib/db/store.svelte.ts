@@ -45,7 +45,10 @@ export class Store {
       this.meta.schemaVersion++;
     }
     const data = empty();
-    for (const r of loaded) (data[r.collection] as Record<string, Rec>)[r.id] = r;
+    for (const r of loaded) {
+      (data[r.collection] as Record<string, Rec>)[r.id] = r;
+      if (r.updatedAt > this.#latest) this.#latest = r.updatedAt;
+    }
     this.#idb = idb;
     this.#outbox = new Set((outbox as string[] | undefined) ?? []);
     this.#blobq = (blobq as string[] | undefined) ?? [];
@@ -67,10 +70,11 @@ export class Store {
     return r && !r.deleted ? r.data : undefined;
   }
 
-  /** Create or replace. updatedAt only moves forward, even if the clock steps back. */
+  /** Create or replace. updatedAt only moves forward, even if the clock steps back; and every write is later than any
+   *  record this store holds (R2: two plans saved the same day order by when they were written, even on a frozen clock) */
   put<C extends Collection>(c: C, id: string, data: DataOf[C]): Rec<DataOf[C]> {
     const prev = this.data[c][id];
-    const rec: Rec<DataOf[C]> = { collection: c, id, updatedAt: Math.max(Date.now(), (prev?.updatedAt ?? 0) + 1), data };
+    const rec: Rec<DataOf[C]> = { collection: c, id, updatedAt: Math.max(Date.now(), (prev?.updatedAt ?? 0) + 1, this.#latest + 1), data };
     this.#write(rec, true);
     this.onLocalChange?.();
     return rec;
@@ -81,7 +85,7 @@ export class Store {
     const prev = this.data[c][id];
     if (!prev || prev.deleted) return;
     const snap = $state.snapshot(prev) as Rec<DataOf[C]>;
-    this.#write({ ...snap, updatedAt: Math.max(Date.now(), snap.updatedAt + 1), deleted: true }, true);
+    this.#write({ ...snap, updatedAt: Math.max(Date.now(), snap.updatedAt + 1, this.#latest + 1), deleted: true }, true);
     this.onLocalChange?.();
     return snap;
   }
@@ -193,7 +197,10 @@ export class Store {
     this.ready = false;
   }
 
+  /** the newest updatedAt this store has held: local writes go after it */
+  #latest = 0;
   #write(rec: Rec, queue: boolean) {
+    if (rec.updatedAt > this.#latest) this.#latest = rec.updatedAt;
     const k = recKey(rec.collection, rec.id);
     (this.data[rec.collection] as Record<string, Rec>)[rec.id] = rec;
     if (queue) this.#outbox.add(k);

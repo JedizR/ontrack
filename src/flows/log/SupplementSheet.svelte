@@ -146,7 +146,8 @@
       if (!foods) void load();
       id = o.id;
       mealId = o.meal;
-      if (!o.id) return void (step = 'kind');
+      // R2: a pinned kind on Add (whey, creatine) skips the kind step
+      if (!o.id) { step = 'kind'; if (o.kind) pick(o.kind); return; }
       labelBack = 'amount';
       const sup = db.get('supplement', o.id);
       const logged = o.meal ? db.get('meal', o.meal) : undefined;

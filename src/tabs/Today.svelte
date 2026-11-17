@@ -11,8 +11,11 @@
   import { onMount, type Component } from 'svelte';
   import { fade } from 'svelte/transition';
   import Check from '@lucide/svelte/icons/check';
+  import Plus from '@lucide/svelte/icons/plus';
+  import ChevronDown from '@lucide/svelte/icons/chevron-down';
+  import Burst from '$lib/components/Burst.svelte';
+  import Scale from '@lucide/svelte/icons/scale';
   import Ellipsis from '@lucide/svelte/icons/ellipsis';
-  import ChevronRight from '@lucide/svelte/icons/chevron-right';
   import Search from '@lucide/svelte/icons/search';
   import Hash from '@lucide/svelte/icons/hash';
   import Bookmark from '@lucide/svelte/icons/bookmark';
@@ -22,12 +25,10 @@
   import { t } from '$lib/i18n';
   import Card from '$lib/components/Card.svelte';
   import Button from '$lib/components/Button.svelte';
-  import Chip from '$lib/components/Chip.svelte';
   import Row from '$lib/components/Row.svelte';
   import CardHead from '$lib/components/CardHead.svelte';
   import SwipeRow from '$lib/components/SwipeRow.svelte';
   import Track from '$lib/components/Track.svelte';
-  import HeroNumber from '$lib/components/HeroNumber.svelte';
   import Count from '$lib/components/Count.svelte';
   import WeekStrip from '$lib/components/WeekStrip.svelte';
   import SourceLabel from '$lib/components/SourceLabel.svelte';
@@ -44,12 +45,17 @@
   import { view } from '$lib/view.svelte';
   import { db } from '$lib/db/store.svelte';
   import { clearSessionLog, closeDay, deleteMeal, logSession, reopenDay, saveMeal, undoToast } from '$lib/actions';
-  import { loadFoods, type Food } from '$lib/data/foods';
+  import { itemFor, loadFoods, type Food } from '$lib/data/foods';
+  import Sparkles from '@lucide/svelte/icons/sparkles';
+  import { askCoach, type CoachAnswer } from '$lib/coach';
+  import { gapCandidates, gapFacts } from '$lib/model/coach';
   import { easyAdds, easyDue } from '$lib/model/easy';
-  import { dayView, mealSource, planFor, recentFoods, weighInDue, totals } from '$lib/model/day';
+  import { dayView, mealSource, planFor, recentFoods, totals } from '$lib/model/day';
+  import { weightText } from '$lib/model/units';
+  import { totals as workoutTotals } from '$lib/model/workout';
   import { checkinDueOn } from '$lib/model/progress';
-  import { daysBetween, lastWeek, stampOn, timeOf } from '$lib/model/dates';
-  import { proteinBand, roundTarget, sessionKcal, V } from '$lib/model/engine';
+  import { addDays, daysBetween, stampOn, timeOf } from '$lib/model/dates';
+  import { proteinBand, sessionKcal, V } from '$lib/model/engine';
   import { num } from '$lib/model/format';
   // the weigh-in flow loads on first use: it brings the onboarding limits with it
   const weighIn = (date: string) => import('../flows/log/weigh').then((m) => m.weighIn(date));
@@ -75,20 +81,21 @@
   };
 
   const day = $derived(viewOf(view.date));
-  const week = $derived(lastWeek(view.today).map((date) => ({ date, onTrack: !!byDate.get(date)?.length && viewOf(date)?.status === 'on' })));
+  // R1: eight weeks of days to slide through, the last one today (the strip anchors it); older days are in History
+  const week = $derived(Array.from({ length: 56 }, (_, i) => addDays(view.today, i - 55)).map((date) => ({ date, onTrack: !!byDate.get(date)?.length && viewOf(date)?.status === 'on' })));
   const logged = $derived([...(byDate.get(view.date) ?? [])].sort((a, b) => b.data.at.localeCompare(a.data.at)));
   // a supplement with no calories is not a meal row: it shows as taken (F21)
   const isTaken = (m: Meal) => m.method === 'supplement' && totals(m.items).kcal === 0;
   const meals = $derived(logged.filter((r) => !isTaken(r.data)));
   const taken = $derived(logged.filter((r) => isTaken(r.data)).reverse());
 
-  // the counterpart (section 6): to go or left until the zone, then On track, past it the amount over in plain ink
-  const side = $derived.by(() => {
-    if (!day) return { side: '' };
+  // the counterpart: what is left, or past the target the amount over in plain ink, never red
+  const lead = $derived.by(() => {
+    if (!day) return { n: 0, cap: '', on: false };
     const { kcal } = day.eaten;
-    if (kcal > day.zone[1]) return { side: num(Math.round(kcal - day.target)), cap: t.after.over };
-    if (kcal >= day.zone[0]) return { side: t.today.onTrack };
-    return { side: num(Math.round(day.target - kcal)), cap: day.plan.goal === 'gain' ? t.after.toGo : t.after.left };
+    const on = kcal >= day.zone[0] && kcal <= day.zone[1];
+    if (kcal > day.target) return { n: Math.round(kcal - day.target), cap: t.after.kcalOver, on };
+    return { n: Math.round(day.target - kcal), cap: day.plan.goal === 'gain' ? t.after.kcalToGo : t.after.kcalLeft, on };
   });
   const macros = $derived(
     day
@@ -108,11 +115,39 @@
   const gap = $derived(day ? day.target - day.eaten.kcal : 0);
   const easyCard = $derived(remind.easy && !view.past && !checkinCard && !!day && easyDue({ goal: day.plan.goal, time: view.time, eaten: day.eaten.kcal, target: day.target, closed }));
   let foods = $state<Food[] | null>(null);
-  $effect(() => { if (easyCard && !foods) loadFoods().then((f) => (foods = f), () => undefined); });
+  $effect(() => { if ((easyCard || gapDue) && !foods) loadFoods().then((f) => (foods = f), () => undefined); });
+  // R2, close the gap (research/r2/ai-analytics 4): from noon, with a meal in and protein under its band, three foods
+  // from the table that fit what is left, picked and given a reason by the coach; each logs in one tap
+  const proteinLeft = $derived(day ? Math.round(proteinBand(day.macros.proteinG)[0] - day.eaten.protein) : 0);
+  const gapDue = $derived(!view.past && !!day && !closed && logged.length > 0 && view.time >= '12:00' && proteinLeft >= 15 && day.target - day.eaten.kcal >= 150);
+  let pgap = $state<CoachAnswer | null>(null);
+  let gapKey = '';
+  $effect(() => {
+    if (!gapDue || !foods || !day) return void (pgap = null);
+    const kcalLeft = Math.round(day.target - day.eaten.kcal);
+    // data first (the owner): foods this person logs, the most logged first, then the table's protein foods
+    const recent = recentFoods(allMeals.map((r) => r.data), 40);
+    const times = new Map<string, number>();
+    for (const m of allMeals) for (const it of m.data.items) if (it.foodId) times.set(it.foodId, (times.get(it.foodId) ?? 0) + 1);
+    const candidates = gapCandidates({ foods, recent, kcalLeft }).sort((a, b) => (times.get(b.id) ?? 0) - (times.get(a.id) ?? 0));
+    const key = `${view.date}:${Math.round(proteinLeft / 10)}:${candidates.map((c) => c.id).join()}`;
+    if (key === gapKey || candidates.length < 3) return;
+    gapKey = key;
+    void askCoach({ kind: 'gap', facts: gapFacts({ kcalLeft, proteinLeft }), localDate: view.date, candidates }).then((a) => { if (gapKey === key) pgap = a; });
+  });
+  const gapItems = $derived(
+    pgap?.picks && foods
+      ? pgap.picks.flatMap((p) => {
+          const f = foods!.find((x) => x.id === p.id);
+          const c = recentFoods(allMeals.map((r) => r.data), 20).find((r) => r.foodId === p.id);
+          return f ? [{ reason: p.reason, item: itemFor(f, c?.grams || f.portions.find((x) => x.label !== '100 g')?.grams || 100, db.get('food', f.id)?.per100) }] : [];
+        })
+      : [],
+  );
   const easy = $derived(easyCard && foods ? easyAdds(foods, recentFoods(allMeals.map((r) => r.data), 20).map((r) => r.foodId), gap, (id) => db.get('food', id)?.per100) : []);
   const weights = $derived(db.live('weight').map((r) => r.data.date));
   const lastWeigh = $derived(weights.filter((d) => d <= view.today).sort().at(-1));
-  const weighCard = $derived(remind.weigh && !view.past && !checkinCard && !!profile && weighInDue(weights, view.today));
+  const weighedOn = $derived(db.live('weight').find((r) => r.data.date === view.date)?.data);
   const nothingCard = $derived(remind.meal && !view.past && !closed && logged.length === 0 && view.time >= remind.mealAt);
   // Finish day: on today from 20:00, on any past day (section 6)
   const finishable = $derived(view.past || view.time >= `${String(V.finishDayHour).padStart(2, '0')}:00`);
@@ -120,12 +155,6 @@
     const id = saveMeal({ date: view.date, at: stampOn(view.date), title: item.name, method: 'search', items: [item] });
     undoToast(t.add.logged(item.name), () => { deleteMeal(id); });
   }
-  // O1: the first two days on the phone that saved the plan, until a meal is logged and the next weigh-in is in
-  const startDay = $derived(prefs.firstDay);
-  const mealDone = $derived(allMeals.length > 0);
-  const weighDone = $derived(!!startDay && weights.some((d) => d > startDay));
-  const firstCard = $derived(!view.past && !!startDay && daysBetween(startDay, view.today) <= 1 && !(mealDone && weighDone));
-
   const ICON: Record<Meal['method'], Component<{ size?: number; strokeWidth?: number }>> = { photo: Camera, text: TextIcon, search: Search, quick: Hash, saved: Bookmark, supplement: ShakerIcon, barcode: ScanBarcode };
   const titleOf = (m: Meal) => m.title || m.items[0]?.name || t.source.manual;
 
@@ -142,11 +171,59 @@
   const bySupplement = (m: Meal) => m.method === 'supplement' && !!m.items[0]?.supplementId && !!db.get('supplement', m.items[0].supplementId);
   const kindOf = (s: Session) => t.train.types[s.type];
   // the facts under a session: its type only when the name says something else, then minutes, then its calories or Done
+  const canStart = (s: Session) => (s.type === 'strength' || s.type === 'circuit') && !!db.get('program', 'program')?.sessions.find((x) => x.key === s.key)?.exercises?.length;
   const lineOf = (s: Session, status: string | undefined) => {
     if (status === 'skipped') return [t.today.skippedLine];
-    const end = status === 'done' ? t.today.done : t.after.kcalN(num(Math.round(sessionKcal(s, day!.plan.weightKg))));
-    return [s.name !== kindOf(s) && kindOf(s), t.after.minN(num(s.minutes)), end];
+    // done, the green check says so (the owner): the line keeps the minutes and the sets logged
+    const end = status === 'done' ? undefined : t.after.kcalN(num(Math.round(sessionKcal(s, day!.plan.weightKg))));
+    const w = status === 'done' ? db.get('slog', ids.slog(view.date, s.key))?.workout : undefined;
+    return [s.name !== kindOf(s) && kindOf(s), t.after.minN(num(s.minutes)), end, w && t.workout.setsN(num(workoutTotals(w).sets))];
   };
+  // R2: a meal logged while Today is open lands with a short violet glow, so the eye finds it (not on first paint)
+  const known = new Set<string>();
+  let fresh = $state<string | null>(null);
+  $effect(() => {
+    const now = allMeals.map((r) => r.id);
+    if (known.size) for (const id of now) if (!known.has(id)) fresh = id;
+    for (const id of now) known.add(id);
+  });
+  // R2: the day's training, all done: the box turns the action's ink. Tapped now, it spreads from the button that did it
+  const allDone = $derived(!!day && day.sessions.length > 0 && day.sessions.every((x) => x.status === 'done'));
+  let justDone = $state<{ key: string; x: number; y: number } | null>(null);
+  // the words turn once the ink has reached them, a quarter of a second in
+  let late = $state(true);
+  const inked = $derived(allDone && late);
+  function markDone(e: MouseEvent, s: Session) {
+    const btn = e.currentTarget as HTMLElement;
+    const box = btn.closest('[data-testid="todo"]')?.getBoundingClientRect();
+    const b = btn.getBoundingClientRect();
+    justDone = box ? { key: s.key, x: b.left + b.width / 2 - box.left, y: b.top + b.height / 2 - box.top } : null;
+    late = false;
+    setTimeout(() => (late = true), 240);
+    haptic();
+    logSession({ date: view.date, sessionKey: s.key, status: 'done' });
+    setTimeout(() => (justDone = null), 1400);
+  }
+  // Undo plays it backwards (the owner): the ink shrinks into the button, the words turn back as it leaves them, and the
+  // session is unmarked once the ink is gone
+  let undoing = $state<{ x: number; y: number } | null>(null);
+  function undoDone(e: MouseEvent, s: Session) {
+    const btn = e.currentTarget as HTMLElement;
+    const box = btn.closest('[data-testid="todo"]')?.getBoundingClientRect();
+    const b = btn.getBoundingClientRect();
+    justDone = null;
+    undoing = box ? { x: b.left + b.width / 2 - box.left, y: b.top + b.height / 2 - box.top } : { x: 0, y: 0 };
+    haptic();
+    // the words and the check go first, then the ink closes (the owner: never lag behind it); the ink leaves the words
+    // first, so they turn back at once
+    late = false;
+    setTimeout(() => {
+      clearSessionLog(view.date, s.key);
+      undoing = null;
+      late = true;
+    }, 380);
+  }
+  $effect(() => { void view.date; justDone = null; undoing = null; });
   let animate = first;
   onMount(() => { first = false; });
   // the day's cards are made again when the day in view changes: they rise only on the session's first paint
@@ -156,25 +233,7 @@
   const rise = (i: number) => (animate && view.date === firstDate ? { class: 'appear', style: `--i: ${i}` } : {});
 </script>
 
-{#snippet step(label: string, done: boolean, onclick?: () => void, testid?: string)}
-  {@const mark = done ? 'bg-ink text-canvas' : 'ring-ink-3 ring-2 ring-inset'}
-  <li>
-    {#if onclick && !done}
-      <button type="button" class="active:bg-surface-2 -mx-3 flex min-h-14 w-[calc(100%+var(--s-6))] items-center gap-3 rounded-sm px-3 py-2 text-left transition-colors duration-[var(--d-press)]" {onclick} data-testid={testid}>
-        <span class="size-6 flex-none rounded-full {mark}" aria-hidden="true"></span>
-        <span class="text-body text-accent-ink flex-1 font-semibold">{label}</span>
-        <ChevronRight class="text-ink-2 flex-none" size={20} strokeWidth={2} aria-hidden="true" />
-      </button>
-    {:else}
-      <div class="flex min-h-14 items-center gap-3 py-2" aria-label={done ? t.firstDay.done(label) : undefined} data-testid={testid}>
-        <span class="grid size-6 flex-none place-items-center rounded-full {mark}" aria-hidden="true">{#if done}<Check size={16} strokeWidth={3} />{/if}</span>
-        <span class="text-body flex-1 {done ? 'text-ink-2' : ''}">{label}</span>
-      </div>
-    {/if}
-  </li>
-{/snippet}
-
-<section aria-label={t.tabs.today} data-testid="tab-today" class="flex flex-col gap-4 pt-1">
+<section aria-label={t.tabs.today} data-testid="tab-today" class="flex flex-col gap-3 pt-2 [@media(max-height:620px)]:pt-0">
   {#if sync.status === 'auth'}
     <!-- SCREENS.md section 12, session expired: local data is untouched -->
     <Card data-testid="session-expired">
@@ -195,44 +254,106 @@
     <p class="text-ink-2" data-testid="no-plan">{t.today.noPlan}</p>
   {:else}
     <div {...rise(0)}><WeekStrip days={week} today={view.today} selected={view.date} onselect={(d) => (view.date = d)} /></div>
-    {#if view.past}
-      <div class="-my-2"><Chip onclick={() => (view.date = view.today)}>{t.today.backToToday}</Chip></div>
-    {/if}
-
-    <Card hero aria-label={t.today.calories} data-testid="hero" {...rise(1)}>
-      <!-- the whole card opens How it is calculated; it holds no other control. OneFin's "Withdraw" card: the number on
-           the screen's one haze panel with a glass chip for the day, then grey stat tiles for the macros -->
-      <button type="button" class="block w-full text-left transition-transform duration-[var(--d-press)] active:scale-[0.98]" aria-describedby="hero-how" aria-haspopup="dialog" onclick={() => (sheets.how = true)} data-testid="hero-open">
-        <!-- U1b: corners in the shell's corners nest (48 less the 8 gap is 40); corners facing a sibling take the tile's 24 -->
-        <div class="haze rounded-t-sheet rounded-b-md p-6">
-          <HeroNumber scope={view.date} value={Math.round(day.eaten.kcal)} caption={t.after.ofKcal(num(day.target))} side={side.side} sideCaption={side.cap} reached={!side.cap} />
-          <div class="mt-4"><Track hero scope={view.date} value={day.eaten.kcal} target={day.target} zone={day.zone} label="{num(Math.round(day.eaten.kcal))} {t.after.ofKcal(num(day.target))}" /></div>
-          <div class="text-caption text-ink-2 mt-3 flex items-center justify-between gap-4">
-            <span class="glass text-ink rounded-full px-2.5 py-0.5 font-semibold whitespace-nowrap" data-testid="day-kind">{day.training ? t.today.trainingDay : t.today.restDay}</span>
-            <span class="text-right">{t.today.onTrackFrom(num(roundTarget(day.zone[0])))}</span>
+    <!-- R2, the owner's pick (17 November): one card holding small boxes, as OneFin's Withdraw card. The haze panel leads
+         with what is left; under it the three macros, then the day's session and its weigh-in, each a grey box 8 apart.
+         The boxes at the card's corners take its corner less the gap (U1b) -->
+    <div {...rise(1)}><section class="bg-surface shadow-card flex flex-col gap-2 rounded-xl p-2" aria-label={t.today.calories} data-testid="hero">
+      <!-- the haze is the panel's, never the button's (DESIGN.md: no gradient on a button) -->
+      <div class="haze rounded-t-sheet rounded-b-md"><button type="button" class="block w-full p-5 text-left transition-transform duration-[var(--d-press)] active:scale-[0.98] [@media(max-height:620px)]:p-4" aria-describedby="hero-how" aria-haspopup="dialog" onclick={() => (sheets.how = true)} data-testid="hero-open">
+        <!-- R2, the owner: what was eaten leads (the figure the day is about), what is left beside it in the counterpart -->
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <div class="text-hero num" data-testid="hero-value"><Count value={Math.round(day.eaten.kcal)} /></div>
+            <div class="text-callout text-ink-2 mt-1">{t.after.ofKcal(num(day.target))}</div>
+          </div>
+          <div class="flex flex-none flex-col items-end gap-2 pt-1 text-right">
+            <span class="liquid-clear text-ink text-caption rounded-full px-2.5 py-0.5 font-semibold whitespace-nowrap" data-testid="day-kind">{day.training ? t.today.trainingDay : t.today.restDay}</span>
+            <div class="leading-tight">
+              <div class="text-heading num flex items-center justify-end gap-1 normal-case {lead.on ? 'text-success-ink' : ''}" data-testid="hero-left">
+                {#key view.date}{#if lead.on}<span class="inline-grid" in:pop data-testid="hero-reached"><Check size={20} strokeWidth={3} aria-hidden="true" /></span>{/if}{/key}{#if lead.on}<span class="text-subhead">{t.today.onTrack}</span>{:else}<Count value={lead.n} />{/if}
+              </div>
+              <!-- on track, the words lead and the amount moves to the caption ("8 kcal left"), never a bare 8 beside a tick -->
+              <div class="text-caption text-ink-2 num" data-testid="hero-cap">{lead.on ? `${num(lead.n)} ${lead.cap}` : lead.cap}</div>
+            </div>
           </div>
         </div>
-
-        <div class="mt-2 grid grid-cols-3 gap-2">
-          {#each macros as m (m.key)}
-            <!-- the track sits at the bottom of each tile, so the three stay level when a value wraps at large text -->
-            <div class="bg-surface-2 flex min-w-0 flex-col rounded-md px-4 pt-3 pb-5 first:rounded-bl-sheet last:rounded-br-sheet" data-testid="macro-{m.key}">
-              <div class="text-caption text-ink-2 flex items-center gap-1">
-                {m.label}{#key view.date}{#if m.zone && m.value >= m.zone[0] && m.value <= m.zone[1]}<span class="text-success-ink inline-grid" in:pop><Check size={14} strokeWidth={3} aria-hidden="true" /></span>{/if}{/key}
-              </div>
-              <div class="text-subhead num"><Count value={m.value} />{' '}<span class="text-caption text-ink-2 block font-medium whitespace-nowrap">{t.after.ofGrams(num(m.target))}</span></div>
-              <div class="mt-auto pt-2"><Track scope={view.date} value={m.value} target={m.target} zone={m.zone} label="{m.label} {num(Math.round(m.value))} {t.after.ofGrams(num(m.target))}" /></div>
-            </div>
-          {/each}
-        </div>
-      </button>
+        <div class="mt-4 [@media(max-height:620px)]:mt-3"><Track hero scope={view.date} value={day.eaten.kcal} target={day.target} zone={day.zone} label="{num(Math.round(day.eaten.kcal))} {t.after.ofKcal(num(day.target))}" /></div>
+      </button></div>
       <span id="hero-how" hidden>{t.today.how}</span>
-    </Card>
+
+      <div class="grid grid-cols-3 gap-2">
+        {#each macros as m (m.key)}
+          <!-- the track sits at the foot of each box, so the three stay level when a value wraps at large text -->
+          <div class="bg-surface-2 flex min-w-0 flex-col rounded-md px-4 pt-3 pb-4 [@media(max-height:620px)]:pt-2 [@media(max-height:620px)]:pb-2" data-testid="macro-{m.key}">
+            <div class="text-caption text-ink-2 flex items-center gap-1">
+              {m.label}{#key view.date}{#if m.zone && m.value >= m.zone[0] && m.value <= m.zone[1]}<span class="text-success-ink inline-grid" in:pop><Check size={14} strokeWidth={3} aria-hidden="true" /></span>{/if}{/key}
+            </div>
+            <div class="text-subhead num flex flex-wrap items-baseline gap-x-1"><Count value={m.value} /><span class="text-caption text-ink-2 font-medium whitespace-nowrap">/ {num(m.target)} {t.after.g}</span></div>
+            <div class="mt-auto pt-2"><Track scope={view.date} value={m.value} target={m.target} zone={m.zone} label="{m.label} {num(Math.round(m.value))} {t.after.ofGrams(num(m.target))}" /></div>
+          </div>
+        {/each}
+      </div>
+
+      <div class="grid grid-cols-3 gap-2">
+        <!-- the day's training: a tap on its name opens its menu (Mark done, Skip), the action beside it -->
+        <!-- R2, the owner: Done turns the box the action's ink, spreading out from the button; its words follow, the check
+             becomes a filled green circle with a burst, and Done becomes a grey Undo in the same place -->
+        <div class="bg-surface-2 text-ink rounded-bl-sheet relative col-span-2 flex min-h-[calc(var(--s-16)+var(--s-4))] min-w-0 flex-col justify-center gap-2 overflow-hidden rounded-md py-2 pr-2 pl-4 [@media(max-height:620px)]:py-1" style={inked ? '--ink: var(--on-action); --ink-2: color-mix(in srgb, var(--on-action) 68%, transparent)' : undefined} data-done={allDone || undefined} aria-label={t.today.upNext} data-testid="todo">
+          {#if allDone}<span class="bg-action absolute inset-0 {justDone ? 'ink-in' : undoing ? 'ink-out' : ''}" style="--x: {(justDone ?? undoing)?.x ?? 0}px; --y: {(justDone ?? undoing)?.y ?? 0}px" aria-hidden="true"></span>{/if}
+          <div class="relative flex flex-col gap-1" data-testid="training">
+            {#each day.sessions as { session: s, status }, i (s.key)}
+              <div class="flex min-w-0 items-center gap-2 {i ? 'border-line border-t pt-1' : ''}" data-testid="session-{s.key}">
+                <button type="button" class="min-w-0 flex-1 rounded-sm py-1 text-left transition-opacity duration-[var(--d-press)] active:opacity-60 disabled:cursor-default" disabled={!!status} aria-label={t.today.more(s.name)} onclick={() => (sheets.session = { date: view.date, key: s.key, name: s.name })} data-testid="session-more">
+                  <span class="text-body block truncate font-semibold">{s.name}</span>
+                  <span class="text-caption text-ink-2 block"><Facts facts={lineOf(s, status)} /></span>
+                </button>
+                <!-- outside the block below, so it already exists when Done is tapped: only then does the check pop -->
+                {#if status === 'done'}
+                  <span class="bg-success text-night relative grid size-7 flex-none place-items-center rounded-full transition-[opacity,scale] duration-[var(--d-press)] {undoing ? 'scale-50 opacity-0' : ''}" in:pop data-testid="session-tick">
+                    <Check size={17} strokeWidth={3.5} aria-hidden="true" />
+                    {#if justDone?.key === s.key}<Burst />{/if}
+                  </span>
+                {/if}
+                {#if status === 'done'}
+                  <!-- where Done was, the same size: Undo on a grey that sits on the ink -->
+                  <Button variant="on-ink" size="sm" class="min-w-[4.5rem]" disabled={!!undoing} onclick={(e: MouseEvent) => undoDone(e, s)} data-testid="session-undo">{t.today.undo}</Button>
+                {:else if status}
+                  <Button variant="plain" size="sm" onclick={() => clearSessionLog(view.date, s.key)} data-testid="session-undo">{t.today.undo}</Button>
+                {:else if canStart(s)}
+                  <!-- R1: a strength session with its exercises is logged set by set; Mark done stays in the menu -->
+                  <Button variant="primary" size="sm" onclick={() => { haptic(); sheets.workout = { date: view.date, key: s.key }; }} data-testid="session-start">{t.workout.start}</Button>
+                {:else}
+                  <Button variant="primary" size="sm" class="min-w-[4.5rem]" onclick={(e: MouseEvent) => markDone(e, s)} data-testid="session-done">{t.today.done}</Button>
+                {/if}
+              </div>
+            {:else}
+              <div class="flex min-h-12 items-center gap-3">
+                <span class="text-ink-2 inline-grid"><TrainIcon /></span>
+                <p class="text-body text-ink-2 font-semibold">{(day.plan.sessions ?? sessions).length ? t.today.restDay : t.today.noProgram}</p>
+              </div>
+            {/each}
+          </div>
+        </div>
+        <!-- the weigh-in: one tap, a weight once done, the prompt while it is due -->
+        <div class="flex min-w-0" data-testid="weigh-card">
+          <button type="button" class="bg-surface-2 rounded-br-sheet active:bg-surface-3 flex min-h-[calc(var(--s-16)+var(--s-4))] w-full min-w-0 flex-col justify-center rounded-md px-4 py-2 text-left transition-colors duration-[var(--d-press)]" onclick={() => weighIn(view.date)} aria-label={weighedOn ? t.weigh.edit : t.weigh.action} data-testid="weigh-open">
+            {#if weighedOn}
+              <!-- the check beside the weight, so "Weighed in" keeps to one line in the narrowest box -->
+              <span class="text-subhead num flex items-center gap-1 whitespace-nowrap">{weightText(weighedOn.kg, profile?.units ?? 'metric')}<span class="text-success-ink inline-grid"><Check size={16} strokeWidth={3} aria-hidden="true" /></span></span>
+              <span class="text-caption text-ink-2">{t.weigh.done}</span>
+            {:else}
+              <span class="text-body flex items-center gap-1.5 font-semibold"><Scale size={18} strokeWidth={2.25} aria-hidden="true" />{view.past ? t.weigh.none : t.weigh.action}</span>
+              {#if !view.past}<span class="text-caption text-ink-2">{lastWeigh ? t.weigh.promptDays(num(daysBetween(lastWeigh, view.today))) : t.weigh.promptFirstShort}</span>{/if}
+            {/if}
+          </button>
+        </div>
+      </div>
+    </section></div>
 
     <!-- U1c: the cards below belong to the day in view. A day picked in the strip replaces them at once, so nothing
          collapses or slides for a change of day; within a day, the one card and the meals come and go with motion -->
     {#key view.date}
-    <div class="flex flex-col gap-4" in:fade={{ duration: dur('--d-fade') }}>
+    <div class="flex flex-col gap-3" in:fade={{ duration: dur('--d-fade') }}>
     {#if checkinCard}
       <!-- U3: status cards, as Shop's order cards: the subject in the eyebrow, the status as the title, then why -->
       <div in:collapse out:collapse={{ leave: true }}><Card data-testid="checkin-card" {...rise(2)}>
@@ -252,23 +373,35 @@
           {/each}
         </div>
       </Card></div>
-    {:else if weighCard}
-      <div in:collapse out:collapse={{ leave: true }}><Card data-testid="weigh-card" {...rise(2)}>
-        <CardHead eyebrow={t.weigh.promptEyebrow} title={lastWeigh ? t.weigh.promptTitle : t.weigh.promptFirst} line={lastWeigh ? t.weigh.promptLast(num(daysBetween(lastWeigh, view.today))) : t.weigh.promptNone}>
-          {#snippet action()}<Button size="sm" onclick={() => weighIn(view.today)} data-testid="weigh-open">{t.weigh.action}</Button>{/snippet}
-        </CardHead>
-      </Card></div>
-    {:else if firstCard}
-      <!-- SCREENS.md section 4, after onboarding: a true head start (the plan is saved), then the two first habits -->
-      {@const tomorrow = view.today === startDay}
-      <div in:collapse out:collapse={{ leave: true }}><Card data-testid="first-day" {...rise(2)}>
-        <CardHead eyebrow={t.firstDay.title} title={t.firstDay.left(2 - +mealDone - +weighDone)} line={t.firstDay.line} />
-        <ul class="mt-2 -mb-2 flex flex-col">
-          {@render step(t.firstDay.saved, true)}
-          {@render step(t.firstDay.meal, mealDone, () => (sheets.add = true), 'first-meal')}
-          {@render step(tomorrow ? t.firstDay.weighTomorrow : t.firstDay.weighToday, weighDone, tomorrow ? undefined : () => weighIn(view.today), 'first-weigh')}
-        </ul>
-      </Card></div>
+    {:else if gapDue && gapItems.length}
+      <!-- R2, the owner: the suggestions, more obvious. The screen's one featured card (violet marks Ontrack): what is
+           missing as its title, then three foods, the ones this person logs first, each added in one tap -->
+      <!-- R2, the owner: on the featured gradient, and a chevron at its top right folds it to its title line (remembered) -->
+      <div in:collapse out:collapse={{ leave: true }}><section class="feature text-ink rounded-lg p-5 [background:var(--grad-feature)]" data-theme="light" aria-label={t.today.gapTitle(num(proteinLeft))} data-testid="gap-card">
+        <div class="flex items-start gap-2">
+          <div class="min-w-0 flex-1">
+            <p class="text-eyebrow flex items-center gap-1.5"><Sparkles size={16} strokeWidth={2.25} aria-hidden="true" />{t.today.gapEyebrow}</p>
+            <h3 class="text-heading mt-2">{t.today.gapTitle(num(proteinLeft))}</h3>
+          </div>
+          <button type="button" class="active:bg-ink/10 -mt-2 -mr-2 grid size-11 flex-none place-items-center rounded-full transition-colors duration-[var(--d-press)]" aria-expanded={!prefs.gapFolded} aria-label={prefs.gapFolded ? t.today.gapShow : t.today.gapHide} onclick={() => (prefs.gapFolded = !prefs.gapFolded)} data-testid="gap-fold">
+            <ChevronDown size={22} strokeWidth={2.25} class="transition-transform duration-[var(--d-ui)] {prefs.gapFolded ? '' : 'rotate-180'}" aria-hidden="true" />
+          </button>
+        </div>
+        {#if !prefs.gapFolded}
+        <div class="mt-3 flex flex-col gap-2" in:collapse out:collapse={{ leave: true }}>
+          {#each gapItems as g (g.item.foodId)}
+            <div class="bg-surface flex min-h-14 items-center gap-3 rounded-md py-2 pr-2 pl-4" data-testid="gap-item">
+              <div class="min-w-0 flex-1">
+                <p class="text-body truncate font-semibold">{g.item.name}</p>
+                <p class="text-caption text-ink-2 truncate"><Facts facts={[`${num(g.item.grams ?? 0)} ${t.after.g}`, g.reason]} /></p>
+              </div>
+              <Button variant="primary" size="sm" onclick={() => addEasy(g.item)} data-testid="gap-add">{t.today.gapAdd(num(Math.round(g.item.protein)))}</Button>
+            </div>
+          {/each}
+        </div>
+        {#if pgap?.source === 'ai'}<p class="text-caption mt-3 flex items-center gap-1 opacity-70"><Sparkles size={14} strokeWidth={2.25} aria-hidden="true" />{t.coach.written}</p>{/if}
+        {/if}
+      </section></div>
     {:else if nothingCard}
       <div in:collapse out:collapse={{ leave: true }}><Card data-testid="nothing-card" {...rise(2)}>
         <CardHead eyebrow={t.today.meals} title={t.today.nothingTitle} line={t.today.nothingLine}>
@@ -277,39 +410,9 @@
       </Card></div>
     {/if}
 
-    <!-- U3: one card names its subject with an eyebrow; the rows sit in their own box so the first has no hairline -->
-    <Card list aria-label={t.today.training} data-testid="training" {...rise(3)}>
-      <p class="text-eyebrow text-ink-2 pt-5" aria-hidden="true">{t.today.training}</p>
-      <div>
-      {#each day.sessions as { session: s, status } (s.key)}
-        <Row title={s.name} testid="session-{s.key}" wrap>
-          {#snippet caption()}<Facts facts={lineOf(s, status)} />{/snippet}
-          {#snippet leading()}<div class="tile grid size-full place-items-center"><TrainIcon /></div>{/snippet}
-          {#snippet trailing()}
-            <div class="flex flex-none items-center gap-1">
-              <!-- outside the block below, so it already exists when Done is tapped: only then does the check pop -->
-              {#if status === 'done'}<span class="text-success-ink inline-grid" in:pop data-testid="session-tick"><Check size={24} strokeWidth={2.5} aria-hidden="true" /></span>{/if}
-              {#if status}
-                <Button variant="plain" size="sm" onclick={() => clearSessionLog(view.date, s.key)} data-testid="session-undo">{t.today.undo}</Button>
-              {:else}
-                <Button size="sm" onclick={() => { haptic(); logSession({ date: view.date, sessionKey: s.key, status: 'done' }); }} data-testid="session-done">{t.today.done}</Button>
-                <button type="button" class="text-ink-2 active:bg-surface-2 -mr-3 grid size-11 flex-none place-items-center rounded-sm transition-colors duration-[var(--d-press)]" aria-label={t.today.more(s.name)} onclick={() => (sheets.session = { date: view.date, key: s.key, name: s.name })} data-testid="session-more">
-                  <Ellipsis size={24} strokeWidth={2} />
-                </button>
-              {/if}
-            </div>
-          {/snippet}
-        </Row>
-      {:else}
-        <Row title={(day.plan.sessions ?? sessions).length ? t.today.restDay : t.today.noProgram}>
-          {#snippet leading()}<div class="bg-surface-2 text-ink-2 grid size-full place-items-center"><TrainIcon /></div>{/snippet}
-        </Row>
-      {/each}
-      </div>
-    </Card>
 
     <div {...rise(4)}>
-      <div class="mt-2 flex items-baseline justify-between">
+      <div class="mt-1 flex items-baseline justify-between">
         <h2 class="text-heading">{t.today.meals}</h2>
         {#if meals.length}<span class="text-callout text-ink-2" data-testid="meal-count">{t.today.logged(num(meals.length))}</span>{/if}
       </div>
@@ -321,7 +424,7 @@
       {#each meals as { id, data: m } (id)}
         {@const Icon = ICON[m.method]}
         {#snippet source()}<SourceLabel source={bySupplement(m) ? 'typical' : mealSource(m.items)} />{/snippet}
-        <SwipeRow ondelete={() => remove(id, m)} testid="meal">
+        <SwipeRow ondelete={() => remove(id, m)} testid="meal" class={fresh === id ? 'landed' : ''}>
           <Row title={titleOf(m)} value={num(Math.round(totals(m.items).kcal))} unit={t.after.kcal} onclick={() => openMeal(id, m)}>
             {#snippet leading()}
               {#if m.thumb}<Thumb {id} class="size-full">{#snippet fallback()}{@render tile(Icon)}{/snippet}</Thumb>{:else}{@render tile(Icon)}{/if}
@@ -330,7 +433,14 @@
           </Row>
         </SwipeRow>
       {:else}
-        <p class="text-body text-ink-2 py-4" data-testid="meals-empty">{allMeals.length ? t.today.noMeals : t.today.firstMeal}</p>
+        {#if allMeals.length || view.past}
+          <p class="text-body text-ink-2 py-4" data-testid="meals-empty">{t.today.noMeals}</p>
+        {:else}
+          <!-- R2: a new account's first meal is one tap from here, as the Getting started card's was -->
+          <Row title={t.today.firstMealTitle} caption={t.today.firstMealLine} onclick={() => (sheets.add = true)} chevron testid="first-meal">
+            {#snippet leading()}<div class="tile grid size-full place-items-center"><Plus size={22} strokeWidth={2.25} aria-hidden="true" /></div>{/snippet}
+          </Row>
+        {/if}
       {/each}
       {#if taken.length}
         <div class="border-line flex flex-wrap items-center gap-x-2 border-t py-2" data-testid="taken">

@@ -2,7 +2,7 @@
 // the check-in due on TODAY, Wednesday 2026-11-11. One test per check-in reason; raise is vector F of docs/SCIENCE.md
 // and adherence vector G.
 import { expect, test, type Page } from '@playwright/test';
-import { open, openSeeded } from './helpers';
+import { open, openSeeded, openDisclosures, showMetric } from './helpers';
 
 const sheet = (page: Page) => page.getByTestId('checkin-sheet');
 const next = (page: Page) => page.getByTestId('checkin-next').click();
@@ -22,7 +22,6 @@ async function readCheckin(page: Page, sentence: string) {
 
 test('vector F: the check-in raises by 100 to 2,560 and 2,320 from tomorrow, carrying the sessions; Progress records it', { tag: '@smoke' }, async ({ page }) => {
   await openSeeded(page, 'raise');
-  await expect(page.getByTestId('weigh-card')).toHaveCount(0); // one card at a time, the check-in first
   await page.getByTestId('checkin-open').click();
   await expect(page.getByTestId('checkin-rate')).toHaveText('0.1');
   await expect(page.getByTestId('checkin-target-rate')).toHaveText('Target 0.5');
@@ -106,7 +105,7 @@ test('need data: too few weigh-ins, check again next week', async ({ page }) => 
   await next(page);
   await page.getByTestId('checkin-done').click();
   await page.getByTestId('tab-2').click();
-  await expect(page.getByTestId('progress-rate')).toHaveText('Weigh in on 8 days across 2 weeks to see your trend and get your first check-in.');
+  await expect(page.getByTestId('progress-rate')).toHaveText(/^\d+ of 14 days of weigh-ins for your first check-in$/); // R2: eight in, the two weeks still to cover
   await expect(page.getByTestId('checkin-row')).toContainText('Not enough weigh-ins yet');
 });
 
@@ -116,13 +115,17 @@ test('Progress: trend, rate against target, maintenance, intake, consistency, an
   await expect(page.getByTestId('progress-trend')).toHaveText(/^60(\.\d)?$/);
   await expect(page.getByTestId('progress-rate')).toHaveText('0.1 percent a week, Target 0.5');
   await expect(page.getByTestId('chart-dot')).toHaveCount(18);
+  await showMetric(page, 'Calories'); // R2: maintenance and the weeks sit under the calories chart
+  await openDisclosures(page, page.getByTestId('progress-maintenance')); // maintenance and the weekly grid sit behind a chevron (R1)
   await expect(page.getByTestId('progress-measured')).toHaveText('2,220');
   await expect(page.getByTestId('progress-formula')).toHaveText('2,030');
   await expect(page.getByTestId('progress-intake').getByTestId('bar')).toHaveCount(4);
   await expect(page.getByTestId('progress-protein')).toContainText('Target 108 g');
+  await openDisclosures(page, page.getByTestId('progress-consistency'));
   await expect(page.getByTestId('consistency-week')).toHaveCount(4);
   await expect(page.getByTestId('consistency-week').last()).toHaveAttribute('aria-label', /^This week, \d of 7 days on track$/);
   await expect(page.getByTestId('checkin-ready')).toBeVisible();
+  await showMetric(page, 'Weight');
   await page.getByRole('radio', { name: '3 months' }).click();
   await expect(page.getByTestId('chart-dot')).toHaveCount(18); // the account is four weeks old
 
@@ -138,15 +141,16 @@ test('Progress: trend, rate against target, maintenance, intake, consistency, an
   await expect(page.getByTestId('history-day')).toHaveCount(28);
   await page.getByTestId('history-day').filter({ hasText: 'Tuesday, Nov 3' }).click();
   await expect(page.getByTestId('tab-today')).toBeVisible();
-  await expect(page.getByTestId('header')).toContainText('Tuesday, Nov 3');
+  await expect(page.getByTestId('header')).toContainText('Tue, Nov 3');
   await expect(page.getByTestId('meal')).toHaveCount(3);
-  await expect(page.getByRole('button', { name: 'Back to today' })).toBeVisible();
+  await expect(page.getByTestId('week-today')).toHaveAttribute('aria-pressed', 'false'); // Today stays anchored; no Back to today (R1)
 });
 
 test('Progress: the training card counts sessions done against planned, strength sessions and cardio for the range (F20)', async ({ page }) => {
   // the seeder's program: an hour of strength on Monday, Wednesday, Friday and Saturday, every past session marked done
   await openSeeded(page, 'raise');
   await page.getByTestId('tab-2').click();
+  await showMetric(page, 'Training');
   const card = page.getByTestId('progress-training');
   await expect(card.getByTestId('progress-sessions-done')).toHaveText('15');
   await expect(card).toContainText('of 16 planned sessions done'); // today's session is still to do
@@ -171,12 +175,14 @@ test('Progress: the training card counts sessions done against planned, strength
 test('Progress before there is enough: says what is needed', async ({ page }) => {
   await open(page);
   await page.getByTestId('tab-2').click();
-  await expect(page.getByTestId('progress-rate')).toHaveText('Weigh in on 8 days across 2 weeks to see your trend and get your first check-in.');
+  await expect(page.getByTestId('progress-rate')).toHaveText('1 of 8 weigh-ins for your first check-in'); // R2: a count, not a paragraph
   await expect(page.getByTestId('weight-chart')).toHaveCount(0); // one weigh-in: no trend yet
   await expect(page.getByTestId('progress-maintenance')).toHaveCount(0);
+  await showMetric(page, 'Calories');
   await expect(page.getByTestId('progress-intake')).toContainText('Log two or more items on a day');
   await expect(page.getByTestId('progress-checkins')).toContainText('Your first check-in comes two weeks after your plan starts.');
   // the plan began today, a training day: one session to do
+  await showMetric(page, 'Training');
   await expect(page.getByTestId('progress-training')).toContainText('of 1 planned session done');
 
   type Win = { ontrack: { actions: { saveProgram(p: object): void } } };

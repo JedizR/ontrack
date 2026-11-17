@@ -1,0 +1,19 @@
+{
+ "name": "Pad kra pao squid with rice",
+ "sources": [
+  "https://rachelcooksthai.com/pad-kaprow-moo/",
+  "https://www.eatingthaifood.com/thai-basil-chicken-recipe-pad-kra-pao-gai/"
+ ],
+ "ingredients": [
+  {
+   "food": "kra-pao-squid",
+   "grams": 166
+  },
+  {
+   "food": "rice-white",
+   "grams": 200
+  }
+ ],
+ "yield_g": 366,
+ "notes": "One plate: the dish (166 g, the recipe above) over 200 g of cooked jasmine rice, the plate size Eating Thai Food and Rachel Cooks Thai serve it on."
+}

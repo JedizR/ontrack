@@ -1,0 +1,27 @@
+{
+ "name": "Thai iced tea with half and half",
+ "sources": [
+  "https://rachelcooksthai.com/thai-iced-tea/",
+  "https://www.eatingthaifood.com/thai-ice-tea-recipe-cha-yen/"
+ ],
+ "ingredients": [
+  {
+   "food": "tea",
+   "grams": 250
+  },
+  {
+   "food": "sugar",
+   "grams": 37
+  },
+  {
+   "food": "half-and-half",
+   "grams": 60
+  },
+  {
+   "food": "water",
+   "grams": 40
+  }
+ ],
+ "yield_g": 387,
+ "notes": "Rachel Cooks Thai iced tea, the first recipe (4 cups water, 1/2 cup Thai tea mix, 3/4 cup sugar, 1 cup half and half for 4 glasses): per glass 250 g of tea, 37 g of sugar (3/4 cup over 4 glasses) and 60 g of half and half (1 cup over 4); 40 g of water stands for the ice that melts. The tea mix itself is brewed out."
+}

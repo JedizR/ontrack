@@ -2,7 +2,7 @@
 // and CSS animations and transitions all show in document.getAnimations(). "Today" is 2026-11-11; the seeded plan's
 // target is 2,460 kcal on this training day, 108 g protein.
 import { expect, test, type Page } from '@playwright/test';
-import { MEALS, open, swipeAt, takePhoto, vision, withPrefs } from './helpers';
+import { MEALS, open, swipeAt, takePhoto, vision, withPrefs, showMetric } from './helpers';
 
 const hero = (page: Page) => page.getByTestId('hero-value');
 const meals = (page: Page) => page.getByTestId('meal');
@@ -103,7 +103,7 @@ test('logging moves the numbers to their end; reaching protein turns its track g
   await expect(page.getByTestId('hero-reached')).toBeVisible();
 });
 
-test('a finished session ticks off; the week pill and the dock pill move to what was picked', async ({ page }) => {
+test('a finished session ticks off; the week strip and the dock pill follow what was picked', async ({ page }) => {
   await open(page, '/', MEALS);
   const training = page.getByTestId('training');
   await training.getByTestId('session-done').click();
@@ -112,12 +112,11 @@ test('a finished session ticks off; the week pill and the dock pill move to what
   await expect.poll(() => running(page), { timeout: 500, intervals: [16] }).toContainEqual(expect.stringMatching(/on session-tick/));
   await settled(page);
 
-  const pill = page.getByTestId('week-pill');
-  const cells = page.getByTestId('week').getByRole('button');
-  await cells.nth(5).click();
+  // the strip's day in view is an ink cell (R1: the days slide and snap, so there is no shared pill to move)
+  const cell = page.getByTestId('week').getByRole('button', { name: /Tuesday, November 10/ });
+  await cell.click();
   await settled(page);
-  const [p, c] = [(await pill.boundingBox())!, (await cells.nth(5).boundingBox())!];
-  expect(Math.abs(p.x + p.width / 2 - (c.x + c.width / 2))).toBeLessThanOrEqual(1);
+  await expect(cell).toHaveAttribute('aria-pressed', 'true');
   await expect(hero(page)).toHaveText('2,300');
 
   await page.getByTestId('tab-2').click();
@@ -125,6 +124,7 @@ test('a finished session ticks off; the week pill and the dock pill move to what
   const [d, t] = [(await page.getByTestId('dock-pill').boundingBox())!, (await page.getByTestId('tab-2').boundingBox())!];
   expect(Math.abs(d.x + d.width / 2 - (t.x + t.width / 2))).toBeLessThanOrEqual(1);
   // Progress's figures count up to their values, its bars grow and its line draws
+  await showMetric(page, 'Calories');
   await expect(page.getByTestId('progress-intake-avg')).not.toHaveText('0');
   await settled(page);
 });
@@ -134,7 +134,7 @@ test('a range slides its ink segment and redraws the chart; a sheet\'s next step
   await open(page, '/', MEALS);
   await page.getByTestId('tab-2').click();
   await settled(page);
-  const range = page.getByRole('radiogroup', { name: 'Range' });
+  const range = page.getByRole('radiogroup', { name: 'What the chart shows' }); // R2: the range is small pills; the metric switch slides
   await range.getByRole('radio').nth(2).click();
   // the one ink segment travels to the pick, and the bars grow again for the new range
   await expect.poll(() => running(page), { timeout: 500, intervals: [16] }).toContainEqual(expect.stringMatching(/transform on segment-pill/));
@@ -189,7 +189,7 @@ test.describe('reduced motion', () => {
     await swipeAt(page, -260, await rowAt(page, 'Snack'));
     await expect(meals(page)).toHaveCount(3);
     await now();
-    await page.getByTestId('week').getByRole('button').nth(5).click();
+    await page.getByTestId('week').getByRole('button', { name: /Tuesday, November 10/ }).click();
     await now();
     await page.getByTestId('tab-2').click();
     await now();

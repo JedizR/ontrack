@@ -12,6 +12,8 @@ import foods from '../../src/lib/data/foods.json';
 import { KINDS, MILKS, PRESET_FOOD, perScoopOf, scoopOf, supplementItems } from '../../src/lib/model/supplements';
 import { dayView, mealSource, planFor } from '../../src/lib/model/day';
 import type { MealItem, Plan, Product, Session, Supplement } from '../../shared/records';
+import { logSession } from '../../src/lib/actions';
+import { ids } from '../../shared/records';
 
 beforeAll(() => db.open('actions-test'));
 // a profile photo is redrawn on a canvas, which node has not: stand in with a marked JPEG, and refuse an empty file
@@ -55,7 +57,7 @@ test('a meal logs again with a fresh day and time; a saved meal counts a use, an
   expect(db.get('saved', sid)).toEqual({ title: 'Breakfast', items, uses: 2, lastUsedAt: '2026-11-01T01:00:00.000Z' });
 });
 
-test('a program change starts a plan tomorrow; today and the days before keep their targets and sessions, and undo takes it back', () => {
+test('a program change starts a plan today (R2: the target moves at once); the days before keep theirs, and undo takes it back', () => {
   vi.useFakeTimers({ toFake: ['Date'] });
   vi.setSystemTime(new Date(2026, 10, 11, 10)); // Wednesday 11 November, local
   const sessions: Session[] = [0, 2, 4, 5].map((weekday, i) => ({ key: `s${i}`, weekday, name: 'Strength', type: 'strength', minutes: 60, intensity: 'moderate' }));
@@ -66,11 +68,13 @@ test('a program change starts a plan tomorrow; today and the days before keep th
   const view = (date: string) => dayView({ plan: planFor(db.live('plan'), date)!, sex: 'male', mode: 'matched', date, sessions: db.get('program', 'program')!.sessions, logs: [], meals: [] });
   const before = ['2026-11-09', '2026-11-10', '2026-11-11'].map(view);
 
-  // strength moves from Monday to Tuesday, from tomorrow
+  // strength moves from Monday to Tuesday, from today
   const undo = changeProgram({ name: 'Mine', sessions: sessions.map((s) => (s.weekday === 0 ? { ...s, weekday: 1 } : s)) });
-  expect(['2026-11-09', '2026-11-10', '2026-11-11'].map(view)).toEqual(before);
-  const next = planFor(db.live('plan'), '2026-11-12')!;
-  expect(next).toMatchObject({ effectiveFrom: '2026-11-12', source: 'edit', eeeByWeekday: [0, 240, 240, 0, 240, 240, 0] });
+  expect(['2026-11-09', '2026-11-10'].map(view)).toEqual(before.slice(0, 2));
+  expect(view('2026-11-11').target).toBe(before[2].target); // Wednesday trains in both, so today's target holds
+  const next = planFor(db.live('plan'), '2026-11-11')!;
+  expect(next).toMatchObject({ effectiveFrom: '2026-11-11', source: 'edit', eeeByWeekday: [0, 240, 240, 0, 240, 240, 0] });
+  expect(planFor(db.live('plan'), '2026-11-10')?.source).toBe('onboarding'); // yesterday keeps its plan
   expect(view('2026-11-16').training).toBe(false); // the next Monday rests
   expect(view('2026-11-17').target).toBe(before[0].target); // and Tuesday trains
 
@@ -298,4 +302,35 @@ test('a deleted meal\'s thumbnail leaves the phone and storage once Undo has had
     vi.useRealTimers();
     vi.unstubAllGlobals();
   }
+});
+
+test('a plain Done keeps the sets logged that day, and Skipped clears them', () => {
+  const workout = { startedAt: '2026-11-11T08:00:00.000Z', seconds: 1800, lifts: [{ exerciseId: 'squat', sets: [{ kg: 100, reps: 5 }] }] };
+  const day = { date: '2026-11-11', sessionKey: 'keep-sets' };
+  const id = ids.slog(day.date, day.sessionKey);
+  logSession({ ...day, status: 'done', workout });
+  logSession({ ...day, status: 'done' });
+  expect(db.get('slog', id)?.workout).toEqual(workout);
+  logSession({ ...day, status: 'skipped' });
+  expect(db.get('slog', id)?.workout).toBeUndefined();
+});
+
+test("a program change also reaches a plan already waiting for a later day, keeping that plan's own numbers (R2)", () => {
+  vi.useFakeTimers({ toFake: ['Date'] });
+  vi.setSystemTime(new Date(2026, 10, 17, 10)); // Tuesday 17 November, local
+  const sessions: Session[] = [0, 2, 4].map((weekday, i) => ({ key: `w${i}`, weekday, name: 'Strength', type: 'strength', minutes: 60, intensity: 'moderate' }));
+  saveProgram({ name: '', sessions });
+  const base = planFor(db.live('plan'), '2026-11-17')!;
+  // a check-in accepted today waits for tomorrow, with its own baseline
+  savePlan({ ...base, effectiveFrom: '2026-11-18', baseline: base.baseline + 100, source: 'checkin', sessions: sessions.map(({ exercises: _, ...s }) => s) });
+  const undo = changeProgram({ name: 'Mine', sessions: [...sessions, { key: 'w3', weekday: 5, name: 'Strength', type: 'strength', minutes: 60, intensity: 'moderate' }] });
+  const todayPlan = planFor(db.live('plan'), '2026-11-17')!;
+  const tomorrow = planFor(db.live('plan'), '2026-11-18')!;
+  expect(todayPlan).toMatchObject({ effectiveFrom: '2026-11-17', source: 'edit' });
+  expect(todayPlan.eeeByWeekday[5]).toBeGreaterThan(0); // Saturday trains from today
+  expect(tomorrow).toMatchObject({ effectiveFrom: '2026-11-18', source: 'edit', baseline: base.baseline + 100 }); // the check-in's numbers kept
+  expect(tomorrow.eeeByWeekday[5]).toBeGreaterThan(0); // and the new program with them
+  undo();
+  expect(planFor(db.live('plan'), '2026-11-18')?.source).toBe('checkin');
+  vi.useRealTimers();
 });

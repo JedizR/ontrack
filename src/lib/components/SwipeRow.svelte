@@ -14,7 +14,7 @@
   import { collapse, dur, haptic } from '$lib/haptics';
   import { t } from '$lib/i18n';
 
-  let { ondelete, testid, children }: { ondelete: () => void; testid?: string; children: Snippet } = $props();
+  let { ondelete, testid, children, class: cls = '' }: { ondelete: () => void; testid?: string; children: Snippet; class?: string } = $props();
 
   const me = Symbol();
   const ACTION = 88; // the open Delete button: wide enough for its word at the largest text
@@ -84,7 +84,7 @@
 >
   <!-- capture: a tap on an open row closes it before the row's own button sees it -->
   <div
-    class="bg-surface relative px-6"
+    class="bg-surface relative px-6 {cls}"
     style="transform: translateX({dx}px); transition: {dragging ? 'none' : 'transform var(--d-settle) var(--ease-out)'}"
     onclickcapture={close}
   >

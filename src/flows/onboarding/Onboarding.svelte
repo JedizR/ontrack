@@ -1,14 +1,17 @@
-<!-- SCREENS.md section 4 (O1, U1a): up to nine questions with their guardrail screens, and Your plan. Before the first
+<!-- SCREENS.md section 4 (O1, U1a, O2): up to nine questions with their guardrail screens, and Your plan, on the landing
+     page's sky (a light island in both themes) with Back beside Continue at the bottom. Before the first
      question the draft sits at 'welcome', which App shows as the landing page (L1). A tap selects an answer and enables
      Continue, which moves on (the owner's call in U1a); the number builds in the footer from the daily movement question
      on, and Building your plan plays once before Your plan.
      Answers live in the prefs draft, so a reload or the Google redirect lands on the same screen. Signed out, Save this
      plan opens sign in; signed in, it writes the plan at once. -->
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { fly } from 'svelte/transition';
   import type { Component } from 'svelte';
   import Step from './Step.svelte';
   import Choices from './Choices.svelte';
+  import GoalWeight from './GoalWeight.svelte';
   import Body from './Body.svelte';
   import YourPlan from './YourPlan.svelte';
   import SoFar from './SoFar.svelte';
@@ -28,7 +31,7 @@
   import Weight from '@lucide/svelte/icons/weight';
   import ArrowDownUp from '@lucide/svelte/icons/arrow-down-up';
   import { tick as settled } from 'svelte';
-  import { prefs } from '$lib/prefs.svelte';
+  import { prefs, topColour } from '$lib/prefs.svelte';
   import { db } from '$lib/db/store.svelte';
   import { sheets } from '$lib/sheets.svelte';
   import Wheel from '$lib/components/Wheel.svelte';
@@ -62,7 +65,7 @@
   function next(patch: Partial<Draft> = {}) {
     const nd = { ...d, ...patch };
     const to = step(nd, year, 1);
-    if (to === 'plan' && !built && !reducedMotion()) building = built = true;
+    if (to === 'plan' && !built) building = built = true;
     prefs.draft = nd;
     move(to, 1);
   }
@@ -71,6 +74,13 @@
     prefs.draft = null;
     dir = -1;
     ticks = { ...NONE };
+  }
+  /** The answers shake a little: left, right, left, settle. Not under reduced motion (a buzz still answers the tap). */
+  function nudge() {
+    haptic();
+    if (reducedMotion()) return;
+    const x = (px: number, offset?: number) => ({ transform: `translateX(${px}px)`, offset });
+    document.querySelector<HTMLElement>('[data-answers]')?.animate([x(0, 0), x(-7, 0.2), x(7, 0.4), x(-5, 0.6), x(3, 0.8), x(0, 1)], { duration: 380, easing: 'ease-out' });
   }
   const prog = $derived(progress(d, year));
   const now = $derived(soFar(d, year));
@@ -154,15 +164,23 @@
   }
 
   // ----- birth year: a wheel from the answer, or from a 25 year old; Continue saves it -----
+  // Safari's top edge takes the sky's colour while the sky is behind the page (L4)
+  onMount(() => {
+    topColour('--sky-top');
+    return () => topColour();
+  });
+
   let born = $state(prefs.draft?.birthYear ?? year - START.ageYears);
   let yearError = $state('');
 </script>
 
+<!-- Continue before there is an answer is not dead: it stays tappable and shakes the answers above it (O2), a hint that
+     needs no words. aria-disabled gives it the faint tint that suits the glass behind it -->
 {#snippet cta(onclick: () => void, ready = true)}
-  <Button variant="primary" size="lg" full {onclick} disabled={!ready} data-testid="continue">{t.onboarding.continue}</Button>
+  <Button variant="primary" size="lg" full onclick={ready ? onclick : nudge} aria-disabled={!ready} data-testid="continue">{t.onboarding.continue}</Button>
 {/snippet}
-<!-- from daily movement on: the number so far, then Continue -->
-{#snippet card(ready: boolean)}{#if now}<div class="mb-2"><SoFar {now} /></div>{/if}{@render cta(() => next(), ready)}{/snippet}
+<!-- from daily movement on: the number so far, over the capsule that holds Back and Continue -->
+{#snippet sofar()}{#if now}<SoFar {now} />{/if}{/snippet}
 
 {#snippet checkbox(label: string, on: boolean, onclick: () => void, testid: string)}
   <button type="button" role="checkbox" aria-checked={on} class="bg-surface shadow-card active:bg-surface-2 flex min-h-18 w-full items-center gap-4 rounded-md px-5 py-4 text-left transition-[transform,background-color] duration-[var(--d-press)] active:scale-[0.98]" {onclick} data-testid={testid}>
@@ -173,7 +191,8 @@
   </button>
 {/snippet}
 
-<div class="bg-canvas relative mx-auto min-h-svh w-full max-w-[480px] overflow-x-clip" data-onboarding data-testid="onboarding">
+<div class="relative isolate mx-auto min-h-svh w-full max-w-[480px] overflow-x-clip" data-theme="light" data-onboarding data-testid="onboarding">
+    <div class="absolute inset-0 -z-10 [background:var(--grad-sky)]" aria-hidden="true"></div>
     {#key d.at}
       <div in:fly={{ x: 32 * dir, duration: dur('--d-settle') }}>
         {#if d.at === 'goal'}
@@ -186,7 +205,7 @@
           </Step>
         {:else if d.at === 'screening'}
           <Step title={t.screening.q} caption={t.screening.lead} onback={back} progress={prog} testid="step-screening">
-            <div class="flex flex-col gap-3" role="group" aria-label={t.screening.q}>
+            <div class="rise flex flex-col gap-3" style="--i: 2" role="group" aria-label={t.screening.q}>
               {#each ITEMS as k (k)}{@render checkbox(t.screening[k], ticks[k], () => tick(k), `screen-${k}`)}{/each}
               {@render checkbox(t.screening.none, none, tickNone, 'screen-none')}
               <p class="text-caption text-ink-2 mt-2">{t.screening.disclaimer}</p>
@@ -217,7 +236,7 @@
           </Step>
         {:else if d.at === 'born'}
           <Step title={t.born.q} onback={back} progress={prog} testid="step-born">
-            <div class="flex flex-col gap-3">
+            <div class="rise flex flex-col gap-3" style="--i: 2">
               <Wheel
                 bind:value={born}
                 min={year - LIMITS.oldestAge}
@@ -240,14 +259,17 @@
           </Step>
         {:else if d.at === 'body'}
           <Body {d} {set} {next} {back} progress={prog} />
+        {:else if d.at === 'goalWeight'}
+          <GoalWeight {d} {next} {back} progress={prog} />
         {:else if d.at === 'move'}
-          <Step title={t.move.q} onback={back} progress={prog} testid="step-move">
+          <Step title={t.move.q} caption={t.move.caption} onback={back} progress={prog} testid="step-move">
             <Choices label={t.move.q} options={NEATS} value={d.neat} onpick={(neat) => set({ neat })} />
-            {#snippet footer()}{@render card(!!d.neat)}{/snippet}
+            {#snippet above()}{@render sofar()}{/snippet}
+            {#snippet footer()}{@render cta(() => next(), !!d.neat)}{/snippet}
           </Step>
         {:else if d.at === 'days'}
           <Step title={t.days.q} caption={t.days.caption} onback={back} progress={prog} testid="step-days">
-            <div class="grid grid-cols-4 gap-3" role="radiogroup" aria-label={t.days.q}>
+            <div class="rise grid grid-cols-4 gap-3" style="--i: 3" role="radiogroup" aria-label={t.days.q}>
               {#each DAYS as n (n)}
                 {@const on = d.days === n}
                 <button
@@ -260,17 +282,20 @@
                 >{n ? num(n) : t.days.none}</button>
               {/each}
             </div>
-            {#snippet footer()}{@render card(d.days !== undefined)}{/snippet}
+            {#snippet above()}{@render sofar()}{/snippet}
+            {#snippet footer()}{@render cta(() => next(), d.days !== undefined)}{/snippet}
           </Step>
         {:else if d.at === 'kind'}
           <Step title={t.kind.q} caption={t.kind.caption} onback={back} progress={prog} testid="step-kind">
             <Choices label={t.kind.q} options={KINDS} value={d.kind} onpick={(kind) => set({ kind })} />
-            {#snippet footer()}{@render card(!!d.kind)}{/snippet}
+            {#snippet above()}{@render sofar()}{/snippet}
+            {#snippet footer()}{@render cta(() => next(), !!d.kind)}{/snippet}
           </Step>
         {:else if d.at === 'experience'}
           <Step title={t.experience.q} onback={back} progress={prog} testid="step-experience">
             <Choices label={t.experience.q} options={EXPERIENCE} value={d.experience} onpick={repace} />
-            {#snippet footer()}{@render card(!!d.experience)}{/snippet}
+            {#snippet above()}{@render sofar()}{/snippet}
+            {#snippet footer()}{@render cta(() => next(), !!d.experience)}{/snippet}
           </Step>
         {:else if d.at === 'plan'}
           {#if building}

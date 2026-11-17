@@ -185,7 +185,7 @@ test('the footer is the line over the wordmark and the essentials', async ({ pag
 // L4, the owner's bars (DECISIONS L4, from WebKit's source): Safari 26 fills its top or bottom bar with a solid colour only
 // for a fixed or sticky element at the middle of that edge, 4 px in, so nothing fixed is ever there, the floating action
 // included; and it draws its own soft edge, and the strips above and below the page, in the page's background (the
-// body's over the root's), so both follow the section under the top of the screen. The app keeps its canvas
+// body's over the root's), so both follow the section under the top of the screen. The app keeps its canvas; onboarding wears the sky
 test('nothing fixed touches the bars, and the page takes the colour of the section at the top', async ({ page }) => {
   await openFresh(page);
   const colour = (token: string, scope = 'body') => page.evaluate(([v, s]) => { const d = document.createElement('i'); d.style.color = `var(${v})`; document.querySelector(s)!.append(d); const c = getComputedStyle(d).color; d.remove(); return c; }, [token, scope]);
@@ -228,9 +228,12 @@ test('nothing fixed touches the bars, and the page takes the colour of the secti
   await page.setViewportSize({ width: 1440, height: 900 });
   expect(await page.getByTestId('landing-bar').evaluate((n) => n.getBoundingClientRect().width)).toBe(1440 - 72);
   await page.setViewportSize({ width: 390, height: 664 });
+  // onboarding wears the landing's sky (O2): the top edge keeps the sky's colour, as over the hero, and the sky scrolls with
+  // the page, so nothing fixed comes near an edge there either
   await startPlan(page);
-  const canvas = await colour('--canvas');
-  expect(await bg()).toEqual([canvas, canvas]);
+  await expect.poll(bg).toEqual([sky, sky]);
+  await expect(page.getByTestId('onboarding')).toBeVisible();
+  expect(await page.evaluate(() => [...document.querySelectorAll('[data-onboarding] *')].filter((e) => getComputedStyle(e).position === 'fixed').length)).toBe(0);
 });
 
 // L4 and U2, the owner's corners: a box inside a rounded box, near its corner, has the corner the outer one leaves it

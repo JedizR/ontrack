@@ -1,0 +1,47 @@
+{
+ "name": "Red curry with beef",
+ "sources": [
+  "https://rachelcooksthai.com/red-curry-with-pumpkin/",
+  "https://rachelcooksthai.com/red-curry-pork-belly-water-spinach/"
+ ],
+ "ingredients": [
+  {
+   "food": "curry-paste-red",
+   "grams": 14
+  },
+  {
+   "food": "coconut-milk",
+   "grams": 90
+  },
+  {
+   "food": "water",
+   "grams": 80
+  },
+  {
+   "food": "sugar",
+   "grams": 3
+  },
+  {
+   "food": "fish-sauce",
+   "grams": 4
+  },
+  {
+   "food": "bamboo-shoots",
+   "grams": 40
+  },
+  {
+   "food": "basil",
+   "grams": 5
+  },
+  {
+   "food": "pepper-red",
+   "grams": 8
+  },
+  {
+   "food": "beef-grilled-thai",
+   "grams": 70
+  }
+ ],
+ "yield_g": 283,
+ "notes": "Rachel Cooks Thai (4 bowls: 1 cup coconut milk, 2 tbsp paste, 1/2 cup meat, 1 to 2 cups water, 2 cups vegetables, 1 tsp fish sauce, 1/2 tsp sugar) is thin; restaurants and Eating Thai Food (2 to 3 cups of coconut cream for 8) are richer. Per bowl 90 g of coconut milk and 14 g of paste, the middle of the two; 80 g of water; protein is the cooked weight, 70 g; herbs under 5 g and kaffir lime leaves are left out."
+}

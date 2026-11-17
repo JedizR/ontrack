@@ -5,6 +5,7 @@ import { admin, caller } from '../auth.js';
 import { json } from '../http.js';
 import { envInt } from '../env.js';
 import { bumpUsage, type Usage } from '../quota.js';
+import { Timeout, within } from '../call.js';
 import { visionProvider, type VisionInput, type VisionProvider } from '../vision/provider.js';
 import { modelOutput } from '../vision/schema.js';
 import { MAX_ITEMS, resolveItems } from '../vision/resolve.js';
@@ -35,19 +36,6 @@ export const liveDeps = (): Deps => {
   };
 };
 
-class Timeout extends Error {}
-/** The provider's answer, or Timeout after `ms`, aborting the call. */
-async function within(p: VisionProvider, input: VisionInput, ms: number) {
-  const ac = new AbortController();
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  const late = new Promise<never>((_, reject) => { timer = setTimeout(() => { reject(new Timeout()); ac.abort(); }, ms); });
-  try {
-    return await Promise.race([p.analyze({ ...input, signal: ac.signal }), late]);
-  } finally {
-    clearTimeout(timer);
-  }
-}
-
 export async function analyze(request: Request, deps: Deps = liveDeps()): Promise<Response> {
   if (request.method !== 'POST') return fail('bad_request');
   const user = await deps.caller(request);
@@ -75,7 +63,7 @@ export async function analyze(request: Request, deps: Deps = liveDeps()): Promis
   let raw: unknown;
   for (let attempt = 1; ; attempt++) {
     try {
-      raw = await within(provider, input, deps.timeoutMs ?? TIMEOUT_MS);
+      raw = await within((signal) => provider.analyze({ ...input, signal }), deps.timeoutMs ?? TIMEOUT_MS);
       break;
     } catch (e) {
       const timedOut = e instanceof Timeout;
