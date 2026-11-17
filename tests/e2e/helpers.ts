@@ -188,7 +188,7 @@ export async function pickerSave(page: Page, value: string) {
 export const fieldFill = (page: Page, testid: string, value: string) => page.getByTestId(testid).fill(value);
 
 export type Answers = {
-  /** weight and recomp are the two behind "Not what you're looking for?" (U1a) */
+  /** weight and recomp are the two behind "Other goals" (U1a) */
   goal: 'gain' | 'lose' | 'maintain' | 'weight' | 'recomp';
   screening?: ('pregnant' | 'medical' | 'eatingDisorder')[];
   sex?: 'male' | 'female' | 'unspecified';
@@ -251,6 +251,10 @@ export async function onboard(page: Page, a: Answers) {
     await wheelType(page, 'wheel-weight', a.weight ?? '60');
   }
   await page.getByTestId('continue').click();
+  // R2: a goal to change weight asks for a goal weight next; skipped here, so the plans the tests expect stay as they were
+  const goalStep = page.getByTestId('step-goal-weight');
+  await expect(goalStep.or(page.getByTestId('step-move'))).toBeVisible();
+  if (await goalStep.isVisible()) await page.getByTestId('goal-skip').click();
   await choose(page, `choice-${a.neat ?? 'seated'}`);
 
   const days = a.days ?? 4;
@@ -261,9 +265,19 @@ export async function onboard(page: Page, a: Answers) {
   const plan = page.getByTestId('your-plan');
   await expect(exp.or(page.getByTestId('building')).or(plan)).toBeVisible();
   if (await exp.isVisible()) await choose(page, `choice-${a.experience ?? 'beginner'}`);
-  await expect(plan).toBeVisible();
+  await expect(plan).toBeVisible({ timeout: 15_000 }); // Building your plan plays for about 4 s (O2)
   const goal = a.goal === 'weight' ? 'gain' : a.goal;
   if (a.pace !== undefined && goal !== 'maintain' && goal !== 'recomp') await page.getByTestId('plan-pace').getByRole('radio', { name: PACE[goal][a.pace as 0.5] }).click();
+  await openDisclosures(page, plan);
+}
+
+/** Your plan keeps what is behind the number closed until asked for (O2): open every one in the page or sheet. */
+export async function openDisclosures(page: Page, within = page.locator('body')) {
+  const closed = within.locator('button[aria-expanded="false"][aria-controls^="d"]');
+  for (let n = await closed.count(); n > 0; n = await closed.count()) {
+    await closed.first().click();
+    await expect(closed).toHaveCount(n - 1);
+  }
 }
 
 /**
@@ -357,3 +371,6 @@ export const unnested = (page: Page) => page.evaluate(() => {
   }
   return { checked, bad: [...new Set(bad)] };
 });
+
+/** R2: Progress's chart shows one thing at a time; pick it (the segmented control above the chart). */
+export const showMetric = (page: Page, name: 'Weight' | 'Calories' | 'Protein' | 'Training') => page.getByRole('radio', { name, exact: true }).click();

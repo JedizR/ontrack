@@ -1,4 +1,6 @@
-<!-- SCREENS.md section 7, Scan sheet steps 1 and 2 (B1, F22), shared with the supplement setup's Scan the tub: the rear
+<!-- SCREENS.md section 7, Scan sheet steps 1 and 2 (B1, F22), shared with the supplement setup's Scan the tub. R1, the owner's
+     one camera: with `onphoto` it also offers Meal and Label next to Barcode, switched in place, and a Take photo button
+     that keeps the frame on screen. The rear
      camera in a viewfinder with a framing guide, reading by itself, the light where the camera has one, and Type the
      number on the number pad. When the camera cannot open, the reason sits over the typing field. The camera stops when
      this leaves the screen. -->
@@ -7,13 +9,18 @@
   import Flashlight from '@lucide/svelte/icons/flashlight';
   import FlashlightOff from '@lucide/svelte/icons/flashlight-off';
   import Button from '$lib/components/Button.svelte';
+  import Segmented from '$lib/components/Segmented.svelte';
+  import Camera from '@lucide/svelte/icons/camera';
   import { barcodeDetector, cameraProblem, type Detector } from '$lib/scanner';
   import { productCode } from '$lib/barcode';
   import { haptic } from '$lib/haptics';
   import { t } from '$lib/i18n';
 
   /** `typing`: the user chose Type the number; the sheet's back chevron sets it false to bring the camera back */
-  let { oncode, typing = $bindable(false) }: { oncode: (code: string) => void; typing?: boolean } = $props();
+  let { oncode, onphoto, typing = $bindable(false) }: { oncode: (code: string) => void; onphoto?: (frame: Blob, as: 'meal' | 'label') => void; typing?: boolean } = $props();
+
+  type Mode = 'barcode' | 'meal' | 'label';
+  let mode = $state<Mode>('barcode');
 
   const SLOW_MS = 8000;
   const EVERY_MS = 150;
@@ -70,7 +77,7 @@
 
   async function watch(d: Detector, me: number, since: number) {
     while (me === run) {
-      if (video && video.readyState >= 2) {
+      if (mode === 'barcode' && video && video.readyState >= 2) {
         const found = await d.detect(video).catch(() => []);
         if (me !== run) return;
         for (const b of found) {
@@ -81,7 +88,7 @@
           return oncode(code);
         }
       }
-      slow = Date.now() - since > SLOW_MS;
+      slow = mode === 'barcode' && Date.now() - since > SLOW_MS;
       await new Promise((r) => setTimeout(r, EVERY_MS));
     }
   }
@@ -91,6 +98,20 @@
     if (!track || torch === null) return;
     const on = !torch;
     await track.applyConstraints({ advanced: [{ torch: on } as MediaTrackConstraintSet] }).then(() => (torch = on), () => {});
+  }
+
+  /** The frame on screen, as a JPEG: the camera stops and the sheet takes it from here. */
+  async function snap() {
+    if (!video || video.readyState < 2 || mode === 'barcode') return;
+    const c = document.createElement('canvas');
+    c.width = video.videoWidth;
+    c.height = video.videoHeight;
+    c.getContext('2d')?.drawImage(video, 0, 0);
+    const frame = await new Promise<Blob | null>((r) => c.toBlob(r, 'image/jpeg', 0.9));
+    if (!frame) return;
+    haptic();
+    stop();
+    onphoto?.(frame, mode);
   }
 
   const type = () => (typing = true);
@@ -116,16 +137,24 @@
     <div class="bg-toast relative aspect-[4/3] w-full overflow-hidden rounded-md">
       <video bind:this={video} class="size-full object-cover" playsinline muted autoplay aria-label={t.scan.viewfinder} data-testid="scanner-video"></video>
       <!-- the framing guide: wide for a barcode, the rest dimmed by the scrim -->
-      <div class="border-toast-ink pointer-events-none absolute inset-x-[10%] top-1/2 h-[40%] -translate-y-1/2 rounded-sm border-2 shadow-[0_0_0_999px_var(--scrim)]" aria-hidden="true"></div>
+      {#if mode !== 'meal'}
+        <div class="border-toast-ink pointer-events-none absolute top-1/2 -translate-y-1/2 rounded-sm border-2 shadow-[0_0_0_999px_var(--scrim)] {mode === 'label' ? 'inset-x-[22%] h-[82%]' : 'inset-x-[10%] h-[40%]'}" aria-hidden="true" data-testid="scanner-frame"></div>
+      {/if}
       {#if torch !== null}
         <button type="button" class="bg-toast text-toast-ink absolute right-3 bottom-3 grid size-11 place-items-center rounded-sm transition-transform duration-[var(--d-press)] active:scale-[0.97]" aria-label={torch ? t.scan.lightOff : t.scan.lightOn} aria-pressed={torch} onclick={light} data-testid="scanner-light">
           {#if torch}<FlashlightOff size={22} strokeWidth={2} />{:else}<Flashlight size={22} strokeWidth={2} />{/if}
         </button>
       {/if}
     </div>
+    {#if onphoto}
+      <Segmented bind:value={mode} label={t.scan.modes} options={[{ value: 'barcode', label: t.scan.modeBarcode }, { value: 'meal', label: t.scan.modeMeal }, { value: 'label', label: t.scan.modeLabel }]} />
+    {/if}
     <p class="text-callout text-ink-2" aria-live="polite" data-testid="scanner-hint">
-      {problem === 'busy' ? t.scan.busy : !live ? t.scan.starting : slow ? t.scan.slow : t.scan.hold}
+      {problem === 'busy' ? t.scan.busy : !live ? t.scan.starting : mode === 'meal' ? t.scan.holdMeal : mode === 'label' ? t.scan.holdLabel : slow ? t.scan.slow : t.scan.hold}
     </p>
+    {#if onphoto && mode !== 'barcode'}
+      <Button variant="primary" size="lg" full disabled={!live} onclick={snap} data-testid="scanner-shutter"><Camera size={22} strokeWidth={2.25} aria-hidden="true" />{t.scan.shutter}</Button>
+    {/if}
     <div class="flex flex-wrap gap-2">
       {#if problem === 'busy'}<Button onclick={start} data-testid="scanner-retry">{t.scan.retry}</Button>{/if}
       <Button onclick={type} data-testid="scanner-type">{t.scan.typeIt}</Button>

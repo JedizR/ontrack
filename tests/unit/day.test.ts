@@ -1,7 +1,7 @@
 // Today's numbers (SCREENS.md section 6, F3, F6, F8) and the date helpers behind them.
 import { describe, expect, test } from 'vitest';
 import { dayView, mealSource, planFor, recentFoods, recentMeals, weighInDue } from '../../src/lib/model/day';
-import { addDays, atTime, dayTitle, daysBetween, lastWeek, timeOf, weekdayOf } from '../../src/lib/model/dates';
+import { addDays, atTime, dayTitle, dayTitleShort, daysBetween, lastWeek, timeOf, weekdayOf } from '../../src/lib/model/dates';
 import type { Meal, MealItem, Plan, Session } from '../../shared/records';
 
 // vector A of docs/SCIENCE.md: training Monday, Wednesday, Friday, Saturday
@@ -83,5 +83,6 @@ describe('dates', () => {
   test('a clock time round trips through a local day', () => {
     expect(timeOf(atTime(WED, '08:10'))).toBe('08:10');
     expect(dayTitle('2026-11-09')).toBe('Monday, Nov 9');
+    expect(dayTitleShort('2026-11-09')).toBe('Mon, Nov 9'); // the big title on Today (R1)
   });
 });

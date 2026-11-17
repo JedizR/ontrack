@@ -22,8 +22,9 @@ test('a photo becomes a reviewed meal with its thumbnail, oil included', { tag: 
   await expect(items(page).nth(0)).toContainText('White rice');
   await expect(items(page).nth(0)).toContainText('Database');
   await expect(items(page).nth(1)).toContainText('Estimate');
-  await expect(page.getByTestId('review-total')).toHaveText('712 kcal, 37 g protein');
-  await page.getByRole('radio', { name: '1 tsp' }).click();
+  // R2, the owner: an item that may hide oil starts at a teaspoon (40 kcal), not none
+  await expect(page.getByRole('radio', { name: '1 tsp' })).toBeChecked();
+  await expect(page.getByTestId('review-total')).toHaveText('752 kcal, 37 g protein');
   await expect(page.getByTestId('review-oil-adds')).toHaveText('Adds 40 kcal of oil as its own item');
   await expect(page.getByTestId('review-add')).toHaveText('Add 752 kcal');
   await page.getByTestId('review-keep').click();
@@ -36,6 +37,7 @@ test('a photo becomes a reviewed meal with its thumbnail, oil included', { tag: 
   await expect(row.getByTestId('thumb')).toBeVisible();
   // the meal is saved for later, and the notice does not come back
   await page.getByTestId('add').click();
+  await page.getByRole('radio', { name: 'Saved' }).click(); // Recent and Saved are one list with a switch (R1)
   await expect(page.getByTestId('saved')).toContainText('Basil pork with rice and fried egg');
   const chooser = page.waitForEvent('filechooser');
   await page.getByTestId('add-photo').click();

@@ -2,7 +2,7 @@
 // each day's numbers as Today shows them, weeks of them, the weight trend, and the check-in's input. Pure: callers
 // pass the records in, so the same code runs on the store, the seeder and the tests.
 import {
-  aerobicBand, aerobicMinutes, checkin, checkinDue, isComplete, planFromBaseline, smooth, STRENGTH, V, U,
+  aerobicBand, aerobicMinutes, checkin, checkinDue, isComplete, planFromBaseline, sessionKcal, smooth, STRENGTH, V, U,
   type AerobicBand, type CheckinInput, type CheckinResult,
 } from '$lib/model/engine';
 import { dayView, planFor } from './day';
@@ -36,6 +36,9 @@ export type Records = { profile: Profile; plans: PlanRec[]; sessions: Session[];
 type Planned = { session: Omit<Session, 'exercises'>; status?: SessionLog['status'] };
 export type DayStats = {
   date: string; target: number; intake: number; protein: number; items: number; closed: boolean; onTrack: boolean; complete: boolean;
+  /** R2, calories out (Progress's calories chart): the plan's baseline, what living takes (resting energy and daily
+   *  movement), and the energy of the sessions marked done that day */
+  living?: number; exercise?: number;
   /** The day's sessions as Today shows them, each with its done or skipped mark */
   sessions: Planned[];
 };
@@ -90,6 +93,8 @@ export function account(r: Records) {
     const d = { target: v.target, intake: v.eaten.kcal, items, closed: closed.has(date) };
     return {
       date, ...d, protein: v.eaten.protein, onTrack: meals.length > 0 && v.status === 'on', complete: isComplete({ day: 0, ...d }), sessions: v.sessions,
+      living: plan.baseline,
+      exercise: Math.round(v.sessions.filter((s) => s.status === 'done').reduce((a, s) => a + sessionKcal(s.session, plan.weightKg), 0)),
     };
   }
 

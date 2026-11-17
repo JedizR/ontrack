@@ -5,7 +5,7 @@
 //   E2E_BASE_URL=http://localhost:5297 pnpm exec playwright test --project=offline
 // "Today" is Wednesday 2026-11-11 at 10:00, a training day; the times of day cards (easy adds, Finish day) are not here.
 import { expect, test, type Page } from '@playwright/test';
-import { EMAIL, MEALS, SUPPLEMENTS, TODAY, pickerSave, seedAccount, space, takePhoto, withPrefs } from './helpers';
+import { EMAIL, MEALS, SUPPLEMENTS, TODAY, pickerSave, seedAccount, space, takePhoto, withPrefs, showMetric } from './helpers';
 
 const hero = (page: Page) => page.getByTestId('hero-value');
 const meals = (page: Page) => page.getByTestId('meal');
@@ -79,7 +79,7 @@ test('airplane mode: a cold start and every feature work offline, and sync withi
   await test.step('F7: today\'s session done on Today, a new one on Train', async () => {
     const training = page.getByTestId('training');
     await training.getByTestId('session-done').click();
-    await expect(training).toContainText('60 min, Done');
+    await expect(training.getByTestId('session-tick')).toBeVisible(); // R2: the green check says done
     await page.getByTestId('tab-1').click();
     await page.getByTestId('train-day-1').getByTestId('train-rest').click();
     const sheet = page.getByTestId('train-session-sheet');
@@ -92,8 +92,10 @@ test('airplane mode: a cold start and every feature work offline, and sync withi
   await test.step('F6, F11: a weigh-in from Progress, and its charts', async () => {
     await page.getByTestId('tab-2').click();
     await expect(page.getByTestId('weight-chart')).toBeVisible();
+    await showMetric(page, 'Calories');
     await expect(page.getByTestId('progress-intake')).toBeVisible();
     await expect(page.getByTestId('progress-consistency')).toBeVisible();
+    await showMetric(page, 'Weight');
     await page.getByTestId('progress-log-weight').click();
     await pickerSave(page, '61.2');
     await expect(page.getByText('Weigh-in saved, 61.2 kg')).toBeVisible();
@@ -158,7 +160,7 @@ test('airplane mode: a cold start and every feature work offline, and sync withi
     await expect(hero(two)).toHaveText('3,769');
     await expect(meals(two).filter({ hasText: 'Khao man kai' })).toHaveCount(1);
     await expect(meals(two).filter({ hasText: 'Protein shake' })).toHaveCount(1);
-    await expect(two.getByTestId('training')).toContainText('60 min, Done');
+    await expect(two.getByTestId('training').getByTestId('session-tick')).toBeVisible();
     await two.getByTestId('tab-1').click();
     await expect(two.getByTestId('train-day-1')).toContainText('Cardio, 60 min');
     await two.getByTestId('tab-2').click();

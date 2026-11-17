@@ -32,7 +32,7 @@
       <HeroNumber value={eaten} caption={t.after.ofKcal(num(target))} side={num(target - eaten)} sideCaption={t.after.toGo} />
       <div class="mt-4"><Track hero value={eaten} {target} {zone} label="{num(eaten)} {t.after.ofKcal(num(target))}" /></div>
       <div class="text-caption text-ink-2 mt-3 flex items-center justify-between gap-4">
-        <span class="glass text-ink rounded-full px-2.5 py-0.5 font-semibold whitespace-nowrap">{t.today.trainingDay}</span>
+        <span class="liquid-clear text-ink rounded-full px-2.5 py-0.5 font-semibold whitespace-nowrap">{t.today.trainingDay}</span>
         <span class="text-right">{t.today.onTrackFrom(num(zone[0]))}</span>
       </div>
     </div>

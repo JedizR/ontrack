@@ -1,7 +1,7 @@
 // Visual review: every screen in its main states -> screenshots/<screen>/<state>-<theme>-<device>.png
 //   pnpm screenshots -- --grep "shell"
 import { expect, test, type Page } from '@playwright/test';
-import { EMAIL, MEALS, SEED, SUPPLEMENTS, TODAY, fieldFill, onboard, open, openFresh, openSeeded, seedAccount, signIn, swipeAt, takePhoto, vision, wheelType, withPrefs } from './helpers';
+import { EMAIL, MEALS, SEED, SUPPLEMENTS, TODAY, fieldFill, onboard, open, openDisclosures, openFresh, openSeeded, seedAccount, signIn, swipeAt, takePhoto, vision, wheelType, withPrefs, showMetric } from './helpers';
 import { openMap, quietTiles, raise, scene } from './social';
 
 const SECTIONS = ['prefs', 'buttons', 'track', 'hero', 'rows', 'chips', 'sheets', 'wheel', 'week', 'feedback', 'states'];
@@ -32,6 +32,7 @@ for (const theme of ['light', 'dark'] as const) {
         await shot(page, 'shell', 'progress');
         // Progress's training card with no sessions planned (the plan began today, so clearing the program clears today)
         await page.evaluate(() => (window as unknown as { ontrack: { actions: { saveProgram(p: object): void } } }).ontrack.actions.saveProgram({ name: '', sessions: [] }));
+        await showMetric(page, 'Training');
         await page.getByTestId('progress-training').evaluate((el) => scrollTo(0, el.getBoundingClientRect().top + scrollY - 60));
         await expect(page.getByTestId('progress-training')).toContainText('Plan your week');
         await shot(page, 'progress', 'training-empty');
@@ -167,6 +168,7 @@ for (const theme of ['light', 'dark'] as const) {
 
       // SCREENS.md section 4: every question and its guardrail screens, Your plan
       test('onboarding', async ({ page }) => {
+        test.slow(); // Building your plan alone plays for about 4 s (O2)
         const go = (id: string) => page.getByTestId(id).click();
         const at = async (id: string, state: string) => { await page.getByTestId(id).waitFor(); await shot(page, 'onboarding', state); };
         await openFresh(page);
@@ -207,6 +209,8 @@ for (const theme of ['light', 'dark'] as const) {
         await at('step-body', 'body-imperial');
         await page.getByRole('radio', { name: 'Metric' }).click();
         await go('continue');
+        await at('step-goal-weight', 'goal-weight'); // R2: the goal weight with the healthy range
+        await go('continue');
         await at('step-move', 'move');
         await go('choice-light');
         await at('step-move', 'move-picked');
@@ -222,6 +226,7 @@ for (const theme of ['light', 'dark'] as const) {
         await page.getByTestId('plan-pace').getByRole('radio', { name: 'Faster' }).click();
         await shot(page, 'onboarding', 'plan-lose-faster');
         await page.screenshot({ path: `screenshots/onboarding/plan-lose-full-${theme}-${d.name}.png`, fullPage: true });
+        await openDisclosures(page);
         await go('line-goal');
         await page.getByTestId('plan-breakdown').scrollIntoViewIfNeeded();
         await shot(page, 'onboarding', 'plan-source-open');
@@ -275,7 +280,7 @@ for (const theme of ['light', 'dark'] as const) {
         await shot(page, 'today', 'past-day');
         await page.getByTestId('week').getByRole('button', { name: /November 8/ }).click();
         await shot(page, 'today', 'empty-day');
-        await page.getByRole('button', { name: 'Back to today' }).click();
+        await page.getByTestId('week-today').click();
 
         await page.getByTestId('hero-open').click();
         await sheet('how-sheet', 'how');
@@ -309,14 +314,6 @@ for (const theme of ['light', 'dark'] as const) {
         await page.getByTestId('session-undo').click();
         await page.getByTestId('session-more').click();
         await sheet('session-sheet', 'session-menu');
-      });
-
-      // SCREENS.md section 4, after onboarding (O1): Today's Getting started card on the day the plan was saved
-      test('today first day', async ({ page }) => {
-        await withPrefs(page, { firstDay: TODAY });
-        await open(page);
-        await page.getByTestId('first-day').waitFor();
-        await shot(page, 'today', 'first-day');
       });
 
       // SCREENS.md section 8, Train: no exercises listed, the Session sheet and picker, recommendations with a source,
@@ -355,6 +352,7 @@ for (const theme of ['light', 'dark'] as const) {
         await page.getByTestId('templates-sheet').waitFor({ state: 'detached' });
         await shot(page, 'train', 'typical');
         await top('train-balance');
+        await openDisclosures(page, page.getByTestId('train-balance'));
         await shot(page, 'train', 'analysis');
 
         // a hybrid (F20): the two templates with cardio, the week, and the lifting and cardio points with a source open
@@ -463,7 +461,7 @@ for (const theme of ['light', 'dark'] as const) {
         await page.getByTestId('add').click();
         await expect(page.getByTestId('add-sheet')).toHaveCSS('transform', 'none');
         await shot(page, 'supplements', 'add-typical');
-        await page.getByTestId('supplement-new').click();
+        await page.getByTestId('supplement-entry').click(); // R2: the plus beside the pinned whey and creatine
         await page.getByTestId('kind-creatine').click();
         await page.getByTestId('tub-type').click();
         await page.getByTestId('supplement-zero').scrollIntoViewIfNeeded();
@@ -708,8 +706,10 @@ for (const theme of ['light', 'dark'] as const) {
 
         await page.getByTestId('tab-2').click();
         await shot(page, 'progress', 'typical');
+        await showMetric(page, 'Calories');
         await top('progress-intake');
         await shot(page, 'progress', 'intake');
+        await showMetric(page, 'Training');
         await top('progress-training');
         await shot(page, 'progress', 'training');
         await top('progress-checkins');

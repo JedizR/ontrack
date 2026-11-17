@@ -5,7 +5,7 @@
   import { haptic } from '$lib/haptics';
 
   let { value = $bindable(), options, label, onchange }:
-    { value: T; options: { value: T; label: string }[]; label: string; onchange?: (v: T) => void } = $props();
+    { value: T; options: { value: T; label: string; short?: string }[]; label: string; onchange?: (v: T) => void } = $props();
 
   const at = $derived(options.findIndex((o) => o.value === value));
 
@@ -46,6 +46,7 @@
       class="text-callout relative min-h-[var(--tap)] min-w-0 truncate rounded-sm px-2 font-semibold transition-[background-color,color] duration-[var(--d-ui)] ease-[var(--spring-default)] {on ? 'text-canvas' : 'text-ink-2 active:bg-surface-3'}"
       onclick={() => pick(o.value)}
       onkeydown={(e) => key(e, i)}
-    >{o.label}</button>
+      aria-label={o.short ? o.label : undefined}
+    >{o.short ?? o.label}</button>
   {/each}
 </div>

@@ -16,18 +16,22 @@
     children,
     ...rest
   }: HTMLButtonAttributes & {
-    variant?: 'primary' | 'neutral' | 'plain' | 'danger';
+    variant?: 'primary' | 'neutral' | 'surface' | 'plain' | 'danger' | 'on-ink';
     /** lg 56 for a screen's or sheet's main action, md 48, sm 36 */
     size?: 'lg' | 'md' | 'sm';
     full?: boolean;
     children: Snippet;
   } = $props();
 
-  // pressed: the fill steps and the face scales to 0.97; a disabled primary turns grey, as OneFin's disabled arrow does
+  // pressed: the fill steps and the face scales to 0.97; a disabled primary turns grey, as OneFin's disabled arrow does; aria-disabled (still tappable, to answer a tap) turns it a faint ink tint that lets glass show through
   const LOOK = {
-    primary: 'bg-action text-on-action shadow-pill group-active:bg-action-press group-active:scale-[0.97] group-disabled:bg-surface-3 group-disabled:text-ink-2 group-disabled:shadow-none',
+    primary: 'bg-action text-on-action shadow-pill group-active:bg-action-press group-active:scale-[0.97] group-disabled:bg-surface-3 group-disabled:text-ink-2 group-disabled:shadow-none group-aria-disabled:bg-ink/12 group-aria-disabled:text-ink/45 group-aria-disabled:shadow-none group-aria-disabled:group-active:bg-ink/12 group-aria-disabled:group-active:scale-100',
     neutral: 'bg-surface-2 text-ink group-active:bg-surface-3 group-active:scale-[0.97] group-disabled:opacity-40',
+    /** R2: a white face over the haze or a photo, where grey would read as disabled */
+    surface: 'bg-surface text-ink shadow-pill group-active:bg-surface-2 group-active:scale-[0.97] group-disabled:opacity-40',
     plain: 'text-accent-ink group-active:bg-surface-2 group-active:scale-[0.97] group-disabled:opacity-40',
+    /** R2: a grey face on the action's ink (Today's done session: Undo where Done was, the same size) */
+    'on-ink': 'bg-[color-mix(in_srgb,var(--on-action)_18%,transparent)] text-[var(--on-action)] group-active:bg-[color-mix(in_srgb,var(--on-action)_28%,transparent)] group-active:scale-[0.97]',
     danger: 'text-danger group-active:bg-danger-soft group-active:scale-[0.97] group-disabled:opacity-40',
   };
   // a minimum height, so a full width label at the largest text can wrap to a second line instead of spilling out

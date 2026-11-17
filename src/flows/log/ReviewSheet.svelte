@@ -5,6 +5,7 @@
 <script lang="ts">
   import { untrack } from 'svelte';
   import Sheet from '$lib/components/Sheet.svelte';
+  import Sparkles from '@lucide/svelte/icons/sparkles';
   import Facts from '$lib/components/Facts.svelte';
   import Button from '$lib/components/Button.svelte';
   import Segmented from '$lib/components/Segmented.svelte';
@@ -16,7 +17,7 @@
   import { preparePhoto } from '$lib/photo';
   import { itemFor, loadFoods, type Food } from '$lib/data/foods';
   import { totals } from '$lib/model/day';
-  import { stampOn } from '$lib/model/dates';
+  import { atTime, stampOn, timeOf } from '$lib/model/dates';
   import { num } from '$lib/model/format';
   import { fade } from 'svelte/transition';
   import { dur, haptic, ms } from '$lib/haptics';
@@ -25,7 +26,7 @@
   import ItemList from './ItemList.svelte';
   import ShareToMap from './ShareToMap.svelte';
   import { lineOf, lineWithMine, scaled, type Line } from './items';
-  import type { AnalysisItem, AnalyzeRequest } from '../../../shared/analysis';
+  import { MAX_TEXT, type AnalysisItem, type AnalyzeRequest } from '../../../shared/analysis';
   import type { Meal, MealItem } from '../../../shared/records';
 
   const OIL_ID = 'oil-vegetable';
@@ -76,14 +77,29 @@
     oil = 'none';
   }
 
-  async function start(r: NonNullable<typeof sheets.review>) {
+  // R1, the owner: the estimate can be fixed with a sentence. The photo or the words are read again with it, and the
+  // items and numbers come back new; a second sentence adds to the first
+  let time = $state(''); // HH:MM the meal was eaten, from now
+  let fixes = $state<string[]>([]);
+  let fixText = $state('');
+  const fixed = (r: NonNullable<typeof sheets.review>) => fixes.join('. ').slice(0, 300);
+  function fix() {
+    const said = fixText.trim();
+    if (!said || !sheets.review) return;
+    fixes = [...fixes, said];
+    fixText = '';
+    void start(sheets.review, true);
+  }
+
+  async function start(r: NonNullable<typeof sheets.review>, again = false) {
     const mine = ++run;
     reset();
+    if (!again) { fixes = []; fixText = ''; }
     kind = r.kind;
     status = 'loading';
     waited = 0;
     let request: AnalyzeRequest;
-    if (r.kind === 'text') request = { kind: 'text', text: r.text, localDate: view.today, locale: 'en' };
+    if (r.kind === 'text') request = { kind: 'text', text: fixes.length ? `${r.text}. Correction: ${fixed(r)}`.slice(0, MAX_TEXT) : r.text, localDate: view.today, locale: 'en' };
     else {
       const p = await preparePhoto(r.file).catch(() => null);
       if (mine !== run) return;
@@ -91,7 +107,7 @@
       photoUrl = URL.createObjectURL(p.photo);
       thumb = p.thumb;
       original = r.file;
-      request = { kind: 'photo', image: p.image, localDate: view.today, locale: 'en' };
+      request = { kind: 'photo', image: p.image, localDate: view.today, locale: 'en', ...(fixes.length ? { hint: fixed(r) } : {}) };
     }
     const res = await analyzeMeal(request);
     if (mine !== run) return;
@@ -105,8 +121,11 @@
     // the model named it and weighed it; numbers the user corrected for that food before come back as Yours (F15)
     lines = analysis.items.map((i) => lineWithMine(toItem(i)));
     hidden = analysis.items.some((i) => i.hiddenFat);
+    // R2, the owner: most Thai cooking uses oil, so an item that may hide it starts at a teaspoon, not none
+    oil = hidden ? 'tsp' : 'none';
     ai = JSON.stringify(analysis.raw).length > RAW_MAX ? { model: analysis.model } : { model: analysis.model, raw: analysis.raw };
     status = 'ready';
+    time = timeOf(stampOn(view.date));
     if (hidden && !oilFood) oilFood = (await loadFoods().catch(() => [])).find((f) => f.id === OIL_ID) ?? null;
   }
 
@@ -142,7 +161,7 @@
   async function add() {
     if (!items.length || saving) return;
     const name = title.trim() || items[0].name;
-    const meal: Meal = { date: view.date, at: stampOn(view.date), title: title.trim(), method: kind, items, ...(ai ? { ai } : {}) };
+    const meal: Meal = { date: view.date, at: /^\d\d:\d\d$/.test(time) ? atTime(view.date, time) : stampOn(view.date), title: title.trim(), method: kind, items, ...(ai ? { ai } : {}) };
     const mine = run;
     const row = shareRow;
     saving = true;
@@ -206,9 +225,15 @@
       {/each}
     </div>
   {:else if status === 'ready'}
+    <!-- R2: the name has the whole width (R1's Time beside it cut every name); the time is a small pill under it, as
+         Bevel's Date row, and opens the phone's own picker -->
     <div class="mt-4 flex flex-col gap-2">
       <label for="review-title" class="text-caption text-ink-2">{t.meal.name}</label>
       <input id="review-title" type="text" maxlength="120" enterkeyhint="done" bind:value={title} placeholder={items[0]?.name ?? ''} class="input-field w-full min-w-0" data-testid="review-title" />
+      <label class="text-callout text-ink-2 flex items-center gap-2 self-start">
+        {t.meal.eatenAt}
+        <input type="time" bind:value={time} class="num bg-surface-2 text-ink h-11 rounded-full px-4 text-[length:var(--t-body)] font-semibold" data-testid="review-time" />
+      </label>
     </div>
     <!-- one item is kept free for the oil -->
     <ItemList bind:lines empty={t.review.empty} max={hidden ? 29 : 30}>
@@ -222,6 +247,14 @@
         </div>
       {/if}
     </ItemList>
+    <!-- the fix: say what is wrong in a few words; the estimate is made again from the photo or the words and your note -->
+    <form class="border-line mt-4 flex flex-col gap-2 border-t pt-4" onsubmit={(e) => { e.preventDefault(); fix(); }} data-testid="review-fix">
+      <label for="review-fix-text" class="text-eyebrow text-ink-2">{t.review.fix}</label>
+      <div class="flex items-center gap-2">
+        <input id="review-fix-text" type="text" maxlength="120" enterkeyhint="send" bind:value={fixText} placeholder={t.review.fixHint} class="input-field w-full min-w-0 flex-1" data-testid="review-fix-text" />
+        <Button size="md" disabled={!fixText.trim()} type="submit" data-testid="review-fix-send"><Sparkles size={20} strokeWidth={2.25} aria-hidden="true" />{t.review.fixSend}</Button>
+      </div>
+    </form>
     {#if kind === 'photo'}
       <ShareToMap bind:this={shareRow} bind:checked={share} file={original} title={t.social.share} line={t.social.shareLine} testid="review-share" />
     {/if}

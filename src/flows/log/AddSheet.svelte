@@ -14,6 +14,10 @@
   import ChevronRight from '@lucide/svelte/icons/chevron-right';
   import ShakerIcon from '$lib/components/ShakerIcon.svelte';
   import Button from '$lib/components/Button.svelte';
+  import Segmented from '$lib/components/Segmented.svelte';
+  import Mic from '@lucide/svelte/icons/mic';
+  import Scale from '@lucide/svelte/icons/scale';
+  import Dumbbell from '@lucide/svelte/icons/dumbbell';
   import { prefs } from '$lib/prefs.svelte';
   import Sheet from '$lib/components/Sheet.svelte';
   import Row from '$lib/components/Row.svelte';
@@ -23,19 +27,17 @@
   import { db } from '$lib/db/store.svelte';
   import { deleteMeal, logAgain, logSaved, undoToast } from '$lib/actions';
   import { recentMeals, totals } from '$lib/model/day';
-  import { stampOn } from '$lib/model/dates';
+  import { stampOn, weekdayOf } from '$lib/model/dates';
   import { num } from '$lib/model/format';
   import { haptic } from '$lib/haptics';
   import { t } from '$lib/i18n';
-  import { loadFoods, type Food } from '$lib/data/foods';
+  import { loadFoods, thaiFirst, type Food } from '$lib/data/foods';
   import { noCalories, supplementItems } from '$lib/model/supplements';
-  import type { Meal, MealItem, Supplement } from '../../../shared/records';
+  import { ids, type Meal, type MealItem, type Supplement } from '../../../shared/records';
 
   // logged supplements are not repeated here: they sit at the top
   const recent = $derived(recentMeals(db.live('meal').filter((r) => r.data.method !== 'supplement')));
   const supplements = $derived(db.live('supplement').sort((a, b) => a.data.name.localeCompare(b.data.name)));
-  // a lifter's entry row asks the question that makes setting one up worth it (O1); it never recommends one (F21)
-  const lifter = $derived(!!db.get('program', 'program')?.sessions.some((x) => x.type === 'strength' || x.type === 'circuit'));
   // a milk's values come from the food table, loaded when a supplement was last mixed with one
   let foods = $state<Food[] | null>(null);
   $effect(() => { if (sheets.add && !foods && supplements.some((r) => r.data.lastMix)) loadFoods().then((f) => (foods = f), () => {}); });
@@ -47,10 +49,15 @@
     const kcal = totals(supplementItems(id, s, s.lastScoops, milk ? { food: milk, grams: s.lastMix!.grams, mine: db.get('food', milk.id)?.per100 } : undefined)).kcal;
     return kcal ? num(Math.round(kcal)) : undefined;
   }
-  function supplement(id: string | null) {
+  function supplement(id: string | null, kind?: 'whey' | 'creatine') {
     sheets.add = false;
-    sheets.supplement = { id };
+    sheets.supplement = { id, ...(kind ? { kind } : {}) };
   }
+  // R2, the owner: whey and creatine pinned at the top, one line, one tap each: the user's own if set up, else its setup
+  const PINNED = ['whey', 'creatine'] as const;
+  const pinnedOf = (k: (typeof PINNED)[number]) => supplements.find((r) => r.data.kind === k);
+  const pinnedIds = $derived(new Set(PINNED.map((k) => pinnedOf(k)?.id).filter(Boolean)));
+  const others = $derived(supplements.filter((r) => !pinnedIds.has(r.id)));
   const saved = $derived(db.live('saved').sort((a, b) => b.data.uses - a.data.uses || b.data.lastUsedAt.localeCompare(a.data.lastUsedAt)));
   const kcalOf = (items: MealItem[]) => num(Math.round(totals(items).kcal));
   const titleOf = (title: string, items: MealItem[]) => title || items[0]?.name || t.source.manual;
@@ -66,8 +73,42 @@
     return () => { deleteMeal(id); };
   }
   type Way = 'photo' | 'scan' | 'search' | 'describe' | 'quick';
+  // R1: Recent and Saved are one list with a switch (BitePal's clock and bookmark), Recent first
+  let list = $state<'recent' | 'saved'>('recent');
+  $effect(() => { if (sheets.add) list = 'recent'; });
+  function speak() {
+    haptic();
+    sheets.listen = true;
+    go('describe');
+  }
+  // R2: the plus logs everything a day has (Strava's one create button): a meal first, then the weigh-in and the session
+  const weighed = $derived(!!db.get('weight', ids.weight(view.date)));
+  const session = $derived.by(() => {
+    const s = db.get('program', 'program')?.sessions.find((x) => x.weekday === weekdayOf(view.date) && (x.type === 'strength' || x.type === 'circuit') && !!x.exercises?.length);
+    return s && !db.get('slog', ids.slog(view.date, s.key)) ? s : null;
+  });
+  function weigh() {
+    sheets.add = false;
+    void import('./weigh').then((m) => m.weighIn(view.date));
+  }
+  function train() {
+    if (!session) return;
+    haptic();
+    sheets.add = false;
+    sheets.workout = { date: view.date, key: session.key };
+  }
   let input = $state<HTMLInputElement>();
   let notice = $state(false);
+
+  // the composer's example line turns every 3 seconds while the sheet is open (the global reduced motion rule makes it a cut)
+  const EXAMPLES = t.add.examples;
+  let ex = $state(thaiFirst() ? 1 : 0);
+  let moved = $state(false);
+  $effect(() => {
+    if (!sheets.add || notice) return;
+    const id = setInterval(() => { moved = true; ex = (ex + 1) % EXAMPLES.length; }, 3000);
+    return () => clearInterval(id);
+  });
   $effect(() => { if (!sheets.add) notice = false; });
 
   // the file input sits outside the sheet so it is still there when the camera hands the photo back
@@ -89,12 +130,12 @@
   };
   // a meal's tile shows how it was logged, as on Today
   const ICON: Record<Meal['method'], Component<{ size?: number; strokeWidth?: number }>> = { photo: Camera, text: TextIcon, search: SearchIcon, quick: Hash, saved: Bookmark, supplement: ShakerIcon, barcode: ScanBarcode };
-  const WAYS: { key: Way; label: string; line: string; icon: Component<{ size?: number; strokeWidth?: number }> }[] = [
-    { key: 'photo', label: t.add.photo, line: t.add.photoLine, icon: Camera },
-    { key: 'scan', label: t.add.scan, line: t.add.scanLine, icon: ScanBarcode },
-    { key: 'search', label: t.add.search, line: t.add.searchLine, icon: SearchIcon },
-    { key: 'describe', label: t.add.describe, line: t.add.describeLine, icon: TextIcon },
-    { key: 'quick', label: t.add.quick, line: t.add.quickLine, icon: Hash },
+  // the four round actions under the field; Describe is the field itself
+  const WAYS: { key: Way; label: string; icon: Component<{ size?: number; strokeWidth?: number }> }[] = [
+    { key: 'photo', label: t.add.photo, icon: Camera },
+    { key: 'scan', label: t.add.scan, icon: ScanBarcode },
+    { key: 'search', label: t.add.search, icon: SearchIcon },
+    { key: 'quick', label: t.add.quick, icon: Hash },
   ];
 </script>
 
@@ -114,71 +155,108 @@
       <Button variant="plain" size="lg" full onclick={() => (notice = false)}>{t.add.consentNotNow}</Button>
     </div>
   {:else}
-    {#if supplements.length}
-      <h3 class="text-eyebrow text-ink-2">{t.supplement.section}</h3>
+    <!-- R2: the supplements first (the owner), whey and creatine side by side -->
+    <div class="mb-3 grid grid-cols-[1fr_1fr_auto] gap-2" data-testid="add-pinned">
+      {#each PINNED as k (k)}
+        {@const r = pinnedOf(k)}
+        <button type="button" class="bg-surface-2 active:bg-surface-3 flex min-h-12 min-w-0 items-center gap-1.5 rounded-full px-3 py-1 text-left transition-[background-color,transform] duration-[var(--d-press)] active:scale-[0.98]" onclick={() => supplement(r?.id ?? null, r ? undefined : k)} data-testid={r ? 'supplement' : `add-pin-${k}`}>
+          <span class="text-ink-2 inline-grid flex-none"><ShakerIcon /></span>
+          <span class="min-w-0 flex-1 leading-tight">
+            <span class="text-callout block font-semibold">{r?.data.name ?? t.supplement.kinds[k]}</span>
+            <!-- set up, its last amount (and Typical when its values are the label's typical ones), as its old row said -->
+            {#if r}{#snippet typ()}<SourceLabel source="typical" />{/snippet}<span class="text-caption text-ink-2 block"><Facts facts={[t.supplement.amount(num(r.data.lastScoops, 1), !!r.data.lastMix && !noCalories(r.data)), r.data.typical && typ]} /></span>{/if}
+          </span>
+          {#if r && lastKcal(r.id, r.data)}<span class="text-caption text-ink-2 num flex-none">{lastKcal(r.id, r.data)}</span>{/if}
+        </button>
+      {/each}
+      <!-- any other supplement: set one up -->
+      <button type="button" class="bg-surface-2 active:bg-surface-3 text-ink-2 grid size-12 place-items-center rounded-full transition-[background-color,transform] duration-[var(--d-press)] active:scale-[0.97]" aria-label={t.supplement.setup} onclick={() => supplement(null)} data-testid="supplement-entry"><Plus size={22} strokeWidth={2.25} aria-hidden="true" /></button>
+    </div>
+
+    <!-- R1, rebuilt from Alma's composer, BitePal's search and Cal AI's tiles: the field to say what you ate, with a mic,
+         on the landing page's sky; under it the four other ways as round glass actions. Photo is the ink one -->
+    <div class="rounded-t-lg rounded-b-md p-4 [background:var(--grad-sky)]" data-theme="light" data-testid="add-composer">
+      <p class="text-heading px-1 text-balance">{t.add.prompt}</p>
+      <div class="bg-surface shadow-card mt-3 flex items-center gap-2 rounded-full p-1.5 pl-5">
+        <button type="button" class="text-body text-ink-2 active:bg-surface-2 -ml-3.5 grid h-12 min-w-0 flex-1 items-center overflow-hidden rounded-full pl-3.5 text-left transition-colors duration-[var(--d-press)]" aria-label={t.add.prompt} onclick={() => go('describe')} data-testid="add-describe">
+          <!-- one line, cut with an ellipsis, so the pill never changes height; the next example rises in as the last lifts away -->
+          {#key ex}
+            {#if moved}<span class="swap-out col-start-1 row-start-1 truncate" data-ellipsis aria-hidden="true">{EXAMPLES[(ex + EXAMPLES.length - 1) % EXAMPLES.length]}</span>{/if}
+            <span class="{moved ? 'swap-in ' : ''}col-start-1 row-start-1 truncate" data-ellipsis aria-hidden="true">{EXAMPLES[ex]}</span>
+          {/key}
+        </button>
+        <button type="button" class="bg-surface-2 text-ink active:bg-surface-3 grid size-12 flex-none place-items-center rounded-full transition-[background-color,transform] duration-[var(--d-press)] active:scale-[0.97]" aria-label={t.describe.speak} onclick={speak} data-testid="add-mic"><Mic size={22} strokeWidth={2.25} aria-hidden="true" /></button>
+      </div>
+      <div class="mt-4 grid grid-cols-4 gap-2">
+        {#each WAYS as w (w.key)}
+          {@const Icon = w.icon}
+          <button type="button" class="group flex min-w-0 flex-col items-center gap-2 text-center" onclick={() => go(w.key)} data-testid="add-{w.key}">
+            <span class="{w.key === 'photo' ? 'bg-action text-on-action shadow-pill' : 'liquid-clear text-night'} grid size-14 place-items-center rounded-full transition-transform duration-[var(--d-press)] group-active:scale-[0.95]"><Icon size={24} strokeWidth={2} /></span>
+            <span class="text-caption text-night font-semibold">{w.label}</span>
+          </button>
+        {/each}
+      </div>
+    </div>
+
+    <!-- R2: also log the day's other two things, one tap each -->
+    <!-- R2, one card with small boxes (the owner's pick): the sky panel, then the day's other two logs as boxes under it,
+         their outer corners the card's -->
+    <div class="mt-2 grid {session ? 'grid-cols-2' : 'grid-cols-1'} gap-2" data-testid="add-also">
+      {#snippet box(Icon: Component<{ size?: number; strokeWidth?: number }>, label: string, onclick: () => void, testid: string, corner: string)}
+        <button type="button" class="bg-surface-2 active:bg-surface-3 {corner} text-body flex min-h-14 min-w-0 items-center gap-2 rounded-md px-4 text-left font-semibold transition-[background-color,transform] duration-[var(--d-press)] active:scale-[0.98]" {onclick} data-testid={testid}>
+          <Icon size={20} strokeWidth={2.25} /><span class="truncate">{label}</span>
+        </button>
+      {/snippet}
+      {@render box(Scale, weighed ? t.add.weighAgain : t.weigh.action, weigh, 'add-weigh', session ? 'rounded-bl-lg' : 'rounded-b-lg')}
+      {#if session}{@render box(Dumbbell, t.add.startSession(session.name), train, 'add-workout', 'rounded-br-lg')}{/if}
+    </div>
+
+    {#if others.length}
+      <h3 class="text-eyebrow text-ink-2 mt-8">{t.supplement.section}</h3>
       <div data-testid="supplements">
         {#snippet typical()}<SourceLabel source="typical" />{/snippet}
-        {#each supplements as { id, data: s } (id)}
+        {#each others as { id, data: s } (id)}
           <Row title={s.name} value={lastKcal(id, s)} unit={t.after.kcal} onclick={() => supplement(id)} testid="supplement">
             {#snippet caption()}<Facts facts={[t.supplement.amount(num(s.lastScoops, 1), !!s.lastMix && !noCalories(s)), s.typical && typical]} />{/snippet}
             {#snippet leading()}<div class="bg-surface-2 text-ink-2 grid size-full place-items-center"><ShakerIcon /></div>{/snippet}
           </Row>
         {/each}
       </div>
-      <Button variant="plain" size="sm" class="-ml-4 mb-6" onclick={() => supplement(null)} data-testid="supplement-new">{t.supplement.setup}</Button>
-    {/if}
-    <!-- Photo is the sheet's featured way: one violet card, as OneFin's featured blog card, filled with the sheet's one
-         gradient (the owner, U1b), flat. The others are grey cards holding white icon tiles with a lavender edge (the
-         integrations tiles), Scan first (B1) -->
-    <div class="grid grid-cols-2 gap-3">
-      {#each WAYS as w (w.key)}
-        {@const Icon = w.icon}
-        {@const main = w.key === 'photo'}
-        <button type="button" class="{main ? 'feature text-ink col-span-2 min-h-20 flex-row items-center active:brightness-90' : 'bg-surface-2 active:bg-surface-3 min-h-26 flex-col items-start justify-between'} flex gap-3 rounded-md p-4 text-left transition-[transform,background-color,filter] duration-[var(--d-press)] active:scale-[0.97]" onclick={() => go(w.key)} data-featured={main || undefined} data-testid="add-{w.key}">
-          <span class="{main ? 'bg-ink/10' : 'bg-surface text-accent-ink ring-accent-soft ring-1'} grid size-10 place-items-center rounded-sm"><Icon size={22} strokeWidth={2} /></span>
-          <span>
-            <span class="text-body block font-semibold">{w.label}</span>
-            <span class="text-caption {main ? '' : 'text-ink-2'} block">{w.line}</span>
-          </span>
-        </button>
-      {/each}
-    </div>
-
-    {#if !supplements.length}
-      <div class="mt-4">
-        <Row title={t.supplement.section} caption={lifter ? t.supplement.offer : t.supplement.entryLine} onclick={() => supplement(null)} testid="supplement-entry">
-          {#snippet leading()}<div class="tile grid size-full place-items-center"><ShakerIcon /></div>{/snippet}
-          {#snippet trailing()}<ChevronRight class="text-ink-2 flex-none" size={24} strokeWidth={2} aria-hidden="true" />{/snippet}
-        </Row>
-      </div>
-    {/if}
-
-    <h3 class="text-eyebrow text-ink-2 mt-8">{t.add.recent}</h3>
-    {#if recent.length}
-      <div data-testid="recent">
-        {#each recent as { id, data: m } (id)}
-          {@const title = titleOf(m.title, m.items)}
-          {@const Icon = ICON[m.method]}
-          <Row {title} value={kcalOf(m.items)} unit={t.after.kcal}>
-            {#snippet leading()}<div class="bg-surface-2 text-ink-2 grid size-full place-items-center"><Icon size={24} strokeWidth={2} /></div>{/snippet}
-            {#snippet trailing()}{@render again(t.add.again(title), () => logged(relog(m), title))}{/snippet}
-          </Row>
-        {/each}
-      </div>
-    {:else}
-      <p class="text-callout text-ink-2 mt-3" data-testid="recent-empty">{t.add.noRecent}</p>
+      <Button variant="plain" size="sm" class="-ml-4" onclick={() => supplement(null)} data-testid="supplement-new">{t.supplement.setup}</Button>
     {/if}
 
     {#if saved.length}
-      <h3 class="text-eyebrow text-ink-2 mt-8">{t.add.saved}</h3>
-      <div data-testid="saved">
-        {#each saved as { id, data: s } (id)}
+      <div class="mt-6"><Segmented bind:value={list} label={t.add.listLabel} options={[{ value: 'recent', label: t.add.recent }, { value: 'saved', label: t.add.saved }]} /></div>
+    {:else}
+      <h3 class="text-eyebrow text-ink-2 mt-8">{t.add.recent}</h3>
+    {/if}
+
+    {#if list === 'recent' || !saved.length}
+      {#if recent.length}
+        <div class="mt-2" data-testid="recent">
+          {#each recent as { id, data: m } (id)}
+            {@const title = titleOf(m.title, m.items)}
+            {@const Icon = ICON[m.method]}
+            <Row {title} value={kcalOf(m.items)} unit={t.after.kcal}>
+              {#snippet leading()}<div class="bg-surface-2 text-ink-2 grid size-full place-items-center"><Icon size={24} strokeWidth={2} /></div>{/snippet}
+              {#snippet trailing()}{@render again(t.add.again(title), () => logged(relog(m), title))}{/snippet}
+            </Row>
+          {/each}
+        </div>
+      {:else}
+        <p class="text-callout text-ink-2 mt-3" data-testid="recent-empty">{t.add.noRecent}</p>
+      {/if}
+    {:else}
+      <div class="mt-2" data-testid="saved">
+        {#each saved.slice(0, 5) as { id, data: s } (id)}
           <Row title={s.title} value={kcalOf(s.items)} unit={t.after.kcal}>
             {#snippet leading()}<div class="bg-surface-2 text-ink-2 grid size-full place-items-center"><Bookmark size={24} strokeWidth={2} /></div>{/snippet}
             {#snippet trailing()}{@render again(t.add.again(s.title), () => logged(logSaved(id, view.date, stampOn(view.date)), s.title))}{/snippet}
           </Row>
         {/each}
+        {#if saved.length > 5}<Row title={t.saved.all(num(saved.length))} chevron onclick={() => (sheets.saved = true)} testid="saved-more" />{/if}
       </div>
     {/if}
+
   {/if}
 </Sheet>

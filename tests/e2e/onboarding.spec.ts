@@ -3,7 +3,7 @@
 // and what the answers change afterwards. Each test is a fresh browser in
 // its own mock space, which opens on the landing page (L1).
 import { expect, test, type Page } from '@playwright/test';
-import { EMAIL, PACE, TODAY, choose, onboard, openFresh, pickerSave, seedAccount, signIn, space, startPlan, useSpace, wheelType, withPrefs } from './helpers';
+import { EMAIL, PACE, TODAY, choose, onboard, openDisclosures, openFresh, pickerSave, seedAccount, signIn, space, startPlan, useSpace, wheelType, withPrefs } from './helpers';
 
 type Hook = { ontrack: { db: { get(c: string, id: string): unknown; live(c: string): { data: unknown }[] } } };
 const record = (page: Page, c: string, id: string) => page.evaluate(([c, id]) => (window as unknown as Hook).ontrack.db.get(c, id), [c, id] as const);
@@ -36,6 +36,7 @@ test('a hardgainer watches the number build, tunes the pace and saves the plan i
   await expect(page.getByTestId('wheel-weight').getByRole('slider').first()).toHaveAttribute('aria-valuetext', '67 kg');
   await wheelType(page, 'wheel-weight', '60');
   await page.getByTestId('continue').click();
+  await page.getByTestId('goal-skip').click(); // R2: the goal weight step, its own test below
 
   // vector A's number grows answer by answer, in the breakdown's own rows
   await expect(page.getByTestId('so-far-value')).toHaveText('1,574');
@@ -54,16 +55,20 @@ test('a hardgainer watches the number build, tunes the pace and saves the plan i
 
   // Building your plan names the engine's work, ticks it off and ends in a check, then Your plan counts up
   await expect(page.getByTestId('building')).toBeVisible();
-  await expect(page.getByTestId('build-row')).toHaveText(['Energy you use each day', 'Targets for training days', 'Protein for this goal']);
+  await expect(page.getByTestId('build-row')).toHaveText(['Daily energy use', 'Training day targets', 'Protein for your goal', 'Safe pace', 'Sources for each number']);
+  await expect(page.getByTestId('build-percent')).toBeVisible();
   await expect(page.getByTestId('build-row').last()).toHaveAttribute('data-done', 'true');
   await expect(page.getByTestId('your-plan')).toBeVisible();
+  // what is behind the number starts closed (O2)
+  await expect(page.getByTestId('plan-how').getByRole('button')).toHaveAttribute('aria-expanded', 'false');
+  await openDisclosures(page);
 
   // 4 lifting sessions of 60 min, the standard pace for a beginner, counted up to
   await expect(kcal(page)).toHaveText('2,460');
   await expect(page.getByTestId('plan-rest')).toHaveText('2,220 on rest days');
   await expect(page.getByTestId('plan-protein')).toHaveText('108');
   await expect(page.getByTestId('plan-expect')).toContainText('Expect to gain about 0.3 kg a week.');
-  await expect(page.getByTestId('plan-training')).toHaveText('Lifting 4 days a week, 60 minutes each, at a moderate effort. Change it any time in Train.');
+  await expect(page.getByTestId('plan-training')).toHaveText('Lifting 4 days a week, 60 min each. Edit in Train.');
   await expect(pace(page, 'Standard')).toHaveAttribute('aria-checked', 'true');
   await expect(page.getByTestId('pace-why')).toHaveCount(0); // BMI 19.6: every gain pace is offered
   await sumsExactly(page);
@@ -86,7 +91,7 @@ test('a hardgainer watches the number build, tunes the pace and saves the plan i
   await page.getByTestId('tune-even').click();
 
   await expect(page.getByTestId('plan-save')).toHaveText('Save this plan');
-  await expect(page.getByTestId('plan-save-line')).toHaveText('Sign in next with Google or an email code. No password needed.');
+  await expect(page.getByTestId('plan-save-line')).toHaveText('Next: sign in with Google or an email code.');
   await page.getByTestId('plan-save').click();
   await expect(page.getByTestId('signin-sheet')).toContainText('Save your plan');
   await signIn(page);
@@ -99,11 +104,25 @@ test('a hardgainer watches the number build, tunes the pace and saves the plan i
   expect(await plans(page)).toMatchObject([{ goal: 'gain', ratePctPerWeek: 0.5, delta: 330, proteinG: 108, effectiveFrom: TODAY, source: 'onboarding' }]);
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('ot-ui')!).draft)).toBeNull();
 
-  // Today's first state: a true head start, then the first meal
-  await expect(page.getByTestId('first-day')).toContainText('Getting started');
-  await expect(page.getByTestId('first-day')).toContainText('Weigh in tomorrow morning');
+  // Today's first state (R2): the weigh-in from onboarding is done, and the first meal is one tap from the empty list
+  await expect(page.getByTestId('weigh-card')).toContainText('Weighed in');
   await page.getByTestId('first-meal').click();
   await expect(page.getByTestId('add-sheet')).toBeVisible();
+});
+
+test('Continue before an answer stays on the step and shakes the answers, with a buzz and no words', async ({ page }) => {
+  await openFresh(page);
+  await startPlan(page);
+  const cont = page.getByTestId('continue');
+  await expect(cont).toHaveAttribute('aria-disabled', 'true');
+  const shaking = () => page.locator('[data-answers]').evaluate((el) => el.getAnimations().length);
+  expect(await shaking()).toBe(0);
+  await cont.click({ force: true }); // Playwright counts aria-disabled as disabled; a finger does not
+  await expect(page.getByTestId('step-goal')).toBeVisible();
+  expect(await shaking()).toBeGreaterThan(0);
+  // an answer lifts it: the same button moves on
+  await choose(page, 'choice-gain');
+  await expect(page.getByTestId('step-screening')).toBeVisible();
 });
 
 test('on every choice step a tap selects without leaving the step and enables Continue, which moves on', async ({ page }) => {
@@ -126,19 +145,20 @@ test('on every choice step a tap selects without leaving the step and enables Co
   await cont.click(); // the birth year's wheel has an answer from the start
   await page.getByRole('radio', { name: 'Metric' }).click();
   await cont.click();
+  await page.getByTestId('goal-skip').click(); // R2: the goal weight, a wheel, not a choice
   await selects('step-move', 'choice-seated');
   await selects('step-days', 'days-4');
   await selects('step-kind', 'choice-lifting');
   await selects('step-experience', 'choice-beginner');
   await expect(page.getByTestId('your-plan')).toBeVisible();
-  // the picked card's tile turns violet with a light glyph
+  // O2, the owner: the picked (black) card's tile is light lavender, the others' (white) are dark violet
   await page.getByTestId('back').click();
   await page.getByTestId('back').click();
-  await expect(page.getByTestId('choice-lifting').locator('span').first()).toHaveClass(/bg-accent/);
-  await expect(page.getByTestId('choice-cardio').locator('span').first()).toHaveClass(/\btile\b/);
+  await expect(page.getByTestId('choice-lifting').locator('span').first()).toHaveClass(/\btile\b/);
+  await expect(page.getByTestId('choice-cardio').locator('span').first()).toHaveClass(/bg-accent/);
 });
 
-test("Not what you're looking for? shows two more goals; Gain weight leads with the faster pace (vector J)", async ({ page }) => {
+test("Other goals shows two more goals; Gain weight leads with the faster pace (vector J)", async ({ page }) => {
   await openFresh(page);
   await startPlan(page);
   await expect(page.getByTestId('step-goal').getByRole('radio')).toHaveCount(3);
@@ -175,12 +195,12 @@ test('the in-between goal is a gentle cut with the cut\'s protein and no pace to
   await expect(page.getByTestId('plan-recomp')).toBeVisible();
   await sumsExactly(page);
   // back on the goal, the two stay shown with the pick
-  for (let i = 0; i < 8; i++) await page.getByTestId('back').click();
+  for (let i = 0; i < 9; i++) await page.getByTestId('back').click(); // R2: one more, the goal weight
   await expect(page.getByTestId('choice-recomp')).toHaveAttribute('aria-checked', 'true');
   await expect(page.getByTestId('goal-more')).toHaveCount(0);
 });
 
-test('under reduced motion Your plan shows at once, with no Building your plan and no count-up', async ({ page }) => {
+test('under reduced motion the wait and the count still play, and what slides or pops is collapsed', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.addInitScript(() => {
     new MutationObserver(() => {
@@ -189,9 +209,10 @@ test('under reduced motion Your plan shows at once, with no Building your plan a
   });
   await openFresh(page);
   await onboard(page, { goal: 'gain' });
-  expect(await page.getByTestId('plan-hero').locator('.text-hero').innerText()).toBe('2,460');
-  expect(await page.getByTestId('plan-hero').locator('.text-display').innerText()).toBe('108');
-  expect(await page.evaluate(() => (window as unknown as { built?: boolean }).built)).toBeFalsy();
+  // the owner asked to see Building your plan and the count-up, so a wait's pacing and a number changing play (O2)
+  await expect(page.getByTestId('plan-hero').locator('.text-hero')).toHaveText('2,460');
+  await expect(page.getByTestId('plan-protein')).toHaveText('108');
+  expect(await page.evaluate(() => (window as unknown as { built?: boolean }).built)).toBe(true);
 });
 
 test('no number shows before screening is answered and the body is known', async ({ page }) => {
@@ -214,6 +235,7 @@ test('no number shows before screening is answered and the body is known', async
   await expect(page.getByTestId('step-body')).toBeVisible();
   await noNumber();
   await page.getByTestId('continue').click();
+  await page.getByTestId('goal-skip').click(); // R2: the goal weight step
   await expect(page.getByTestId('so-far')).toBeVisible();
 });
 
@@ -221,7 +243,7 @@ test('losing fat in imperial units: the paces show live, a cap is explained, and
   await openFresh(page);
   // 5 ft 6 in, 200 lb: BMI 32, so all three paces are offered
   await onboard(page, { goal: 'lose', sex: 'female', year: '1990', units: 'imperial', height: '5 6', weight: '200', neat: 'light', days: 0 });
-  await expect(page.getByTestId('plan-training')).toHaveText('No training yet. Add it any time in Train.');
+  await expect(page.getByTestId('plan-training')).toHaveText('No training yet. Add it in Train.');
   for (const name of ['Gentle', 'Steady', 'Faster']) await expect(pace(page, name)).toBeVisible();
   await expect(pace(page, 'Steady')).toHaveAttribute('aria-checked', 'true');
   const steady = await kcal(page).innerText();
@@ -247,7 +269,7 @@ test('maintain with lifting and cardio: no pace, no experience question, and Tra
   await onboard(page, { goal: 'maintain', days: 5, kind: 'both' });
   await expect(page.getByTestId('plan-pace')).toHaveCount(0);
   await expect(page.getByTestId('plan-expect')).toContainText('Expect your weight to hold steady.');
-  await expect(page.getByTestId('plan-training')).toHaveText('Lifting 3 days and cardio 2 days a week, at a moderate effort. Change it any time in Train.');
+  await expect(page.getByTestId('plan-training')).toHaveText('Lifting 3 days and cardio 2 days a week. Edit in Train.');
   await expect(page.getByTestId('line-goal')).toHaveCount(0);
   await sumsExactly(page);
   // back goes to what is trained: the experience question was never asked
@@ -273,7 +295,7 @@ test('maintain with lifting and cardio: no pace, no experience question, and Tra
 test('gaining on cardio alone: Train adds the two strength sessions to the week, keeping the cardio', async ({ page }) => {
   await openFresh(page);
   await onboard(page, { goal: 'gain', days: 3, kind: 'cardio' });
-  await expect(page.getByTestId('plan-training')).toHaveText('Cardio 3 days a week, 30 minutes each, at a moderate effort. Change it any time in Train.');
+  await expect(page.getByTestId('plan-training')).toHaveText('Cardio 3 days a week, 30 min each. Edit in Train.');
   await page.getByTestId('plan-save').click();
   await signIn(page);
   await page.getByTestId('tab-1').click();
@@ -306,7 +328,7 @@ test('an eating disorder is advised against tracking and can leave setup', async
   await expect(page.getByTestId('continue')).toBeDisabled();
   await page.getByTestId('screen-eatingDisorder').click();
   await expect(page.getByTestId('screen-none')).toHaveAttribute('aria-checked', 'false');
-  // None of these apply unticks like any checkbox, and a tick takes it back
+  // None apply unticks like any checkbox, and a tick takes it back
   await page.getByTestId('screen-eatingDisorder').click();
   await page.getByTestId('screen-none').click();
   await expect(page.getByTestId('screen-none')).toHaveAttribute('aria-checked', 'true');
@@ -391,7 +413,7 @@ test('under BMI 16 a doctor card shows, gaining is still offered, and a low goal
   await openFresh(page);
   await onboard(page, { goal: 'gain', weight: '48' }); // BMI 15.7
   await expect(page.getByTestId('plan-doctor')).toContainText('See a doctor first');
-  await expect(page.getByTestId('plan-expect')).toContainText('Expect to gain');
+  await expect(page.getByTestId('plan-expect')).toContainText('Expect to gain about');
   await page.getByTestId('tune-goalweight').click();
   // the wheel starts at the current weight and goes no lower than BMI 18.5
   await expect(page.getByTestId('picker-save')).toBeVisible();
@@ -459,7 +481,7 @@ test('the draft survives a reload on any step', async ({ page }) => {
   await startPlan(page);
   await choose(page, 'choice-gain');
   await choose(page, 'screen-none');
-  await expect(page.getByTestId('step-count')).toHaveText('Step 3 of 9');
+  await expect(page.getByTestId('step-count')).toHaveText('Step 3 of 10'); // R2: ten with the goal weight
   await page.reload();
   await expect(page.getByTestId('step-sex')).toBeVisible();
   await page.getByTestId('back').click();

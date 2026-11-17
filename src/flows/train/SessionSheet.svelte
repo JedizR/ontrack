@@ -1,6 +1,6 @@
 <!-- SCREENS.md section 8, Session sheet: name, day, type, minutes in fives, intensity with a line for each level, the
      calories the session adds, the exercises with sets and reps, Add exercise, Delete session. Edits a copy; Save
-     changes the program, and the targets follow from tomorrow. -->
+     changes the program, and the targets follow at once (R2). -->
 <script lang="ts">
   import Sheet from '$lib/components/Sheet.svelte';
   import Button from '$lib/components/Button.svelte';
@@ -8,6 +8,7 @@
   import Segmented from '$lib/components/Segmented.svelte';
   import Facts from '$lib/components/Facts.svelte';
   import Stepper from '$lib/components/Stepper.svelte';
+  import Switch from '$lib/components/Switch.svelte';
   import { toast } from 'svelte-sonner';
   import { changeProgram, undoToast } from '$lib/actions';
   import { sessionKcal, type Intensity, type SessionType } from '$lib/model/engine';
@@ -31,6 +32,24 @@
   // a new exercise starts here; the user sets their own
   const START = { sets: 3, repsMin: 8, repsMax: 12 };
 
+  // R2, the owner: cardio carries its setup (machine, speed, incline, level), and a lifting session can have its cardio
+  // after it, as a second session on the same day linked by key (`<key>-c`)
+  type Setup = NonNullable<Session['setup']>;
+  const MACHINES: Setup['machine'][] = ['treadmill', 'bike', 'elliptical', 'rower', 'stairs', 'outdoor'];
+  const isCardio = (ty: SessionType) => ty === 'cardio' || ty === 'walk';
+  const afterKey = (key: string) => `${key.slice(0, 18)}-c`;
+  const SETUP: Setup = { machine: 'treadmill', speedKmh: 6, inclinePct: 5 };
+  let after = $state<{ on: boolean; minutes: number; intensity: Intensity; setup: Setup }>({ on: false, minutes: 30, intensity: 'moderate', setup: { ...SETUP } });
+  $effect(() => {
+    const e = editing;
+    if (!e) return;
+    // a cardio session always has a setup to show, its defaults until the user sets their own
+    if (isCardio(e.session.type) && !e.session.setup) e.session.setup = { machine: e.session.type === 'walk' ? 'outdoor' : 'treadmill', speedKmh: 6, inclinePct: 0 };
+    const linked = program.sessions.find((x) => x.key === afterKey(e.session.key));
+    after = linked
+      ? { on: true, minutes: linked.minutes, intensity: linked.intensity, setup: linked.setup ?? { ...SETUP } }
+      : { on: false, minutes: 30, intensity: 'moderate', setup: { ...SETUP } };
+  });
   let opened = $state<number | null>(null);
   let picking = $state(false);
   const s = $derived(editing?.session);
@@ -50,12 +69,19 @@
     if (!editing) return;
     const next = $state.snapshot(editing.session);
     next.name = next.name.trim() || t.train.types[next.type];
+    if (!isCardio(next.type)) delete next.setup;
+    const ck = afterKey(next.key);
+    const tail = !isCardio(next.type) && after.on
+      ? [{ key: ck, weekday: next.weekday, name: t.train.cardioAfterName, type: 'cardio' as const, minutes: after.minutes, intensity: after.intensity, setup: $state.snapshot(after.setup) }]
+      : [];
+    const rest = program.sessions.filter((x) => x.key !== ck);
+    const sessions = [...(editing.isNew ? [...rest, next] : rest.map((x) => (x.key === next.key ? next : x))), ...tail];
     // nothing changed: no new plan
-    if (!editing.isNew && JSON.stringify(next) === JSON.stringify(program.sessions.find((x) => x.key === next.key))) return void (editing = null);
-    commit(editing.isNew ? [...program.sessions, next] : program.sessions.map((x) => (x.key === next.key ? next : x)), t.train.saved);
+    if (JSON.stringify(sessions) === JSON.stringify(program.sessions)) return void (editing = null);
+    commit(sessions, t.train.saved);
   }
   function remove() {
-    if (editing) commit(program.sessions.filter((x) => x.key !== editing!.session.key), t.train.deleted);
+    if (editing) commit(program.sessions.filter((x) => x.key !== editing!.session.key && x.key !== afterKey(editing!.session.key)), t.train.deleted);
   }
   function pick(exerciseId: string) {
     if (!s) return;
@@ -79,7 +105,7 @@
   {#if s}
     <div class="flex flex-col gap-5">
       <div class="flex flex-col gap-2">
-        <label for="session-name" class="text-caption text-ink-2">{t.train.name}</label>
+        <label for="session-name" class={label}>{t.train.name}</label>
         <input
           id="session-name"
           placeholder={t.train.types[s.type]}
@@ -102,7 +128,7 @@
         <span class={label}>{t.train.type}</span>
         <div class="flex flex-wrap gap-2" role="group" aria-label={t.train.type}>
           {#each TYPES as ty (ty)}
-            <Chip selected={s.type === ty} onclick={() => (s.type = ty)}>{t.train.types[ty]}</Chip>
+            <Chip selected={s.type === ty} onclick={() => { s.type = ty; if (isCardio(ty) && !s.setup) s.setup = { machine: ty === 'walk' ? 'outdoor' : 'treadmill', speedKmh: 6, inclinePct: 0 }; }}>{t.train.types[ty]}</Chip>
           {/each}
         </div>
       </div>
@@ -116,9 +142,44 @@
         <Segmented bind:value={s.intensity} label={t.train.intensity} options={INTENSITIES.map((i) => ({ value: i, label: t.train.intensities[i] }))} />
         <p class="text-caption text-ink-2">{t.train.intensityLines[s.intensity]}</p>
       </div>
+      {#snippet setupOf(setup: Setup, testid: string)}
+        <div class="flex flex-col gap-3" data-testid={testid}>
+          <div class="flex flex-wrap gap-2" role="group" aria-label={t.train.machine}>
+            {#each MACHINES as m (m)}<Chip selected={setup.machine === m} onclick={() => (setup.machine = m)}>{t.train.machines[m]}</Chip>{/each}
+          </div>
+          {#if setup.machine === 'treadmill' || setup.machine === 'outdoor'}
+            <div class="flex items-center justify-between gap-3"><span class="text-callout">{t.train.speed}</span><Stepper bind:value={() => setup.speedKmh ?? 6, (v) => (setup.speedKmh = v)} min={1} max={30} step={0.5} unit={t.after.kmh} label={t.train.speed} /></div>
+          {/if}
+          {#if setup.machine === 'treadmill'}
+            <div class="flex items-center justify-between gap-3"><span class="text-callout">{t.train.incline}</span><Stepper bind:value={() => setup.inclinePct ?? 0, (v) => (setup.inclinePct = v)} min={0} max={30} step={0.5} unit="%" label={t.train.incline} /></div>
+          {:else if setup.machine !== 'outdoor'}
+            <div class="flex items-center justify-between gap-3"><span class="text-callout">{t.train.level}</span><Stepper bind:value={() => setup.level ?? 5, (v) => (setup.level = v)} min={1} max={30} label={t.train.level} /></div>
+          {/if}
+        </div>
+      {/snippet}
+      {#if isCardio(s.type)}
+        <div class="flex flex-col gap-3">
+          <span class={label}>{t.train.setup}</span>
+          {#if s.setup}{@render setupOf(s.setup, 'session-setup')}{/if}
+        </div>
+      {:else}
+        <!-- cardio after the lifting, one switch: its minutes, how hard, and its setup -->
+        <div class="bg-surface-2 flex flex-col gap-3 rounded-md p-4" data-testid="session-after">
+          <div class="flex min-h-11 items-center justify-between gap-3">
+            <span class="text-body font-semibold">{t.train.cardioAfter}</span>
+            <Switch bind:checked={after.on} label={t.train.cardioAfter} testid="session-after-on" />
+          </div>
+          {#if after.on}
+            <div class="flex items-center justify-between gap-3"><span class="text-callout">{t.train.minutes}</span><Stepper bind:value={after.minutes} min={5} max={MAX.minutes} step={5} label={t.train.minutes} /></div>
+            <Segmented bind:value={after.intensity} label={t.train.intensity} options={INTENSITIES.map((i) => ({ value: i, label: t.train.intensities[i] }))} />
+            {@render setupOf(after.setup, 'session-after-setup')}
+          {/if}
+        </div>
+      {/if}
       <p class="text-subhead num" data-testid="session-kcal">{t.train.sessionAdds(num(Math.round(sessionKcal(s, weightKg))))}</p>
 
-      <div>
+      <!-- cardio is its setup, not a list of exercises -->
+      <div hidden={isCardio(s.type)}>
         <h3 class="text-eyebrow text-ink-2">{t.train.exercises}</h3>
         {#each s.exercises ?? [] as e, i (i)}
           <div class="border-line border-t py-3 first-of-type:border-t-0" data-testid="session-exercise">

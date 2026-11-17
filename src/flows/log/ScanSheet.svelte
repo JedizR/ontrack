@@ -126,7 +126,19 @@
   async function taken() {
     const file = input?.files?.[0];
     if (input) input.value = '';
-    if (!file) return;
+    if (file) await readFrom(file);
+  }
+  // R1: a frame from the scanner's camera, the same consent first. A meal goes to Review, a label is read here
+  let held: { file: Blob; as: 'meal' | 'label' } | null = null;
+  function frame(file: Blob, as: 'meal' | 'label') {
+    if (!prefs.photoOk) { held = { file, as }; notice = true; return; }
+    useFrame(file, as);
+  }
+  function useFrame(file: Blob, as: 'meal' | 'label') {
+    if (as === 'meal') { sheets.scan = false; sheets.review = { kind: 'photo', file }; }
+    else void readFrom(file);
+  }
+  async function readFrom(file: Blob) {
     const me = ++ask;
     failure = null;
     step = 'reading';
@@ -242,11 +254,11 @@
   {#if notice}
     <p class="text-body" data-testid="photo-notice">{t.scan.consent}</p>
     <div class="mt-6 flex flex-col gap-2">
-      <Button variant="primary" size="lg" full onclick={() => { prefs.photoOk = true; notice = false; input?.click(); }} data-testid="photo-continue">{t.add.consentContinue}</Button>
-      <Button variant="plain" size="lg" full onclick={() => (notice = false)}>{t.add.consentNotNow}</Button>
+      <Button variant="primary" size="lg" full onclick={() => { prefs.photoOk = true; notice = false; if (held) { useFrame(held.file, held.as); held = null; } else input?.click(); }} data-testid="photo-continue">{t.add.consentContinue}</Button>
+      <Button variant="plain" size="lg" full onclick={() => { notice = false; held = null; scans++; }}>{t.add.consentNotNow}</Button>
     </div>
   {:else if step === 'scan'}
-    {#key scans}<Scanner oncode={look} bind:typing />{/key}
+    {#key scans}<Scanner oncode={look} onphoto={frame} bind:typing />{/key}
   {:else if step === 'finding'}
     {@render pending(t.scan.finding, 'product')}
   {:else if step === 'product' && product}

@@ -64,9 +64,9 @@
   /* the hero haze: the palette's light colours, peach and sand warm at the top left, lavender and mist cool to the right
      and below. Secondary words on it are ink at 73 percent (the `haze` utility): ink-2 on white, 4.5 to 1 on lavender */
   --grad-hero: var(--grain), url(./gradients/haze-light.webp) center / cover no-repeat,
-    radial-gradient(70% 100% at 0% 0%, #f9bba1 0%, transparent 70%),
-    radial-gradient(70% 120% at 100% 20%, #bebeff 0%, transparent 70%),
-    radial-gradient(60% 90% at 70% 100%, #a7bedb 0%, transparent 70%), #ffffff;
+    radial-gradient(60% 80% at 15% 10%, #a7bedb 0%, transparent 70%),
+    radial-gradient(60% 90% at 90% 10%, #bebeff 0%, transparent 70%),
+    radial-gradient(80% 80% at 58% 62%, #f7b3c9 0%, transparent 75%), #f9bba1;
   /* the screen's one featured card (U1b: the Add sheet's Photo): lavender, peach and coral, night words (the owner, 14 November) */
   --grad-feature: var(--grain), url(./gradients/feature-light.webp) center / cover no-repeat,
     radial-gradient(90% 120% at 100% 30%, #f9bba1 0%, transparent 70%),
@@ -151,7 +151,8 @@
   --d-settle: 240ms;            /* a dragged row or page settling once the finger lifts; a tab or page sliding in */
   --d-leave: 280ms;             /* a row or card leaving: things go faster than they come */
   --d-pop: 520ms;               /* a check popping in, with --spring-pop */
-  --d-beat: 450ms;              /* one step of a made-up wait: Building your plan's rows */
+  --d-beat: 640ms;              /* one step of a made-up wait: Building your plan's rows and the percent that moves with them */
+  --d-reveal: 1400ms;           /* Your plan's target counting up from nothing, with --ease-out: the payoff of the wait */
   --d-step: 1600ms;             /* one step of a real wait: the words under a photo being read */
   --d-sweep: 1800ms;            /* one pass of the light across a photo being read */
 

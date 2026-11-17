@@ -1,7 +1,7 @@
 // Training (F7, F8), on the mock backend. "Today" is Wednesday 2026-11-11; the seeded program trains Monday,
 // Wednesday, Friday and Saturday, an hour of moderate strength each: 2,460 kcal on a training day, 2,220 at rest.
 import { expect, test, type Page } from '@playwright/test';
-import { open } from './helpers';
+import { open, openDisclosures } from './helpers';
 
 const week = (page: Page) => page.getByTestId('train-week');
 const day = (page: Page, d: number) => page.getByTestId(`train-day-${d}`);
@@ -12,7 +12,7 @@ test('build a week: add a session, list exercises, see the analysis with its sou
   await page.getByTestId('tab-1').click();
   await expect(page.getByTestId('train-sessions')).toHaveText('4');
   await expect(page.getByTestId('train-minutes')).toHaveText('240');
-  await expect(page.getByTestId('train-summary')).toContainText('Adds 137 kcal a day on average');
+  await expect(page.getByTestId('train-summary')).toContainText('Adds 137 kcal a day');
   await expect(page.getByTestId('train-balance-empty')).toContainText('List your exercises to see muscle balance');
 
   // a hard run on Tuesday, a rest day
@@ -25,7 +25,6 @@ test('build a week: add a session, list exercises, see the analysis with its sou
   await expect(sheet.getByTestId('session-kcal')).toHaveText('Adds 440 kcal to the day'); // (9 - 1) MET x 60 kg x 55 min
   await sheet.getByTestId('session-save').click();
   await expect(day(page, 1)).toContainText('Cardio, 55 min');
-  await expect(page.getByTestId('train-pending')).toHaveText('Your targets follow this program from tomorrow.');
   await expect(page.getByTestId('train-cardio')).toContainText('110 of 150 to 300 minutes a week'); // vigorous counts double
 
   // exercises for Monday: pull-ups from the picker, filtered to back
@@ -37,6 +36,7 @@ test('build a week: add a session, list exercises, see the analysis with its sou
   await expect(sheet.getByTestId('session-exercise')).toContainText('3 sets, 8 to 12 reps');
   await sheet.getByRole('button', { name: 'More Sets' }).click();
   await sheet.getByTestId('session-save').click();
+  await openDisclosures(page, page.getByTestId('train-balance')); // ten rows behind a chevron (R1)
   await expect(page.getByTestId('muscle-back')).toContainText('4');
   await expect(page.getByTestId('muscle-biceps')).toContainText('2');
   const rec = page.getByTestId('rec').first();
@@ -44,28 +44,23 @@ test('build a week: add a session, list exercises, see the analysis with its sou
   await rec.getByTestId('rec-why').click();
   await expect(rec.getByTestId('rec-source')).toContainText('Schoenfeld BJ');
 
-  // Saturday's session dragged by its handle to Sunday
-  const handle = day(page, 5).getByTestId('train-handle');
-  await handle.scrollIntoViewIfNeeded();
-  const from = (await handle.boundingBox())!;
-  const to = (await day(page, 6).boundingBox())!;
-  await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
-  await page.mouse.down();
-  await page.mouse.move(from.x + from.width / 2, to.y + to.height / 2, { steps: 8 });
-  await page.mouse.up();
-  await expect(day(page, 5)).toContainText('Rest');
+  // Saturday's session moved to Sunday on its sheet (R2: the week is a grid, a session moves by its day chips)
+  await day(page, 5).getByTestId('train-session').click();
+  await sheet.getByRole('group', { name: 'Day' }).getByRole('button', { name: 'Sun' }).click();
+  await sheet.getByTestId('session-save').click();
+  await expect(day(page, 5).getByTestId('train-rest')).toBeVisible();
   await expect(day(page, 6)).toContainText('Strength, 60 min');
 
   // delete Sunday's session, then take it back
   await day(page, 6).getByTestId('train-session').click();
   await sheet.getByTestId('session-delete').click();
-  await expect(day(page, 6)).toContainText('Rest');
+  await expect(day(page, 6).getByTestId('train-rest')).toBeVisible();
   await page.locator('[data-sonner-toast]').filter({ hasText: 'Session deleted' }).getByRole('button', { name: 'Undo' }).click();
   await expect(day(page, 6)).toContainText('Strength, 60 min');
   await expect(week(page).getByTestId('train-session')).toHaveCount(5);
 });
 
-test('a template replaces the program from tomorrow; today and the days before keep their targets, and tomorrow trains to the new one', async ({ page }) => {
+test('a template replaces the program from today (R2); the days before keep their targets, and tomorrow trains to the new one', async ({ page }) => {
   await open(page);
   await page.getByTestId('tab-1').click();
   await page.getByTestId('train-change').click();
@@ -75,13 +70,13 @@ test('a template replaces the program from tomorrow; today and the days before k
   await expect(page.getByTestId('train-sessions')).toHaveText('4');
   await expect(page.getByTestId('train-minutes')).toHaveText('280');
   await expect(page.getByTestId('train-summary')).toContainText('Upper lower 4 days');
-  await expect(page.getByTestId('train-recs')).toContainText('No changes to suggest.');
+  await expect(page.getByTestId('train-recs')).toContainText('Nothing to change.');
   await expect(day(page, 3)).toContainText('Upper B'); // Thursday
 
-  // today, Wednesday, keeps its session and target; Tuesday, now Lower A, stays a rest day
+  // R2: today, Wednesday, follows the new program at once (a rest day in it); Tuesday, a past day, keeps its own
   await page.getByTestId('tab-0').click();
-  await expect(kcalOf(page)).toHaveText('of 2,460 kcal');
-  await expect(page.getByTestId('training')).toContainText('60 min, 240 kcal');
+  await expect(kcalOf(page)).toHaveText('of 2,220 kcal');
+  await expect(page.getByTestId('day-kind')).toHaveText('Rest day');
   await page.getByTestId('week').getByRole('button', { name: /Tuesday, November 10/ }).click();
   await expect(kcalOf(page)).toHaveText('of 2,220 kcal');
   await expect(page.getByTestId('day-kind')).toHaveText('Rest day');
@@ -94,10 +89,10 @@ test('a template replaces the program from tomorrow; today and the days before k
   await page.getByTestId('session-more').click();
   await page.getByTestId('session-skip').click();
   await expect(kcalOf(page)).toHaveText('of 2,220 kcal');
-  // and Wednesday, now a past day, is still what it was
+  // and Wednesday, now a past day, keeps the target it took the day the program changed
   await page.getByTestId('week').getByRole('button', { name: /Wednesday, November 11/ }).click();
-  await expect(kcalOf(page)).toHaveText('of 2,460 kcal');
-  await expect(page.getByTestId('training')).toContainText('Strength');
+  await expect(kcalOf(page)).toHaveText('of 2,220 kcal');
+  await expect(page.getByTestId('training')).toContainText('Rest day'); // the new program rests on Wednesdays
 });
 
 test('a hybrid template builds a week of lifting and cardio and says how to arrange it, with its sources (F20)', async ({ page }) => {
@@ -118,8 +113,8 @@ test('a hybrid template builds a week of lifting and cardio and says how to arra
   await expect(page.getByTestId('train-sessions')).toHaveText('6');
   await expect(page.getByTestId('train-minutes')).toHaveText('300');
   for (const d of [0, 2, 4]) {
-    await expect(day(page, d)).toHaveCount(2);
-    await expect(day(page, d).last()).toContainText('Cardio, 25 min');
+    await expect(day(page, d).getByTestId('train-session')).toHaveCount(2);
+    await expect(day(page, d)).toContainText('Cardio, 25 min');
   }
   await expect(page.getByTestId('train-cardio')).toContainText('150 of 150 to 300 minutes a week');
 
@@ -134,7 +129,7 @@ test('a hybrid template builds a week of lifting and cardio and says how to arra
   }
 
   // Friday's ride moved to Sunday: Friday no longer has both
-  await day(page, 4).last().getByTestId('train-session').click();
+  await day(page, 4).getByTestId('train-session').last().click(); // the day's second session, its cardio (R2: a column a day)
   await page.getByTestId('train-session-sheet').getByRole('group', { name: 'Day' }).getByRole('button', { name: 'Sun' }).click();
   await page.getByTestId('session-save').click();
   await expect(points.nth(0)).toContainText('On Monday and Wednesday, lift before your cardio');

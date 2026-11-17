@@ -95,6 +95,8 @@ test('a typical gain user (vector A: 25, 175 cm, 60 kg, lifts 4 days)', async ({
   await w.wheel('wheel-height', '175');
   await w.wheel('wheel-weight', '60');
   await w.tap('continue');
+  await w.at('step-goal-weight'); // R2: the goal weight, its suggested value taken
+  await w.tap('continue');
   await w.at('step-move');
   await w.tap('choice-seated');
   await w.tap('continue');
@@ -134,6 +136,8 @@ test('a typical cut user (32, 165 cm, 75 kg, some walking, lifts 3 days)', async
   await w.at('step-body');
   await w.wheel('wheel-height', '165');
   await w.wheel('wheel-weight', '75');
+  await w.tap('continue');
+  await w.at('step-goal-weight'); // R2: the goal weight, its suggested value taken
   await w.tap('continue');
   await w.at('step-move');
   await w.tap('choice-light');

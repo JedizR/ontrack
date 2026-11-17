@@ -3,6 +3,7 @@
      Rows in a list card are divided by hairlines inset to the text. With onclick the row is a button. -->
 <script lang="ts">
   import type { Snippet } from 'svelte';
+  import ChevronRight from '@lucide/svelte/icons/chevron-right';
 
   let {
     title,
@@ -14,6 +15,7 @@
     onclick,
     testid,
     wrap = false,
+    chevron = false,
   }: {
     title: string;
     caption?: string | Snippet;
@@ -29,6 +31,8 @@
     testid?: string;
     /** the trailing control moves under the title when they cannot share a line (large text on a small phone) */
     wrap?: boolean;
+    /** a chevron at the end, for a row that opens another screen or sheet (O2: a tap you can see) */
+    chevron?: boolean;
   } = $props();
 </script>
 
@@ -48,6 +52,7 @@
     </div>
     {#if value !== undefined}<div class="text-body num flex-none font-semibold">{value}{#if unit}<span class="text-caption text-ink-2 font-medium">{' '}{unit}</span>{/if}</div>{/if}
     {@render trailing?.()}
+    {#if chevron}<ChevronRight class="text-ink-2 -mr-1 flex-none" size={20} strokeWidth={2.25} aria-hidden="true" />{/if}
   </div>
 {/snippet}
 

@@ -1,7 +1,8 @@
 // The food table and its build (TECH-SPEC section 9).
 import { describe, expect, test } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { buildFoods, complete, csvLine, readInmuPage, readOwner, readSg, sha256, type InmuPages, type SgExtract, type Table } from '../../scripts/build-foods';
+import { fileURLToPath } from 'node:url';
+import { buildFoods, complete, csvLine, readInmuPage, readOwner, readRecipes, readSg, recipeProblem, recipeValues, sha256, type InmuPages, type Recipe, type SgExtract, type Table } from '../../scripts/build-foods';
 import { V } from '../../src/lib/model/engine/constants';
 import { itemFor, searchFoods, type Food } from '../../src/lib/data/foods';
 import FOODS from '../../src/lib/data/foods.json';
@@ -80,6 +81,82 @@ describe('foods:build', () => {
   });
   test('reads quoted CSV fields', () => {
     expect(csvLine('"1","a, b","say ""hi"""')).toEqual(['1', 'a, b', 'say "hi"']);
+  });
+});
+
+describe('recipes', () => {
+  const per100 = new Map([
+    ['rice', { kcal: 136, protein: 2.28, carbs: 31.1, fat: 0.24, fiber: 0.4 }],
+    ['oil', { kcal: 884, protein: 0, carbs: 0, fat: 100, fiber: 0 }],
+    ['fish-sauce', { kcal: 35, protein: 5.1, carbs: 3.6, fat: 0 }], // no fibre
+  ]);
+  const recipe = (over: Partial<Recipe> = {}): Recipe => ({
+    name: 'Rice with oil', sources: ['https://example.com/a', 'https://example.com/b'], notes: 'n',
+    ingredients: [{ food: 'rice', grams: 200 }, { food: 'oil', grams: 15 }], yield_g: 200, ...over,
+  });
+  test('per 100 g is the ingredients summed, then scaled to the weight of the dish as served', () => {
+    // 200 g rice = 272 kcal, 4.56 g protein, 62.2 g carbs, 0.48 g fat, 0.8 g fibre; 15 g oil = 132.6 kcal, 15 g fat; over 200 g
+    expect(recipeValues(recipe(), per100)).toEqual({ kcal: 202, protein: 2.28, carbs: 31.1, fat: 7.74, fiber: 0.4 });
+    // the same dish weighing 100 g after cooking holds twice the density
+    expect(recipeValues(recipe({ yield_g: 100 }), per100)).toMatchObject({ kcal: 405, fat: 15.48 });
+  });
+  test('fibre is left out when an ingredient has none, and a missing ingredient throws', () => {
+    const r = recipeValues(recipe({ ingredients: [{ food: 'rice', grams: 100 }, { food: 'fish-sauce', grams: 10 }], yield_g: 110 }), per100);
+    expect(r).toEqual({ kcal: 127, protein: 2.54, carbs: 28.6, fat: 0.22 });
+    expect('fiber' in r).toBe(false);
+    expect(() => recipeValues(recipe({ ingredients: [{ food: 'gold', grams: 5 }] }), per100)).toThrow(/gold is not in the table/);
+  });
+  test('a recipe needs 2 different sources, ingredients with grams, a yield, and a believable weight', () => {
+    expect(recipeProblem(recipe())).toBeUndefined();
+    expect(recipeProblem(recipe({ sources: ['https://example.com/a'] }))).toMatch(/2 different source URLs/);
+    expect(recipeProblem(recipe({ sources: ['https://example.com/a', 'https://example.com/a'] }))).toMatch(/2 different source URLs/);
+    expect(recipeProblem(recipe({ sources: ['https://example.com/a', 'a book'] }))).toMatch(/2 different source URLs/);
+    expect(recipeProblem(recipe({ ingredients: [{ food: 'rice', grams: 0 }] }))).toMatch(/grams > 0/);
+    expect(recipeProblem(recipe({ yield_g: 0 }))).toMatch(/yield_g/);
+    expect(recipeProblem(recipe({ yield_g: 600 }))).toMatch(/yields 600 g from 215 g/);
+    expect(recipeProblem(recipe({ yield_g: 50 }))).toMatch(/yields 50 g/);
+    expect(recipeProblem(recipe({ notes: ' ' }))).toMatch(/no notes/);
+  });
+  test('the list builds a recipe row from its ingredients, in any order, a dish inside a dish included', () => {
+    const csv = [HEADER,
+      'plate,Rice plate,,recipe:plate,1 plate:300,thai',
+      'dish,Rice and oil,,recipe:dish,1 dish:100,',
+      'rice,Rice,,1,100 g:100,staple',
+      'oil,Oil,,2,1 tbsp:14,oil'].join('\n');
+    const tables = usda({ 1: { kcal: 136, protein: 2.28, carbs: 31.1, fat: 0.24, fiber: 0.4 }, 2: { kcal: 884, protein: 0, carbs: 0, fat: 100, fiber: 0 } });
+    const recipes = new Map<string, Recipe>([
+      ['dish', recipe({ ingredients: [{ food: 'rice', grams: 200 }, { food: 'oil', grams: 15 }], yield_g: 200 })],
+      ['plate', recipe({ name: 'Rice plate', ingredients: [{ food: 'dish', grams: 100 }, { food: 'rice', grams: 100 }], yield_g: 200 })],
+    ]);
+    const foods = buildFoods(csv, tables, recipes);
+    expect(foods.map((f) => f.id)).toEqual(['plate', 'dish', 'rice', 'oil']); // the list's order, not the build's
+    expect(foods[1]).toMatchObject({ per100: { kcal: 202, fat: 7.74 }, source: { set: 'recipe', id: 'recipe:dish', url: 'https://example.com/a' } });
+    expect(foods[0].per100.kcal).toBe(Math.round((202 + 136) / 2)); // half the dish, half rice
+  });
+  test('the list fails on a recipe with no file, an ingredient that is not listed, a bad recipe, and a loop', () => {
+    const rows = (ids: string) => [HEADER, ...ids.split(' ').map((id) => `${id},${id.toUpperCase()},,recipe:${id},1 plate:100,`), 'rice,Rice,,1,100 g:100,staple'].join('\n');
+    const t = usda({ 1: FULL });
+    expect(() => buildFoods(rows('a'), t, new Map())).toThrow(/a \(recipe:a\) has no file data\/thai\/recipes\/a.json/);
+    expect(() => buildFoods(rows('a'), t, new Map([['a', recipe({ ingredients: [{ food: 'nope', grams: 5 }], yield_g: 5 })]]))).toThrow(/ingredients that are not in the list: nope/);
+    expect(() => buildFoods(rows('a'), t, new Map([['a', recipe({ sources: [] })]]))).toThrow(/needs at least 2 different source URLs/);
+    const loop = new Map([['a', recipe({ ingredients: [{ food: 'b', grams: 5 }], yield_g: 5 })], ['b', recipe({ ingredients: [{ food: 'a', grams: 5 }], yield_g: 5 })]]);
+    expect(() => buildFoods(rows('a b'), t, loop)).toThrow(/wait on each other/);
+  });
+  test('every recipe file is valid, and every recipe food carries what its ingredients give', () => {
+    const recipes = readRecipes(fileURLToPath(new URL('recipes', THAI)));
+    expect(recipes.size).toBeGreaterThanOrEqual(90);
+    const foods = FOODS as Food[];
+    const byId = new Map(foods.map((f) => [f.id, f.per100]));
+    const made = foods.filter((f) => f.source.set === 'recipe');
+    expect(made.length).toBe(recipes.size); // no file without a row, no row without a file
+    for (const f of made) {
+      const r = recipes.get(f.source.id.slice('recipe:'.length))!;
+      expect(r, f.id).toBeDefined();
+      expect(recipeProblem(r), f.id).toBeUndefined();
+      expect(f.source.url, f.id).toBe(r.sources[0]);
+      expect(f.per100, f.id).toEqual(recipeValues(r, byId));
+      expect(f.tags.includes('thai'), f.id).toBe(true);
+    }
   });
 });
 

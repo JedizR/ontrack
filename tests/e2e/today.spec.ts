@@ -12,7 +12,7 @@ test('search a food, pick a portion and add it: Today updates at once', { tag: '
   await open(page);
   await expect(hero(page)).toHaveText('0');
   await expect(kcalOf(page)).toHaveText('of 2,460 kcal');
-  await expect(page.getByTestId('meals-empty')).toHaveText('Log your first meal with the plus button');
+  await expect(page.getByTestId('first-meal')).toContainText('Log your first meal');
 
   await page.getByTestId('add').click();
   await page.getByTestId('add-search').click();
@@ -89,7 +89,8 @@ test('a meal opens, edits grams, saves, keeps as a saved meal and deletes with u
   await expect(hero(page)).toHaveText('1,662');
 
   await page.getByTestId('add').click();
-  await expect(page.getByTestId('saved').getByRole('button', { name: 'Add Chicken rice bowl again' })).toBeVisible();
+  await expect(page.getByTestId('recent').getByRole('button', { name: 'Add Chicken rice bowl again' })).toBeVisible();
+  await page.getByRole('radio', { name: 'Saved' }).click(); // Recent and Saved are one list with a switch (R1)
   await page.getByTestId('saved').getByRole('button', { name: 'Add Usual breakfast again' }).click();
   await expect(hero(page)).toHaveText('1,965');
   // the Add sheet (taller since B1) must be gone before the swipe, or the swipe lands on it as it slides away
@@ -113,7 +114,7 @@ test('done keeps the training target, skip returns to rest; a past day shows its
   await expect(training).toContainText('60 min, 240 kcal'); // the type is not repeated when it is the name
   await expect(page.getByTestId('day-kind')).toHaveText('Training day');
   await training.getByTestId('session-done').click();
-  await expect(training).toContainText('60 min, Done');
+  await expect(training.getByTestId('session-tick')).toBeVisible(); // R2: the green check says done
   await expect(kcalOf(page)).toHaveText('of 2,460 kcal');
   await training.getByTestId('session-undo').click();
   await training.getByTestId('session-more').click();
@@ -130,10 +131,10 @@ test('done keeps the training target, skip returns to rest; a past day shows its
   const week = page.getByTestId('week');
   await expect(week.getByRole('button', { name: 'Tuesday, November 10, on track' })).toBeVisible();
   await week.getByRole('button', { name: /Tuesday, November 10/ }).click();
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Tuesday, Nov 10');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Tue, Nov 10');
   await expect(hero(page)).toHaveText('2,300');
   await expect(page.getByTestId('hero')).toContainText('On track');
-  await page.getByRole('button', { name: 'Back to today' }).click();
+  await page.getByTestId('week-today').click(); // the anchored Today chip (R1)
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Today');
 });
 
@@ -141,8 +142,9 @@ test('the weigh-in prompt shows after three days and goes once you weigh in', as
   // the seeded weigh-in on TODAY is deleted; the last one left is four days old
   await open(page, '/', [{ collection: 'weight', id: `weight:${TODAY}`, updatedAt: 2, deleted: true, data: { date: TODAY, kg: 60 } }, { collection: 'weight', id: 'weight:2026-11-07', updatedAt: 1, data: { date: '2026-11-07', kg: 60.4 } }]);
   const card = page.getByTestId('weigh-card');
-  await expect(card.getByRole('heading')).toHaveText('Weigh-in, Time for a new one');
-  await expect(card).toContainText('Your last one was 4 days ago');
+  // R2: the weigh-in is a box in the day's card: what to do, and how long since the last one
+  await expect(card).toContainText('Weigh in');
+  await expect(card).toContainText('4 days ago');
   await card.getByTestId('weigh-open').click();
   // the wheel starts at the last weigh-in
   await expect(page.getByTestId('picker-save')).toHaveText('Save 60.4 kg');
@@ -158,7 +160,8 @@ test('the weigh-in prompt shows after three days and goes once you weigh in', as
   await expect(page.getByTestId('picker-save')).toHaveText('Save 30 kg');
   await pickerSave(page, '61.2');
   await expect(page.getByText('Weigh-in saved, 61.2 kg')).toBeVisible();
-  await expect(card).toBeHidden();
+  await expect(card).toContainText('61.2 kg'); // a standing card: it shows the weight and Edit now (R1)
+  await expect(card.getByTestId('weigh-open')).toHaveAccessibleName('Edit'); // R2: the box shows the weight, a tap edits it
 });
 
 test('logging works offline and reaches the account once the network is back', { tag: '@smoke' }, async ({ page, context }) => {

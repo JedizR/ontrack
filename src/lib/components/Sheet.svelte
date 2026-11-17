@@ -64,23 +64,25 @@
     <!-- once the keyboard is up, scroll this list (never the page: scrollIntoView pans iOS's whole viewport and pushes the
          sheet's header off screen) so a field the keyboard covers sits in the middle of what is still visible -->
     <div
-      class="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 pt-3 {footer ? 'pb-4' : 'pb-[max(24px,env(safe-area-inset-bottom))]'}"
+      class="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 pt-3 {footer ? 'pb-4' : 'pb-[max(24px,var(--kb-safe,env(safe-area-inset-bottom)))]'}"
       onscroll={(e) => (scrolled = e.currentTarget.scrollTop > 0)}
       onfocusin={(e) => {
         const el = e.target as HTMLElement;
         const list = e.currentTarget;
         if (!el.matches('input, textarea')) return;
         setTimeout(() => {
-          const visible = window.visualViewport?.height ?? innerHeight;
+          // rects are in layout coordinates, so the pan (offsetTop) counts
+          const vv = window.visualViewport;
+          const visible = vv ? vv.offsetTop + vv.height : innerHeight;
           const { bottom } = el.getBoundingClientRect();
-          if (bottom > visible - 16) list.scrollBy({ top: bottom - visible / 2, behavior: 'smooth' });
+          if (bottom > visible - 16) list.scrollBy({ top: bottom - visible + (vv?.height ?? innerHeight) / 2, behavior: 'smooth' });
         }, 350);
       }}
     >
       {#key step}<div in:fly={enter()}>{@render children()}</div>{/key}
     </div>
     {#if footer}
-      <div class="fade-over relative px-6 pt-3 pb-[max(16px,env(safe-area-inset-bottom))] [--fade:var(--surface)]">
+      <div class="fade-over relative px-6 pt-3 pb-[max(16px,var(--kb-safe,env(safe-area-inset-bottom)))] [--fade:var(--surface)]">
         {@render footer()}
       </div>
     {/if}

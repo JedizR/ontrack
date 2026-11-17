@@ -7,9 +7,10 @@
   import Sheet from '$lib/components/Sheet.svelte';
   import Facts from '$lib/components/Facts.svelte';
   import Button from '$lib/components/Button.svelte';
+  import Bookmark from '@lucide/svelte/icons/bookmark';
   import { sheets } from '$lib/sheets.svelte';
   import { db } from '$lib/db/store.svelte';
-  import { deleteMeal, rememberFoods, saveAsMeal, saveMeal, shareMeal, undoToast, unshareMeal } from '$lib/actions';
+  import { deleteMeal, deleteSaved, rememberFoods, saveAsMeal, savedFor, saveMeal, shareMeal, undoToast, unshareMeal } from '$lib/actions';
   import type { Position } from '$lib/geo';
   import { totals } from '$lib/model/day';
   import { atTime, timeOf } from '$lib/model/dates';
@@ -55,10 +56,15 @@
     close();
     toast(t.toast.changesSaved);
   }
+  // the bookmark saves this meal to Saved meals, and takes it out again (R1)
+  const savedId = $derived(edited ? savedFor(edited) : null);
   function keep() {
     if (!edited || !items.length) return;
-    saveAsMeal(edited, edited.title || items[0].name);
-    toast(t.toast.mealSaved);
+    if (savedId) undoToast(t.toast.mealUnsaved, deleteSaved(savedId));
+    else {
+      saveAsMeal(edited, edited.title || items[0].name);
+      toast(t.toast.mealSaved);
+    }
   }
   // on the map or off it at once, not on Save changes; the sheet's copy follows so Save changes keeps it (S1b)
   function place(p: Position | null) {
@@ -110,7 +116,7 @@
     {/if}
 
     <div class="border-line mt-4 flex flex-wrap gap-2 border-t pt-4">
-      <Button disabled={!items.length} onclick={keep} data-testid="meal-keep">{t.meal.saveAs}</Button>
+      <Button disabled={!items.length} onclick={keep} aria-pressed={!!savedId} data-testid="meal-keep"><Bookmark size={20} strokeWidth={2.25} fill={savedId ? 'currentColor' : 'none'} aria-hidden="true" />{savedId ? t.meal.saved : t.meal.saveAs}</Button>
       <Button variant="danger" onclick={remove} data-testid="meal-delete">{t.meal.delete}</Button>
     </div>
   {/if}

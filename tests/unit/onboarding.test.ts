@@ -16,9 +16,9 @@ const A: Draft = {
 };
 
 describe('route', () => {
-  test('a gaining lifter answers all nine questions; the pace is chosen on Your plan', () => {
-    expect(route(A, YEAR)).toEqual(['welcome', 'goal', 'screening', 'sex', 'born', 'body', 'move', 'days', 'kind', 'experience', 'plan']);
-    expect(progress({ ...A, at: 'sex' }, YEAR)).toEqual({ n: 3, total: 9 });
+  test('a gaining lifter answers all ten questions (R2: the goal weight); the pace is chosen on Your plan', () => {
+    expect(route(A, YEAR)).toEqual(['welcome', 'goal', 'screening', 'sex', 'born', 'body', 'goalWeight', 'move', 'days', 'kind', 'experience', 'plan']);
+    expect(progress({ ...A, at: 'sex' }, YEAR)).toEqual({ n: 3, total: 10 });
     expect(progress({ ...A, at: 'plan' }, YEAR)).toBeNull();
   });
   test('experience is asked only of gaining lifters; cardio and Not yet skip it', () => {
@@ -31,14 +31,14 @@ describe('route', () => {
   test('Not yet skips what is trained and the experience', () => {
     const r = route({ ...A, days: 0, kind: undefined }, YEAR);
     expect(r.slice(-3)).toEqual(['move', 'days', 'plan']);
-    expect(progress({ ...A, days: 0, at: 'days' }, YEAR)).toEqual({ n: 7, total: 7 });
+    expect(progress({ ...A, days: 0, at: 'days' }, YEAR)).toEqual({ n: 8, total: 8 });
   });
   test('the step count assumes the longest route until an answer shortens it, so it never grows', () => {
     const before: Draft = { at: 'goal', units: 'metric' };
-    expect(progress(before, YEAR)?.total).toBe(9);
-    expect(progress({ ...before, goal: 'gain' }, YEAR)?.total).toBe(9);
+    expect(progress(before, YEAR)?.total).toBe(10);
+    expect(progress({ ...before, goal: 'gain' }, YEAR)?.total).toBe(10);
     expect(progress({ ...before, goal: 'maintain' }, YEAR)?.total).toBe(8);
-    expect(progress({ ...before, goal: 'gain', at: 'days', days: 0 }, YEAR)?.total).toBe(7);
+    expect(progress({ ...before, goal: 'gain', at: 'days', days: 0 }, YEAR)?.total).toBe(8);
   });
   test('a screening tick adds the advice screen and drops the experience question', () => {
     const r = route({ ...A, screening: { pregnant: true, medical: false, eatingDisorder: false } }, YEAR);

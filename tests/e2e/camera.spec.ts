@@ -18,3 +18,24 @@ for (const reader of ["the browser's own reader where it has one", 'the WebAssem
     await expect(page.getByTestId('hero-value')).toHaveText('260');
   });
 }
+
+// R1, the owner's one camera: Meal and Label sit beside Barcode in the same viewfinder, and Take photo keeps the frame.
+// The fake camera plays a barcode, which would be read before a tap, so this one has no reader: it is the modes, not the read
+test('R1: in the scanner Meal takes a photo of the plate to Review, without leaving the camera', async ({ page }) => {
+  await page.addInitScript(() => {
+    // a reader for the four retail formats that never finds a code, so the camera stays on the modes
+    (window as unknown as { BarcodeDetector: unknown }).BarcodeDetector = class { static getSupportedFormats() { return Promise.resolve(['ean_13', 'ean_8', 'upc_a', 'upc_e']); } detect() { return Promise.resolve([]); } };
+  });
+  await open(page);
+  await page.getByTestId('add').click();
+  await page.getByTestId('add-scan').click();
+  await expect(page.getByTestId('scanner-video')).toBeVisible();
+  await expect(page.getByTestId('scanner-shutter')).toHaveCount(0); // Barcode reads by itself: no shutter
+  await page.getByRole('radio', { name: 'Meal' }).click();
+  await expect(page.getByTestId('scanner-frame')).toHaveCount(0); // a plate has no guide frame
+  await expect(page.getByTestId('scanner-hint')).toHaveText('Frame the whole plate.');
+  await page.getByTestId('scanner-shutter').click();
+  await expect(page.getByTestId('photo-notice')).toBeVisible(); // the first photo still asks first
+  await page.getByTestId('photo-continue').click();
+  await expect(page.getByTestId('review-sheet')).toBeVisible();
+});

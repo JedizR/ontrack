@@ -50,6 +50,13 @@ export const sessionSchema = z.object({
   type: z.enum(['strength', 'circuit', 'cardio', 'sport', 'mobility', 'walk']),
   minutes: int(1, 600),
   intensity: z.enum(['light', 'moderate', 'hard']),
+  /** R2: a cardio session's machine and settings, as the user runs it (speed km/h, incline percent, level) */
+  setup: z.optional(z.object({
+    machine: z.enum(['treadmill', 'bike', 'elliptical', 'rower', 'stairs', 'outdoor']),
+    speedKmh: z.optional(z.number().check(z.minimum(0), z.maximum(40))),
+    inclinePct: z.optional(z.number().check(z.minimum(-10), z.maximum(40))),
+    level: z.optional(z.number().check(z.minimum(1), z.maximum(40))),
+  })),
   exercises: z.optional(
     z.array(z.object({ exerciseId: str(1, 80), sets: int(1, 20), repsMin: int(1, 100), repsMax: int(1, 100) })).check(z.maxLength(20)),
   ),
@@ -118,7 +125,18 @@ export const savedSchema = z.object({
   lastUsedAt: z.string(),
 });
 
-export const sessionLogSchema = z.object({ date, sessionKey: str(1, 20), status: z.enum(['done', 'skipped']) });
+/**
+ * A strength session logged set by set (R1, Bevel's workout log). It rides on the day's session log, so it needs no new
+ * collection: `kg` is always kilograms (the screen shows the user's units), `effort` is perceived effort 1 to 10, and a
+ * set is what was lifted, not what was planned.
+ */
+export const workoutSchema = z.object({
+  startedAt: z.string(),
+  seconds: int(0, 86_400),
+  effort: z.optional(int(1, 10)),
+  lifts: z.array(z.object({ exerciseId: str(1, 80), sets: z.array(z.object({ kg: num(0, 1000), reps: int(0, 200) })).check(z.maxLength(30)) })).check(z.maxLength(20)),
+});
+export const sessionLogSchema = z.object({ date, sessionKey: str(1, 20), status: z.enum(['done', 'skipped']), workout: z.optional(workoutSchema) });
 
 export const checkinSchema = z.object({
   date,
@@ -215,6 +233,7 @@ export type Saved = z.infer<typeof savedSchema>;
 export type Session = z.infer<typeof sessionSchema>;
 export type Program = z.infer<typeof programSchema>;
 export type SessionLog = z.infer<typeof sessionLogSchema>;
+export type Workout = z.infer<typeof workoutSchema>;
 export type Checkin = z.infer<typeof checkinSchema>;
 export type Day = z.infer<typeof daySchema>;
 export type FoodMemory = z.infer<typeof foodSchema>;

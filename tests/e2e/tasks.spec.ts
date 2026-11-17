@@ -137,7 +137,7 @@ for (const theme of VIDEO ? (['light', 'dark'] as const) : (['light'] as const))
       await tenths.focus();
       await page.keyboard.press('ArrowUp');
       await w.tap('picker-save');
-      await expect(page.getByTestId('weigh-card')).toHaveCount(0);
+      await expect(page.getByTestId('weigh-card')).toContainText('Weighed in'); // a standing card (R1)
       w.report('a weigh-in');
       await settle(page);
     });
@@ -146,7 +146,7 @@ for (const theme of VIDEO ? (['light', 'dark'] as const) : (['light'] as const))
       await open(page, '/', MEALS);
       const w = walk(page);
       await w.tap(page.getByTestId('training').getByTestId('session-done'));
-      await expect(page.getByTestId('training')).toContainText('Done');
+      await expect(page.getByTestId('training').getByTestId('session-tick')).toBeVisible();
       w.report('a session done');
       await settle(page);
     });
