@@ -1,5 +1,5 @@
 // In-memory stand-in for Supabase: the same sync rules, a fake sign-in, thumbnails, DELETE /api/account, and
-// POST /api/analyze through the real handler with the mock vision provider and an in-memory quota.
+// POST /api/analyze and /api/coach through the real handlers with the mock providers and an in-memory quota.
 // A web standard handler, so unit tests call it directly and the Vite plugin below mounts it for dev and e2e.
 // Every request names a space (header x-mock-space, or ?space= on the Google redirect); each space is its own world,
 // which keeps parallel tests apart. Tokens carry their space's epoch, so POST /__mock/expire ends every session in it.
@@ -9,8 +9,10 @@ import * as z from 'zod/mini';
 import { mealSchema, recSchema, socialSchema, type Rec } from '../shared/records.ts';
 import { SEARCH_MAX, SHARED_MAX, type Friend, type Person, type SharedMeal } from '../src/lib/backend/types.ts';
 import { analyze } from '../server/handlers/analyze.ts';
+import { coach } from '../server/handlers/coach.ts';
 import { envInt } from '../server/env.ts';
 import { fixture, isFixture, mockProvider } from '../server/vision/mock.ts';
+import { mockCoach } from '../server/coach/mock.ts';
 import { isOutcome, seedRecords } from './seed.ts';
 import { today } from '../src/lib/model/dates.ts';
 // Open Food Facts answers for the scanner (B1), as read on 12 November 2026 (open data under the ODbL); one is made up
@@ -208,21 +210,26 @@ export function createMockServer() {
       const bytes = space.thumbs.get(k);
       return bytes ? new Response(bytes, { headers: { 'Content-Type': 'image/jpeg' } }) : fail(404, 'not_found');
     }
-    if (path === '/api/analyze') {
-      return analyze(req, {
+    if (path === '/api/analyze' || path === '/api/coach') {
+      // one count for both: a coach answer costs what an analysis does
+      const deps = {
         caller: async () => ({ id: userId }),
-        async bump(u, day, limit) {
+        async bump(u: string, day: string, limit: number) {
           const k = `${u}|${day}`;
           const used = (space.ai.get(k) ?? space.aiFrom) + 1;
           space.ai.set(k, used);
           return { allowed: used <= limit, used, total: used };
         },
+        limit: envInt('AI_DAILY_USER_LIMIT', 40),
+        cap: envInt('AI_DAILY_GLOBAL_CAP', 400),
+      };
+      if (path === '/api/coach') return coach(req, { ...deps, provider: async () => mockCoach });
+      return analyze(req, {
+        ...deps,
         provider: async () => {
           const name = space.vision;
           return name ? { model: 'mock', analyze: async () => fixture(name) } : mockProvider;
         },
-        limit: envInt('AI_DAILY_USER_LIMIT', 40),
-        cap: envInt('AI_DAILY_GLOBAL_CAP', 400),
       });
     }
     if (path.startsWith('/social/')) return social(space, userId, path.slice('/social/'.length), req);
@@ -323,13 +330,14 @@ export const toMiddleware = (handle: (r: Request) => Promise<Response>): Connect
   });
 };
 
-/** Mounts the mock at /__mock, and at /api/account and /api/analyze when the app runs on the mock backend. */
+/** Mounts the mock at /__mock, and at /api/account, /api/analyze and /api/coach when the app runs on the mock backend. */
 export function mockBackend(): Plugin {
   const mw = toMiddleware(createMockServer());
   const mount = (m: Connect.Server) => {
     m.use('/__mock', mw);
     if (process.env.VITE_BACKEND === 'mock') m.use('/api/account', (req, res, next) => (req.method === 'DELETE' ? void mw(req, res, next) : next()));
     if (process.env.VITE_BACKEND === 'mock') m.use('/api/analyze', mw);
+    if (process.env.VITE_BACKEND === 'mock') m.use('/api/coach', mw);
   };
   return { name: 'ontrack-mock-backend', configureServer: (s) => mount(s.middlewares), configurePreviewServer: (s) => mount(s.middlewares) };
 }

@@ -90,6 +90,9 @@
   "functions": {
     "api/analyze.ts": {
       "maxDuration": 60
+    },
+    "api/coach.ts": {
+      "maxDuration": 60
     }
   }
 }

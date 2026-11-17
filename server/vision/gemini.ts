@@ -1,6 +1,7 @@
 // Gemini Flash through @google/genai (ARCHITECTURE A10). The model id comes from GEMINI_MODEL (gemini-3.6-flash, see
 // docs/EVAL-NOTES.md); JSON output is constrained by the schema; thinking is minimal, which gemini-3.8-flash refuses.
 import { GoogleGenAI, ThinkingLevel } from '@google/genai';
+import { withFallback } from '../call.js';
 import type { VisionProvider } from './provider.js';
 import { MODEL_JSON_SCHEMA } from './schema.js';
 import { SYSTEM_PROMPT, userText } from './prompt.js';
@@ -28,14 +29,8 @@ export function geminiProvider(apiKey: string, model: string, fallback = ''): Vi
         },
       });
       provider.model = model;
-      let res;
-      try {
-        res = await call(model);
-      } catch (e) {
-        // spent (429) or busy (503): the fallback (Flash-Lite) has its own free daily quota, docs/EVAL-NOTES.md 13 November
-        if (!fallback || ![429, 503].includes((e as { status?: number }).status ?? 0)) throw e;
-        res = await call((provider.model = fallback));
-      }
+      const { res, model: used } = await withFallback(model, fallback, call);
+      provider.model = used;
       return JSON.parse(res.text ?? 'null');
     },
   };
