@@ -21,6 +21,7 @@ async function sumsExactly(page: Page) {
 }
 
 test('a hardgainer watches the number build, tunes the pace and saves the plan in under 90 seconds', { tag: '@smoke' }, async ({ page }) => {
+  test.slow(); // R2: ten steps now with the goal weight; past 30 s on CI's runner
   await openFresh(page);
   const started = Date.now();
   await expect(page.getByTestId('landing-hero')).toContainText('No account until you save it.');
