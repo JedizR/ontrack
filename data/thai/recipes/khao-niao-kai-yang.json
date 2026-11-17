@@ -1,0 +1,19 @@
+{
+ "name": "Grilled chicken with sticky rice",
+ "sources": [
+  "https://rachelcooksthai.com/thai-grilled-chicken/",
+  "https://www.eatingthaifood.com/authentic-thai-grilled-chicken-recipe-gai-yang/"
+ ],
+ "ingredients": [
+  {
+   "food": "kai-yang",
+   "grams": 150
+  },
+  {
+   "food": "rice-sticky",
+   "grams": 120
+  }
+ ],
+ "yield_g": 270,
+ "notes": "A quarter chicken (150 g of meat, the Thai FCD grilled chicken row) with a bag of 120 g of sticky rice, the set sold with gai yang; both pages marinate and grill a whole bird."
+}

@@ -1,0 +1,19 @@
+{
+ "name": "Pad kra pao duck with rice",
+ "sources": [
+  "https://rachelcooksthai.com/pad-kaprow-moo/",
+  "https://www.eatingthaifood.com/thai-basil-chicken-recipe-pad-kra-pao-gai/"
+ ],
+ "ingredients": [
+  {
+   "food": "kra-pao-duck",
+   "grams": 144
+  },
+  {
+   "food": "rice-white",
+   "grams": 200
+  }
+ ],
+ "yield_g": 344,
+ "notes": "One plate: the dish (144 g, the recipe above) over 200 g of cooked jasmine rice, the plate size Eating Thai Food and Rachel Cooks Thai serve it on."
+}

@@ -1,0 +1,27 @@
+{
+ "name": "Thai omelet with minced pork",
+ "sources": [
+  "https://rachelcooksthai.com/thai-omelet/",
+  "https://www.eatingthaifood.com/thai-omelet-recipe-kai-jeow-moo-sab/"
+ ],
+ "ingredients": [
+  {
+   "food": "egg-raw",
+   "grams": 100
+  },
+  {
+   "food": "pork-ground",
+   "grams": 20
+  },
+  {
+   "food": "fish-sauce",
+   "grams": 5
+  },
+  {
+   "food": "oil-vegetable",
+   "grams": 25
+  }
+ ],
+ "yield_g": 140,
+ "notes": "Rachel Cooks Thai (2 eggs, 1 tsp fish sauce, 1/4 cup oil to deep fry for 2) and Eating Thai Food (2 eggs, a heaping tablespoon of minced pork, a splash of soy sauce, oil). A Thai omelet takes up oil: 25 g stays in it of the 1/4 cup in the pan. Two large eggs are 100 g. Pork is 20 g of cooked mince."
+}

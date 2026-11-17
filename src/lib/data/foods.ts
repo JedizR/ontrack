@@ -2,10 +2,11 @@
 // FNDDS, SG FoodID, the Thai FCD (INMU) and `data/food-list.csv`; nobody types a nutrient value. It loads lazily and works
 // offline.
 import type { FoodMemory, MealItem } from '../../../shared/records';
+import { norm } from '../../../shared/text';
 import { prefs } from '$lib/prefs.svelte';
 
 export type FoodTag = 'dense' | 'protein' | 'drink' | 'oil' | 'staple' | 'thai';
-export type FoodSet = 'usda-sr-legacy' | 'usda-fndds' | 'sg-foodid' | 'thai-fcd' | 'thai-fcd-owner';
+export type FoodSet = 'usda-sr-legacy' | 'usda-fndds' | 'sg-foodid' | 'thai-fcd' | 'thai-fcd-owner' | 'recipe';
 export type Food = {
   id: string;
   name: string;
@@ -15,7 +16,8 @@ export type Food = {
   portions: Array<{ label: string; grams: number }>;
   tags: FoodTag[];
   /** the table and the food's id in it: an FDC id for USDA, a crId for SG FoodID, `owner:` or `inmu:` and the code for
-   * the Thai FCD (N3); a Thai page's URL, and which value was worked out by Atwater when the table lacked it */
+   * the Thai FCD (N3), `recipe:` and the recipe's id for a dish worked out from its ingredients (R2); a Thai page's URL
+   * or the first page of the recipe, and which value was worked out by Atwater when the table lacked it */
   source: { set: FoodSet; id: string; url?: string; derived?: 'kcal' | 'carbs' };
 };
 
@@ -26,8 +28,7 @@ export function loadFoods(): Promise<Food[]> {
   return table;
 }
 
-/** Lower case, accents dropped, Thai script kept (U+0E00 to U+0E7F), anything else a space. */
-export const norm = (s: string) => s.toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9\u0e00-\u0e7f ]+/g, ' ').replace(/\s+/g, ' ').trim();
+export { norm };
 
 /** 4 the whole name, 3 prefix, 2 word start, 1 substring, 0 no match: of the query against one name or alias. */
 function score(text: string, q: string) {

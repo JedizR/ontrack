@@ -1,0 +1,55 @@
+{
+ "name": "Green curry fried rice with chicken",
+ "sources": [
+  "https://rachelcooksthai.com/green-curry-fried-rice/",
+  "https://rachelcooksthai.com/green-curry-with-chicken-and-eggplant/"
+ ],
+ "ingredients": [
+  {
+   "food": "rice-white",
+   "grams": 190
+  },
+  {
+   "food": "curry-paste-green",
+   "grams": 10
+  },
+  {
+   "food": "chicken-ground",
+   "grams": 60
+  },
+  {
+   "food": "coconut-milk",
+   "grams": 30
+  },
+  {
+   "food": "fish-sauce",
+   "grams": 5
+  },
+  {
+   "food": "sugar",
+   "grams": 3
+  },
+  {
+   "food": "long-beans",
+   "grams": 20
+  },
+  {
+   "food": "bamboo-shoots",
+   "grams": 20
+  },
+  {
+   "food": "basil",
+   "grams": 5
+  },
+  {
+   "food": "chili",
+   "grams": 5
+  },
+  {
+   "food": "oil-vegetable",
+   "grams": 10
+  }
+ ],
+ "yield_g": 340,
+ "notes": "Rachel Cooks Thai green curry fried rice: for 4 plates 1 tbsp paste, 1 cup chicken, 1/2 cup coconut milk, 1/2 tbsp sugar, 1/2 cup long beans, 1/2 cup bamboo shoots, 3 cups cooked rice; scaled to a 190 g rice plate with the paste at 10 g (her tablespoon is 17 g), which suits the sweeter restaurant version. 10 g of oil."
+}

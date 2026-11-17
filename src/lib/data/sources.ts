@@ -40,6 +40,7 @@ export const FOOD_SOURCES: Record<FoodSet, { name: string; terms?: string }> = {
   'sg-foodid': { name: 'SG FoodID, Health Promotion Board, Singapore, read on 12 November 2026', terms: 'https://go.gov.sg/termsofuse-hpbsgfoodid' },
   'thai-fcd': { name: 'Thai Food Composition Database, INMU, Mahidol University, read on 12 November 2026', terms: 'https://inmu.mahidol.ac.th/thaifcd/content/term-and-condition' },
   'thai-fcd-owner': { name: 'Thai Food Composition Database, INMU, Mahidol University, via an extract the owner supplied', terms: 'https://inmu.mahidol.ac.th/thaifcd/content/term-and-condition' },
+  recipe: { name: 'a published recipe, worked out from the tables its ingredients come from' },
 };
 
 /** Open Food Facts (B1, F22): its data is open under the Open Database License, credited wherever it shows. */

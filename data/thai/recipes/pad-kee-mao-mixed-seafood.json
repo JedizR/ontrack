@@ -1,0 +1,76 @@
+{
+ "name": "Pad kee mao with mixed seafood",
+ "sources": [
+  "https://www.recipetineats.com/pad-kee-mao-thai-drunken-noodles/",
+  "https://thewoksoflife.com/drunken-noodles-pad-kee-mao/",
+  "https://rachelcooksthai.com/drunken-noodles/"
+ ],
+ "ingredients": [
+  {
+   "food": "noodles-rice",
+   "grams": 200
+  },
+  {
+   "food": "holy-basil",
+   "grams": 15
+  },
+  {
+   "food": "chili",
+   "grams": 8
+  },
+  {
+   "food": "garlic",
+   "grams": 8
+  },
+  {
+   "food": "onion",
+   "grams": 20
+  },
+  {
+   "food": "long-beans",
+   "grams": 20
+  },
+  {
+   "food": "pepper-red",
+   "grams": 15
+  },
+  {
+   "food": "oil-vegetable",
+   "grams": 20
+  },
+  {
+   "food": "soy-sauce",
+   "grams": 6
+  },
+  {
+   "food": "oyster-sauce",
+   "grams": 14
+  },
+  {
+   "food": "soy-sauce-sweet",
+   "grams": 10
+  },
+  {
+   "food": "sugar",
+   "grams": 3
+  },
+  {
+   "food": "fish-sauce",
+   "grams": 3
+  },
+  {
+   "food": "shrimp",
+   "grams": 28
+  },
+  {
+   "food": "squid",
+   "grams": 36
+  },
+  {
+   "food": "mussels",
+   "grams": 20
+  }
+ ],
+ "yield_g": 405,
+ "notes": "RecipeTin Eats (200 g dried wide noodles, 200 g chicken thigh, 2 tbsp oil, 3 tbsp oyster sauce, 1.5 tbsp each of light and dark soy, 2 tsp sugar, 1 cup basil for 2 to 3 plates), The Woks of Life (8 oz noodles, 12 oz chicken, 3 tbsp oil for 4) and Rachel Cooks Thai (2 tbsp oil, 8 oz noodles for 2). Per plate 200 g of cooked noodles and 20 g of oil; protein is the cooked weight, 60 g."
+}

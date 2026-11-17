@@ -1,0 +1,19 @@
+{
+ "name": "Green curry with fish on rice",
+ "sources": [
+  "https://rachelcooksthai.com/green-curry-with-chicken-and-eggplant/",
+  "https://www.eatingthaifood.com/thai-green-curry-recipe/"
+ ],
+ "ingredients": [
+  {
+   "food": "green-curry-fish",
+   "grams": 301
+  },
+  {
+   "food": "rice-white",
+   "grams": 200
+  }
+ ],
+ "yield_g": 501,
+ "notes": "The curry above over 200 g of cooked rice."
+}

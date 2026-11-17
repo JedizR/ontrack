@@ -1,0 +1,55 @@
+{
+ "name": "Rad na with fish",
+ "sources": [
+  "https://importfood.com/recipes/recipe/174-thai-style-wide-noodles-in-thick-sauce-kuaytiao-lad-na",
+  "https://rachelcooksthai.com/pad-see-ew-2/"
+ ],
+ "ingredients": [
+  {
+   "food": "noodles-rice",
+   "grams": 200
+  },
+  {
+   "food": "oil-vegetable",
+   "grams": 15
+  },
+  {
+   "food": "chinese-broccoli",
+   "grams": 60
+  },
+  {
+   "food": "water",
+   "grams": 130
+  },
+  {
+   "food": "cornstarch",
+   "grams": 8
+  },
+  {
+   "food": "garlic",
+   "grams": 6
+  },
+  {
+   "food": "soy-sauce",
+   "grams": 6
+  },
+  {
+   "food": "oyster-sauce",
+   "grams": 10
+  },
+  {
+   "food": "sugar",
+   "grams": 5
+  },
+  {
+   "food": "fish-sauce",
+   "grams": 3
+  },
+  {
+   "food": "tilapia",
+   "grams": 64
+  }
+ ],
+ "yield_g": 482,
+ "notes": "ImportFood's Kuaytiao Lad Na (4 plates: 10 oz wide noodles, 1/2 lb chicken, 1.5 cups broccoli, 3 cups stock, 3 tbsp tapioca flour, 1 tbsp each of fish and oyster sauce, 1.5 tbsp sugar, 4 tbsp oil) and Rachel Cooks Thai's wide noodle and Chinese broccoli plate. Per plate 200 g of cooked noodles fried in 15 g of oil, 130 g of gravy (water thickened with 8 g of starch), 60 g of Chinese broccoli; the stock is counted as water."
+}

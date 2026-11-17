@@ -1,0 +1,27 @@
+{
+ "name": "Pad kra pao minced pork with rice and fried egg",
+ "sources": [
+  "https://rachelcooksthai.com/pad-kaprow-moo/",
+  "https://www.eatingthaifood.com/thai-basil-chicken-recipe-pad-kra-pao-gai/"
+ ],
+ "ingredients": [
+  {
+   "food": "kra-pao-minced-pork",
+   "grams": 144
+  },
+  {
+   "food": "rice-white",
+   "grams": 200
+  },
+  {
+   "food": "egg-fried",
+   "grams": 46
+  },
+  {
+   "food": "oil-vegetable",
+   "grams": 8
+  }
+ ],
+ "yield_g": 398,
+ "notes": "The rice plate above with a Thai fried egg: one large egg (46 g cooked) fried crisp in 2 tablespoons of oil in the pan, 8 g of which stays on the egg (Eating Thai Food: 1 egg, 2 tablespoons of oil for frying)."
+}

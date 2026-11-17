@@ -1,0 +1,19 @@
+{
+ "name": "Red curry with roast duck on rice",
+ "sources": [
+  "https://rachelcooksthai.com/red-curry-with-pumpkin/",
+  "https://rachelcooksthai.com/red-curry-pork-belly-water-spinach/"
+ ],
+ "ingredients": [
+  {
+   "food": "red-curry-roast-duck",
+   "grams": 283
+  },
+  {
+   "food": "rice-white",
+   "grams": 200
+  }
+ ],
+ "yield_g": 483,
+ "notes": "The curry above over 200 g of cooked rice."
+}

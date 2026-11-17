@@ -1,0 +1,39 @@
+{
+ "name": "Nam tok with grilled pork",
+ "sources": [
+  "https://rachelcooksthai.com/moo-nam-tok/",
+  "https://www.eatingthaifood.com/nam-tok-recipe/"
+ ],
+ "ingredients": [
+  {
+   "food": "pork-shoulder",
+   "grams": 100
+  },
+  {
+   "food": "shallot",
+   "grams": 15
+  },
+  {
+   "food": "coriander",
+   "grams": 8
+  },
+  {
+   "food": "mint",
+   "grams": 8
+  },
+  {
+   "food": "fish-sauce",
+   "grams": 8
+  },
+  {
+   "food": "lime",
+   "grams": 12
+  },
+  {
+   "food": "rice-white-dry",
+   "grams": 8
+  }
+ ],
+ "yield_g": 159,
+ "notes": "Rachel Cooks Thai moo nam tok (8 oz pork neck or shoulder for 4: 1 tbsp each of fish sauce and lime juice, 1/4 cup shallots, herbs, 2 tbsp toasted rice powder) and Eating Thai Food's nam tok (250 g grilled sliced meat a plate, 2 tbsp fish sauce). Per plate 100 g of cooked roast pork shoulder."
+}

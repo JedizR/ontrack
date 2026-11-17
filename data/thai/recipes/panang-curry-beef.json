@@ -1,0 +1,43 @@
+{
+ "name": "Panang curry with beef",
+ "sources": [
+  "https://rachelcooksthai.com/panang-curry-with-beef/",
+  "https://rachelcooksthai.com/red-curry-with-pumpkin/"
+ ],
+ "ingredients": [
+  {
+   "food": "curry-paste-panang",
+   "grams": 15
+  },
+  {
+   "food": "coconut-milk",
+   "grams": 110
+  },
+  {
+   "food": "water",
+   "grams": 30
+  },
+  {
+   "food": "beef-grilled-thai",
+   "grams": 70
+  },
+  {
+   "food": "peanuts",
+   "grams": 5
+  },
+  {
+   "food": "sugar",
+   "grams": 4
+  },
+  {
+   "food": "fish-sauce",
+   "grams": 4
+  },
+  {
+   "food": "pepper-red",
+   "grams": 8
+  }
+ ],
+ "yield_g": 221,
+ "notes": "Rachel Cooks Thai panang curry with beef (4 bowls: 1 1/4 cups coconut milk, 2 tbsp panang paste, 1 tbsp roasted peanuts, 1 1/2 cups sliced beef, 1/2 cup water, 1 tsp each of fish sauce and sugar): per bowl 110 g of coconut milk, 70 g of cooked beef; panang is thick, with little water. Kaffir lime leaves left out."
+}

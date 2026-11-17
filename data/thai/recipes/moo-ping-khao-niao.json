@@ -1,0 +1,19 @@
+{
+ "name": "Moo ping with sticky rice",
+ "sources": [
+  "https://rachelcooksthai.com/thai-grilled-pork-skewers/",
+  "https://www.eatingthaifood.com/platter-of-thai-style-grilled-pork-sticks-moo-ping/"
+ ],
+ "ingredients": [
+  {
+   "food": "moo-ping",
+   "grams": 105
+  },
+  {
+   "food": "rice-sticky",
+   "grams": 100
+  }
+ ],
+ "yield_g": 205,
+ "notes": "Three sticks (105 g) with a small bag of sticky rice (100 g), the set sold at street carts."
+}

@@ -1,0 +1,19 @@
+{
+ "name": "Panang curry with beef on rice",
+ "sources": [
+  "https://rachelcooksthai.com/panang-curry-with-beef/",
+  "https://rachelcooksthai.com/red-curry-with-pumpkin/"
+ ],
+ "ingredients": [
+  {
+   "food": "panang-curry-beef",
+   "grams": 221
+  },
+  {
+   "food": "rice-white",
+   "grams": 200
+  }
+ ],
+ "yield_g": 421,
+ "notes": "The curry above over 200 g of cooked rice."
+}
