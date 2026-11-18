@@ -140,7 +140,7 @@
 <div class="flex flex-col gap-4" data-testid="scanner">
   {#if !typed}
     <!-- dark until the camera starts; the caption under it says so -->
-    <div class="bg-toast relative {embedded ? 'aspect-[3/2]' : 'aspect-[4/3]'} w-full overflow-hidden rounded-md">
+    <div class="bg-toast relative aspect-[4/3] w-full overflow-hidden rounded-md">
       <video bind:this={video} class="size-full object-cover" playsinline muted autoplay aria-label={t.scan.viewfinder} data-testid="scanner-video"></video>
       <!-- the framing guide: wide for a barcode, the rest dimmed by the scrim -->
       {#if onphoto}
@@ -159,7 +159,7 @@
         </button>
       {/if}
       {#if embedded}
-        <!-- the Add sheet keeps the camera short (19 Nov): the hint rides on the picture, clear of the light -->
+        <!-- in the Add sheet the hint rides on the picture, clear of the light -->
         <p class="text-caption text-toast-ink absolute bottom-3 left-3 right-16 font-semibold" aria-live="polite" data-testid="scanner-hint">{problem === 'busy' ? t.scan.busy : problem ? t.scan[problem === 'none' ? 'noCamera' : problem] : !live ? t.scan.starting : mode === 'meal' ? t.scan.holdMeal : mode === 'label' ? t.scan.holdLabel : slow ? t.scan.slow : t.scan.hold}</p>
       {/if}
     </div>

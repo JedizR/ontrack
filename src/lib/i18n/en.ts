@@ -215,13 +215,8 @@ export const en = {
   add: {
     title: 'Add a meal',
     prompt: 'What did you eat?',
-    /** R2: the plus logs the day's other two things */
-    weighAgain: 'Edit weigh-in',
-    /** under the day's session name in the Add sheet: one tap marks it done (19 Nov) */
-    markDone: 'Mark done',
     /** the pinned supplements before they are set up, short enough for one line at 375 wide */
     pinned: { whey: 'Whey', creatine: 'Creatine' },
-    sessionDone: (name: string) => `Marked ${name} done`,
     /** the composer's line turns through these; the Thai first locale starts at the second */
     examples: ['Two eggs, toast with butter and a latte', 'Pad kra pao with rice and a fried egg', 'Greek yogurt with berries and honey', 'Chicken rice bowl with a side salad', 'Oats with a banana and peanut butter'],
     listLabel: 'Meals to add again',
