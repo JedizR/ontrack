@@ -222,6 +222,19 @@
     }, 380);
   }
   $effect(() => { void view.date; justDone = null; undoing = null; });
+  // the weigh-in lands while Today is open (not on a change of day): its box inks from the button, words a beat later
+  let weighJust = $state(false);
+  let weighLate = $state(false);
+  let weighWas: { date: string; on: boolean } | null = null;
+  $effect(() => {
+    const now = { date: view.date, on: !!weighedOn };
+    if (weighWas && weighWas.date === now.date && !weighWas.on && now.on) {
+      weighJust = weighLate = true;
+      setTimeout(() => (weighLate = false), 240);
+      setTimeout(() => (weighJust = false), 1400);
+    }
+    weighWas = now;
+  });
   let animate = first;
   onMount(() => { first = false; });
   // the day's cards are made again when the day in view changes: they rise only on the session's first paint
@@ -299,7 +312,7 @@
         <div class="col-span-2 flex min-w-0 flex-col gap-2" aria-label={t.today.upNext} data-testid="training">
           {#each day.sessions as { session: s, status }, i (s.key)}
             {@const ink = (justDone?.key === s.key ? justDone : undoing?.key === s.key ? undoing : null)}
-            <div class="bg-surface-2 text-ink relative flex {day.sessions.length > 1 ? 'min-h-14' : 'min-h-[calc(var(--s-16)+var(--s-4))]'} min-w-0 items-center gap-2 overflow-hidden rounded-md py-2 pr-2 pl-4 {i === day.sessions.length - 1 ? 'rounded-bl-sheet' : ''} [@media(max-height:620px)]:py-1" style={inked(s.key, status) ? '--ink: var(--on-action); --ink-2: color-mix(in srgb, var(--on-action) 68%, transparent)' : undefined} data-done={status === 'done' || undefined} data-testid="todo">
+            <div class="bg-surface-2 text-ink relative flex flex-1 {day.sessions.length > 1 ? 'min-h-14' : 'min-h-[calc(var(--s-16)+var(--s-4))]'} min-w-0 items-center gap-2 overflow-hidden rounded-md py-2 pr-2 pl-4 {i === day.sessions.length - 1 ? 'rounded-bl-sheet' : ''} [@media(max-height:620px)]:py-1" style={inked(s.key, status) ? '--ink: var(--on-action); --ink-2: color-mix(in srgb, var(--on-action) 68%, transparent)' : undefined} data-done={status === 'done' || undefined} data-testid="todo">
               {#if status === 'done'}<span class="bg-action absolute inset-0 {justDone?.key === s.key ? 'ink-in' : undoing?.key === s.key ? 'ink-out' : ''}" style="--x: {ink?.x ?? 0}px; --y: {ink?.y ?? 0}px" aria-hidden="true"></span>{/if}
               <div class="relative flex min-w-0 flex-1 items-center gap-2" data-testid="session-{s.key}">
                 <button type="button" class="min-w-0 flex-1 rounded-sm py-1 text-left transition-opacity duration-[var(--d-press)] active:opacity-60 disabled:cursor-default" disabled={!!status} aria-label={t.today.more(sessionTitle(s))} onclick={() => (sheets.session = { date: view.date, key: s.key, name: sessionTitle(s) })} data-testid="session-more">
@@ -322,26 +335,33 @@
               </div>
             </div>
           {:else}
-            <div class="bg-surface-2 text-ink rounded-bl-sheet flex min-h-[calc(var(--s-16)+var(--s-4))] min-w-0 items-center gap-3 rounded-md py-2 pr-2 pl-4" data-testid="todo">
+            <div class="bg-surface-2 text-ink rounded-bl-sheet flex min-h-[calc(var(--s-16)+var(--s-4))] min-w-0 flex-1 items-center gap-3 rounded-md py-2 pr-2 pl-4" data-testid="todo">
               <span class="text-ink-2 inline-grid"><TrainIcon /></span>
               <p class="text-body text-ink-2 font-semibold">{(day.plan.sessions ?? sessions).length ? t.today.restDay : t.today.noProgram}</p>
             </div>
           {/each}
         </div>
         <!-- the weigh-in: one tap, a weight once done, the prompt while it is due -->
-        <div class="flex min-w-0" data-testid="weigh-card">
-          <button type="button" class="bg-surface-2 rounded-br-sheet active:bg-surface-3 flex min-h-[calc(var(--s-16)+var(--s-4))] w-full min-w-0 flex-col justify-center rounded-md px-4 py-2 text-left transition-colors duration-[var(--d-press)]" onclick={() => weighIn(view.date)} aria-label={weighedOn ? t.weigh.edit : t.weigh.action} data-testid="weigh-open">
-            <!-- R3, the owner: the icon on top of the words, in both states -->
+        <!-- 19 Nov, the owner: the weigh-in as the sessions are: once weighed the box turns the action's ink (spread from its
+             button when it happens here) with the filled green check centred above the weight, and Edit under the words;
+             before, the grey box with Add -->
+        <div class="bg-surface-2 text-ink rounded-br-sheet relative flex min-h-[calc(var(--s-16)+var(--s-4))] min-w-0 flex-col items-center justify-center gap-2 overflow-hidden rounded-md px-2 py-3 text-center" style={weighedOn && !weighLate ? '--ink: var(--on-action); --ink-2: color-mix(in srgb, var(--on-action) 68%, transparent)' : undefined} data-done={!!weighedOn || undefined} data-testid="weigh-card">
+          {#if weighedOn}<span class="bg-action absolute inset-0 {weighJust ? 'ink-in' : ''}" style="--x: 50%; --y: 80%" aria-hidden="true"></span>{/if}
+          <span class="relative flex min-w-0 flex-col items-center">
             {#if weighedOn}
-              <span class="text-success-ink inline-grid"><Check size={18} strokeWidth={3} aria-hidden="true" /></span>
+              <span class="bg-success text-night relative mb-2 grid size-7 place-items-center rounded-full" in:pop data-testid="weigh-tick">
+                <Check size={17} strokeWidth={3.5} aria-hidden="true" />
+                {#if weighJust}<Burst />{/if}
+              </span>
               <span class="text-subhead num whitespace-nowrap">{weightText(weighedOn.kg, profile?.units ?? 'metric')}</span>
               <span class="text-caption text-ink-2">{t.weigh.done}</span>
             {:else}
-              <Scale size={18} strokeWidth={2.25} aria-hidden="true" />
+              <span class="text-ink-2 mb-2 inline-grid"><Scale size={20} strokeWidth={2.25} aria-hidden="true" /></span>
               <span class="text-body font-semibold">{view.past ? t.weigh.none : t.weigh.action}</span>
               {#if !view.past}<span class="text-caption text-ink-2">{lastWeigh ? t.weigh.promptDays(num(daysBetween(lastWeigh, view.today))) : t.weigh.promptFirstShort}</span>{/if}
             {/if}
-          </button>
+          </span>
+          <Button variant={weighedOn ? 'on-ink' : 'primary'} size="sm" class="relative min-w-[4.5rem]" onclick={() => weighIn(view.date)} data-testid="weigh-open">{weighedOn ? t.weigh.edit : t.weigh.add}</Button>
         </div>
       </div>
     </section></div>

@@ -341,6 +341,8 @@ export const en = {
     promptFirstShort: 'Your first',
     done: 'Weighed in',
     edit: 'Edit',
+    /** the weigh-in box's button before one is logged (19 Nov) */
+    add: 'Add',
     none: 'No weigh-in',
     action: 'Weigh in',
     saved: (w: string) => `Weigh-in saved, ${w}`,
