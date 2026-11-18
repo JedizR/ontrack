@@ -101,6 +101,14 @@
     burst = s.key;
     setTimeout(() => (burst = null), 1400);
   }
+  // Undo plays it back (the owner, 19 Nov): the check shrinks, Undo slides back to where Done was, then it is unmarked
+  let leaving = $state<string | null>(null);
+  function undo(s: Session) {
+    if (leaving) return;
+    haptic();
+    leaving = s.key;
+    setTimeout(() => { clearSessionLog(view.today, s.key); leaving = null; }, dur('--d-ui'));
+  }
 
   const MAX_SESSIONS = 28; // the record schema's limit
   let editing = $state<{ session: Session; isNew: boolean } | null>(null);
@@ -191,13 +199,13 @@
           {#if namesOf(next.s).length}<p class="text-callout mt-2 line-clamp-1 opacity-80">{namesOf(next.s).join(', ')}</p>{/if}
           <div class="mt-4 flex items-center gap-3 [@media(max-height:620px)]:mt-3">
             {#if next.done}
-              <span class="bg-success text-night relative grid size-7 flex-none place-items-center rounded-full" in:pop data-testid="train-tick">
+              <span class="bg-success text-night relative grid size-7 flex-none place-items-center rounded-full transition-[opacity,scale] duration-[var(--d-press)] {leaving === next.s.key ? 'scale-50 opacity-0' : ''}" in:pop data-testid="train-tick">
                 <Check size={17} strokeWidth={3.5} aria-hidden="true" />
                 {#if burst === next.s.key}<Burst />{/if}
               </span>
-              <!-- 19 Nov, the owner: Undo is grey, and slides from where Done was to beside the check as it pops -->
-              <span class="inline-flex" data-theme="light" in:fly={{ x: -40, duration: dur('--d-ui'), easing: cubicOut }}>
-                <Button variant="neutral" onclick={() => { haptic(); clearSessionLog(view.today, next.s.key); }} data-testid="train-undo">{t.today.undo}</Button>
+              <!-- 19 Nov, the owner: Undo is grey, and slides from where Done was to beside the check as it pops, and back -->
+              <span class="inline-flex transition-transform duration-[var(--d-ui)] ease-[var(--ease-out)] {leaving === next.s.key ? '-translate-x-10' : ''}" data-theme="light" in:fly={{ x: -40, duration: dur('--d-ui'), easing: cubicOut }}>
+                <Button variant="neutral" onclick={() => undo(next.s)} data-testid="train-undo">{t.today.undo}</Button>
               </span>
             {:else if next.today}
               <Button variant="primary" onclick={() => markDone(next.s)} data-testid="train-start">{t.today.done}</Button>
