@@ -62,9 +62,10 @@ test('Google sign in leaves the app and comes back signed in', async ({ browser 
   const { page, context } = await phone(browser, space('google'), 'google.user@example.com');
   await page.getByTestId('landing-signin').click();
   await page.getByTestId('signin-google').click();
-  await expect(page.getByTestId('avatar')).toHaveAttribute('aria-label', 'Account');
+  await expect(page.getByTestId('avatar')).toHaveAttribute('aria-label', 'Profile');
   expect(new URL(page.url()).hash).toBe('');
   await page.getByTestId('avatar').click();
+  await page.getByTestId('me-settings').click(); // the person button opens the Profile page; Settings is its button
   await expect(page.getByTestId('account-sheet')).toContainText('google.user@example.com');
   await context.close();
 });
@@ -122,6 +123,7 @@ test('signing out sends what is waiting, then deletes the data from the phone', 
   // offline, it stops and says what would be lost
   await context.setOffline(true);
   await page.getByTestId('avatar').click();
+  await page.getByTestId('me-settings').click(); // the person button opens the Profile page; Settings is its button
   await page.getByTestId('account-signout').click();
   await expect(page.getByTestId('account-unsent')).toBeVisible();
   await context.setOffline(false);
@@ -129,6 +131,7 @@ test('signing out sends what is waiting, then deletes the data from the phone', 
 
   await expect.poll(() => pending(page)).toBe(0);
   await page.getByTestId('avatar').click();
+  await page.getByTestId('me-settings').click(); // the person button opens the Profile page; Settings is its button
   // sign out reloads the page; the landing page can show for a moment before it does
   const reloaded = page.waitForEvent('load');
   await page.getByTestId('account-signout').click();
@@ -157,6 +160,8 @@ test('deleting the account removes its data everywhere', async ({ browser }) => 
   await expect.poll(() => pending(page)).toBe(0);
 
   await page.getByTestId('avatar').click();
+
+  await page.getByTestId('me-settings').click(); // the person button opens the Profile page; Settings is its button
   await page.getByTestId('account-delete').click();
   await expect(page.getByTestId('delete-confirm-button')).toBeDisabled();
   await page.getByTestId('delete-confirm').fill(EMAIL);

@@ -135,6 +135,7 @@ async function checkAll(page: Page, dir: string) {
   await checkPage(page, 'signin', dir);
   await signIn(page);
   await page.getByTestId('avatar').click();
+  await page.getByTestId('me-settings').click(); // the person button opens the Profile page; Settings is its button
   await expect(page.getByTestId('account-sheet')).toHaveCSS('transform', 'none');
   // Settings (M9a) is a long list: its last row, Delete account, is reached by scrolling the sheet
   await page.getByTestId('account-delete').scrollIntoViewIfNeeded();

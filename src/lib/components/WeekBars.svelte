@@ -4,10 +4,9 @@
 <script lang="ts">
   import { scaleLinear } from 'd3-scale';
 
-  let { weeks, from, to, label }: { weeks: { avg: number | null; target: number; reached: boolean }[]; from: string; to: string; label: string } = $props();
+  let { weeks, from, to, label, height: H = 156 }: { weeks: { avg: number | null; target: number; reached: boolean }[]; from: string; to: string; label: string; height?: number } = $props();
 
   let w = $state(300);
-  const H = 128;
   const M = { top: 8, bottom: 28 };
   const HEADROOM = 1.1;
   const slot = $derived(w / Math.max(1, weeks.length));

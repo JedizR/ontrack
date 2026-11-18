@@ -50,6 +50,8 @@ const STATES: [string, string][] = [
   ['ink', 'canvas'], ['ink', 'surface'], ['ink', 'surface-2'],
   // the switch: its off track on a card or the page, and the knob (surface) on either track
   ['control-edge', 'surface'], ['control-edge', 'canvas'], ['surface', 'control-edge'], ['surface', 'ink'],
+  // and on a grey box, where Settings' switch rows sit (the box is the switch)
+  ['control-edge', 'surface-2'],
   // the dock's selected tab: a violet icon and label on its grey pill and on the bar
   ['accent-ink', 'surface-2'], ['accent-ink', 'bar-solid'],
   // a picked choice's icon: a lavender glyph on its violet tile (U1c, the owner)
@@ -94,6 +96,9 @@ const PHOTOS: Record<string, [string, typeof light, number][]> = {
   'wash-2': [['night', light, 4.5]],
   'wash-3': [['night', light, 4.5]],
   'wash-4': [['night', light, 4.5]],
+  // R3: Progress's two hero boxes, night words in both themes
+  trend: [['night', light, 4.5]],
+  streak: [['night', light, 4.5]],
   call: [['ink', light, 4.5]],
 };
 test('words on the photo gradients', () => {

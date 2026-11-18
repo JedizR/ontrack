@@ -22,14 +22,13 @@
 <svelte:window onscroll={() => (scrolled = scrollY > 4)} />
 
 <!-- R2, the owner: at rest the header is the page; once anything scrolls under it, it becomes the landing page's floating
-     glass capsule, and what scrolls up past it fades into the canvas at the very top edge, under the status bar -->
+     glass capsule, its title moving in from 8 to 24 (19 Nov: no fade at the top edge) -->
 <header
   class="sticky top-0 z-30 px-2 pt-[env(safe-area-inset-top)]"
   data-scrolled={scrolled || undefined}
   data-testid="header"
 >
-  <div class="pointer-events-none absolute inset-x-0 top-0 h-[calc(env(safe-area-inset-top)+var(--s-2))] bg-[linear-gradient(to_bottom,var(--canvas),transparent)]" aria-hidden="true"></div>
-  <div class="relative mt-1 flex h-[var(--header-h)] items-center gap-3 rounded-full pr-1.5 pl-2 transition-[background-color,box-shadow] duration-[var(--d-ui)] {scrolled ? 'liquid' : ''}" data-testid="header-bar">
+  <div class="relative mt-1 flex h-[var(--header-h)] items-center gap-3 rounded-full pr-1.5 transition-[background-color,box-shadow,padding] duration-[var(--d-ui)] {scrolled ? 'liquid pl-6' : 'pl-2'}" data-testid="header-bar">
     <h1 class="text-heading min-w-0 flex-1 truncate">{title}</h1>
     <SyncMark state={sync} />
     <!-- S1b: friends and the food map, one tap from every tab; the badge counts requests waiting for a yes -->

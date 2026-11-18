@@ -103,6 +103,7 @@ test('airplane mode: a cold start and every feature work offline, and sync withi
 
   await test.step('F12: a setting and an export', async () => {
     await page.getByTestId('avatar').click();
+    await page.getByTestId('me-settings').click(); // the person button opens the Profile page; Settings is its button
     const sheet = page.getByTestId('account-sheet');
     await sheet.getByTestId('set-checkin').click();
     await sheet.getByTestId('set-checkin-day').getByRole('radio', { name: 'Thursday' }).click();

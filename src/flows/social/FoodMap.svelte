@@ -22,7 +22,6 @@
   import type { Friend, SharedMeal } from '$lib/backend/types';
   import FriendsPanel from './FriendsPanel.svelte';
   import PinSheet from './PinSheet.svelte';
-  import ProfileSheet from './ProfileSheet.svelte';
   import FriendSheet from './FriendSheet.svelte';
   import Avatar from './Avatar.svelte';
   import Photo from './Photo.svelte';
@@ -284,7 +283,6 @@
 
 <PinSheet bind:meals={pinMeals} {whoOf} {me} />
 <FriendSheet bind:friend />
-<ProfileSheet />
 
 <style>
   /* MapLibre's attribution sits above the lowered friends panel, in the theme's colours */

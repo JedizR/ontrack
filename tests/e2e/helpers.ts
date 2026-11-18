@@ -97,7 +97,7 @@ export async function signIn(page: Page, email = EMAIL, { shell = true } = {}) {
   await page.getByTestId('signin-send').click();
   await page.getByTestId('signin-code').fill('123456');
   await expect(sheet).toBeHidden();
-  if (shell) await expect(page.getByTestId('avatar')).toHaveAttribute('aria-label', 'Account');
+  if (shell) await expect(page.getByTestId('avatar')).toHaveAttribute('aria-label', 'Profile');
 }
 
 /** A finished onboarding as the account holds it: vector A of docs/SCIENCE.md, the hardgainer. */

@@ -29,7 +29,9 @@ test('R1: in the scanner Meal takes a photo of the plate to Review, without leav
   await page.getByTestId('add').click();
   await expect(page.getByTestId('scanner-video')).toBeVisible();
   await expect(page.getByRole('radio', { name: 'Meal' })).toBeChecked(); // Meal first; a barcode reads by itself in any mode
-  await expect(page.getByTestId('scanner-hint')).toHaveText('Frame the whole plate. A barcode reads by itself.');
+  await expect(page.getByTestId('scanner-hint')).toHaveText('Frame the whole plate.');
+  await expect(page.getByTestId('scanner-reading')).toBeVisible(); // no frame: a chip says barcodes are read
+  await expect(page.getByTestId('scanner-type')).toHaveCount(0); // typing only when the camera cannot read
   await page.getByTestId('scanner-shutter').click();
   await expect(page.getByTestId('photo-notice')).toBeVisible(); // the first photo still asks first
   await page.getByTestId('photo-continue').click();

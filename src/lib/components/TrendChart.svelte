@@ -27,7 +27,7 @@
   } = $props();
 
   let w = $state(300);
-  const H = 176;
+  const H = 156;
   const M = { top: 8, right: 4, bottom: 28, left: 40 };
   const x = $derived(scaleLinear().domain([0, Math.max(1, span)]).range([M.left, w - M.right]));
   const start = $derived(points[0]);

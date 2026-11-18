@@ -1,17 +1,19 @@
-<!-- SCREENS.md section 11, Settings (M9a): the rows on the sheet in groups. A switch, a segmented choice or a time saves on
-     the tap; Profile, Goal and pace, Check-in day, The science and Delete account open a page inside the sheet. -->
+<!-- SCREENS.md section 11, Settings (M9a), reworked 19 Nov: groups as white cards of grey boxes on the canvas (no gradient), the
+     most used first, the account last. Every row says what it is and what it is now; a switch is the whole box. A switch, a segmented choice or a time saves on
+     the tap; Body details, Goal and pace, Check-in day, The science and Delete account open a page inside the sheet. -->
 <script lang="ts">
   import { untrack } from 'svelte';
   import { fly } from 'svelte/transition';
   import { dur } from '$lib/haptics';
   import { toast } from 'svelte-sonner';
-  import ChevronRight from '@lucide/svelte/icons/chevron-right';
   import Sheet from '$lib/components/Sheet.svelte';
-  import Row from '$lib/components/Row.svelte';
   import Button from '$lib/components/Button.svelte';
-  import Switch from '$lib/components/Switch.svelte';
   import Segmented from '$lib/components/Segmented.svelte';
   import Options from './Options.svelte';
+  import Box from './Box.svelte';
+  import Choices from './Choices.svelte';
+  import Group from './Group.svelte';
+  import Canvas from './Canvas.svelte';
   import PlanPage from './PlanPage.svelte';
   import Science from './Science.svelte';
   import { t } from '$lib/i18n';
@@ -20,6 +22,8 @@
   import { session } from '$lib/session.svelte';
   import { db } from '$lib/db/store.svelte';
   import { sync } from '$lib/sync/engine.svelte';
+  import { view } from '$lib/view.svelte';
+  import { planFor } from '$lib/model/day';
   import { sheets } from '$lib/sheets.svelte';
   import { prefs, type FontSize, type Theme } from '$lib/prefs.svelte';
   import { thaiByLanguage } from '$lib/data/foods';
@@ -39,7 +43,7 @@
   const email = $derived(session.user?.email ?? '');
   const matches = $derived(!!email && typed.trim().toLowerCase() === email.toLowerCase());
   const profile = $derived(db.get('profile', 'profile'));
-  const social = $derived(db.get('social', 'social'));
+  const now = $derived(planFor(db.live('plan'), view.today));
   const remind = $derived(prefs.remind);
   const offline = $derived(sync.status === 'offline');
 
@@ -51,6 +55,12 @@
   // switches, units, the check-in day: one field of the profile, no plan change (the day's mode is read per day)
   const set = (c: Partial<Profile>) => { if (profile) saveSettings({ ...$state.snapshot(profile), ...c }); };
   const setRemind = (c: Partial<typeof prefs.remind>) => (prefs.remind = { ...prefs.remind, ...c });
+
+  // Settings opens from the Profile page: its Back goes there
+  function toProfile() {
+    open = false;
+    sheets.me = true;
+  }
 
   async function leave(force = false) {
     busy = true;
@@ -72,36 +82,19 @@
     const body = t.settings.reportBody(__APP_VERSION__, navigator.userAgent);
     location.href = `mailto:${import.meta.env.VITE_SUPPORT_EMAIL ?? ''}?subject=${encodeURIComponent(t.settings.reportSubject)}&body=${encodeURIComponent(body)}`;
   }
-  /** The friends profile lives over the food map (S1b): open them both. */
-  function friends() {
-    open = false;
-    sheets.friends = true;
-    sheets.profile = {};
-  }
 
   const THEMES: { value: Theme; label: string }[] = [{ value: 'system', label: t.prefs.system }, { value: 'light', label: t.prefs.light }, { value: 'dark', label: t.prefs.dark }];
   const SIZES: { value: FontSize; label: string }[] = [{ value: 'system', label: t.prefs.system }, { value: 'm', label: t.prefs.m }, { value: 'l', label: t.prefs.l }, { value: 'xl', label: t.prefs.xl }];
   const hour = `${String(V.easyAdds.fromHour).padStart(2, '0')}:00`;
 </script>
 
-{#snippet heading(text: string, line?: string)}
-  <!-- U3: a group in a sheet is labelled with an eyebrow, as the Friends panel's are -->
-  <h3 class="text-eyebrow text-ink-2 mt-8 mb-1 first:mt-0">{text}</h3>
-  {#if line}<p class="text-callout text-ink-2 mt-2 mb-1">{line}</p>{/if}
+{#snippet pick(title: string, body: import('svelte').Snippet)}
+  <div><p class="text-callout text-ink-2 px-4 pt-3 pb-2 font-semibold">{title}</p>{@render body()}</div>
 {/snippet}
-{#snippet chevron()}<ChevronRight class="text-ink-2 flex-none" size={20} strokeWidth={2} aria-hidden="true" />{/snippet}
-{#snippet toggle(title: string, caption: string | undefined, checked: boolean, change: (v: boolean) => void, testid: string)}
-  <Row {title} {caption} wrap>
-    {#snippet trailing()}<Switch {checked} label={title} onchange={change} {testid} />{/snippet}
-  </Row>
-{/snippet}
-<!-- a choice under its label, full width, with the hairline rows have -->
-{#snippet choice(title: string, body: import('svelte').Snippet)}
-  <div class="border-line flex flex-col gap-2 py-3 [*+&]:border-t">
-    <span class="text-body font-semibold">{title}</span>
-    {@render body()}
-  </div>
-{/snippet}
+{#snippet units()}<Segmented label={t.settings.units} value={profile!.units} onchange={(v) => set({ units: v })} options={[{ value: 'metric', label: t.body.metric }, { value: 'imperial', label: t.body.imperial }]} />{/snippet}
+{#snippet theme()}<Segmented label={t.prefs.theme} bind:value={() => prefs.theme, (v) => (prefs.theme = v)} options={THEMES} />{/snippet}
+<!-- four sizes do not fit a segmented control at the largest text on the SE: two boxes to a line -->
+{#snippet size()}<Choices label={t.prefs.textSize} value={prefs.fontSize} onchange={(v) => (prefs.fontSize = v)} options={SIZES} testid="set-text-size" />{/snippet}
 
 {#snippet footer()}
   {#if page === 'delete'}
@@ -120,8 +113,8 @@
   layer="base"
   testid="account-sheet"
   footer={page === 'delete' || page === 'profile' || page === 'goal' ? footer : undefined}
-  onback={page !== 'main' && !busy ? () => (page = 'main') : undefined}
-  backLabel={t.account.back}
+  onback={page !== 'main' ? (busy ? undefined : () => (page = 'main')) : toProfile}
+  backLabel={page === 'main' ? t.profile.title : t.account.back}
 >
   <!-- U1c: a page slides in from the right, and the main list back in from the left, as iOS pushes and pops -->
   {#key page}
@@ -141,90 +134,75 @@
     </form>
     <p class="text-callout text-danger mt-3 min-h-5" role="alert">{error}</p>
   {:else}
-    {#if profile}
-      {@render heading(t.settings.you)}
-      <div>
-        <Row title={t.settings.profile} caption={t.settings.profileLine} onclick={() => (page = 'profile')} trailing={chevron} testid="set-profile" />
-        <Row title={t.settings.goal} onclick={() => (page = 'goal')} trailing={chevron} testid="set-goal-open" />
-        {#snippet units()}
-          <Segmented label={t.settings.units} value={profile!.units} onchange={(v) => set({ units: v })} options={[{ value: 'metric', label: t.body.metric }, { value: 'imperial', label: t.body.imperial }]} />
-        {/snippet}
-        {@render choice(t.settings.units, units)}
-      </div>
-
-      {@render heading(t.settings.targets)}
-      <div>
-        {@render toggle(t.plan.even, t.settings.evenLine, profile.calorieMode === 'even', (v) => set({ calorieMode: v ? 'even' : 'matched' }), 'set-even')}
-        <Row title={t.settings.checkinDay} caption={t.train.weekdays[profile.checkinWeekday]} onclick={() => (page = 'checkin')} trailing={chevron} testid="set-checkin" />
-        <Row title={t.settings.how} onclick={() => (sheets.how = true)} trailing={chevron} testid="set-how" />
-      </div>
-    {/if}
-
-    {@render heading(t.settings.reminders, t.settings.remindersLine)}
-    <div>
-      {@render toggle(t.settings.remindMeal, undefined, remind.meal, (v) => setRemind({ meal: v }), 'set-remind-meal')}
-      {#if remind.meal}
-        <div class="border-line flex min-h-16 items-center gap-3 border-t py-2">
-          <label for="remind-at" class="text-body min-w-0 flex-1 font-semibold">{t.settings.remindMealAt}</label>
-          <input id="remind-at" type="time" value={remind.mealAt} onchange={(e) => { if (/^\d\d:\d\d$/.test(e.currentTarget.value)) setRemind({ mealAt: e.currentTarget.value }); }} class="input-field num w-32" data-testid="set-remind-at" />
-        </div>
+    <Canvas>
+      {#if profile}
+        <Group id="set-g-display" title={t.settings.display}>
+          {@render pick(t.settings.units, units)}
+          {@render pick(t.prefs.theme, theme)}
+          {@render pick(t.prefs.textSize, size)}
+        </Group>
       {/if}
-      {@render toggle(t.settings.remindWeigh, undefined, remind.weigh, (v) => setRemind({ weigh: v }), 'set-remind-weigh')}
-      {@render toggle(t.settings.remindCheckin, undefined, remind.checkin, (v) => setRemind({ checkin: v }), 'set-remind-checkin')}
-      {@render toggle(t.settings.remindEasy, t.settings.remindEasyLine(hour), remind.easy, (v) => setRemind({ easy: v }), 'set-remind-easy')}
-    </div>
 
-    {@render heading(t.settings.food)}
-    <div>{@render toggle(t.settings.thai, t.settings.thaiLine, prefs.thai ?? thaiByLanguage(), (v) => (prefs.thai = v), 'set-thai')}</div>
+      <Group id="set-g-remind" title={t.settings.reminders} line={t.settings.remindersLine}>
+        <Box title={t.settings.remindMeal} on={remind.meal} onchange={(v) => setRemind({ meal: v })} wrap testid="set-remind-meal" />
+        {#if remind.meal}
+          <Box title={t.settings.remindMealAt} labelFor="remind-at" wrap>
+            {#snippet trailing()}
+              <input id="remind-at" type="time" value={remind.mealAt} onchange={(e) => { if (/^\d\d:\d\d$/.test(e.currentTarget.value)) setRemind({ mealAt: e.currentTarget.value }); }} class="input-field num bg-surface! min-h-11! w-auto min-w-32" data-testid="set-remind-at" />
+            {/snippet}
+          </Box>
+        {/if}
+        <Box title={t.settings.remindWeigh} on={remind.weigh} onchange={(v) => setRemind({ weigh: v })} wrap testid="set-remind-weigh" />
+        <Box title={t.settings.remindCheckin} on={remind.checkin} onchange={(v) => setRemind({ checkin: v })} wrap testid="set-remind-checkin" />
+        <Box title={t.settings.remindEasy} caption={t.settings.remindEasyLine(hour)} on={remind.easy} onchange={(v) => setRemind({ easy: v })} wrap testid="set-remind-easy" />
+      </Group>
 
-    {@render heading(t.settings.display)}
-    <div>
-      {#snippet theme()}<Segmented label={t.prefs.theme} bind:value={() => prefs.theme, (v) => (prefs.theme = v)} options={THEMES} />{/snippet}
-      {@render choice(t.prefs.theme, theme)}
-    </div>
-    <!-- four sizes do not fit a segmented control at the largest text on the SE: rows, as the other longer choices -->
-    <h4 class="text-body mt-3 font-semibold">{t.prefs.textSize}</h4>
-    <Options label={t.prefs.textSize} value={prefs.fontSize} onchange={(v) => (prefs.fontSize = v)} options={SIZES} testid="set-text-size" />
+      <Group id="set-g-food" title={t.settings.food}>
+        <Box title={t.settings.thai} caption={t.settings.thaiLine} on={prefs.thai ?? thaiByLanguage()} onchange={(v) => (prefs.thai = v)} wrap testid="set-thai" />
+      </Group>
 
-    {@render heading(t.settings.data)}
-    <div>
-      <Row title={t.settings.exportAll} caption={t.settings.exportAllLine} onclick={() => share(exportAll)} testid="set-export-all" />
-      <Row title={t.settings.exportMeals} caption={t.settings.exportMealsLine} onclick={() => share(exportMeals)} testid="set-export-meals" />
-      <Row title={t.account.backup} caption={offline ? t.settings.offline : db.pending > 0 ? t.account.waiting(num(db.pending)) : t.account.backedUp} wrap testid="set-backup">
-        {#snippet trailing()}
-          {#if db.pending > 0 && !offline}
-            <Button size="sm" disabled={sync.status === 'syncing'} onclick={() => syncNow()} data-testid="set-sync">{t.settings.syncNow}</Button>
-          {/if}
-        {/snippet}
-      </Row>
-    </div>
-
-    {@render heading(t.settings.about)}
-    <div>
-      <Row title={t.science.title} onclick={() => (page = 'science')} trailing={chevron} testid="set-science" />
-      <Row title={t.settings.privacy} caption={t.settings.opensPage} onclick={() => window.open('/privacy.html', '_blank', 'noopener')} trailing={chevron} testid="set-privacy" />
-      <Row title={t.settings.terms} caption={t.settings.opensPage} onclick={() => window.open('/terms.html', '_blank', 'noopener')} trailing={chevron} testid="set-terms" />
-      <Row title={t.settings.report} caption={t.settings.reportLine} onclick={report} trailing={chevron} testid="set-report" />
-      <Row title={t.settings.version} value={__APP_VERSION__} testid="set-version" />
-    </div>
-
-    {@render heading(t.settings.account)}
-    <div>
-      <Row title={t.account.email} caption={email} />
-      <Row title={t.settings.friends} caption={social ? t.social.handle(social.handle) : undefined} onclick={friends} trailing={chevron} testid="set-friends" />
-    </div>
-    {#if unsent}
-      <p class="text-callout text-attention mt-4" role="alert" data-testid="account-unsent">{t.account.unsent(num(db.pending))}</p>
-    {/if}
-    <!-- Sign out is the second action; Delete account is a quiet danger link under it, not its twin -->
-    <div class="mt-6 flex flex-col items-start gap-2">
-      {#if unsent}
-        <Button variant="danger" full disabled={busy} onclick={() => leave(true)} data-testid="account-signout-anyway">{t.account.signOutAnyway}</Button>
-      {:else}
-        <Button full disabled={busy} onclick={() => leave()} data-testid="account-signout">{busy ? t.account.signingOut : t.account.signOut}</Button>
+      {#if profile}
+        <Group id="set-g-plan" title={t.settings.you}>
+          <Box title={t.settings.profile} caption={t.settings.profileLine} onclick={() => (page = 'profile')} chevron testid="set-profile" />
+          <Box title={t.settings.goal} caption={now ? t.goal[now.goal] : undefined} onclick={() => (page = 'goal')} chevron testid="set-goal-open" />
+          <Box title={t.plan.even} caption={t.settings.evenLine} on={profile.calorieMode === 'even'} onchange={(v) => set({ calorieMode: v ? 'even' : 'matched' })} wrap testid="set-even" />
+          <Box title={t.settings.checkinDay} caption={t.train.weekdays[profile.checkinWeekday]} onclick={() => (page = 'checkin')} chevron testid="set-checkin" />
+          <Box title={t.settings.how} onclick={() => (sheets.how = true)} chevron testid="set-how" />
+        </Group>
       {/if}
-      <Button variant="danger" size="sm" class="-ml-4" disabled={busy} onclick={() => (page = 'delete')} data-testid="account-delete">{t.account.delete}</Button>
-    </div>
+
+      <Group id="set-g-data" title={t.settings.data}>
+        <Box title={t.settings.exportAll} caption={t.settings.exportAllLine} onclick={() => share(exportAll)} testid="set-export-all" />
+        <Box title={t.settings.exportMeals} caption={t.settings.exportMealsLine} onclick={() => share(exportMeals)} testid="set-export-meals" />
+        <Box title={t.account.backup} caption={offline ? t.settings.offline : db.pending > 0 ? t.account.waiting(num(db.pending)) : t.account.backedUp} wrap testid="set-backup">
+          {#snippet trailing()}
+            {#if db.pending > 0 && !offline}
+              <Button variant="surface" size="sm" disabled={sync.status === 'syncing'} onclick={() => syncNow()} data-testid="set-sync">{t.settings.syncNow}</Button>
+            {/if}
+          {/snippet}
+        </Box>
+      </Group>
+
+      <Group id="set-g-about" title={t.settings.about}>
+        <Box title={t.science.title} onclick={() => (page = 'science')} chevron testid="set-science" />
+        <Box title={t.settings.privacy} caption={t.settings.opensPage} onclick={() => window.open('/privacy.html', '_blank', 'noopener')} chevron testid="set-privacy" />
+        <Box title={t.settings.terms} caption={t.settings.opensPage} onclick={() => window.open('/terms.html', '_blank', 'noopener')} chevron testid="set-terms" />
+        <Box title={t.settings.report} caption={t.settings.reportLine} onclick={report} chevron testid="set-report" />
+        <Box title={t.settings.version} value={__APP_VERSION__} testid="set-version" />
+      </Group>
+
+      <Group id="set-g-account" title={t.settings.account}>
+        <Box title={t.account.email} caption={email} />
+        {#if unsent}
+          <p class="text-callout text-attention px-4 pt-1" role="alert" data-testid="account-unsent">{t.account.unsent(num(db.pending))}</p>
+          <Button variant="danger" full disabled={busy} onclick={() => leave(true)} data-testid="account-signout-anyway">{t.account.signOutAnyway}</Button>
+        {:else}
+          <Box title={busy ? t.account.signingOut : t.account.signOut} onclick={() => leave()} disabled={busy} testid="account-signout" />
+        {/if}
+        <!-- Sign out is the second action; Delete account is a quiet danger link under it, not its twin -->
+        <Button variant="danger" size="sm" class="self-start" disabled={busy} onclick={() => (page = 'delete')} data-testid="account-delete">{t.account.delete}</Button>
+      </Group>
+    </Canvas>
   {/if}
   </div>
   {/key}

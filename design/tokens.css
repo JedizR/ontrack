@@ -209,6 +209,10 @@
   --wash-2: var(--grain), url(./gradients/wash-2.webp) center / cover no-repeat, linear-gradient(160deg, #a7bedb 0%, #f9bba1 55%, #f89183 100%);
   --wash-3: var(--grain), url(./gradients/wash-3.webp) center / cover no-repeat, linear-gradient(160deg, #a7bedb 0%, #f9bba1 55%, #f89183 100%);
   --wash-4: var(--grain), url(./gradients/wash-4.webp) center / cover no-repeat, linear-gradient(160deg, #a7bedb 0%, #f9bba1 55%, #f89183 100%);
+  /* R3, the owner (19 Nov): Progress's two hero boxes, each its own photogradient (scripts/gradients.sh trend, streak):
+     Today's hero haze rearranged (the owner: start from the Today gradient): its colours mirrored for the weight trend, moved along for consistency; night words on both */
+  --grad-trend: var(--grain), url(./gradients/trend.webp) center / cover no-repeat, linear-gradient(160deg, #f7b3c9 0%, #ffffff 45%, #f9bba1 100%);
+  --grad-streak: var(--grain), url(./gradients/streak.webp) center / cover no-repeat, linear-gradient(160deg, #f9bba1 0%, #f7b3c9 50%, #bebeff 100%);
 }
 
 /* a light island (data-theme="light" inside a dark page, the haze, the featured card): ink words, and secondary words at 73

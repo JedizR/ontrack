@@ -11,9 +11,9 @@
   import Footprints from '@lucide/svelte/icons/footprints';
   import Plus from '@lucide/svelte/icons/plus';
   import Check from '@lucide/svelte/icons/check';
-  import { sheets } from '$lib/sheets.svelte';
-  import { logSession } from '$lib/actions';
-  import { haptic } from '$lib/haptics';
+  import { clearSessionLog, logSession } from '$lib/actions';
+  import { haptic, pop } from '$lib/haptics';
+  import Burst from '$lib/components/Burst.svelte';
   import { t } from '$lib/i18n';
   import { collapse } from '$lib/haptics';
   import Card from '$lib/components/Card.svelte';
@@ -25,7 +25,6 @@
   import WeekRing from '$lib/components/WeekRing.svelte';
   import MuscleMap from '$lib/components/MuscleMap.svelte';
   import { MUSCLE_STEPS } from '$lib/data/body';
-  import Row from '$lib/components/Row.svelte';
   import Count from '$lib/components/Count.svelte';
   import Dumbbell from '@lucide/svelte/icons/dumbbell';
   import EmptyState from '$lib/components/EmptyState.svelte';
@@ -33,11 +32,10 @@
   import { view } from '$lib/view.svelte';
   import { changeProgram, undoToast } from '$lib/actions';
   import { planFor } from '$lib/model/day';
-  import { addDays, shortDate, weekdayOf } from '$lib/model/dates';
-  import { heaviest, muscleSets, totals, weekLevels } from '$lib/model/workout';
-  import { weightText } from '$lib/model/units';
+  import { addDays, weekdayOf } from '$lib/model/dates';
+  import { weekLevels } from '$lib/model/workout';
   import { num } from '$lib/model/format';
-  import { analyseProgram, eeeByWeekday, MUSCLES, U, V, type Finding, type HybridPoint, type SourceId } from '$lib/model/engine';
+  import { analyseProgram, eeeByWeekday, MUSCLES, sessionKcal, U, V, type Finding, type HybridPoint, type SourceId } from '$lib/model/engine';
   import { LIBRARY } from '$lib/data/exercises';
   import { SOURCES } from '$lib/data/sources';
   import SessionSheet from '../flows/train/SessionSheet.svelte';
@@ -73,35 +71,33 @@
   // R1: this week as the program has it, and what is up next (Fitbit's weekly goal, Nike Training Club's next workout)
   const monday = $derived(addDays(view.today, -todayIs));
   const statusOf = (s: Session) => db.get('slog', ids.slog(addDays(monday, s.weekday), s.key))?.status;
-  const weekDone = $derived(sessions.filter((s) => statusOf(s) === 'done').length);
+  // R3, the owner: no set by set logging. A session is marked Done, as cardio is, and the week adds up what was marked
+  const doneSessions = $derived(sessions.filter((s) => statusOf(s) === 'done'));
+  const weekDone = $derived(doneSessions.length);
   const next = $derived.by(() => {
     const sorted = [...sessions].sort((a, b) => a.weekday - b.weekday);
     const upcoming = sorted.find((s) => s.weekday >= todayIs && !statusOf(s));
-    const s = upcoming ?? sorted[0];
-    return s ? { s, today: !!upcoming && s.weekday === todayIs } : null;
+    // today's session stays up with its tick once done, unless another is still due today
+    const finished = upcoming?.weekday === todayIs ? undefined : sorted.filter((s) => s.weekday === todayIs && statusOf(s) === 'done').at(-1);
+    const s = finished ?? upcoming ?? sorted[0];
+    return s ? { s, today: !!(finished ?? upcoming) && s.weekday === todayIs, done: !!finished } : null;
   });
-  const exercisesOf = (s: Session) => program.sessions.find((x) => x.key === s.key)?.exercises?.length ?? 0;
-  const canStart = (s: Session) => (s.type === 'strength' || s.type === 'circuit') && exercisesOf(s) > 0;
-  const namesOf = (s: Session) => (program.sessions.find((x) => x.key === s.key)?.exercises ?? []).map((e) => LIBRARY[e.exerciseId]?.name ?? e.exerciseId);
+  const namesOf = (s: Session) => (s.exercises ?? []).map((e) => LIBRARY[e.exerciseId]?.name ?? e.exerciseId);
 
-  // R2, Strava's strength activity: the body, lit by the sets logged this week; before any, by the program's plan
-  const logs = $derived(db.live('slog').map((r) => r.data));
-  const thisWeek = $derived(logs.filter((l) => l.date >= monday && l.date <= view.today && l.workout).map((l) => l.workout!));
-  const logged = $derived(muscleSets(thisWeek, LIBRARY));
-  const planned = $derived(analysis ? Object.fromEntries(MUSCLES.map((m) => [m, analysis.muscles[m].sets])) : {});
-  const fromLogs = $derived(thisWeek.length > 0);
-  const levels = $derived(weekLevels(fromLogs ? logged : planned));
-  // this week in two numbers, Strava's "This week" row: sets logged and kg lifted
-  const weekSets = $derived(thisWeek.reduce((a, w) => a + totals(w).sets, 0));
-  const weekKg = $derived(thisWeek.reduce((a, w) => a + totals(w).volumeKg, 0));
+  // the body, lit by the planned sets of the sessions marked Done this week; before any, by the whole plan
+  const lit = $derived(doneSessions.length && plan && profile ? analyseProgram(doneSessions, { goal: plan.goal, experience: profile.experience, library: LIBRARY }) : analysis);
+  const levels = $derived(lit ? weekLevels(Object.fromEntries(MUSCLES.map((m) => [m, lit.muscles[m].sets]))) : {});
+  // this week in two numbers, from the sessions marked Done: kcal burned and planned sets
+  const weekKcal = $derived(plan ? Math.round(doneSessions.reduce((a, s) => a + sessionKcal(s, plan.weightKg), 0)) : 0);
+  const weekSets = $derived(doneSessions.reduce((a, s) => a + (s.exercises ?? []).reduce((n, e) => n + e.sets, 0), 0));
   const litNames = $derived((Object.keys(levels) as (keyof typeof M)[]).map((m) => M[m]).join(', '));
-  // the heaviest weight per exercise from the sets logged on Today, the most recent first (moved here from Progress)
-  const bestLifts = $derived([...heaviest(logs).entries()].sort((a, b) => b[1].date.localeCompare(a[1].date)).slice(0, 4));
-  function startNext() {
-    if (!next) return;
+  // the same moment as Today's Done: a haptic, and the Burst on the tick
+  let burst = $state<string | null>(null);
+  function markDone(s: Session) {
     haptic();
-    if (canStart(next.s)) sheets.workout = { date: view.today, key: next.s.key };
-    else logSession({ date: view.today, sessionKey: next.s.key, status: 'done' });
+    logSession({ date: view.today, sessionKey: s.key, status: 'done' });
+    burst = s.key;
+    setTimeout(() => (burst = null), 1400);
   }
 
   const MAX_SESSIONS = 28; // the record schema's limit
@@ -178,7 +174,7 @@
       <!-- R2, the owner's one card with small boxes (as Today's): what is next on the featured panel with the week's ring
            and the one action, then the week on the body and in two numbers. The boxes at the card's corners nest in it -->
       <section class="bg-surface shadow-card flex flex-col gap-2 rounded-xl p-2" aria-label={t.train.upNext}>
-        <div class="feature text-ink rounded-t-sheet {analysis?.hasExercises || fromLogs ? 'rounded-b-md' : 'rounded-b-sheet'} p-5 [background:var(--grad-feature)] [@media(max-height:620px)]:p-4" data-testid="train-next">
+        <div class="feature text-ink rounded-t-sheet {analysis?.hasExercises ? 'rounded-b-md' : 'rounded-b-sheet'} p-5 [background:var(--grad-feature)] [@media(max-height:620px)]:p-4" data-testid="train-next">
           <div class="flex items-start gap-3">
             <div class="min-w-0 flex-1">
               <p class="text-eyebrow">{next.today ? t.train.nextToday : t.train.weekdays[next.s.weekday]}</p>
@@ -192,20 +188,26 @@
           </div>
           {#if namesOf(next.s).length}<p class="text-callout mt-2 line-clamp-1 opacity-80">{namesOf(next.s).join(', ')}</p>{/if}
           <div class="mt-4 flex items-center gap-3 [@media(max-height:620px)]:mt-3">
-            {#if next.today}
-              <Button variant="primary" onclick={startNext} data-testid="train-start">{canStart(next.s) ? t.workout.start : t.today.done}</Button>
+            {#if next.done}
+              <span class="bg-success text-night relative grid size-7 flex-none place-items-center rounded-full" in:pop data-testid="train-tick">
+                <Check size={17} strokeWidth={3.5} aria-hidden="true" />
+                {#if burst === next.s.key}<Burst />{/if}
+              </span>
+              <Button variant="surface" onclick={() => { haptic(); clearSessionLog(view.today, next.s.key); }} data-testid="train-undo">{t.today.undo}</Button>
+            {:else if next.today}
+              <Button variant="primary" onclick={() => markDone(next.s)} data-testid="train-start">{t.today.done}</Button>
             {:else}
               <Button variant="surface" onclick={() => edit(next.s)} data-testid="train-next-open">{t.train.look}</Button>
             {/if}
           </div>
         </div>
 
-        {#if analysis?.hasExercises || fromLogs}
+        {#if analysis?.hasExercises}
           <div class="grid grid-cols-3 grid-rows-2 gap-2">
             <!-- the week on the body: three violet steps by sets per muscle (S11 bands) -->
             <div class="bg-surface-2 rounded-bl-sheet col-span-2 row-span-2 flex min-w-0 flex-col rounded-md px-4 pt-3 pb-5" data-testid="train-muscles">
               <div class="flex items-baseline justify-between gap-2">
-                <p class="text-caption text-ink-2 font-semibold">{fromLogs ? t.train.muscles7 : t.train.musclesPlanned}</p>
+                <p class="text-caption text-ink-2 font-semibold">{doneSessions.length ? t.train.muscles7 : t.train.musclesPlanned}</p>
                 <span class="text-caption text-ink-2 num">{num(Object.keys(levels).length)}/{num(MUSCLES.length)}</span>
               </div>
               <MuscleMap level={levels} sex={profile.sex} label={t.train.mapLabel(litNames)} class="mt-2 h-36 flex-1 [@media(max-height:620px)]:h-28" />
@@ -216,30 +218,19 @@
                 {/each}
               </div>
             </div>
-            <div class="bg-surface-2 flex min-w-0 flex-col justify-end rounded-md px-4 py-3" data-testid="train-week-sets">
-              <p class="text-caption text-ink-2">{t.train.setsWeek}</p>
-              <p class="text-subhead num"><Count value={weekSets} /></p>
+            <div class="bg-surface-2 flex min-w-0 flex-col justify-end rounded-md px-4 py-3" data-testid="train-week-kcal">
+              <p class="text-caption text-ink-2 truncate">{t.train.burnedWeek}</p>
+              <p class="text-subhead num flex flex-wrap items-baseline gap-x-1"><Count value={weekKcal} /> <span class="text-caption text-ink-2 font-medium">{t.after.kcal}</span></p>
+              <p class="text-caption text-ink-2 truncate">{t.train.weekSoFar}</p>
             </div>
-            <div class="bg-surface-2 rounded-br-sheet flex min-w-0 flex-col justify-end rounded-md px-4 py-3" data-testid="train-week-kg">
-              <p class="text-caption text-ink-2">{t.train.liftedWeek}</p>
-              <p class="text-subhead num whitespace-nowrap"><Count value={weekKg} format={(v) => weightText(v, profile.units, 0)} /></p>
+            <div class="bg-surface-2 rounded-br-sheet flex min-w-0 flex-col justify-end rounded-md px-4 py-3" data-testid="train-week-sets">
+              <p class="text-caption text-ink-2 truncate">{t.train.setsWeek}</p>
+              <p class="text-subhead num"><Count value={weekSets} /></p>
+              <p class="text-caption text-ink-2 truncate">{t.train.weekSoFar}</p>
             </div>
           </div>
         {/if}
       </section>
-    {/if}
-
-    {#if bestLifts.length}
-      <Card list aria-label={t.workout.bestLifts} data-testid="train-lifts">
-        <CardHead class="pt-5 pb-1" title={t.workout.bestLifts} />
-        <div>
-          {#each bestLifts as [id, b] (id)}
-            <Row title={LIBRARY[id]?.name ?? id} caption={t.workout.bestLine(shortDate(b.date))} value={weightText(b.kg, profile.units)} unit="x {num(b.reps)}">
-              {#snippet leading()}<div class="tile grid size-full place-items-center"><Dumbbell size={22} strokeWidth={2} aria-hidden="true" /></div>{/snippet}
-            </Row>
-          {/each}
-        </div>
-      </Card>
     {/if}
 
     <Suggestion {sessions} goal={plan.goal} experience={profile.experience} />
@@ -253,7 +244,9 @@
       <div class="mt-3 grid grid-cols-7 gap-1">
         {#each t.train.weekdays as dayName, d (dayName)}
           {@const list = sessions.filter((s) => s.weekday === d)}
-          <div class="flex min-w-0 flex-col items-center gap-1 rounded-md py-2 {d === todayIs ? 'ring-ink ring-2 ring-inset' : ''}" data-testid="train-day-{d}">
+          <div class="relative flex min-w-0 flex-col items-center gap-1 rounded-md py-2" data-testid="train-day-{d}">
+            <!-- R3, the owner: today's ring is drawn over the session icons, not behind them -->
+            {#if d === todayIs}<span class="ring-ink pointer-events-none absolute inset-0 z-10 rounded-md ring-2 ring-inset" aria-hidden="true"></span>{/if}
             <span class="text-caption font-semibold {d === todayIs ? 'text-ink' : 'text-ink-2'}">{t.week.letters[d]}</span>
             {#each list as s (s.key)}
               {@const Icon = TYPE_ICON[s.type]}

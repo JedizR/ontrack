@@ -18,7 +18,8 @@ const get = (page: Page, c: string, id: string) => page.evaluate(([c, id]) => (w
 const plans = (page: Page) => page.evaluate(() => (window as unknown as Win).ontrack.db.live('plan').map((r) => r.data)) as Promise<{ effectiveFrom: string; ratePctPerWeek: number; source: string; tdeeSource: string }[]>;
 const sheet = (page: Page) => page.getByTestId('account-sheet');
 async function settings(page: Page) {
-  await page.getByTestId('avatar').click();
+  await page.getByTestId('avatar').click(); // the Profile page, with Settings at its foot
+  await page.getByTestId('me-settings').click();
   await expect(sheet(page)).toBeVisible();
 }
 const close = (page: Page) => sheet(page).getByRole('button', { name: 'Close' }).click();
@@ -247,9 +248,35 @@ test('Train asks the lifting experience in context of a lifter who is not gainin
   await expect(card).toBeHidden();
 });
 
-test('Profile for friends opens the friends profile over the map', async ({ page }) => {
+test('the person button opens the Profile page; its Settings button opens Settings and Back comes home', async ({ page }) => {
+  await openAt(page, '10:00', { records: MEALS });
+  await page.getByTestId('avatar').click();
+  const me = page.getByTestId('me-sheet');
+  await expect(me).toBeVisible();
+  await expect(me.getByTestId('me-name')).toHaveText('me@example.com');
+  await expect(me.getByTestId('me-days')).toContainText('2'); // two days with a meal
+  await expect(me.getByTestId('me-goal')).toContainText('Build muscle');
+  await expect(me.getByTestId('me-goal')).toContainText('About 0.3 kg a week');
+  await expect(me.getByTestId('me-edit')).toContainText('Set up profile');
+  await me.getByTestId('me-settings').click();
+  await expect(sheet(page)).toBeVisible();
+  await expect(me).toBeHidden();
+  await sheet(page).getByTestId('sheet-back').click(); // Back on the main page goes to Profile
+  await expect(me).toBeVisible();
+  await expect(sheet(page)).toBeHidden();
+  await me.getByTestId('me-edit').click();
+  await expect(page.getByTestId('profile-sheet')).toBeVisible();
+});
+
+test('Settings: each setting says what it is now, and the whole box is the tap', async ({ page }) => {
   await openAt(page, '10:00');
   await settings(page);
-  await sheet(page).getByTestId('set-friends').click();
-  await expect(page.getByTestId('profile-sheet')).toBeVisible();
+  const s = sheet(page);
+  await expect(s.getByTestId('set-goal-open')).toContainText('Build muscle');
+  await expect(s.getByTestId('set-checkin')).toContainText('Wednesday');
+  const easy = s.getByRole('switch', { name: 'Evening easy adds' });
+  await expect(easy).toHaveAttribute('aria-checked', 'true');
+  await easy.click({ position: { x: 20, y: 10 } }); // anywhere on the box, not only the switch
+  await expect(easy).toHaveAttribute('aria-checked', 'false');
+  for (const g of ['Units and display', 'Reminders', 'Food', 'Your plan', 'Data', 'About', 'Account']) await expect(s.getByRole('group', { name: g })).toBeVisible();
 });

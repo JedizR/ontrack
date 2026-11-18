@@ -30,10 +30,10 @@ const PAGE_MAX = 1000;
 
 type Row = { userId: string; rec: Rec; ts: number };
 /** What the database publishes from records (supabase/migrations/0005_social.sql), and friendships keyed requester|addressee */
-type Published = { profiles: Map<string, Person & { showProgram: boolean }>; programs: Map<string, unknown>; shared: Map<string, SharedMeal>; friends: Map<string, { requester: string; addressee: string; accepted: boolean }> };
+type Published = { profiles: Map<string, Person & { showProgram: boolean }>; programs: Map<string, unknown>; shared: Map<string, SharedMeal>; friends: Map<string, { requester: string; addressee: string; accepted: boolean; yesAt?: number }> };
 /** vision: the fixture every analysis returns until cleared; ai: analyses per user and day, aiFrom where a count starts.
  * thumbs are keyed by storage path, `<userId>/<name>.jpg` */
-type Space = Published & { epoch: number; rows: Map<string, Row>; thumbs: Map<string, ArrayBuffer>; lastTs: number; vision: string | null; ai: Map<string, number>; aiFrom: number };
+type Space = Published & { demo: boolean; epoch: number; rows: Map<string, Row>; thumbs: Map<string, ArrayBuffer>; lastTs: number; vision: string | null; ai: Map<string, number>; aiFrom: number };
 type Token = { u: string; e: string; ep: number; s: string };
 
 const json = (status: number, body: unknown, headers: Record<string, string> = {}) =>
@@ -76,6 +76,7 @@ function publish(space: Space, userId: string, rec: Rec) {
       // shortcut, as the trigger's: a handle someone else holds is not taken over; the rest publishes
       const handle = [...space.profiles.values()].some((p) => p.handle === d.handle && p.id !== userId) ? was?.handle : (d.handle as string);
       if (handle) space.profiles.set(userId, { id: userId, handle, name: d.name, photo: d.photo ? `${userId}/${d.photo}.jpg` : null, showProgram: !!d.showProgram });
+      if (space.demo && !was && !isDemo(userId)) space.friends.set(`${demoId('ploy')}|${userId}`, { requester: demoId('ploy'), addressee: userId, accepted: false });
     }
   }
   if (rec.collection === 'meal') {
@@ -101,11 +102,20 @@ const sees = (space: Space, viewer: string, owner: string) =>
   viewer === owner || !!(space.friends.get(`${viewer}|${owner}`)?.accepted || space.friends.get(`${owner}|${viewer}`)?.accepted);
 const person = ({ showProgram: _, ...p }: Person & { showProgram: boolean }): Person => p;
 
+/** Dev only (the default space, never a test's): people to find, so one phone can try the whole friends loop. Rin, Kai and
+ * Mai say yes a few seconds after you ask; Ploy asks you once you have a profile. */
+const DEMO = [['rin', 'Rin'], ['kai_lifts', 'Kai'], ['mai', 'Mai'], ['ploy', 'Ploy']] as const;
+const demoId = (handle: string) => userIdFor(`${handle}@demo.test`);
+const isDemo = (id: string) => DEMO.some(([h]) => demoId(h) === id);
+const DEMO_YES_MS = 4000;
+
 export function createMockServer() {
   const spaces = new Map<string, Space>();
   const spaceOf = (name: string) => {
-    if (!spaces.has(name)) spaces.set(name, { epoch: 0, rows: new Map(), thumbs: new Map(), lastTs: 0, vision: null, ai: new Map(), aiFrom: 0, profiles: new Map(), programs: new Map(), shared: new Map(), friends: new Map() });
-    return spaces.get(name)!;
+    if (!spaces.has(name)) spaces.set(name, { demo: name === 'default', epoch: 0, rows: new Map(), thumbs: new Map(), lastTs: 0, vision: null, ai: new Map(), aiFrom: 0, profiles: new Map(), programs: new Map(), shared: new Map(), friends: new Map() });
+    const space = spaces.get(name)!;
+    if (space.demo && !space.profiles.size) for (const [handle, who] of DEMO) space.profiles.set(demoId(handle), { id: demoId(handle), handle, name: who, photo: null, showProgram: false });
+    return space;
   };
   /** A write as the database takes it: a stale or repeated one is skipped (sync rule 2). */
   const put = (space: Space, userId: string, rec: Rec) => {
@@ -268,6 +278,7 @@ async function social(space: Space, me: string, op: string, req: Request): Promi
     return ok({ people: people.slice(0, SEARCH_MAX).map(person) });
   }
   if (op === 'friends') {
+    for (const f of space.friends.values()) if (f.yesAt && f.yesAt <= Date.now()) { f.accepted = true; f.yesAt = undefined; }
     const friends: Friend[] = [];
     for (const f of space.friends.values()) {
       const other = f.requester === me ? f.addressee : f.addressee === me ? f.requester : null;
@@ -297,7 +308,7 @@ async function social(space: Space, me: string, op: string, req: Request): Promi
   if (op === 'request') {
     // the database's checks: both have a profile, not yourself; asking again changes nothing
     if (them === me || !space.profiles.has(me) || !space.profiles.has(them)) return fail(400, 'bad_request');
-    if (!space.friends.has(`${me}|${them}`)) space.friends.set(`${me}|${them}`, { requester: me, addressee: them, accepted: false });
+    if (!space.friends.has(`${me}|${them}`)) space.friends.set(`${me}|${them}`, { requester: me, addressee: them, accepted: false, ...(space.demo && isDemo(them) ? { yesAt: Date.now() + DEMO_YES_MS } : {}) });
     return ok();
   }
   if (op === 'remove') {

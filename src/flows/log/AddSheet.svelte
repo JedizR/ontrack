@@ -19,7 +19,7 @@
   import Segmented from '$lib/components/Segmented.svelte';
   import Mic from '@lucide/svelte/icons/mic';
   import Scale from '@lucide/svelte/icons/scale';
-  import Dumbbell from '@lucide/svelte/icons/dumbbell';
+  import Check from '@lucide/svelte/icons/check';
   import { prefs } from '$lib/prefs.svelte';
   import Sheet from '$lib/components/Sheet.svelte';
   import Row from '$lib/components/Row.svelte';
@@ -27,7 +27,7 @@
   import { sheets } from '$lib/sheets.svelte';
   import { view } from '$lib/view.svelte';
   import { db } from '$lib/db/store.svelte';
-  import { deleteMeal, logAgain, logSaved, undoToast } from '$lib/actions';
+  import { clearSessionLog, deleteMeal, logAgain, logSaved, logSession, undoToast } from '$lib/actions';
   import { recentMeals, totals } from '$lib/model/day';
   import { stampOn, weekdayOf } from '$lib/model/dates';
   import { num } from '$lib/model/format';
@@ -86,18 +86,24 @@
   // R2: the plus logs everything a day has (Strava's one create button): a meal first, then the weigh-in and the session
   const weighed = $derived(!!db.get('weight', ids.weight(view.date)));
   const session = $derived.by(() => {
-    const s = db.get('program', 'program')?.sessions.find((x) => x.weekday === weekdayOf(view.date) && (x.type === 'strength' || x.type === 'circuit') && !!x.exercises?.length);
+    const s = db.get('program', 'program')?.sessions.find((x) => x.weekday === weekdayOf(view.date) && !db.get('slog', ids.slog(view.date, x.key)));
     return s && !db.get('slog', ids.slog(view.date, s.key)) ? s : null;
   });
+  // as on Today: a cardio session named only "Cardio" shows its machine
+  const sessionName = $derived(session ? (session.name === t.train.types[session.type] && session.setup ? t.train.machines[session.setup.machine] : session.name) : '');
   function weigh() {
     sheets.add = false;
     void import('./weigh').then((m) => m.weighIn(view.date));
   }
+  // the owner (19 Nov): no set-by-set workout; the plus marks the day's session done, with an undo
   function train() {
     if (!session) return;
+    const { key } = session;
+    const name = sessionName;
     haptic();
     sheets.add = false;
-    sheets.workout = { date: view.date, key: session.key };
+    logSession({ date: view.date, sessionKey: key, status: 'done' });
+    undoToast(t.add.sessionDone(name), () => clearSessionLog(view.date, key));
   }
   let input = $state<HTMLInputElement>();
   let notice = $state(false);
@@ -177,6 +183,23 @@
       <Button variant="plain" size="lg" full onclick={() => { notice = false; held = null; }}>{t.add.consentNotNow}</Button>
     </div>
   {:else}
+    <div class="mb-3 grid grid-cols-[1fr_1fr_auto] gap-2" data-testid="add-pinned">
+      {#each PINNED as k (k)}
+        {@const r = pinnedOf(k)}
+        <button type="button" class="bg-surface-2 active:bg-surface-3 flex min-h-12 min-w-0 items-center gap-1.5 rounded-full px-3 py-1 text-left transition-[background-color,transform] duration-[var(--d-press)] active:scale-[0.98]" onclick={() => supplement(r?.id ?? null, r ? undefined : k)} data-testid={r ? 'supplement' : `add-pin-${k}`}>
+          <span class="text-ink-2 inline-grid flex-none"><ShakerIcon /></span>
+          <span class="min-w-0 flex-1 leading-tight">
+            <span class="text-callout block truncate font-semibold">{r?.data.name ?? t.add.pinned[k]}</span>
+            <!-- set up, its last amount (and Typical when its values are the label's typical ones), as its old row said -->
+            {#if r}{#snippet typ()}<SourceLabel source="typical" />{/snippet}<span class="text-caption text-ink-2 block"><Facts facts={[t.supplement.amount(num(r.data.lastScoops, 1), !!r.data.lastMix && !noCalories(r.data)), r.data.typical && typ]} /></span>{/if}
+          </span>
+          {#if r && lastKcal(r.id, r.data)}<span class="text-caption text-ink-2 num flex-none">{lastKcal(r.id, r.data)}</span>{/if}
+        </button>
+      {/each}
+      <!-- any other supplement: set one up -->
+      <button type="button" class="bg-surface-2 active:bg-surface-3 text-ink-2 grid size-12 place-items-center rounded-full transition-[background-color,transform] duration-[var(--d-press)] active:scale-[0.97]" aria-label={t.supplement.setup} onclick={() => supplement(null)} data-testid="supplement-entry"><Plus size={22} strokeWidth={2.25} aria-hidden="true" /></button>
+    </div>
+
     <!-- R1, rebuilt from Alma's composer, BitePal's search and Cal AI's tiles: the field to say what you ate, with a mic,
          on the landing page's sky; under it the four other ways as round glass actions. Photo is the ink one -->
     <div class="rounded-t-lg rounded-b-md p-4 [background:var(--grad-sky)]" data-theme="light" data-testid="add-composer">
@@ -207,33 +230,16 @@
     <!-- R2, one card with small boxes (the owner's pick): the sky panel, then the day's other two logs as boxes under it,
          their outer corners the card's -->
     <div class="mt-2 grid {session ? 'grid-cols-2' : 'grid-cols-1'} gap-2" data-testid="add-also">
-      {#snippet box(Icon: Component<{ size?: number; strokeWidth?: number }>, label: string, onclick: () => void, testid: string, corner: string)}
+      {#snippet box(Icon: Component<{ size?: number; strokeWidth?: number }>, label: string, onclick: () => void, testid: string, corner: string, caption?: string)}
         <button type="button" class="bg-surface-2 active:bg-surface-3 {corner} text-body flex min-h-14 min-w-0 items-center gap-2 rounded-md px-4 text-left font-semibold transition-[background-color,transform] duration-[var(--d-press)] active:scale-[0.98]" {onclick} data-testid={testid}>
-          <Icon size={20} strokeWidth={2.25} /><span class="truncate">{label}</span>
+          <span class="inline-grid flex-none"><Icon size={20} strokeWidth={2.25} /></span><span class="min-w-0 leading-tight"><span class="block truncate">{label}</span>{#if caption}<span class="text-caption text-ink-2 block truncate font-medium">{caption}</span>{/if}</span>
         </button>
       {/snippet}
       {@render box(Scale, weighed ? t.add.weighAgain : t.weigh.action, weigh, 'add-weigh', session ? 'rounded-bl-lg' : 'rounded-b-lg')}
-      {#if session}{@render box(Dumbbell, t.add.startSession(session.name), train, 'add-workout', 'rounded-br-lg')}{/if}
+      {#if session}{@render box(Check, sessionName, train, 'add-workout', 'rounded-br-lg', t.add.markDone)}{/if}
     </div>
 
     <!-- R2: the supplements first (the owner), whey and creatine side by side -->
-    <div class="mt-4 grid grid-cols-[1fr_1fr_auto] gap-2" data-testid="add-pinned">
-      {#each PINNED as k (k)}
-        {@const r = pinnedOf(k)}
-        <button type="button" class="bg-surface-2 active:bg-surface-3 flex min-h-12 min-w-0 items-center gap-1.5 rounded-full px-3 py-1 text-left transition-[background-color,transform] duration-[var(--d-press)] active:scale-[0.98]" onclick={() => supplement(r?.id ?? null, r ? undefined : k)} data-testid={r ? 'supplement' : `add-pin-${k}`}>
-          <span class="text-ink-2 inline-grid flex-none"><ShakerIcon /></span>
-          <span class="min-w-0 flex-1 leading-tight">
-            <span class="text-callout block font-semibold">{r?.data.name ?? t.supplement.kinds[k]}</span>
-            <!-- set up, its last amount (and Typical when its values are the label's typical ones), as its old row said -->
-            {#if r}{#snippet typ()}<SourceLabel source="typical" />{/snippet}<span class="text-caption text-ink-2 block"><Facts facts={[t.supplement.amount(num(r.data.lastScoops, 1), !!r.data.lastMix && !noCalories(r.data)), r.data.typical && typ]} /></span>{/if}
-          </span>
-          {#if r && lastKcal(r.id, r.data)}<span class="text-caption text-ink-2 num flex-none">{lastKcal(r.id, r.data)}</span>{/if}
-        </button>
-      {/each}
-      <!-- any other supplement: set one up -->
-      <button type="button" class="bg-surface-2 active:bg-surface-3 text-ink-2 grid size-12 place-items-center rounded-full transition-[background-color,transform] duration-[var(--d-press)] active:scale-[0.97]" aria-label={t.supplement.setup} onclick={() => supplement(null)} data-testid="supplement-entry"><Plus size={22} strokeWidth={2.25} aria-hidden="true" /></button>
-    </div>
-
     {#if others.length}
       <h3 class="text-eyebrow text-ink-2 mt-8">{t.supplement.section}</h3>
       <div data-testid="supplements">
