@@ -4,7 +4,14 @@ Handoff note between contexts. Read first, update last. Keep it under one screen
 
 **R1 and R2 shipped as v2.0.0 (17 November 2026). Read `docs/HANDOFF-R2.md` first** (the owner's directions, open items, context files, tools); `docs/R2-PLAN.md` has what R2 built, page by page.
 
-**18 November, tester feedback (PR #53):** the plus opens on one camera (Meal and Label photos, a barcode read in any mode, faint wide and tall frames; Photos picks from the library); the serving chip follows the amount to the nearest half serving; header titles at Heading size (the owner's ask; DESIGN.md section 7 still says Title); Train tidied; search and the photo resolver fold Thai romanisation. Open from the design critic, not done: the Add sheet's field and ways sit below the fold at 390 by 664 under the camera; Train fills planned days with ink like today; the Up next ring and "5/10" against DESIGN section 6; the sparkle on Adjust with AI; SCREENS.md section 7 does not yet describe the camera-first Add sheet. The system prompt's Thai naming was not tightened.
+**R3, 18 and 19 November (PR #53, v2.1.0): the owner's iPhone passes after a real tester.** The owner's calls are in memory `owner-r3-directions`; DESIGN.md and SCREENS.md still describe R2 and need bringing up to this.
+- **Add sheet:** whey and creatine pills on top; one in-app camera (Meal and Label photos with a round shutter, a barcode read in any mode, a small reads-barcodes chip, no frames; Type the number only when the camera cannot open); the describe field, Photos, Search, Quick add. The weigh-in and session live on Today only.
+- **Today:** each session its own box with its own Done (ink spreading from the button, a subtle green burst, Undo plays it back); cardio shows its machine with Cardio under it; the weigh-in box works the same way (ink once weighed, green check, Edit; Add before), compact under 620 high.
+- **Train:** no set-by-set logging (the workout sheet is deleted; `slog.workout` stays for old data); the hero's Done, then a black Undo that slides in and back; Burned and Sets this week from Done; today's ring above the icons.
+- **Progress:** one card: two hero boxes on their own photogradients (`trend`, `streak` in scripts/gradients.sh, made from the Today haze), the chart with range pills, three grey boxes.
+- **Profile and Settings:** the person button opens Profile (MeSheet); Settings from it, in cards of grey boxes. Friends: requests arrive without a reload (60 s refresh), demo friends in the dev mock.
+- **Also:** serving chip to the nearest half serving; Thai romanisation folding in search and the photo resolver; header title at Heading size, moving in to 24 on the glass; no fades.
+- **Open:** DESIGN.md and SCREENS.md to R3; the design critic's leftovers (planned days in ink on Train, the Up next ring, the sparkle on Adjust with AI); the system prompt's Thai naming; yab-browser cannot open localhost (memory `yab-no-localhost`), so UI checks use the capture harness, which now has sizes 692, se667 and max.
 
 ## Resume order (13 November 2026, after the owner's iPhone pass)
 
