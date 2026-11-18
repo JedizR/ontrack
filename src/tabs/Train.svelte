@@ -203,9 +203,9 @@
                 <Check size={17} strokeWidth={3.5} aria-hidden="true" />
                 {#if burst === next.s.key}<Burst />{/if}
               </span>
-              <!-- 19 Nov, the owner: Undo is grey, and slides from where Done was to beside the check as it pops, and back -->
+              <!-- 19 Nov, the owner: Undo is the black pill in both themes, and slides from where Done was to beside the check as it pops, and back -->
               <span class="inline-flex transition-transform duration-[var(--d-ui)] ease-[var(--ease-out)] {leaving === next.s.key ? '-translate-x-10' : ''}" data-theme="light" in:fly={{ x: -40, duration: dur('--d-ui'), easing: cubicOut }}>
-                <Button variant="neutral" onclick={() => undo(next.s)} data-testid="train-undo">{t.today.undo}</Button>
+                <Button variant="primary" onclick={() => undo(next.s)} data-testid="train-undo">{t.today.undo}</Button>
               </span>
             {:else if next.today}
               <Button variant="primary" onclick={() => markDone(next.s)} data-testid="train-start">{t.today.done}</Button>
