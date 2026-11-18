@@ -113,9 +113,9 @@
       <div class="-mx-6 flex gap-2 overflow-x-auto px-6" role="group" aria-label={t.search.portion}>
         {#each picked.food.portions as p, i (p.label)}
           <!-- the first portion is the serving: off every chip, it follows the amount to the nearest half serving -->
-          {@const n = i === 0 && !picked.food.portions.some((o) => o.grams === picked?.grams) ? servingsNear(picked.grams, p.grams) : 1}
-          {@const g = Math.round(n * p.grams)}
-          <Chip selected={picked.grams === g} onclick={() => { if (picked) picked.grams = g; }}>{n === 1 ? p.label : t.scan.portions.serving(num(n, 1))}</Chip>
+          {@const n = i === 0 && p.label.startsWith('1 ') && !picked.food.portions.some((o) => o.grams === picked?.grams) ? servingsNear(picked.grams, p.grams) : 1}
+          {@const g = n === 1 ? p.grams : Math.round(n * p.grams)}
+          <Chip selected={picked.grams === g} onclick={() => { if (picked) picked.grams = g; }}>{n === 1 ? p.label : t.search.times(num(n, 1), p.label)}</Chip>
         {/each}
       </div>
       <div class="flex items-center justify-between gap-3">

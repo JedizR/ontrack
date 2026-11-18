@@ -280,8 +280,9 @@
       <div class="-mx-6 flex gap-2 overflow-x-auto px-6" role="group" aria-label={t.search.portion}>
         {#each portionsOf(product) as p (p.key)}
           <!-- the serving chip follows the amount to the nearest half serving; a tap snaps to it -->
-          {@const g = p.key === 'serving' ? Math.round(servingsNear(grams, p.grams) * p.grams) : p.grams}
-          <Chip selected={grams === g} onclick={() => (grams = g)}>{p.key === 'hundred' ? t.scan.portions.hundred(unitWord(u)) : p.key === 'serving' ? t.scan.portions.serving(num(servingsNear(grams, p.grams), 1)) : t.scan.portions.pack}</Chip>
+          {@const n = p.key === 'serving' && !portionsOf(product).some((o) => o.key !== 'serving' && o.grams === grams) ? servingsNear(grams, p.grams) : 1}
+          {@const g = n === 1 ? p.grams : Math.round(n * p.grams)}
+          <Chip selected={grams === g} onclick={() => (grams = g)}>{p.key === 'hundred' ? t.scan.portions.hundred(unitWord(u)) : p.key === 'serving' ? t.scan.portions.serving(num(n, 1)) : t.scan.portions.pack}</Chip>
         {/each}
       </div>
       <div class="flex flex-wrap items-center justify-between gap-3">

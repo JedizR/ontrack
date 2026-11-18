@@ -174,7 +174,7 @@
     <p class="text-body" data-testid="photo-notice">{t.add.consent}</p>
     <div class="mt-6 flex flex-col gap-2">
       <Button variant="primary" size="lg" full onclick={() => { prefs.photoOk = true; notice = false; if (held) { const f = held; held = null; shot(f, 'meal'); } else input?.click(); }} data-testid="photo-continue">{t.add.consentContinue}</Button>
-      <Button variant="plain" size="lg" full onclick={() => (notice = false)}>{t.add.consentNotNow}</Button>
+      <Button variant="plain" size="lg" full onclick={() => { notice = false; held = null; }}>{t.add.consentNotNow}</Button>
     </div>
   {:else}
     <!-- R1, rebuilt from Alma's composer, BitePal's search and Cal AI's tiles: the field to say what you ate, with a mic,

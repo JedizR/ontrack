@@ -4,6 +4,8 @@ Handoff note between contexts. Read first, update last. Keep it under one screen
 
 **R1 and R2 shipped as v2.0.0 (17 November 2026). Read `docs/HANDOFF-R2.md` first** (the owner's directions, open items, context files, tools); `docs/R2-PLAN.md` has what R2 built, page by page.
 
+**18 November, tester feedback (PR #53):** the plus opens on one camera (Meal and Label photos, a barcode read in any mode, faint wide and tall frames; Photos picks from the library); the serving chip follows the amount to the nearest half serving; header titles at Heading size (the owner's ask; DESIGN.md section 7 still says Title); Train tidied; search and the photo resolver fold Thai romanisation. Open from the design critic, not done: the Add sheet's field and ways sit below the fold at 390 by 664 under the camera; Train fills planned days with ink like today; the Up next ring and "5/10" against DESIGN section 6; the sparkle on Adjust with AI; SCREENS.md section 7 does not yet describe the camera-first Add sheet. The system prompt's Thai naming was not tightened.
+
 ## Resume order (13 November 2026, after the owner's iPhone pass)
 
 The conductor role and its rules are in `STARTING_PROMPT.md`; the final report it describes is still the goal. The waves and their reasons are in `docs/BUILD-PLAN.md` after the table.

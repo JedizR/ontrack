@@ -274,3 +274,18 @@ test('a portion becomes a database item with whole kcal and macros to one decima
   // INMU's cooked rice (N3): 136 kcal, 2.28 g protein, 31.1 g carbohydrate, 0.24 g fat in 100 g
   expect(itemFor(rice, 158)).toEqual({ name: 'White rice', grams: 158, kcal: 215, protein: 3.6, carbs: 49.1, fat: 0.4, source: 'db', foodId: 'rice-white' });
 });
+
+// review of 18 Nov: a folded query (a dropped plural, tum to tam) matches whole words only, never a prefix of another food
+test('a plural or spelling fold does not rank unrelated foods by prefix', () => {
+  const names = (q: string) => searchFoods(FOODS as Food[], q, 5).map((f) => f.name.toLowerCase());
+  expect(names('peas')[0]).toContain('peas');
+  expect(names('peas').some((n) => n.startsWith('pear'))).toBe(false);
+  expect(names('tum')[0]).toContain('tam');
+});
+
+test('a portion label at another count reads in the plural', async () => {
+  const { t } = await import('../../src/lib/i18n');
+  expect(t.search.times('1.5', '1 plate')).toBe('1.5 plates');
+  expect(t.search.times('2', '1 tbsp')).toBe('2 tbsp');
+  expect(t.search.times('2', '1 glass')).toBe('2 glasses');
+});

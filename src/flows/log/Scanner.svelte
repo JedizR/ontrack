@@ -69,6 +69,8 @@
     const detector = await reader;
     if (me !== run) return;
     if (!detector) {
+      // Meal and Label need no reader: the camera stays for them, only the barcode is lost
+      if (onphoto) return void (live = true);
       stop();
       return void (problem = 'reader');
     }
@@ -105,12 +107,13 @@
   /** The frame on screen, as a JPEG: the camera stops and the sheet takes it from here. */
   async function snap() {
     if (!video || video.readyState < 2 || mode === 'barcode') return;
+    const me = run; // a barcode read while the frame encodes wins; this photo is dropped
     const c = document.createElement('canvas');
     c.width = video.videoWidth;
     c.height = video.videoHeight;
     c.getContext('2d')?.drawImage(video, 0, 0);
     const frame = await new Promise<Blob | null>((r) => c.toBlob(r, 'image/jpeg', 0.9));
-    if (!frame) return;
+    if (!frame || me !== run) return;
     haptic();
     stop();
     onphoto?.(frame, mode);

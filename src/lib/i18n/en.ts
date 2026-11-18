@@ -286,6 +286,8 @@ export const en = {
     failed: 'The food list did not load. Check your connection and try again.',
     retry: 'Try again',
     back: 'Back to results',
+    /** a "1 plate" portion at another count: 1.5 plates, 2 tbsp (the unit words in foods.json) */
+    times: (n: string, label: string) => label.replace(/^1 (\S+)/, (_, w: string) => `${n} ${/^(tbsp|tsp|oz|g|ml|medium|small|large|handful)$/.test(w) ? w : /(s|sh|ch|x)$/.test(w) ? `${w}es` : `${w}s`}`),
     portion: 'Portion',
     grams: 'Grams',
     add: (kcal: string) => `Add ${kcal} kcal`,

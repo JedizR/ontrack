@@ -50,7 +50,8 @@ function score(f: Food, q: { raw: string; fold: string; words: string[]; compact
   let best = 0;
   for (const k of keys(f)) {
     const a = part(k.raw, q.raw) * 3;
-    const b = part(k.fold, q.fold) * 3 - 1;
+    // folded: whole name, or whole words inside it; never a prefix ("peas" folds to "pea", which must not find Pear)
+    const b = k.fold === q.fold ? 11 : ` ${k.fold} `.includes(` ${q.fold} `) ? 5 : 0;
     const c = q.compact.length >= 4 ? (k.compact === q.compact ? 4 : k.compact.startsWith(q.compact) ? 3 : k.compact.includes(q.compact) ? 1 : 0) * 3 - 2 : 0;
     const d = q.words.length > 1 && q.words.every((w) => k.words.some((x) => x.startsWith(w))) ? 4 : 0;
     best = Math.max(best, a, b, c, d);

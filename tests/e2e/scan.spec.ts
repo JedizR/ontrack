@@ -56,10 +56,13 @@ test('F22: a known barcode is found in Open Food Facts and logged, credited, wit
   await product.getByRole('button', { name: '100 g' }).click();
   await expect(page.getByTestId('product-kcal')).toHaveText('473');
   // the owner (18 Nov): the serving chip follows the amount to the nearest half serving, and a tap snaps to it
+  const amount = page.getByTestId('product-grams').getByRole('textbox');
+  await amount.fill('120');
+  await amount.blur();
   await product.getByRole('button', { name: '2 servings' }).click();
   await expect(page.getByTestId('product-kcal')).toHaveText('520');
-  await page.getByTestId('product-grams').getByRole('textbox').fill('60');
-  await page.getByTestId('product-grams').getByRole('textbox').blur();
+  await amount.fill('60');
+  await amount.blur();
   await product.getByRole('button', { name: '1 serving' }).click();
   await page.getByTestId('product-add').click();
 
