@@ -165,7 +165,7 @@
         <button type="button" class="bg-surface-2 active:bg-surface-3 flex min-h-12 min-w-0 items-center gap-1.5 rounded-full px-3 py-1 text-left transition-[background-color,transform] duration-[var(--d-press)] active:scale-[0.98]" onclick={() => supplement(r?.id ?? null, r ? undefined : k)} data-testid={r ? 'supplement' : `add-pin-${k}`}>
           <span class="text-ink-2 inline-grid flex-none"><ShakerIcon /></span>
           <span class="min-w-0 flex-1 leading-tight">
-            <span class="text-callout block truncate font-semibold">{r?.data.name ?? t.add.pinned[k]}</span>
+            <span class="text-callout block font-semibold break-words">{t.add.pinned[k]}</span>
             <!-- set up, its last amount (and Typical when its values are the label's typical ones), as its old row said -->
             {#if r}{#snippet typ()}<SourceLabel source="typical" />{/snippet}<span class="text-caption text-ink-2 block"><Facts facts={[t.supplement.amount(num(r.data.lastScoops, 1), !!r.data.lastMix && !noCalories(r.data)), r.data.typical && typ]} /></span>{/if}
           </span>

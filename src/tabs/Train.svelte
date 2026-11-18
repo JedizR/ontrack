@@ -12,7 +12,9 @@
   import Plus from '@lucide/svelte/icons/plus';
   import Check from '@lucide/svelte/icons/check';
   import { clearSessionLog, logSession } from '$lib/actions';
-  import { haptic, pop } from '$lib/haptics';
+  import { dur, haptic, pop } from '$lib/haptics';
+  import { fly } from 'svelte/transition';
+  import { cubicOut } from 'svelte/easing';
   import Burst from '$lib/components/Burst.svelte';
   import { t } from '$lib/i18n';
   import { collapse } from '$lib/haptics';
@@ -193,7 +195,10 @@
                 <Check size={17} strokeWidth={3.5} aria-hidden="true" />
                 {#if burst === next.s.key}<Burst />{/if}
               </span>
-              <Button variant="surface" onclick={() => { haptic(); clearSessionLog(view.today, next.s.key); }} data-testid="train-undo">{t.today.undo}</Button>
+              <!-- 19 Nov, the owner: Undo is grey, and slides from where Done was to beside the check as it pops -->
+              <span class="inline-flex" data-theme="light" in:fly={{ x: -40, duration: dur('--d-ui'), easing: cubicOut }}>
+                <Button variant="neutral" onclick={() => { haptic(); clearSessionLog(view.today, next.s.key); }} data-testid="train-undo">{t.today.undo}</Button>
+              </span>
             {:else if next.today}
               <Button variant="primary" onclick={() => markDone(next.s)} data-testid="train-start">{t.today.done}</Button>
             {:else}

@@ -23,7 +23,7 @@ test('F21: whey set up from its label, then 2 scoops in three taps from the plus
   await page.getByTestId('add').click();
   // O1: a lifter's entry row asks the question, and gaining lists whey and mass gainer first
   // R2: whey and creatine are pinned at the top of Add; the plus beside them sets up any supplement
-  await expect(page.getByTestId('add-pinned')).toContainText('Whey'); // short until set up (19 Nov)
+  await expect(page.getByTestId('add-pinned')).toContainText("Whey"); // the short name in the pill (19 Nov)
   await expect(page.getByTestId('add-pinned')).toContainText('Creatine');
   await page.getByTestId('supplement-entry').click();
   await expect(sheet(page)).toContainText('Ontrack logs what you take. It does not recommend supplements or amounts.');
@@ -58,7 +58,7 @@ test('F21: whey set up from its label, then 2 scoops in three taps from the plus
 
   // three taps: the plus, the supplement, Add
   await page.getByTestId('add').click();
-  await expect(page.getByTestId('supplement')).toContainText('Whey protein');
+  await expect(page.getByTestId('supplement')).toContainText('Whey');
   await expect(page.getByTestId('supplement')).toContainText('2 scoops');
   await expect(page.getByTestId('supplement')).toContainText('240');
   await expect(page.getByTestId('recent')).toHaveCount(0);
@@ -192,7 +192,7 @@ test('F21: mixed with milk, edited, deleted with undo; the label edited and the 
   await expect(hero(page)).toHaveText('337'); // what was logged keeps its numbers
   await page.getByRole('button', { name: 'Undo' }).click();
   await page.getByTestId('add').click();
-  await expect(page.getByTestId('supplement')).toContainText('Whey protein');
+  await expect(page.getByTestId('supplement')).toContainText('Whey');
 });
 
 test('F21: a supplement logs offline and reaches the account once the network is back', { tag: '@smoke' }, async ({ page, context }) => {

@@ -345,23 +345,24 @@
         <!-- 19 Nov, the owner: the weigh-in as the sessions are: once weighed the box turns the action's ink (spread from its
              button when it happens here) with the filled green check centred above the weight, and Edit under the words;
              before, the grey box with Add -->
-        <div class="bg-surface-2 text-ink rounded-br-sheet relative flex min-h-[calc(var(--s-16)+var(--s-4))] min-w-0 flex-col items-center justify-center gap-2 overflow-hidden rounded-md px-2 py-3 text-center" style={weighedOn && !weighLate ? '--ink: var(--on-action); --ink-2: color-mix(in srgb, var(--on-action) 68%, transparent)' : undefined} data-done={!!weighedOn || undefined} data-testid="weigh-card">
+        <div class="bg-surface-2 text-ink rounded-br-sheet relative flex min-h-[calc(var(--s-16)+var(--s-4))] min-w-0 flex-col items-center justify-center gap-2 overflow-hidden rounded-md px-2 py-3 text-center [@media(max-height:620px)]:gap-0.5 [@media(max-height:620px)]:py-1.5" style={weighedOn && !weighLate ? '--ink: var(--on-action); --ink-2: color-mix(in srgb, var(--on-action) 68%, transparent)' : undefined} data-done={!!weighedOn || undefined} data-testid="weigh-card">
           {#if weighedOn}<span class="bg-action absolute inset-0 {weighJust ? 'ink-in' : ''}" style="--x: 50%; --y: 80%" aria-hidden="true"></span>{/if}
-          <span class="relative flex min-w-0 flex-col items-center">
+          <!-- under 620 high (the SE with toolbars) the check sits beside the weight and the second line goes, so the card stays whole -->
+          <span class="relative flex min-w-0 flex-col items-center [@media(max-height:620px)]:flex-row [@media(max-height:620px)]:gap-1.5">
             {#if weighedOn}
-              <span class="bg-success text-night relative mb-2 grid size-7 place-items-center rounded-full" in:pop data-testid="weigh-tick">
+              <span class="bg-success text-night relative mb-2 grid size-7 flex-none place-items-center rounded-full [@media(max-height:620px)]:mb-0 [@media(max-height:620px)]:size-6" in:pop data-testid="weigh-tick">
                 <Check size={17} strokeWidth={3.5} aria-hidden="true" />
                 {#if weighJust}<Burst />{/if}
               </span>
               <span class="text-subhead num whitespace-nowrap">{weightText(weighedOn.kg, profile?.units ?? 'metric')}</span>
-              <span class="text-caption text-ink-2">{t.weigh.done}</span>
+              <span class="text-caption text-ink-2 [@media(max-height:620px)]:hidden">{t.weigh.done}</span>
             {:else}
-              <span class="text-ink-2 mb-2 inline-grid"><Scale size={20} strokeWidth={2.25} aria-hidden="true" /></span>
+              <span class="text-ink-2 mb-2 inline-grid [@media(max-height:620px)]:mb-0"><Scale size={20} strokeWidth={2.25} aria-hidden="true" /></span>
               <span class="text-body font-semibold">{view.past ? t.weigh.none : t.weigh.action}</span>
-              {#if !view.past}<span class="text-caption text-ink-2">{lastWeigh ? t.weigh.promptDays(num(daysBetween(lastWeigh, view.today))) : t.weigh.promptFirstShort}</span>{/if}
+              {#if !view.past}<span class="text-caption text-ink-2 [@media(max-height:620px)]:hidden">{lastWeigh ? t.weigh.promptDays(num(daysBetween(lastWeigh, view.today))) : t.weigh.promptFirstShort}</span>{/if}
             {/if}
           </span>
-          <Button variant={weighedOn ? 'on-ink' : 'primary'} size="sm" class="relative min-w-[4.5rem]" onclick={() => weighIn(view.date)} data-testid="weigh-open">{weighedOn ? t.weigh.edit : t.weigh.add}</Button>
+          <Button variant={weighedOn ? 'on-ink' : 'primary'} size="sm" class="relative min-w-[4.5rem] [@media(max-height:620px)]:-my-1" onclick={() => weighIn(view.date)} data-testid="weigh-open">{weighedOn ? t.weigh.edit : t.weigh.add}</Button>
         </div>
       </div>
     </section></div>
