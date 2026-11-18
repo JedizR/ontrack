@@ -284,7 +284,7 @@ async function walkLogging(page: Page, dir: string, part: (typeof LOGGING)[numbe
     await page.getByTestId('add').click();
     await page.getByTestId('scanner-type').click();
     await expect(page.getByTestId('barcode-field')).toBeVisible();
-    await sheet('scan-sheet', 'scan-type', 'barcode-find');
+    await sheet('add-sheet', 'scan-type', 'barcode-find'); // typing sits in the Add sheet's camera (18 Nov)
     await page.getByTestId('barcode-field').fill('8850987101021');
     await page.getByTestId('barcode-find').click();
     await expect(page.getByTestId('product')).toBeVisible();
