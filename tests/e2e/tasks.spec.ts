@@ -66,7 +66,7 @@ for (const theme of VIDEO ? (['light', 'dark'] as const) : (['light'] as const))
       await open(page);
       const w = walk(page);
       await w.tap('add');
-      await w.tap('add-scan');
+      await w.tap('scanner-type');
       await w.type('barcode-field', '8850987101021');
       await w.tap('barcode-find');
       await w.tap('product-add');

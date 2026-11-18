@@ -193,7 +193,7 @@ test.describe('reduced motion', () => {
     await now();
     await page.getByTestId('tab-2').click();
     await now();
-    await page.getByRole('radiogroup', { name: 'Range' }).getByRole('radio').nth(2).click();
+    await page.getByRole('radiogroup', { name: 'Range' }).getByRole('radio').last().click();
     await now();
     await page.getByTestId('tab-0').click();
     await page.getByTestId('add').click();

@@ -13,7 +13,7 @@
     from,
     to,
     label,
-    height = 184,
+    height = 156,
   }: {
     days: Day[];
     /** a target range drawn behind the bars, [from, to] */

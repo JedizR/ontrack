@@ -37,11 +37,13 @@
   let SignIn = $state<Component<{ open: boolean; title?: string }> | null>(null);
   let Account = $state<Component<{ open: boolean }> | null>(null);
   let Wheel = $state<Component | null>(null);
+  // the Profile page (the person button), which also holds the one Edit profile sheet the food map opens
+  let Me = $state<Component | null>(null);
   async function loadSheets() {
-    const [s, a, k] = await Promise.all([import('./flows/signin/SignInSheet.svelte'), import('./settings/SettingsSheet.svelte'), import('$lib/components/WheelSheet.svelte')]);
-    [SignIn, Account, Wheel] = [s.default, a.default, k.default];
+    const [s, a, k, m] = await Promise.all([import('./flows/signin/SignInSheet.svelte'), import('./settings/SettingsSheet.svelte'), import('$lib/components/WheelSheet.svelte'), import('./flows/social/MeSheet.svelte')]);
+    [SignIn, Account, Wheel, Me] = [s.default, a.default, k.default, m.default];
   }
-  $effect(() => { if ((sheets.signin || sheets.account || picker.open) && !SignIn) void loadSheets(); });
+  $effect(() => { if ((sheets.signin || sheets.account || sheets.me || sheets.profile || picker.open) && !SignIn) void loadSheets(); });
   // the logging sheets: Add, Search, Quick add, Meal, How it is calculated and the session menu
   let Log = $state<Component | null>(null);
   const loadLog = async () => { Log ??= (await import('./flows/log/LogSheets.svelte')).default; };
@@ -123,10 +125,10 @@
     const preload = setTimeout(() => { void loadTab(1); void loadTab(2); loadSheets().catch(() => undefined); loadLog().catch(() => undefined); }, 800); // a failed preload retries on first open
     // a tab can stay open past midnight: Today follows the calendar when it comes back
     const tick = () => { if (document.visibilityState === 'visible') view.tick(); };
-    const back = () => { if (document.visibilityState === 'visible' && social && session.user && !sheets.friends) void refreshFriends(); };
+    const back = () => { if (document.visibilityState === 'visible' && social && session.user) void refreshFriends(); };
     document.addEventListener('visibilitychange', tick);
     document.addEventListener('visibilitychange', back);
-    const clock = setInterval(tick, 60_000);
+    const clock = setInterval(() => { tick(); back(); }, 60_000); // a request or an answer from a friend arrives without a reload
 
     if (import.meta.env.PROD) {
       // U2: a new version has taken over this page (vite.config.ts): the next load is the new one, so Update just reloads.
@@ -158,7 +160,7 @@
     title={prefs.tab === 0 && view.past ? dayTitleShort(view.date) : TITLES[prefs.tab]}
     sync={MARK[sync.status]}
     signedIn={!!session.user}
-    onaccount={() => (session.user ? (sheets.account = true) : (sheets.signin = true))}
+    onaccount={() => (session.user ? (sheets.me = true) : (sheets.signin = true))}
     onfriends={session.user && db.ready ? () => (sheets.friends = true) : undefined}
     requests={waiting()}
   />
@@ -182,6 +184,7 @@
 
 {#if SignIn}<SignIn bind:open={sheets.signin} title={onboarding && prefs.draft?.at === 'plan' ? t.signin.save : t.signin.welcomeBack} />{/if}
 {#if Account}<Account bind:open={sheets.account} />{/if}
+{#if Me}<Me />{/if}
 {#if Log}<Log />{/if}
 {#if Wheel}<Wheel />{/if}
 {#if Checkin}<Checkin />{/if}

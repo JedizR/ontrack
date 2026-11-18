@@ -2,7 +2,7 @@
 // FNDDS, SG FoodID, the Thai FCD (INMU) and `data/food-list.csv`; nobody types a nutrient value. It loads lazily and works
 // offline.
 import type { FoodMemory, MealItem } from '../../../shared/records';
-import { norm } from '../../../shared/text';
+import { compact, fold, norm } from '../../../shared/text';
 import { prefs } from '$lib/prefs.svelte';
 
 export type FoodTag = 'dense' | 'protein' | 'drink' | 'oil' | 'staple' | 'thai';
@@ -31,12 +31,32 @@ export function loadFoods(): Promise<Food[]> {
 export { norm };
 
 /** 4 the whole name, 3 prefix, 2 word start, 1 substring, 0 no match: of the query against one name or alias. */
-function score(text: string, q: string) {
-  const s = norm(text);
-  if (s === q) return 4;
-  if (s.startsWith(q)) return 3;
-  if (s.includes(` ${q}`)) return 2;
-  return s.includes(q) ? 1 : 0;
+const part = (s: string, q: string) => (s === q ? 4 : s.startsWith(q) ? 3 : s.includes(` ${q}`) ? 2 : s.includes(q) ? 1 : 0);
+
+type Keys = { raw: string; fold: string; words: string[]; compact: string };
+const keysOf = new WeakMap<Food, Keys[]>();
+/** A food's name and aliases in the three forms a query is read in, made once (983 rows by a few names). */
+function keys(f: Food): Keys[] {
+  let k = keysOf.get(f);
+  if (!k) keysOf.set(f, (k = [f.name, ...f.aliases].map((t) => { const fo = fold(t); return { raw: norm(t), fold: fo, words: fo.split(' '), compact: compact(t) }; })));
+  return k;
+}
+
+/** The best of one food's names against the query, 0 to 12. Exact reading scores 3 per tier, the folded reading of
+ * Thai romanisation variants (khao and kao, phad and pad) one less, the same with the spaces dropped ("krapao") two
+ * less, and a multi word query whose every word starts some word of the name, in any order, sits between word start and
+ * substring. So a spelling variant never beats an exact match of the same kind. */
+function score(f: Food, q: { raw: string; fold: string; words: string[]; compact: string }) {
+  let best = 0;
+  for (const k of keys(f)) {
+    const a = part(k.raw, q.raw) * 3;
+    // folded: whole name, or whole words inside it; never a prefix ("peas" folds to "pea", which must not find Pear)
+    const b = k.fold === q.fold ? 11 : ` ${k.fold} `.includes(` ${q.fold} `) ? 5 : 0;
+    const c = q.compact.length >= 4 ? (k.compact === q.compact ? 4 : k.compact.startsWith(q.compact) ? 3 : k.compact.includes(q.compact) ? 1 : 0) * 3 - 2 : 0;
+    const d = q.words.length > 1 && q.words.every((w) => k.words.some((x) => x.startsWith(w))) ? 4 : 0;
+    best = Math.max(best, a, b, c, d);
+  }
+  return best;
 }
 
 /** The phone reads Thai (a Thai language, or English in Thailand): Thai dishes rank first among equal matches (O1). A
@@ -48,11 +68,13 @@ export const thaiFirst = () => prefs.thai ?? thaiByLanguage();
 /** Scored match over name and aliases: a whole match beats prefix beats word start beats substring, then Thai dishes when
  * `thai`, then shorter names. No library. */
 export function searchFoods(foods: Food[], query: string, limit = 30, thai = false): Food[] {
-  const q = norm(query);
-  if (!q) return [];
+  const raw = norm(query);
+  if (!raw) return [];
+  const fo = fold(query);
+  const q = { raw, fold: fo, words: fo.split(' '), compact: compact(query) };
   const local = (f: Food) => (thai && f.tags.includes('thai') ? 1 : 0);
   return foods
-    .map((f) => ({ f, s: Math.max(score(f.name, q), ...f.aliases.map((a) => score(a, q))) }))
+    .map((f) => ({ f, s: score(f, q) }))
     .filter((x) => x.s > 0)
     .sort((a, b) => b.s - a.s || local(b.f) - local(a.f) || a.f.name.length - b.f.name.length || a.f.name.localeCompare(b.f.name))
     .slice(0, limit)

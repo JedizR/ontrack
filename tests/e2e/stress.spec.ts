@@ -135,6 +135,7 @@ async function checkAll(page: Page, dir: string) {
   await checkPage(page, 'signin', dir);
   await signIn(page);
   await page.getByTestId('avatar').click();
+  await page.getByTestId('me-settings').click(); // the person button opens the Profile page; Settings is its button
   await expect(page.getByTestId('account-sheet')).toHaveCSS('transform', 'none');
   // Settings (M9a) is a long list: its last row, Delete account, is reached by scrolling the sheet
   await page.getByTestId('account-delete').scrollIntoViewIfNeeded();
@@ -282,9 +283,9 @@ async function walkLogging(page: Page, dir: string, part: (typeof LOGGING)[numbe
     await close('supplement-sheet');
     // the Scan sheet (B1): no camera here, so the typed number, then the product and its label
     await page.getByTestId('add').click();
-    await page.getByTestId('add-scan').click();
+    await page.getByTestId('scanner-type').click();
     await expect(page.getByTestId('barcode-field')).toBeVisible();
-    await sheet('scan-sheet', 'scan-type', 'barcode-find');
+    await sheet('add-sheet', 'scan-type', 'barcode-find'); // typing sits in the Add sheet's camera (18 Nov)
     await page.getByTestId('barcode-field').fill('8850987101021');
     await page.getByTestId('barcode-find').click();
     await expect(page.getByTestId('product')).toBeVisible();

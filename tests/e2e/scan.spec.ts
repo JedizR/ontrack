@@ -16,7 +16,7 @@ const camera = (page: Page, error: string) =>
 async function scan(page: Page, code: string, plus = true) {
   if (plus) {
     await page.getByTestId('add').click();
-    await page.getByTestId('add-scan').click();
+    await page.getByTestId('scanner-type').click();
   }
   await page.getByTestId('barcode-field').fill(code);
   await page.getByTestId('barcode-find').click();
@@ -41,7 +41,7 @@ test('F22: a known barcode is found in Open Food Facts and logged, credited, wit
   await camera(page, 'NotFoundError');
   await open(page);
   await page.getByTestId('add').click();
-  await page.getByTestId('add-scan').click();
+  await page.getByTestId('scanner-type').click();
   await expect(page.getByTestId('scanner-problem')).toHaveText('This browser cannot open a camera here. Type the number instead.');
   await scan(page, '8850987101021', false);
 
@@ -55,6 +55,14 @@ test('F22: a known barcode is found in Open Food Facts and logged, credited, wit
   await expect(product.getByRole('button', { name: '1 serving' })).toBeVisible();
   await product.getByRole('button', { name: '100 g' }).click();
   await expect(page.getByTestId('product-kcal')).toHaveText('473');
+  // the owner (18 Nov): the serving chip follows the amount to the nearest half serving, and a tap snaps to it
+  const amount = page.getByTestId('product-grams').getByRole('textbox');
+  await amount.fill('120');
+  await amount.blur();
+  await product.getByRole('button', { name: '2 servings' }).click();
+  await expect(page.getByTestId('product-kcal')).toHaveText('520');
+  await amount.fill('60');
+  await amount.blur();
   await product.getByRole('button', { name: '1 serving' }).click();
   await page.getByTestId('product-add').click();
 
@@ -113,7 +121,7 @@ test('F22: camera denied falls back to typing; wrong digits are caught', async (
   await camera(page, 'NotAllowedError');
   await open(page);
   await page.getByTestId('add').click();
-  await page.getByTestId('add-scan').click();
+  await page.getByTestId('scanner-type').click();
   await expect(page.getByTestId('scanner-problem')).toHaveText("Camera access is off for Ontrack. Type the number, or allow the camera for this site in your browser's settings.");
   await expect(page.getByTestId('barcode-field')).toBeFocused();
   await expect(page.getByTestId('barcode-field')).toHaveAttribute('inputmode', 'numeric');

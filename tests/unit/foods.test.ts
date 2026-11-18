@@ -237,6 +237,19 @@ describe('search', () => {
     expect(searchFoods(mixed, 'rice').map((f) => f.name)).toEqual(['Rice', 'Rice soup', 'Fried rice', 'Khao pad sapparot']);
     expect(searchFoods(mixed, 'rice', 30, true).map((f) => f.name)).toEqual(['Rice', 'Rice soup', 'Khao pad sapparot', 'Fried rice']);
   });
+  test('romanisation variants, missing spaces, word order and plurals find the same Thai dish', () => {
+    const top = (q: string) => searchFoods(FOODS as Food[], q, 30, true)[0]?.name ?? '';
+    for (const q of ['phat thai', 'pad tai', 'padthai']) expect(top(q)).toBe('Pad thai');
+    for (const q of ['krapao', 'gaprao', 'phad kaprow', 'kra pao']) expect(top(q)).toBe('Pad kra pao pork');
+    for (const q of ['kao man gai', 'khao man kai', 'khaomankai']) expect(top(q)).toBe('Khao man kai');
+    expect(top('tom yam kung')).toBe('Tom yum kung');
+    expect(top('som tum')).toBe('Som tam');
+    expect(searchFoods(FOODS as Food[], 'chicken pad kra pao').map((f) => f.name)).toContain('Pad kra pao chicken');
+    expect(top('กระเพรา')).toBe('Basil'); // the other spelling of กะเพรา
+    // a variant never beats an exact match of the same kind
+    expect(searchFoods([food('Kao tom'), food('Khao tom')], 'khao tom').map((f) => f.name)).toEqual(['Khao tom', 'Kao tom']);
+    expect(searchFoods([food('Eggs'), food('Egg roll')], 'egg').map((f) => f.name)).toEqual(['Eggs', 'Egg roll']);
+  });
   test('the real table finds everyday foods', () => {
     const top = (q: string) => searchFoods(FOODS as Food[], q)[0]?.name ?? '';
     expect(top('banana')).toMatch(/banana/i);
@@ -260,4 +273,19 @@ test('a portion becomes a database item with whole kcal and macros to one decima
   const rice = (FOODS as Food[]).find((f) => f.id === 'rice-white')!;
   // INMU's cooked rice (N3): 136 kcal, 2.28 g protein, 31.1 g carbohydrate, 0.24 g fat in 100 g
   expect(itemFor(rice, 158)).toEqual({ name: 'White rice', grams: 158, kcal: 215, protein: 3.6, carbs: 49.1, fat: 0.4, source: 'db', foodId: 'rice-white' });
+});
+
+// review of 18 Nov: a folded query (a dropped plural, tum to tam) matches whole words only, never a prefix of another food
+test('a plural or spelling fold does not rank unrelated foods by prefix', () => {
+  const names = (q: string) => searchFoods(FOODS as Food[], q, 5).map((f) => f.name.toLowerCase());
+  expect(names('peas')[0]).toContain('peas');
+  expect(names('peas').some((n) => n.startsWith('pear'))).toBe(false);
+  expect(names('tum')[0]).toContain('tam');
+});
+
+test('a portion label at another count reads in the plural', async () => {
+  const { t } = await import('../../src/lib/i18n');
+  expect(t.search.times('1.5', '1 plate')).toBe('1.5 plates');
+  expect(t.search.times('2', '1 tbsp')).toBe('2 tbsp');
+  expect(t.search.times('2', '1 glass')).toBe('2 glasses');
 });

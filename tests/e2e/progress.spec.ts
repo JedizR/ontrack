@@ -105,7 +105,7 @@ test('need data: too few weigh-ins, check again next week', async ({ page }) => 
   await next(page);
   await page.getByTestId('checkin-done').click();
   await page.getByTestId('tab-2').click();
-  await expect(page.getByTestId('progress-rate')).toHaveText(/^\d+ of 14 days of weigh-ins for your first check-in$/); // R2: eight in, the two weeks still to cover
+  await expect(page.getByTestId('progress-box-pace')).toHaveText(/^Check-in\d+ of 14days$/); // R3: eight in, the two weeks still to cover, in the pace box
   await expect(page.getByTestId('checkin-row')).toContainText('Not enough weigh-ins yet');
 });
 
@@ -113,7 +113,8 @@ test('Progress: trend, rate against target, maintenance, intake, consistency, an
   await openSeeded(page, 'raise');
   await page.getByTestId('tab-2').click();
   await expect(page.getByTestId('progress-trend')).toHaveText(/^60(\.\d)?$/);
-  await expect(page.getByTestId('progress-rate')).toHaveText('0.1 percent a week, Target 0.5');
+  await expect(page.getByTestId('progress-box-pace')).toHaveText('Pace0.1%Target 0.5');
+  await expect(page.getByTestId('progress-consistency-days')).toHaveText(/^\d+$/); // R3: the consistency card beside the weight trend
   await expect(page.getByTestId('chart-dot')).toHaveCount(18);
   await showMetric(page, 'Calories'); // R2: maintenance and the weeks sit under the calories chart
   await openDisclosures(page, page.getByTestId('progress-maintenance')); // maintenance and the weekly grid sit behind a chevron (R1)
@@ -121,12 +122,15 @@ test('Progress: trend, rate against target, maintenance, intake, consistency, an
   await expect(page.getByTestId('progress-formula')).toHaveText('2,030');
   await expect(page.getByTestId('progress-intake').getByTestId('bar')).toHaveCount(4);
   await expect(page.getByTestId('progress-protein')).toContainText('Target 108 g');
-  await openDisclosures(page, page.getByTestId('progress-consistency'));
+  await openDisclosures(page, page.getByTestId('progress-weeks'));
   await expect(page.getByTestId('consistency-week')).toHaveCount(4);
   await expect(page.getByTestId('consistency-week').last()).toHaveAttribute('aria-label', /^This week, \d of 7 days on track$/);
   await expect(page.getByTestId('checkin-ready')).toBeVisible();
   await showMetric(page, 'Weight');
-  await page.getByRole('radio', { name: '3 months' }).click();
+  await expect(page.getByRole('radio', { name: '3 months' })).toHaveCount(0); // a range longer than the account is not offered (R3)
+  await expect(page.getByTestId('progress-log-weight')).toContainText('1 month'); // the change line names the range in view
+  await page.getByRole('radio', { name: 'All time' }).click();
+  await expect(page.getByTestId('progress-log-weight')).toContainText('All time');
   await expect(page.getByTestId('chart-dot')).toHaveCount(18); // the account is four weeks old
 
   // the ready check-in opens from here too
@@ -160,7 +164,7 @@ test('Progress: the training card counts sessions done against planned, strength
   await expect(card.getByTestId('progress-strength').getByRole('progressbar')).toHaveAttribute('data-reached', 'true');
   await expect(card.getByTestId('progress-cardio')).toHaveText(/^Cardio\s*0 of 150 to 300 minutes a week on average\s*$/);
   await expect(card.getByTestId('progress-cardio').getByRole('progressbar')).toHaveAttribute('data-reached', 'false');
-  await page.getByRole('radio', { name: 'All' }).click();
+  await page.getByRole('radio', { name: 'All time' }).click();
   await expect(card).toContainText('of 16 planned sessions done'); // the account is four weeks old
 
   // today's session marked done on Today counts at once
@@ -175,7 +179,7 @@ test('Progress: the training card counts sessions done against planned, strength
 test('Progress before there is enough: says what is needed', async ({ page }) => {
   await open(page);
   await page.getByTestId('tab-2').click();
-  await expect(page.getByTestId('progress-rate')).toHaveText('1 of 8 weigh-ins for your first check-in'); // R2: a count, not a paragraph
+  await expect(page.getByTestId('progress-box-pace')).toHaveText('Check-in1 of 8weigh-ins'); // R3: a count in the pace box, not a paragraph
   await expect(page.getByTestId('weight-chart')).toHaveCount(0); // one weigh-in: no trend yet
   await expect(page.getByTestId('progress-maintenance')).toHaveCount(0);
   await showMetric(page, 'Calories');

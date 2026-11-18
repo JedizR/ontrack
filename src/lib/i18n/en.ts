@@ -10,7 +10,7 @@ export const en = {
   },
   shell: {
     add: 'Add a meal',
-    account: 'Account',
+    account: 'Profile',
     signIn: 'Sign in',
   },
   empty: {
@@ -163,6 +163,10 @@ export const en = {
     measured: 'kcal a day, measured',
     formula: 'kcal a day, formula',
     ofPlanned: (n: string) => `of ${n} planned ${n === '1' ? 'session' : 'sessions'} done`,
+    /** R3: Progress's captions that continue a number */
+    days: 'days',
+    onTrack: 'on track',
+    weighIns: 'weigh-ins',
   },
   today: {
     todo: 'To do',
@@ -211,9 +215,8 @@ export const en = {
   add: {
     title: 'Add a meal',
     prompt: 'What did you eat?',
-    /** R2: the plus logs the day's other two things */
-    weighAgain: 'Edit weigh-in',
-    startSession: (name: string) => `Start ${name}`,
+    /** the pinned supplements before they are set up, short enough for one line at 375 wide */
+    pinned: { whey: 'Whey', creatine: 'Creatine' },
     /** the composer's line turns through these; the Thai first locale starts at the second */
     examples: ['Two eggs, toast with butter and a latte', 'Pad kra pao with rice and a fried egg', 'Greek yogurt with berries and honey', 'Chicken rice bowl with a side salad', 'Oats with a banana and peanut butter'],
     listLabel: 'Meals to add again',
@@ -227,6 +230,7 @@ export const en = {
     quickLine: 'Type the calories',
     scan: 'Scan',
     scanLine: 'Barcode on the pack',
+    library: 'Photos',
     recent: 'Recent',
     saved: 'Saved',
     again: (title: string) => `Add ${title} again`,
@@ -285,6 +289,8 @@ export const en = {
     failed: 'The food list did not load. Check your connection and try again.',
     retry: 'Try again',
     back: 'Back to results',
+    /** a "1 plate" portion at another count: 1.5 plates, 2 tbsp (the unit words in foods.json) */
+    times: (n: string, label: string) => label.replace(/^1 (\S+)/, (_, w: string) => `${n} ${/^(tbsp|tsp|oz|g|ml|medium|small|large|handful)$/.test(w) ? w : /(s|sh|ch|x)$/.test(w) ? `${w}es` : `${w}s`}`),
     portion: 'Portion',
     grams: 'Grams',
     add: (kcal: string) => `Add ${kcal} kcal`,
@@ -335,6 +341,8 @@ export const en = {
     promptFirstShort: 'Your first',
     done: 'Weighed in',
     edit: 'Edit',
+    /** the weigh-in box's button before one is logged (19 Nov) */
+    add: 'Add',
     none: 'No weigh-in',
     action: 'Weigh in',
     saved: (w: string) => `Weigh-in saved, ${w}`,
@@ -368,7 +376,9 @@ export const en = {
     modeMeal: 'Meal',
     modeLabel: 'Label',
     holdMeal: 'Frame the whole plate.',
-    holdLabel: 'Fill the frame with the label.',
+    holdLabel: 'Fill the camera with the label.',
+    /** the Add sheet's camera: a barcode is read in any mode */
+    readsCodes: 'Reads barcodes',
     shutter: 'Take photo',
     slow: 'Still looking. Move closer, hold steady, or type the number.',
     lightOn: 'Turn on the light',
@@ -415,7 +425,7 @@ export const en = {
     tooMuch: 'Those calories are more than this serving could hold. Check the label.',
     save: 'Save product',
     amount: 'Amount',
-    portions: { serving: '1 serving', pack: 'Whole pack', hundred: (unit: string) => `100 ${unit}` },
+    portions: { serving: (n: string) => (n === '1' ? '1 serving' : `${n} servings`), pack: 'Whole pack', hundred: (unit: string) => `100 ${unit}` },
     unnamed: 'Packaged food',
     /** Use default values on a product with the user's numbers (F15, M9a) */
     defaultOffline: 'Going back to the default values needs a connection.',
@@ -474,8 +484,8 @@ export const en = {
   /** M9a, SCREENS.md section 11 */
   settings: {
     title: 'Settings',
-    you: 'You',
-    profile: 'Profile',
+    you: 'Your plan',
+    profile: 'Body details',
     profileLine: 'What your resting energy is worked out from',
     goal: 'Goal and pace',
     units: 'Units',
@@ -495,7 +505,7 @@ export const en = {
     food: 'Food',
     thai: 'Thai dishes first',
     thaiLine: 'In search results',
-    display: 'Display',
+    display: 'Units and display',
     data: 'Data',
     exportAll: 'Export all data',
     exportAllLine: 'Every record, as JSON',
@@ -514,7 +524,6 @@ export const en = {
     reportBody: (version: string, device: string) => `What happened:\n\n\nOntrack ${version}\n${device}`,
     version: 'Version',
     account: 'Account',
-    friends: 'Profile for friends',
     // the profile and goal pages
     sex: 'Sex for the equation',
     birthYear: 'Birth year',
@@ -542,46 +551,6 @@ export const en = {
     ftIn: (ft: string, inches: string) => `${ft} ft ${inches} in`,
   },
   /** R1: a strength session logged set by set */
-  workout: {
-    title: 'Workout',
-    start: 'Start',
-    finish: 'Finish workout',
-    clock: 'Time',
-    set: 'Set',
-    reps: 'Reps',
-    tick: 'Mark done',
-    addSet: 'Add set',
-    none: 'This session has no exercises. Add them in Train.',
-    plan: (sets: string, reps: string) => `${sets} sets of ${reps}`,
-    rest: 'Rest',
-    shorter: 'Rest 15 seconds shorter',
-    longer: 'Rest 15 seconds longer',
-    skipRest: 'Skip',
-    effortQ: 'How was it?',
-    effortLabels: ['Very light', 'Light', 'Moderate', 'Hard', 'Very hard', 'All out'],
-    save: 'Save',
-    skipEffort: 'Skip',
-    savedTitle: 'Workout saved',
-    time: 'Time',
-    sets: 'Sets',
-    volume: 'Total lifted',
-    bests: 'New bests',
-    best: (weight: string, reps: string) => `${weight} x ${reps}`,
-    done: 'Done',
-    saved: (n: string) => `Workout saved, ${n} ${n === '1' ? 'set' : 'sets'}`,
-    setsN: (n: string) => `${n} ${n === '1' ? 'set' : 'sets'}`,
-    bestLifts: 'Best lifts',
-    /** R2: the finish screen */
-    niceWork: 'Nice work',
-    weekOf: (n: string, of: string) => `${n} of ${of} this week`,
-    weekDone: 'Week done',
-    newBest: 'New best',
-    gain: (w: string) => `+${w}`,
-    worked: 'Muscles worked',
-    workedLabel: (list: string) => `Muscles worked: ${list}`,
-    continue: 'Continue',
-    bestLine: (when: string) => `On ${when}`,
-  },
   /** R1: Saved meals */
   saved: {
     title: 'Saved meals',
@@ -760,6 +729,8 @@ export const en = {
     mapLabel: (list: string) => `Muscles: ${list}`,
     setsPerMuscle: 'Sets per muscle',
     setsWeek: 'Sets',
+    /** under the Burned and Sets figures: counted from Done this week (19 Nov) */
+    weekSoFar: 'This week',
     sessionsN: (n: string) => `${n} ${n === '1' ? 'session' : 'sessions'}`,
     legendLift: 'Lifting',
     setup: 'Setup',
@@ -771,7 +742,7 @@ export const en = {
     cardioAfter: 'Cardio after',
     cardioAfterName: 'Cardio',
     legendCardio: 'Cardio',
-    liftedWeek: 'Lifted',
+    burnedWeek: 'Burned',
     ringLabel: (n: string, of: string) => `${n} of ${of} sessions this week`,
     change: 'Change program',
     pick: 'Choose a program',
@@ -930,17 +901,17 @@ export const en = {
   },
   progress: {
     range: 'Range',
-    weeks4: '4 weeks',
-    months3: '3 months',
-    all: 'All',
+    /** R3: the range pills, in days (0 is all), as a finance app labels them; the full name is read out and heads the change line */
+    rangeShort: { 7: '1W', 28: '1M', 91: '3M', 182: '6M', 364: '1Y', 0: 'All' } as Record<number, string>,
+    rangeName: { 7: '1 week', 28: '1 month', 91: '3 months', 182: '6 months', 364: '1 year', 0: 'All time' } as Record<number, string>,
+    weightTrend: 'Weight trend',
+    fourWeeks: '4 weeks',
+    boxPace: 'Pace',
+    boxCheckin: 'Check-in',
     weight: 'Weight',
     /** U1b: each line below is a fact, set apart from its target by Facts */
     rate: (rate: string) => `${rate} percent a week`,
     target: (n: string) => `Target ${n}`,
-    needWeighIns: (n: string, weeks: string) => `Weigh in on ${n} days across ${weeks} weeks to see your trend and get your first check-in.`,
-    logWeight: 'Weigh in',
-    change: (days: string, v: string, unit: string) => `${days} days ${v} ${unit}`,
-    goalSet: 'Set',
     weeklyDetail: 'Week by week',
     weekPills: (done: string, planned: string) => `${done} of ${planned} this week`,
     goalReached: 'Reached',
@@ -957,7 +928,6 @@ export const en = {
     boxTarget: 'Target',
     boxDays: 'In range',
     boxWeek: '7 days',
-    boxMonth: '30 days',
     boxGoal: 'Goal',
     boxSet: 'Set',
     boxStrength: 'Strength',
@@ -971,10 +941,7 @@ export const en = {
     noData: 'No data yet',
     dash: 'None',
     noWeighIns: 'No weigh-ins yet',
-    weighInsFor: (n: string, of: string) => `${n} of ${of} weigh-ins for your first check-in`,
-    daysFor: (n: string, of: string) => `${n} of ${of} days of weigh-ins for your first check-in`,
     outSplit: (exercise: string) => `+${exercise} exercise`,
-    weightNone: 'Two weigh-ins draw your trend.',
     yourWeek: 'Your week',
     goalTrack: (pct: string) => `${pct} percent of the way to your goal weight`,
     chart: (from: string, to: string, trend: string) => `Weight from ${from} to ${to}. Trend ${trend}`,
@@ -1202,8 +1169,7 @@ export const en = {
     actionFailed: 'Could not reach Ontrack. Try again.',
     actionOffline: 'That needs a connection.',
     actionAuth: 'Sign in again to continue.',
-    // Your profile
-    profile: 'Your profile',
+    // Edit profile
     addPhoto: 'Add a photo',
     changePhoto: 'Change photo',
     removePhoto: 'Remove photo',
@@ -1259,6 +1225,20 @@ export const en = {
     loggedLine: 'Friends see the photo and its nutrition, placed where you are now.',
     shared: 'Shared to the map',
     loggedUnplaced: (title: string) => `Added ${title}. It is not on the map: share it from the meal.`,
+  },
+  /** The Profile page (19 Nov): the header's person button opens it; Settings is the button at its foot */
+  profile: {
+    title: 'Profile',
+    noHandle: 'No handle yet',
+    friends: 'Friends',
+    waiting: (n: string) => `${n} waiting`,
+    days: 'Days logged',
+    goal: 'Goal',
+    perWeek: (kg: string) => `About ${kg} a week`,
+    edit: 'Edit profile',
+    editLine: 'Photo, name and handle',
+    setupLine: 'Pick a handle for friends',
+    settings: 'Settings',
   },
   /** The science in Settings (M9a): groups and keys in src/lib/data/science.ts, citations in src/lib/data/sources.ts */
   science: {

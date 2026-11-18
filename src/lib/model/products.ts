@@ -33,6 +33,8 @@ export function portionsOf(p: Pick<Product, 'servingG' | 'packG'>) {
   if (!out.some((o) => o.grams === 100)) out.push({ key: 'hundred', grams: 100 });
   return out;
 }
+/** The serving count nearest the amount, in halves (the owner: past 1.25 servings the chip reads 1.5). */
+export const servingsNear = (grams: number, servingG: number) => Math.max(0.5, Math.round((grams / servingG) * 2) / 2);
 /** Where the amount starts: the last amount logged, else a serving, else the pack, else 100. */
 export const startOf = (p: Pick<Product, 'lastG' | 'servingG' | 'packG'>) => Math.min(MAX_AMOUNT, p.lastG ?? p.servingG ?? p.packG ?? 100);
 

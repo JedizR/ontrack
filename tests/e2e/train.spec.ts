@@ -134,3 +134,29 @@ test('a hybrid template builds a week of lifting and cardio and says how to arra
   await page.getByTestId('session-save').click();
   await expect(points.nth(0)).toContainText('On Monday and Wednesday, lift before your cardio');
 });
+
+// R3: no set by set logging. A session is marked Done, as cardio is, and the week adds up from what was marked.
+test('Done on Train counts the week (kcal burned, planned sets, the muscle map) and Undo takes it back', async ({ page }) => {
+  await open(page);
+  await page.evaluate((p) => (window as unknown as { ontrack: { actions: { saveProgram(p: object): void } } }).ontrack.actions.saveProgram(p), {
+    name: 'Test',
+    sessions: [{ key: 's1', weekday: 2, name: 'Upper A', type: 'strength', minutes: 60, intensity: 'moderate', exercises: [{ exerciseId: 'bench-press', sets: 2, repsMin: 6, repsMax: 8 }, { exerciseId: 'db-fly', sets: 1, repsMin: 10, repsMax: 12 }] }],
+  });
+  await page.getByTestId('tab-1').click();
+  const burned = page.getByTestId('train-week-kcal');
+  const sets = page.getByTestId('train-week-sets');
+  await expect(burned).toContainText('Burned');
+  await expect(burned).toContainText('0 kcal'); // nothing done: 0, not a dash
+  await expect(sets).toContainText('Sets');
+  await expect(page.getByTestId('train-muscles')).toContainText('Planned this week'); // before any Done, the plan lights the map
+
+  await page.getByTestId('train-start').click(); // the hero says Done, not Start
+  await expect(page.getByTestId('train-tick')).toBeVisible();
+  await expect(burned).toContainText('240 kcal'); // (5 - 1) MET x 60 kg x 1 h, strength at a moderate pace
+  await expect(sets).toContainText('3'); // 2 + 1 planned sets
+  await expect(page.getByTestId('train-muscles')).toContainText('Muscles this week');
+
+  await page.getByTestId('train-undo').click();
+  await expect(page.getByTestId('train-start')).toBeVisible();
+  await expect(burned).toContainText('0 kcal');
+});

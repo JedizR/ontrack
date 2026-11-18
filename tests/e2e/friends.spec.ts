@@ -172,6 +172,75 @@ test('a new profile through Add: set up, the program switch off by default, then
   await other.close();
 });
 
+test('Profile page: set up a handle from the person button, friends open from its box', async ({ page }) => {
+  await quietTiles(page);
+  const s = await open(page);
+  await person(page, s!, 'rin@example.com', { handle: 'rin', name: 'Rin' });
+  await page.getByTestId('avatar').click();
+  const me = page.getByTestId('me-sheet');
+  await expect(me.getByTestId('me-name')).toHaveText(EMAIL);
+  await expect(me.getByTestId('me-friends')).toContainText('0');
+  await me.getByTestId('me-edit').click();
+  const sheet = page.getByTestId('profile-sheet');
+  await expect(sheet).toContainText('Set up your profile');
+  await page.getByTestId('profile-name').fill('Nan');
+  await page.getByTestId('profile-handle').fill('Nan_Eats');
+  await expect(page.getByTestId('profile-handle-note')).toHaveText('Available');
+  await page.getByTestId('profile-save').click();
+  await expect(sheet).toBeHidden();
+  await expect(me.getByTestId('me-name')).toHaveText('Nan');
+  await expect(me.getByTestId('me-head')).toContainText('@nan_eats');
+  await expect(me.getByTestId('me-edit')).toContainText('Edit profile');
+  await me.getByTestId('me-edit').click();
+  await expect(sheet).toContainText('Edit profile');
+  await page.keyboard.press('Escape');
+
+  // the friends box goes to the map and its panel; a search finds Rin and the request goes
+  await me.getByTestId('me-friends').click();
+  await expect(page.getByTestId('food-map')).toBeVisible();
+  await expect(me).toBeHidden();
+  await page.getByTestId('friend-search').fill('rin');
+  await page.getByTestId('person-add').click();
+  await toast(page, 'Request sent to Rin');
+});
+
+test('a request or an answer that arrives while the app is open shows without a reload, on the badge, the Profile page and the map', async ({ browser }) => {
+  test.slow();
+  const s = space('arrives');
+  const setup = await browser.newPage();
+  const nan = await person(setup, s, EMAIL, { handle: 'nan_eats', name: 'Nan' });
+  const rin = await person(setup, s, 'rin@example.com', { handle: 'rin', name: 'Rin' });
+  const kai = await person(setup, s, 'kai@example.com', { handle: 'kai', name: 'Kai' });
+  await setup.close();
+  const phoneRin = await phone(browser, s, 'rin@example.com');
+  const wake = (p: Page) => p.evaluate(() => document.dispatchEvent(new Event('visibilitychange'))); // the tab comes back
+
+  await expect(phoneRin.getByTestId('friends-badge')).toHaveCount(0);
+  const ask = (who: typeof nan) => phoneRin.request.post('/__mock/social/request', { headers: who.headers, data: { id: rin.userId } });
+  expect((await ask(nan)).ok()).toBe(true);
+  await wake(phoneRin);
+  await expect(phoneRin.getByTestId('friends-badge')).toHaveText('1');
+
+  // the Profile page counts them, and a second request arrives with the map open
+  await phoneRin.getByTestId('avatar').click();
+  await expect(phoneRin.getByTestId('me-friends')).toContainText('1 waiting');
+  await phoneRin.getByTestId('me-friends').click();
+  await expect(phoneRin.getByTestId('food-map')).toBeVisible();
+  await expect(phoneRin.getByTestId('panel-requests')).toHaveText('1 friend request');
+  expect((await ask(kai)).ok()).toBe(true);
+  await wake(phoneRin);
+  await expect(phoneRin.getByTestId('panel-requests')).toHaveText('2 friend requests');
+
+  // Rin says yes to Nan; the friends list changes under an open map
+  await raise(phoneRin);
+  await phoneRin.getByTestId('requests').getByTestId('request').filter({ hasText: 'Nan' }).getByTestId('request-accept').click();
+  await toast(phoneRin, 'You and Nan are friends');
+  await expect(phoneRin.getByTestId('friend-list')).toContainText('Nan');
+  expect((await phoneRin.request.post('/__mock/social/remove', { headers: nan.headers, data: { id: rin.userId } })).ok()).toBe(true);
+  await wake(phoneRin);
+  await expect(phoneRin.getByTestId('friends-none')).toBeVisible();
+});
+
 test('pins group with +N more and open as pages; no photo yet, offline and no WebGL each say so', async ({ page, browser }) => {
   await quietTiles(page);
   const s = await open(page, '/', [{ collection: 'social', id: 'social', updatedAt: 1, data: { handle: 'nan_eats', name: 'Nan' } }]);

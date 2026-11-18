@@ -1,5 +1,6 @@
-<!-- SCREENS.md section 13, Your profile: the photo, name and handle friends find you by, and the switch that shows your
-     program to friends (off unless turned on). A new handle is checked with the server; the rest saves offline. -->
+<!-- SCREENS.md section 13, Edit profile: the photo, name and handle friends find you by, and the switch that shows your
+     program to friends (off unless turned on). A new handle is checked with the server; the rest saves offline. Mounted once,
+     by MeSheet, over the Profile page or the food map. -->
 <script lang="ts">
   import { untrack } from 'svelte';
   import { toast } from 'svelte-sonner';
@@ -89,7 +90,7 @@
   <Button variant="primary" size="lg" full disabled={!valid || saving} onclick={save} data-testid="profile-save">{t.social.save}</Button>
 {/snippet}
 
-<Sheet bind:open={() => open, (v) => { if (!v) { sheets.profile = null; setPhoto(undefined); } }} title={was ? t.social.profile : t.social.setup} layer="nested" testid="profile-sheet" {footer}>
+<Sheet bind:open={() => open, (v) => { if (!v) { sheets.profile = null; setPhoto(undefined); } }} title={was ? t.profile.edit : t.social.setup} layer="nested" testid="profile-sheet" {footer}>
   <div class="flex items-center gap-4">
     {#if preview}
       <img src={preview} alt="" class="size-24 flex-none rounded-full object-cover" data-testid="profile-preview" />

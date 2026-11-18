@@ -105,6 +105,8 @@ for (const theme of ['light', 'dark'] as const) {
         await page.getByTestId('signin-sheet').waitFor({ state: 'detached' });
 
         await page.getByTestId('avatar').click();
+
+        await page.getByTestId('me-settings').click(); // the person button opens the Profile page; Settings is its button
         await page.getByTestId('account-sheet').waitFor();
         await shot(page, 'account', 'main');
         await page.getByTestId('account-delete').click();
@@ -537,22 +539,18 @@ for (const theme of ['light', 'dark'] as const) {
         await page.getByTestId('add').click();
         await expect(page.getByTestId('add-sheet')).toHaveCSS('transform', 'none');
         await shot(page, 'scan', 'add');
-        await page.getByTestId('add-scan').click();
-        await settled();
-        await expect(page.getByTestId('scanner-hint')).toHaveText('Hold the barcode inside the frame. It reads by itself.', { timeout: 15_000 });
+        // the plus opens on the camera (18 Nov): Meal first, a barcode read in any mode
+        await expect(page.getByTestId('scanner-hint')).toHaveText('Frame the whole plate.', { timeout: 15_000 });
         await shot(page, 'scan', 'camera');
+        await page.keyboard.press('Escape');
+        await expect(page.getByTestId('add-sheet')).toBeHidden();
+        // typing the number is the way out when the camera cannot open (19 Nov)
+        await page.evaluate(() => { (window as unknown as { cameraError?: string }).cameraError = 'NotAllowedError'; });
+        await page.getByTestId('add').click();
         await page.getByTestId('scanner-type').click();
         await page.getByTestId('barcode-field').fill('8850987101022');
         await page.getByTestId('barcode-find').click();
         await shot(page, 'scan', 'type-wrong');
-        // back from typing brings the camera back
-        await page.getByTestId('sheet-back').click();
-        await expect(page.getByTestId('scanner-hint')).toHaveText('Hold the barcode inside the frame. It reads by itself.', { timeout: 15_000 });
-        await close();
-        await page.evaluate(() => { (window as unknown as { cameraError?: string }).cameraError = 'NotAllowedError'; });
-        await page.getByTestId('add').click();
-        await page.getByTestId('add-scan').click();
-        await settled();
         await expect(page.getByTestId('scanner-problem')).toBeVisible();
         await shot(page, 'scan', 'type-denied');
 
@@ -574,7 +572,7 @@ for (const theme of ['light', 'dark'] as const) {
 
         // a new product, its label read (held), then the Label step and a product from its label
         await page.getByTestId('add').click();
-        await page.getByTestId('add-scan').click();
+        await page.getByTestId('scanner-type').click();
         await page.getByTestId('barcode-field').fill('8850999220017');
         await page.getByTestId('barcode-find').click();
         await expect(page.getByTestId('product-new')).toBeVisible();
@@ -611,7 +609,7 @@ for (const theme of ['light', 'dark'] as const) {
         // a label photo that is not one
         await vision(page, s, { fixture: 'not-label' });
         await page.getByTestId('add').click();
-        await page.getByTestId('add-scan').click();
+        await page.getByTestId('scanner-type').click();
         await page.getByTestId('barcode-field').fill('8851234567898');
         await page.getByTestId('barcode-find').click();
         await expect(page.getByTestId('product-new')).toBeVisible();
@@ -626,7 +624,7 @@ for (const theme of ['light', 'dark'] as const) {
         // offline: a barcode never scanned
         await context.setOffline(true);
         await page.getByTestId('add').click();
-        await page.getByTestId('add-scan').click();
+        await page.getByTestId('scanner-type').click();
         await page.getByTestId('barcode-field').fill('8851717040016');
         await page.getByTestId('barcode-find').click();
         await expect(page.getByTestId('product-failed')).toBeVisible();
@@ -845,6 +843,7 @@ for (const theme of ['light', 'dark'] as const) {
         const scrollSheet = (testid: string) => page.getByTestId(testid).evaluate((el) => el.scrollIntoView({ block: 'start' }));
         await open(page);
         await page.getByTestId('avatar').click();
+        await page.getByTestId('me-settings').click(); // the person button opens the Profile page; Settings is its button
         await page.getByTestId('account-sheet').waitFor();
         await shot(page, 'settings', 'main');
         await scrollSheet('set-remind-meal');

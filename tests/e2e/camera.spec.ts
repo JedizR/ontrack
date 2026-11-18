@@ -8,8 +8,7 @@ for (const reader of ["the browser's own reader where it has one", 'the WebAssem
     // without BarcodeDetector the scanner loads zxing-cpp's WebAssembly, as on an iPhone
     if (reader.includes('WebAssembly')) await page.addInitScript(() => { delete (window as { BarcodeDetector?: unknown }).BarcodeDetector; });
     await open(page);
-    await page.getByTestId('add').click();
-    await page.getByTestId('add-scan').click();
+    await page.getByTestId('add').click(); // the plus opens on the camera (18 Nov)
     await expect(page.getByTestId('scanner-video')).toBeVisible();
     // the reader moves on by itself: no tap between the camera and the product
     await expect(page.getByTestId('product-kcal')).toHaveText('260', { timeout: 20_000 });
@@ -28,12 +27,11 @@ test('R1: in the scanner Meal takes a photo of the plate to Review, without leav
   });
   await open(page);
   await page.getByTestId('add').click();
-  await page.getByTestId('add-scan').click();
   await expect(page.getByTestId('scanner-video')).toBeVisible();
-  await expect(page.getByTestId('scanner-shutter')).toHaveCount(0); // Barcode reads by itself: no shutter
-  await page.getByRole('radio', { name: 'Meal' }).click();
-  await expect(page.getByTestId('scanner-frame')).toHaveCount(0); // a plate has no guide frame
+  await expect(page.getByRole('radio', { name: 'Meal' })).toBeChecked(); // Meal first; a barcode reads by itself in any mode
   await expect(page.getByTestId('scanner-hint')).toHaveText('Frame the whole plate.');
+  await expect(page.getByTestId('scanner-reading')).toBeVisible(); // no frame: a chip says barcodes are read
+  await expect(page.getByTestId('scanner-type')).toHaveCount(0); // typing only when the camera cannot read
   await page.getByTestId('scanner-shutter').click();
   await expect(page.getByTestId('photo-notice')).toBeVisible(); // the first photo still asks first
   await page.getByTestId('photo-continue').click();

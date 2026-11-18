@@ -11,8 +11,6 @@
   import SupplementSheet from './SupplementSheet.svelte';
   import ScanSheet from './ScanSheet.svelte';
   import SavedSheet from './SavedSheet.svelte';
-  import WorkoutSheet from '../train/WorkoutSheet.svelte';
-  import WorkoutDone from '../train/WorkoutDone.svelte';
 </script>
 
 <AddSheet />
@@ -26,5 +24,3 @@
 <SupplementSheet />
 <ScanSheet />
 <SavedSheet />
-<WorkoutSheet />
-<WorkoutDone />
