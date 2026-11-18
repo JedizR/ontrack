@@ -19,7 +19,7 @@
   import { view } from '$lib/view.svelte';
   import { findProduct, logProduct, readLabel, saveProduct, undoToast, type Found, type LabelResult } from '$lib/actions';
   import { OFF_SOURCE } from '$lib/data/sources';
-  import { MAX_AMOUNT, ZERO, labelProblem, per100From, portionsOf, scaleTo, startOf, type LabelMacros, type Macros } from '$lib/model/products';
+  import { MAX_AMOUNT, ZERO, labelProblem, per100From, portionsOf, scaleTo, servingsNear, startOf, type LabelMacros, type Macros } from '$lib/model/products';
   import { stampOn, today } from '$lib/model/dates';
   import { num } from '$lib/model/format';
   import { haptic } from '$lib/haptics';
@@ -58,7 +58,12 @@
   let ask = 0;
 
   $effect(() => {
-    if (sheets.scan) untrack(() => { ask++; step = 'scan'; scans++; typing = false; notice = false; product = null; found = null; });
+    if (sheets.scan) untrack(() => {
+      ask++; step = 'scan'; scans++; typing = false; notice = false; product = null; found = null;
+      const from = sheets.scanFrom;
+      sheets.scanFrom = null;
+      if (from) 'code' in from ? void look(from.code) : frame(from.label, 'label');
+    });
   });
 
   const item = $derived(product ? scaleTo(product.per100, grams) : ZERO);
@@ -274,7 +279,9 @@
       </div>
       <div class="-mx-6 flex gap-2 overflow-x-auto px-6" role="group" aria-label={t.search.portion}>
         {#each portionsOf(product) as p (p.key)}
-          <Chip selected={grams === p.grams} onclick={() => (grams = p.grams)}>{p.key === 'hundred' ? t.scan.portions.hundred(unitWord(u)) : t.scan.portions[p.key]}</Chip>
+          <!-- the serving chip follows the amount to the nearest half serving; a tap snaps to it -->
+          {@const g = p.key === 'serving' ? Math.round(servingsNear(grams, p.grams) * p.grams) : p.grams}
+          <Chip selected={grams === g} onclick={() => (grams = g)}>{p.key === 'hundred' ? t.scan.portions.hundred(unitWord(u)) : p.key === 'serving' ? t.scan.portions.serving(num(servingsNear(grams, p.grams), 1)) : t.scan.portions.pack}</Chip>
         {/each}
       </div>
       <div class="flex flex-wrap items-center justify-between gap-3">

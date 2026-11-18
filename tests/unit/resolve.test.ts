@@ -22,6 +22,15 @@ describe('vision resolution', () => {
     expect(r.protein).toBe(Math.round(rice.per100.protein * 20) / 10);
   });
 
+  test('a Thai name in another romanisation, or without spaces, still reaches its table entry', () => {
+    const id = (name: string) => plate({ name, food_id: null }).foodId;
+    expect(id('Phad kaprao gai')).toBe('kra-pao-kai');
+    expect(id('Kao man gai')).toBe('khao-man-kai');
+    expect(id('Som tum')).toBe('som-tam-thai');
+    expect(id('Tomyamkung')).toBe('tom-yum-kung');
+    expect(id('Pad see ew with unicorn')).toBeNull();
+  });
+
   test('an unknown or missing id uses the estimate, labelled Estimate', () => {
     const [a, b] = resolveItems([item({ food_id: 'no-such-food' }), item()]);
     for (const r of [a, b]) {

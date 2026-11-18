@@ -9,6 +9,8 @@
   import Camera from '@lucide/svelte/icons/camera';
   import TextIcon from '@lucide/svelte/icons/text';
   import ScanBarcode from '@lucide/svelte/icons/scan-barcode';
+  import ImageIcon from '@lucide/svelte/icons/image';
+  import Scanner from './Scanner.svelte';
   import SourceLabel from '$lib/components/SourceLabel.svelte';
   import Bookmark from '@lucide/svelte/icons/bookmark';
   import ChevronRight from '@lucide/svelte/icons/chevron-right';
@@ -99,6 +101,27 @@
   }
   let input = $state<HTMLInputElement>();
   let notice = $state(false);
+  let typing = $state(false);
+  /** a meal frame waiting for the photo notice's yes */
+  let held: Blob | null = null;
+  $effect(() => { if (sheets.add) typing = false; });
+  // the owner (18 Nov): the plus opens on one camera for a meal, a label or a barcode; each hands on to its own sheet
+  function code(c: string) {
+    sheets.add = false;
+    sheets.scanFrom = { code: c };
+    sheets.scan = true;
+  }
+  function shot(frame: Blob, as: 'meal' | 'label') {
+    if (as === 'label') {
+      sheets.add = false;
+      sheets.scanFrom = { label: frame };
+      sheets.scan = true;
+      return;
+    }
+    if (!prefs.photoOk) { held = frame; notice = true; return; }
+    sheets.add = false;
+    sheets.review = { kind: 'photo', file: frame };
+  }
 
   // the composer's example line turns every 3 seconds while the sheet is open (the global reduced motion rule makes it a cut)
   const EXAMPLES = t.add.examples;
@@ -109,7 +132,7 @@
     const id = setInterval(() => { moved = true; ex = (ex + 1) % EXAMPLES.length; }, 3000);
     return () => clearInterval(id);
   });
-  $effect(() => { if (!sheets.add) notice = false; });
+  $effect(() => { if (!sheets.add) { notice = false; held = null; } });
 
   // the file input sits outside the sheet so it is still there when the camera hands the photo back
   function camera() {
@@ -130,10 +153,9 @@
   };
   // a meal's tile shows how it was logged, as on Today
   const ICON: Record<Meal['method'], Component<{ size?: number; strokeWidth?: number }>> = { photo: Camera, text: TextIcon, search: SearchIcon, quick: Hash, saved: Bookmark, supplement: ShakerIcon, barcode: ScanBarcode };
-  // the four round actions under the field; Describe is the field itself
+  // the round actions under the field; Describe is the field itself, the camera is above it, Photos picks one already taken
   const WAYS: { key: Way; label: string; icon: Component<{ size?: number; strokeWidth?: number }> }[] = [
-    { key: 'photo', label: t.add.photo, icon: Camera },
-    { key: 'scan', label: t.add.scan, icon: ScanBarcode },
+    { key: 'photo', label: t.add.library, icon: ImageIcon },
     { key: 'search', label: t.add.search, icon: SearchIcon },
     { key: 'quick', label: t.add.quick, icon: Hash },
   ];
@@ -145,38 +167,21 @@
   </button>
 {/snippet}
 
-<input bind:this={input} type="file" accept="image/*" capture="environment" hidden onchange={taken} data-testid="photo-input" />
+<input bind:this={input} type="file" accept="image/*" hidden onchange={taken} data-testid="photo-input" />
 
-<Sheet bind:open={sheets.add} title={notice ? t.add.consentTitle : t.add.title} layer="base" testid="add-sheet">
+<Sheet bind:open={sheets.add} title={notice ? t.add.consentTitle : t.add.title} layer="base" testid="add-sheet" onback={typing ? () => (typing = false) : undefined} backLabel={t.scan.back}>
   {#if notice}
     <p class="text-body" data-testid="photo-notice">{t.add.consent}</p>
     <div class="mt-6 flex flex-col gap-2">
-      <Button variant="primary" size="lg" full onclick={() => { prefs.photoOk = true; notice = false; input?.click(); }} data-testid="photo-continue">{t.add.consentContinue}</Button>
+      <Button variant="primary" size="lg" full onclick={() => { prefs.photoOk = true; notice = false; if (held) { const f = held; held = null; shot(f, 'meal'); } else input?.click(); }} data-testid="photo-continue">{t.add.consentContinue}</Button>
       <Button variant="plain" size="lg" full onclick={() => (notice = false)}>{t.add.consentNotNow}</Button>
     </div>
   {:else}
-    <!-- R2: the supplements first (the owner), whey and creatine side by side -->
-    <div class="mb-3 grid grid-cols-[1fr_1fr_auto] gap-2" data-testid="add-pinned">
-      {#each PINNED as k (k)}
-        {@const r = pinnedOf(k)}
-        <button type="button" class="bg-surface-2 active:bg-surface-3 flex min-h-12 min-w-0 items-center gap-1.5 rounded-full px-3 py-1 text-left transition-[background-color,transform] duration-[var(--d-press)] active:scale-[0.98]" onclick={() => supplement(r?.id ?? null, r ? undefined : k)} data-testid={r ? 'supplement' : `add-pin-${k}`}>
-          <span class="text-ink-2 inline-grid flex-none"><ShakerIcon /></span>
-          <span class="min-w-0 flex-1 leading-tight">
-            <span class="text-callout block font-semibold">{r?.data.name ?? t.supplement.kinds[k]}</span>
-            <!-- set up, its last amount (and Typical when its values are the label's typical ones), as its old row said -->
-            {#if r}{#snippet typ()}<SourceLabel source="typical" />{/snippet}<span class="text-caption text-ink-2 block"><Facts facts={[t.supplement.amount(num(r.data.lastScoops, 1), !!r.data.lastMix && !noCalories(r.data)), r.data.typical && typ]} /></span>{/if}
-          </span>
-          {#if r && lastKcal(r.id, r.data)}<span class="text-caption text-ink-2 num flex-none">{lastKcal(r.id, r.data)}</span>{/if}
-        </button>
-      {/each}
-      <!-- any other supplement: set one up -->
-      <button type="button" class="bg-surface-2 active:bg-surface-3 text-ink-2 grid size-12 place-items-center rounded-full transition-[background-color,transform] duration-[var(--d-press)] active:scale-[0.97]" aria-label={t.supplement.setup} onclick={() => supplement(null)} data-testid="supplement-entry"><Plus size={22} strokeWidth={2.25} aria-hidden="true" /></button>
-    </div>
-
     <!-- R1, rebuilt from Alma's composer, BitePal's search and Cal AI's tiles: the field to say what you ate, with a mic,
          on the landing page's sky; under it the four other ways as round glass actions. Photo is the ink one -->
     <div class="rounded-t-lg rounded-b-md p-4 [background:var(--grad-sky)]" data-theme="light" data-testid="add-composer">
       <p class="text-heading px-1 text-balance">{t.add.prompt}</p>
+      <div class="mt-3"><Scanner oncode={code} onphoto={shot} bind:typing embedded /></div>
       <div class="bg-surface shadow-card mt-3 flex items-center gap-2 rounded-full p-1.5 pl-5">
         <button type="button" class="text-body text-ink-2 active:bg-surface-2 -ml-3.5 grid h-12 min-w-0 flex-1 items-center overflow-hidden rounded-full pl-3.5 text-left transition-colors duration-[var(--d-press)]" aria-label={t.add.prompt} onclick={() => go('describe')} data-testid="add-describe">
           <!-- one line, cut with an ellipsis, so the pill never changes height; the next example rises in as the last lifts away -->
@@ -187,11 +192,11 @@
         </button>
         <button type="button" class="bg-surface-2 text-ink active:bg-surface-3 grid size-12 flex-none place-items-center rounded-full transition-[background-color,transform] duration-[var(--d-press)] active:scale-[0.97]" aria-label={t.describe.speak} onclick={speak} data-testid="add-mic"><Mic size={22} strokeWidth={2.25} aria-hidden="true" /></button>
       </div>
-      <div class="mt-4 grid grid-cols-4 gap-2">
+      <div class="mt-4 grid grid-cols-3 gap-2">
         {#each WAYS as w (w.key)}
           {@const Icon = w.icon}
           <button type="button" class="group flex min-w-0 flex-col items-center gap-2 text-center" onclick={() => go(w.key)} data-testid="add-{w.key}">
-            <span class="{w.key === 'photo' ? 'bg-action text-on-action shadow-pill' : 'liquid-clear text-night'} grid size-14 place-items-center rounded-full transition-transform duration-[var(--d-press)] group-active:scale-[0.95]"><Icon size={24} strokeWidth={2} /></span>
+            <span class="liquid-clear text-night grid size-14 place-items-center rounded-full transition-transform duration-[var(--d-press)] group-active:scale-[0.95]"><Icon size={24} strokeWidth={2} /></span>
             <span class="text-caption text-night font-semibold">{w.label}</span>
           </button>
         {/each}
@@ -209,6 +214,24 @@
       {/snippet}
       {@render box(Scale, weighed ? t.add.weighAgain : t.weigh.action, weigh, 'add-weigh', session ? 'rounded-bl-lg' : 'rounded-b-lg')}
       {#if session}{@render box(Dumbbell, t.add.startSession(session.name), train, 'add-workout', 'rounded-br-lg')}{/if}
+    </div>
+
+    <!-- R2: the supplements first (the owner), whey and creatine side by side -->
+    <div class="mt-4 grid grid-cols-[1fr_1fr_auto] gap-2" data-testid="add-pinned">
+      {#each PINNED as k (k)}
+        {@const r = pinnedOf(k)}
+        <button type="button" class="bg-surface-2 active:bg-surface-3 flex min-h-12 min-w-0 items-center gap-1.5 rounded-full px-3 py-1 text-left transition-[background-color,transform] duration-[var(--d-press)] active:scale-[0.98]" onclick={() => supplement(r?.id ?? null, r ? undefined : k)} data-testid={r ? 'supplement' : `add-pin-${k}`}>
+          <span class="text-ink-2 inline-grid flex-none"><ShakerIcon /></span>
+          <span class="min-w-0 flex-1 leading-tight">
+            <span class="text-callout block font-semibold">{r?.data.name ?? t.supplement.kinds[k]}</span>
+            <!-- set up, its last amount (and Typical when its values are the label's typical ones), as its old row said -->
+            {#if r}{#snippet typ()}<SourceLabel source="typical" />{/snippet}<span class="text-caption text-ink-2 block"><Facts facts={[t.supplement.amount(num(r.data.lastScoops, 1), !!r.data.lastMix && !noCalories(r.data)), r.data.typical && typ]} /></span>{/if}
+          </span>
+          {#if r && lastKcal(r.id, r.data)}<span class="text-caption text-ink-2 num flex-none">{lastKcal(r.id, r.data)}</span>{/if}
+        </button>
+      {/each}
+      <!-- any other supplement: set one up -->
+      <button type="button" class="bg-surface-2 active:bg-surface-3 text-ink-2 grid size-12 place-items-center rounded-full transition-[background-color,transform] duration-[var(--d-press)] active:scale-[0.97]" aria-label={t.supplement.setup} onclick={() => supplement(null)} data-testid="supplement-entry"><Plus size={22} strokeWidth={2.25} aria-hidden="true" /></button>
     </div>
 
     {#if others.length}

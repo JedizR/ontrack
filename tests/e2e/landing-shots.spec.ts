@@ -44,7 +44,7 @@ test('scan', async ({ page }) => {
   await page.addInitScript(() => Object.defineProperty(navigator, 'mediaDevices', { configurable: true, value: { getUserMedia: async () => { throw new DOMException('camera', 'NotAllowedError'); } } }));
   await open(page);
   await page.getByTestId('add').click();
-  await page.getByTestId('add-scan').click();
+  await page.getByTestId('scanner-type').click();
   await page.getByTestId('barcode-field').fill('8850987101021');
   await page.getByTestId('barcode-find').click();
   await expect(page.getByTestId('product')).toBeVisible();

@@ -282,7 +282,7 @@ async function walkLogging(page: Page, dir: string, part: (typeof LOGGING)[numbe
     await close('supplement-sheet');
     // the Scan sheet (B1): no camera here, so the typed number, then the product and its label
     await page.getByTestId('add').click();
-    await page.getByTestId('add-scan').click();
+    await page.getByTestId('scanner-type').click();
     await expect(page.getByTestId('barcode-field')).toBeVisible();
     await sheet('scan-sheet', 'scan-type', 'barcode-find');
     await page.getByTestId('barcode-field').fill('8850987101021');

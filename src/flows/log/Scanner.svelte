@@ -17,10 +17,12 @@
   import { t } from '$lib/i18n';
 
   /** `typing`: the user chose Type the number; the sheet's back chevron sets it false to bring the camera back */
-  let { oncode, onphoto, typing = $bindable(false) }: { oncode: (code: string) => void; onphoto?: (frame: Blob, as: 'meal' | 'label') => void; typing?: boolean } = $props();
+  /** `embedded`: inside the Add sheet, where a camera that cannot open says why in its hint, not with the typing field */
+  let { oncode, onphoto, typing = $bindable(false), embedded = false }: { oncode: (code: string) => void; onphoto?: (frame: Blob, as: 'meal' | 'label') => void; typing?: boolean; embedded?: boolean } = $props();
 
   type Mode = 'barcode' | 'meal' | 'label';
-  let mode = $state<Mode>('barcode');
+  // the owner (18 Nov): with photos, one camera does all three; a barcode reads by itself in Meal and Label too
+  let mode = $state<Mode>(untrack(() => (onphoto ? 'meal' : 'barcode')));
 
   const SLOW_MS = 8000;
   const EVERY_MS = 150;
@@ -77,7 +79,7 @@
 
   async function watch(d: Detector, me: number, since: number) {
     while (me === run) {
-      if (mode === 'barcode' && video && video.readyState >= 2) {
+      if ((mode === 'barcode' || onphoto) && video && video.readyState >= 2) {
         const found = await d.detect(video).catch(() => []);
         if (me !== run) return;
         for (const b of found) {
@@ -128,7 +130,7 @@
     return stop;
   });
   // the camera cannot open: the reason, then the typing field under it
-  const typed = $derived(typing || (problem !== null && problem !== 'busy'));
+  const typed = $derived(typing || (!embedded && problem !== null && problem !== 'busy'));
 </script>
 
 <div class="flex flex-col gap-4" data-testid="scanner">
@@ -137,7 +139,11 @@
     <div class="bg-toast relative aspect-[4/3] w-full overflow-hidden rounded-md">
       <video bind:this={video} class="size-full object-cover" playsinline muted autoplay aria-label={t.scan.viewfinder} data-testid="scanner-video"></video>
       <!-- the framing guide: wide for a barcode, the rest dimmed by the scrim -->
-      {#if mode !== 'meal'}
+      {#if onphoto}
+        <!-- faint, both ways: a barcode reads lying or standing, and a label fills the tall one -->
+        <div class="border-toast-ink pointer-events-none absolute inset-x-[10%] top-1/2 h-[30%] -translate-y-1/2 rounded-sm border-2 opacity-40" aria-hidden="true" data-testid="scanner-frame"></div>
+        <div class="border-toast-ink pointer-events-none absolute inset-y-[8%] left-1/2 w-[34%] -translate-x-1/2 rounded-sm border-2 opacity-40" aria-hidden="true"></div>
+      {:else}
         <div class="border-toast-ink pointer-events-none absolute top-1/2 -translate-y-1/2 rounded-sm border-2 shadow-[0_0_0_999px_var(--scrim)] {mode === 'label' ? 'inset-x-[22%] h-[82%]' : 'inset-x-[10%] h-[40%]'}" aria-hidden="true" data-testid="scanner-frame"></div>
       {/if}
       {#if torch !== null}
@@ -147,10 +153,10 @@
       {/if}
     </div>
     {#if onphoto}
-      <Segmented bind:value={mode} label={t.scan.modes} options={[{ value: 'barcode', label: t.scan.modeBarcode }, { value: 'meal', label: t.scan.modeMeal }, { value: 'label', label: t.scan.modeLabel }]} />
+      <Segmented bind:value={mode} label={t.scan.modes} options={[{ value: 'meal', label: t.scan.modeMeal }, { value: 'label', label: t.scan.modeLabel }]} />
     {/if}
     <p class="text-callout text-ink-2" aria-live="polite" data-testid="scanner-hint">
-      {problem === 'busy' ? t.scan.busy : !live ? t.scan.starting : mode === 'meal' ? t.scan.holdMeal : mode === 'label' ? t.scan.holdLabel : slow ? t.scan.slow : t.scan.hold}
+      {problem === 'busy' ? t.scan.busy : problem ? t.scan[problem === 'none' ? 'noCamera' : problem] : !live ? t.scan.starting : mode === 'meal' ? t.scan.holdMeal : mode === 'label' ? t.scan.holdLabel : slow ? t.scan.slow : t.scan.hold}
     </p>
     {#if onphoto && mode !== 'barcode'}
       <Button variant="primary" size="lg" full disabled={!live} onclick={snap} data-testid="scanner-shutter"><Camera size={22} strokeWidth={2.25} aria-hidden="true" />{t.scan.shutter}</Button>

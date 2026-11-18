@@ -153,11 +153,9 @@
   <Card data-testid="train-summary">
     {#if sessions.length}
       <p class="text-eyebrow text-ink-2" data-testid="train-program">{program.name || t.train.ownProgram}</p>
-      <p class="text-callout mt-1" role="group" aria-label={t.train.summary(num(sessions.length), num(minutes))}>
-        <span class="text-subhead num" data-testid="train-sessions">{num(sessions.length)}</span> <span class="text-ink-2">{t.after.sessionsWeek(num(sessions.length))}</span>
-        <span class="text-ink-2" aria-hidden="true"> | </span>
-        <span class="text-subhead num" data-testid="train-minutes">{num(minutes)}</span> <span class="text-ink-2">{t.after.minutesWeek}</span>
-      </p>
+      {#snippet sessionsFact()}<span class="num" data-testid="train-sessions">{num(sessions.length)}</span> {t.after.sessionsWeek(num(sessions.length))}{/snippet}
+      {#snippet minutesFact()}<span class="num" data-testid="train-minutes">{num(minutes)}</span> {t.after.minutesWeek}{/snippet}
+      <Facts class="text-callout mt-1" rest="text-ink-2" facts={[sessionsFact, minutesFact]} />
       <div class="border-line mt-4 flex items-center gap-3 border-t pt-4">
         <p class="text-callout text-ink-2 min-w-0 flex-1">{t.train.adds(num(Math.round(perDay)))}</p>
         <Button size="sm" onclick={() => (templates = true)} data-testid="train-change">{t.train.change}</Button>
@@ -185,7 +183,7 @@
             <div class="min-w-0 flex-1">
               <p class="text-eyebrow">{next.today ? t.train.nextToday : t.train.weekdays[next.s.weekday]}</p>
               <h2 class="text-heading mt-1">{next.s.name}</h2>
-              <p class="text-callout mt-1"><Facts facts={[t.train.types[next.s.type], t.after.minN(num(next.s.minutes)), exercisesOf(next.s) > 0 && t.train.exN(num(exercisesOf(next.s)))]} /></p>
+              <p class="text-callout mt-1"><Facts facts={[t.train.types[next.s.type], t.after.minN(num(next.s.minutes))]} /></p>
             </div>
             <div class="flex flex-none flex-col items-center gap-1" data-testid="train-week-pills">
               <WeekRing done={weekDone} planned={sessions.length} size={48} label={t.train.ringLabel(num(weekDone), num(sessions.length))} />
@@ -233,7 +231,7 @@
 
     {#if bestLifts.length}
       <Card list aria-label={t.workout.bestLifts} data-testid="train-lifts">
-        <p class="text-eyebrow text-ink-2 pt-5">{t.workout.bestLifts}</p>
+        <CardHead class="pt-5 pb-1" title={t.workout.bestLifts} />
         <div>
           {#each bestLifts as [id, b] (id)}
             <Row title={LIBRARY[id]?.name ?? id} caption={t.workout.bestLine(shortDate(b.date))} value={weightText(b.kg, profile.units)} unit="x {num(b.reps)}">
@@ -250,11 +248,8 @@
     <!-- R2, the owner: the week takes a row, not a page. A column a day: its letter, an icon for each session (the type
          as a picture, green once done this week), the day's minutes. An icon opens its session; an empty day's plus adds
          one. Today wears the ink ring -->
-    <section class="bg-surface shadow-card rounded-lg px-3 pt-4 pb-3" aria-label={t.train.week} data-testid="train-week">
-      <div class="flex items-baseline justify-between gap-3 px-1">
-        <h2 class="text-subhead">{t.train.week}</h2>
-        <span class="text-caption text-ink-2 num"><Facts facts={[t.train.sessionsN(num(sessions.length)), t.after.minN(num(minutes))]} /></span>
-      </div>
+    <section class="bg-surface shadow-card rounded-lg p-3 pt-4" aria-label={t.train.week} data-testid="train-week">
+      <h2 class="text-subhead px-1">{t.train.week}</h2>
       <div class="mt-3 grid grid-cols-7 gap-1">
         {#each t.train.weekdays as dayName, d (dayName)}
           {@const list = sessions.filter((s) => s.weekday === d)}
@@ -276,12 +271,12 @@
           </div>
         {/each}
       </div>
-      <div class="text-caption text-ink-2 mt-1 flex flex-wrap justify-center gap-x-3 gap-y-1" aria-hidden="true">
+      <div class="text-caption text-ink-2 mt-2 flex flex-wrap justify-center gap-x-3 gap-y-1" aria-hidden="true">
         <span class="inline-flex items-center gap-1"><i class="bg-ink size-2 rounded-full"></i>{t.train.legendLift}</span>
         <span class="inline-flex items-center gap-1"><i class="bg-lavender size-2 rounded-full"></i>{t.train.legendCardio}</span>
         <span class="inline-flex items-center gap-1"><i class="bg-success size-2 rounded-full"></i>{t.today.done}</span>
       </div>
-      <div class="mt-1 flex flex-wrap items-center justify-between gap-x-2">
+      <div class="flex flex-wrap items-center justify-between gap-x-2">
         <Button variant="plain" size="sm" class="-ml-2" disabled={sessions.length >= MAX_SESSIONS} onclick={() => add(todayIs)} data-testid="train-add">{t.train.addSession}</Button>
         <!-- R2: the coach changes the week from a sentence -->
         <Button variant="plain" size="sm" class="-mr-2" onclick={() => (aiOpen = true)} data-testid="program-ai-open"><Sparkles size={16} strokeWidth={2.25} aria-hidden="true" />{t.aiProgram.open}</Button>

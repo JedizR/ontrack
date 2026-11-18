@@ -35,6 +35,8 @@ export const sheets = $state({
   saved: false,
   /** the Scan sheet (B1, F22) */
   scan: false,
+  /** what the Add sheet's camera hands the Scan sheet: a barcode read, or a label photo */
+  scanFrom: null as { code: string } | { label: Blob } | null,
   /** what the Review sheet analyses: a photo just taken, or a description */
   review: null as { kind: 'photo'; file: Blob } | { kind: 'text'; text: string } | null,
   /** the session whose menu is open: Skip today */

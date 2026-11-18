@@ -1,7 +1,7 @@
 // Thai dishes and their variants (docs/AI-THAI.md). The model reports a dish, its protein and what came with it; this
 // finds the food table's entry for that plate, deterministically, from the names and aliases the table already has.
 import foods from '../../src/lib/data/foods.json' with { type: 'json' };
-import { norm } from '../../shared/text.js';
+import { compact, fold, norm } from '../../shared/text.js';
 import { EXTRAS, PROTEINS, type ModelItem } from './schema.js';
 
 type Protein = Exclude<(typeof PROTEINS)[number], 'none'>;
@@ -86,6 +86,19 @@ const isDish = (id: string) => BASES.has(PLATES.get(id)!.base);
 const order = [...THAI.filter((f) => isDish(f.id)), ...THAI.filter((f) => !isDish(f.id))];
 for (const f of order) if (!EXACT.has(norm(f.name))) EXACT.set(norm(f.name), f.id);
 for (const f of order) for (const a of f.aliases) if (!EXACT.has(norm(a))) EXACT.set(norm(a), f.id);
+/** The same names by their folded and spaceless keys ("Phad kra prao gai" finds "pad kaprao gai"). A key two different
+ * names share, one food's two spellings aside, is left out: khai (egg) and kai (chicken) fold together, so neither wins. */
+const keyed = (key: (s: string) => string) => {
+  const m = new Map<string, { id: string; raw: string } | null>();
+  for (const [f, text] of [...order.map((f) => [f, f.name] as const), ...order.flatMap((f) => f.aliases.map((a) => [f, a] as const))]) {
+    const k = key(text), raw = norm(text), hit = m.get(k);
+    if (hit === undefined) m.set(k, { id: f.id, raw });
+    else if (hit && hit.raw !== raw && hit.id !== f.id) m.set(k, null);
+  }
+  return m;
+};
+const FOLDED = keyed(fold);
+const COMPACT = keyed(compact);
 
 /** A typed or recognised dish name read as a plate ("กะเพราหมูกรอบไข่ดาว", "kaprao gai"): a known dish, then at most
  * one protein and the extras, and nothing else left over; null when it reads as anything more. */
@@ -140,5 +153,5 @@ export function foodIdFor(it: ModelItem, known: (id: string) => boolean): string
   const own = it.food_id && known(it.food_id) ? PLATES.get(it.food_id) : undefined;
   const contradicted = want && own && own.base === want.base && proteinCost(own, want) === Infinity;
   if (it.food_id && known(it.food_id) && !contradicted) return it.food_id;
-  return ranked[0]?.id ?? EXACT.get(norm(it.name)) ?? null;
+  return ranked[0]?.id ?? EXACT.get(norm(it.name)) ?? FOLDED.get(fold(it.name))?.id ?? (compact(it.name).length >= 4 ? COMPACT.get(compact(it.name))?.id : undefined) ?? null;
 }

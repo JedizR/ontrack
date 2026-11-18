@@ -30,7 +30,7 @@
 >
   <div class="pointer-events-none absolute inset-x-0 top-0 h-[calc(env(safe-area-inset-top)+var(--s-2))] bg-[linear-gradient(to_bottom,var(--canvas),transparent)]" aria-hidden="true"></div>
   <div class="relative mt-1 flex h-[var(--header-h)] items-center gap-3 rounded-full pr-1.5 pl-2 transition-[background-color,box-shadow] duration-[var(--d-ui)] {scrolled ? 'liquid' : ''}" data-testid="header-bar">
-    <h1 class="text-title min-w-0 flex-1 truncate pt-1">{title}</h1>
+    <h1 class="text-heading min-w-0 flex-1 truncate">{title}</h1>
     <SyncMark state={sync} />
     <!-- S1b: friends and the food map, one tap from every tab; the badge counts requests waiting for a yes -->
     {#if onfriends}

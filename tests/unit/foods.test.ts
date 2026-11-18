@@ -237,6 +237,19 @@ describe('search', () => {
     expect(searchFoods(mixed, 'rice').map((f) => f.name)).toEqual(['Rice', 'Rice soup', 'Fried rice', 'Khao pad sapparot']);
     expect(searchFoods(mixed, 'rice', 30, true).map((f) => f.name)).toEqual(['Rice', 'Rice soup', 'Khao pad sapparot', 'Fried rice']);
   });
+  test('romanisation variants, missing spaces, word order and plurals find the same Thai dish', () => {
+    const top = (q: string) => searchFoods(FOODS as Food[], q, 30, true)[0]?.name ?? '';
+    for (const q of ['phat thai', 'pad tai', 'padthai']) expect(top(q)).toBe('Pad thai');
+    for (const q of ['krapao', 'gaprao', 'phad kaprow', 'kra pao']) expect(top(q)).toBe('Pad kra pao pork');
+    for (const q of ['kao man gai', 'khao man kai', 'khaomankai']) expect(top(q)).toBe('Khao man kai');
+    expect(top('tom yam kung')).toBe('Tom yum kung');
+    expect(top('som tum')).toBe('Som tam');
+    expect(searchFoods(FOODS as Food[], 'chicken pad kra pao').map((f) => f.name)).toContain('Pad kra pao chicken');
+    expect(top('กระเพรา')).toBe('Basil'); // the other spelling of กะเพรา
+    // a variant never beats an exact match of the same kind
+    expect(searchFoods([food('Kao tom'), food('Khao tom')], 'khao tom').map((f) => f.name)).toEqual(['Khao tom', 'Kao tom']);
+    expect(searchFoods([food('Eggs'), food('Egg roll')], 'egg').map((f) => f.name)).toEqual(['Eggs', 'Egg roll']);
+  });
   test('the real table finds everyday foods', () => {
     const top = (q: string) => searchFoods(FOODS as Food[], q)[0]?.name ?? '';
     expect(top('banana')).toMatch(/banana/i);

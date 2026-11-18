@@ -537,7 +537,7 @@ for (const theme of ['light', 'dark'] as const) {
         await page.getByTestId('add').click();
         await expect(page.getByTestId('add-sheet')).toHaveCSS('transform', 'none');
         await shot(page, 'scan', 'add');
-        await page.getByTestId('add-scan').click();
+        await page.getByTestId('scanner-type').click();
         await settled();
         await expect(page.getByTestId('scanner-hint')).toHaveText('Hold the barcode inside the frame. It reads by itself.', { timeout: 15_000 });
         await shot(page, 'scan', 'camera');
@@ -551,7 +551,7 @@ for (const theme of ['light', 'dark'] as const) {
         await close();
         await page.evaluate(() => { (window as unknown as { cameraError?: string }).cameraError = 'NotAllowedError'; });
         await page.getByTestId('add').click();
-        await page.getByTestId('add-scan').click();
+        await page.getByTestId('scanner-type').click();
         await settled();
         await expect(page.getByTestId('scanner-problem')).toBeVisible();
         await shot(page, 'scan', 'type-denied');
@@ -574,7 +574,7 @@ for (const theme of ['light', 'dark'] as const) {
 
         // a new product, its label read (held), then the Label step and a product from its label
         await page.getByTestId('add').click();
-        await page.getByTestId('add-scan').click();
+        await page.getByTestId('scanner-type').click();
         await page.getByTestId('barcode-field').fill('8850999220017');
         await page.getByTestId('barcode-find').click();
         await expect(page.getByTestId('product-new')).toBeVisible();
@@ -611,7 +611,7 @@ for (const theme of ['light', 'dark'] as const) {
         // a label photo that is not one
         await vision(page, s, { fixture: 'not-label' });
         await page.getByTestId('add').click();
-        await page.getByTestId('add-scan').click();
+        await page.getByTestId('scanner-type').click();
         await page.getByTestId('barcode-field').fill('8851234567898');
         await page.getByTestId('barcode-find').click();
         await expect(page.getByTestId('product-new')).toBeVisible();
@@ -626,7 +626,7 @@ for (const theme of ['light', 'dark'] as const) {
         // offline: a barcode never scanned
         await context.setOffline(true);
         await page.getByTestId('add').click();
-        await page.getByTestId('add-scan').click();
+        await page.getByTestId('scanner-type').click();
         await page.getByTestId('barcode-field').fill('8851717040016');
         await page.getByTestId('barcode-find').click();
         await expect(page.getByTestId('product-failed')).toBeVisible();
