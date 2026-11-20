@@ -5,10 +5,12 @@
      a dot when the day was on track. The day in view is an ink pill; Today, when another day is in view, keeps an ink ring
      (U1b). Days after today cannot be picked. -->
 <script lang="ts">
+  import { prefs } from '$lib/prefs.svelte';
   import { untrack } from 'svelte';
   import { t } from '$lib/i18n';
   import { weekdayOf } from '$lib/model/dates';
   import { reducedMotion } from '$lib/haptics';
+  const curvy = $derived(prefs.look === 'curvy');
 
   let {
     days,
@@ -67,16 +69,20 @@
 
   // days leave under a soft edge: a hint at the left, a longer one before the Today chip
   const FADE = 'linear-gradient(to right, transparent 0, black 10px, black calc(100% - 26px), transparent 100%)';
+  // ui-flat, the owner: yesterday, picked, sits whole against the Today chip, so its fill is never faded at that edge
+  const FADE_LEFT = 'linear-gradient(to right, transparent 0, black 10px)';
+  const mask = $derived(slide.at(-1)?.date === selected ? FADE_LEFT : FADE);
 </script>
 
 {#snippet cell(d: { date: string; onTrack: boolean }, picked: boolean, isToday: boolean)}
   <span
-    class="text-caption relative mx-0.5 grid h-16 content-center gap-1 [@media(max-height:620px)]:h-12 [@media(max-height:620px)]:gap-0.5 justify-items-center rounded-md transition-colors duration-[var(--d-ui)]
+    class="text-caption relative mx-0.5 grid h-16 content-center gap-1 [@media(max-height:620px)]:h-12 [@media(max-height:620px)]:gap-0.5 justify-items-center {curvy ? 'rounded-md' : 'rounded-sm'}
       {picked ? 'bg-ink text-canvas' : isToday ? 'ring-ink text-ink-2 ring-2 ring-inset group-enabled:group-active:bg-surface-2' : 'text-ink-2 group-enabled:group-active:bg-surface-2'}"
   >
     {t.week.letters[weekdayOf(d.date)]}
     <b class="text-body num font-semibold {picked ? 'text-canvas' : 'text-ink'}">{local(d.date).getDate()}</b>
-    <i class="size-1.25 rounded-full {d.onTrack ? (picked ? 'bg-success' : 'bg-success-ink') : ''}"></i>
+    <!-- ui-flat: the dot sits at the foot, out of the flow, so the letter and date are centred with room above them -->
+    <i class="absolute bottom-1.5 left-1/2 size-1.25 -translate-x-1/2 rounded-full [@media(max-height:620px)]:bottom-0.5 {d.onTrack ? (picked ? 'bg-success' : 'bg-success-ink') : ''}"></i>
   </span>
 {/snippet}
 
@@ -85,7 +91,7 @@
     bind:this={scroller}
     {@attach toEnd}
     class="no-scrollbar flex min-w-0 flex-[6] snap-x snap-mandatory overflow-x-auto overscroll-x-contain"
-    style="-webkit-mask-image: {FADE}; mask-image: {FADE}"
+    style="-webkit-mask-image: {mask}; mask-image: {mask}"
     data-testid="week-slide"
   >
     {#each slide as d, i (d.date)}

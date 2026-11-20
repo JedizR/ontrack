@@ -2,12 +2,14 @@
      numbers the engine already worked out. Real AI text says so under it; the template stand-in says nothing. While it
      loads, lines of skeleton hold the card's height so nothing jumps. -->
 <script lang="ts">
+  import { prefs } from '$lib/prefs.svelte';
   import type { Snippet } from 'svelte';
   import Sparkles from '@lucide/svelte/icons/sparkles';
   import Skeleton from './Skeleton.svelte';
   import { askCoach, type CoachAnswer } from '$lib/coach';
   import { t } from '$lib/i18n';
   import type { CoachRequest } from '../../../shared/coach';
+  const curvy = $derived(prefs.look === 'curvy');
 
   let {
     req,
@@ -39,7 +41,7 @@
 </script>
 
 {#if req}
-  <section class={plain ? '' : 'bg-surface shadow-card rounded-lg p-5'} aria-busy={!answer} data-testid={testid}>
+  <section class={plain ? '' : curvy ? 'bg-surface shadow-card rounded-lg p-5' : 'bg-surface-2 rounded-lg p-5 [&_.bg-surface-2]:bg-surface'} aria-busy={!answer} data-testid={testid}>
     {#if eyebrow}<p class="text-eyebrow text-ink-2">{eyebrow}</p>{/if}
     {#if answer}
       <div class="appear">

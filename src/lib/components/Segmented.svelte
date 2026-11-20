@@ -1,8 +1,11 @@
-<!-- DESIGN.md section 7, Segmented control: a radius 20 track on surface-2, the selected segment ink (section 4 rule 2;
+<!-- DESIGN.md section 7, Segmented control: a track on surface-2, radius 16 with segments 12, 4 inside (Default, rounded like the date chip) or
+     radius 20 with segments 16 (Curvy), the selected segment ink (section 4 rule 2;
      U1b: a raised white segment was under 3 to 1 against its track, so the state did not show in dark).
      At most four options. Ported from watermelon: a radio group with arrow keys. -->
 <script lang="ts" generics="T extends string | number">
+  import { prefs } from '$lib/prefs.svelte';
   import { haptic } from '$lib/haptics';
+  const curvy = $derived(prefs.look === 'curvy');
 
   let { value = $bindable(), options, label, onchange }:
     { value: T; options: { value: T; label: string; short?: string }[]; label: string; onchange?: (v: T) => void } = $props();
@@ -25,12 +28,12 @@
   }
 </script>
 
-<div class="bg-surface-2 rounded-control relative grid auto-cols-fr grid-flow-col gap-1 p-1" role="radiogroup" aria-label={label}>
+<div class="bg-surface-2 {curvy ? 'rounded-control' : 'rounded-sm'} relative grid auto-cols-fr grid-flow-col gap-1 p-1" role="radiogroup" aria-label={label}>
   <!-- U2: one ink segment that slides to the pick, as the dock's pill (DESIGN.md section 10 rule 2); 4 inside the radius
        20 track at 16, so the corners nest -->
   {#if at >= 0}
     <span
-      class="bg-ink absolute inset-y-1 left-1 rounded-sm transition-transform duration-[var(--d-ui)] ease-[var(--spring-default)]"
+      class="bg-ink absolute inset-y-1 left-1 {curvy ? 'rounded-sm' : 'rounded-[calc(var(--r-sm)-var(--s-1))]'} transition-transform duration-[var(--d-ui)] ease-[var(--spring-default)]"
       style="width: calc((100% - var(--s-2) - {options.length - 1} * var(--s-1)) / {options.length}); transform: translateX(calc({at} * (100% + var(--s-1))))"
       aria-hidden="true"
       data-testid="segment-pill"
@@ -43,7 +46,7 @@
       role="radio"
       aria-checked={on}
       tabindex={on ? 0 : -1}
-      class="text-callout relative min-h-[var(--tap)] min-w-0 truncate rounded-sm px-2 font-semibold transition-[background-color,color] duration-[var(--d-ui)] ease-[var(--spring-default)] {on ? 'text-canvas' : 'text-ink-2 active:bg-surface-3'}"
+      class="text-callout relative min-h-[var(--tap)] min-w-0 truncate {curvy ? 'rounded-sm' : 'rounded-[calc(var(--r-sm)-var(--s-1))]'} px-2 font-semibold transition-[background-color,color] duration-[var(--d-ui)] ease-[var(--spring-default)] {on ? 'text-canvas' : 'text-ink-2 active:bg-surface-3'}"
       onclick={() => pick(o.value)}
       onkeydown={(e) => key(e, i)}
       aria-label={o.short ? o.label : undefined}

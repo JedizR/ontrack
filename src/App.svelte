@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount, tick, type Component } from 'svelte';
   import { toast } from 'svelte-sonner';
-  import { prefs, applyTheme, applyFontSize, type Tab } from '$lib/prefs.svelte';
+  import { prefs, applyTheme, applyLook, applyFontSize, type Tab } from '$lib/prefs.svelte';
   import { dur } from '$lib/haptics';
   import { swipe } from '$lib/swipe';
   import { t } from '$lib/i18n';
@@ -120,6 +120,7 @@
   onMount(() => trackKeyboard());
   onMount(() => {
     applyTheme();
+    applyLook();
     applyFontSize();
     void session.boot();
     const preload = setTimeout(() => { void loadTab(1); void loadTab(2); loadSheets().catch(() => undefined); loadLog().catch(() => undefined); }, 800); // a failed preload retries on first open

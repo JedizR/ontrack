@@ -8,6 +8,7 @@
    (the bar's) lights up for its parent's pointer (glass.ts marks the glass). Never clip a glass's parent with rounded corners: that cuts its blur
    off from the page behind (a backdrop root) */
 .liquid-touch { position: relative; overflow: clip; isolation: isolate; }
+:root:not([data-look="curvy"]) .liquid-touch::after { display: none; } /* Default has no glass, so no light in it */
 .liquid-touch::after {
   content: '';
   position: absolute;

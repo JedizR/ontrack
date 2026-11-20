@@ -84,7 +84,7 @@
 >
   <!-- capture: a tap on an open row closes it before the row's own button sees it -->
   <div
-    class="bg-surface relative px-6 {cls}"
+    class="relative bg-[var(--row-bg,var(--surface))] px-6 {cls}"
     style="transform: translateX({dx}px); transition: {dragging ? 'none' : 'transform var(--d-settle) var(--ease-out)'}"
     onclickcapture={close}
   >

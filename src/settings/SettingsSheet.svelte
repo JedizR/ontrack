@@ -25,7 +25,7 @@
   import { view } from '$lib/view.svelte';
   import { planFor } from '$lib/model/day';
   import { sheets } from '$lib/sheets.svelte';
-  import { prefs, type FontSize, type Theme } from '$lib/prefs.svelte';
+  import { prefs, type FontSize, type Look, type Theme } from '$lib/prefs.svelte';
   import { thaiByLanguage } from '$lib/data/foods';
   import { deleteAccount, exportAll, exportMeals, saveSettings, signOut, syncNow } from '$lib/actions';
   import type { Profile } from '../../shared/records';
@@ -83,6 +83,7 @@
     location.href = `mailto:${import.meta.env.VITE_SUPPORT_EMAIL ?? ''}?subject=${encodeURIComponent(t.settings.reportSubject)}&body=${encodeURIComponent(body)}`;
   }
 
+  const LOOKS: { value: Look; label: string }[] = [{ value: 'default', label: t.prefs.looks.default }, { value: 'curvy', label: t.prefs.looks.curvy }];
   const THEMES: { value: Theme; label: string }[] = [{ value: 'system', label: t.prefs.system }, { value: 'light', label: t.prefs.light }, { value: 'dark', label: t.prefs.dark }];
   const SIZES: { value: FontSize; label: string }[] = [{ value: 'system', label: t.prefs.system }, { value: 'm', label: t.prefs.m }, { value: 'l', label: t.prefs.l }, { value: 'xl', label: t.prefs.xl }];
   const hour = `${String(V.easyAdds.fromHour).padStart(2, '0')}:00`;
@@ -135,6 +136,10 @@
     <p class="text-callout text-danger mt-3 min-h-5" role="alert">{error}</p>
   {:else}
     <Canvas>
+      <!-- the owner, 20 Nov: the app's style first, on every device, signed in or not -->
+      <Group id="set-g-look" title={t.prefs.look}>
+        <Segmented label={t.prefs.look} bind:value={() => prefs.look, (v) => (prefs.look = v)} options={LOOKS} />
+      </Group>
       {#if profile}
         <Group id="set-g-display" title={t.settings.display}>
           {@render pick(t.settings.units, units)}

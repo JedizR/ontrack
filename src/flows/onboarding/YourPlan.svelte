@@ -3,6 +3,7 @@
      calculated (each line opens its source), fine tuning, any guardrail in one line, and Save this plan. Computed before
      it renders: no loading screen. -->
 <script lang="ts">
+  import { prefs } from '$lib/prefs.svelte';
   import { untrack } from 'svelte';
   import { Tween } from 'svelte/motion';
   import { cubicOut } from 'svelte/easing';
@@ -24,6 +25,7 @@
   import Breakdown from '../plan/Breakdown.svelte';
     import { t } from '$lib/i18n';
   import { LIMITS, START, goalWeightOf, inputOf, minGoalWeightKg, paceChoices, programOf, weightWheel, type Draft } from './draft';
+  const curvy = $derived(prefs.look === 'curvy');
 
   let { d, year, set, back, onsave }: {
     d: Draft;
@@ -147,8 +149,9 @@
 
     <!-- the screen's hero: the target on the haze panel, protein on a grey stat tile beneath, as the "Withdraw" card -->
     <Card hero data-testid="plan-hero" class="rise" style="--i: 0">
-      <!-- U1b: corners in the shell's corners are 40 (48 less the 8 gap), corners facing each other 24 -->
-      <div class="haze rounded-t-sheet rounded-b-md p-6">
+      <!-- Default: onboarding's page is the gradient, so its cards are white, as the choices. Curvy: the haze panel in the
+           white shell, its corners 40 (48 less the 8 gap), corners facing each other 24 (U1b) -->
+      <div class="p-6 {curvy ? 'haze rounded-t-sheet rounded-b-md' : 'bg-surface shadow-card rounded-md'}">
         <p class="text-hero" aria-hidden="true">{num(Math.round(hero.current))}</p>
         <p class="sr-only" data-testid="plan-kcal">{num(parts.total)}</p>
         <p class="text-caption text-ink-2 mt-1">{matched ? t.after.kcalTraining : t.after.kcalDay}</p>
@@ -156,7 +159,7 @@
       </div>
       <div class="mt-2 grid grid-cols-3 gap-2">
         {#each tiles as m, i (m.key)}
-          <div class="bg-surface-2 flex min-h-20 min-w-0 flex-col justify-between rounded-md px-4 pt-3 pb-4 first:rounded-bl-sheet last:rounded-br-sheet" data-testid="plan-tile-{m.key}">
+          <div class="flex min-h-20 min-w-0 flex-col justify-between rounded-md px-4 pt-3 pb-4 {curvy ? 'bg-surface-2 first:rounded-bl-sheet last:rounded-br-sheet' : 'bg-surface shadow-card'}" data-testid="plan-tile-{m.key}">
             <p class="text-caption text-ink-2">{m.label}</p>
             <p class="text-subhead num" aria-hidden="true">{num(Math.round(counts[i].current))}<span class="text-caption text-ink-2 font-medium">{' '}{t.after.g}</span></p>
             <p class="sr-only" data-testid="plan-{m.key}">{num(m.g)}</p>
@@ -167,7 +170,7 @@
 
     <!-- the goal weight, its own section (O2) -->
     <div class="reveal" use:inview>
-      <Card list aria-label={t.plan.goalWeight}>
+      <Card list class="bg-surface shadow-card mx-0! rounded-lg" aria-label={t.plan.goalWeight}>
         <Row title={t.plan.goalWeight} caption={t.plan.goalWeightHint} value={goalWeightOf(d) ? weightText(goalWeightOf(d)!, d.units) : t.plan.noneYet} chevron onclick={askGoalWeight} testid="tune-goalweight" />
       </Card>
     </div>
@@ -191,7 +194,7 @@
 
     <!-- what is behind the number, closed until asked for (O2) -->
     <div class="reveal" use:inview>
-      <Card list>
+      <Card list class="bg-surface shadow-card mx-0! rounded-lg">
         <Disclosure title={t.plan.yourTraining} line={trainingLine} testid="plan-training-box">
           <p class="text-body" data-testid="plan-training">{training}</p>
         </Disclosure>

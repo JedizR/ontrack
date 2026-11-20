@@ -16,12 +16,13 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Ontrack" />
     <script>
-      // Theme and text size before first paint, so there is no flash. Same key and mapping as src/lib/prefs.svelte.ts.
+      // Theme, style and text size before first paint, so there is no flash. Same key and mapping as src/lib/prefs.svelte.ts.
       try {
         var ui = JSON.parse(localStorage.getItem('ot-ui') || '{}');
         var t = ui.theme || 'system';
         if (t === 'system') t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
         document.documentElement.dataset.theme = t;
+        document.documentElement.dataset.look = ui.look === 'curvy' ? 'curvy' : 'default';
         var lvl = ui.fontSize || 'system';
         if (lvl === 'system') {
           var pr = document.createElement('span'); pr.style.cssText = 'position:absolute;visibility:hidden;font:-apple-system-body';

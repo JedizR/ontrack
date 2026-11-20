@@ -52,6 +52,30 @@ test('display, units, the same target every day, Thai dishes first and the check
   await expect(kcalOf(page)).toHaveText('of 2,360 kcal');
 });
 
+test('Style: Default is flat, Curvy brings back the cards in cards and the glass, and the pick survives a reload', async ({ page }) => {
+  await openAt(page, '10:00');
+  const html = page.locator('html');
+  const shell = () => page.getByTestId('hero').evaluate((h) => [getComputedStyle(h).backgroundColor, getComputedStyle(h).boxShadow !== 'none']);
+  const glass = () => page.getByTestId('dock').locator('nav').evaluate((n) => getComputedStyle(n).backdropFilter);
+  await expect(html).toHaveAttribute('data-look', 'default');
+  expect(await shell()).toEqual(['rgba(0, 0, 0, 0)', false]);
+  expect(await glass()).toBe('none');
+  await settings(page);
+  const style = sheet(page).getByRole('radiogroup', { name: 'Style' });
+  await style.getByRole('radio', { name: 'Curvy' }).click();
+  await expect(html).toHaveAttribute('data-look', 'curvy');
+  await close(page);
+  expect(await shell()).toEqual(['rgb(255, 255, 255)', true]);
+  expect(await glass()).toMatch(/^blur\(/);
+  await page.reload();
+  await expect(html).toHaveAttribute('data-look', 'curvy');
+  await expect(page.getByTestId('hero')).toBeVisible();
+  expect(await shell()).toEqual(['rgb(255, 255, 255)', true]);
+  await settings(page);
+  await style.getByRole('radio', { name: 'Default' }).click();
+  await expect(html).toHaveAttribute('data-look', 'default');
+});
+
 test('goal and pace: the new target shows before saving and starts tomorrow; today keeps its own', async ({ page }) => {
   await openAt(page, '10:00');
   await settings(page);

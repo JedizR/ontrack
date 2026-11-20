@@ -4,6 +4,7 @@
      The plan is already computed. The wait's pacing is not motion, so it plays under reduced motion too, as does the
      counter (text); what moves (the pop, the slide) is collapsed by the global rule. -->
 <script lang="ts">
+  import { prefs } from '$lib/prefs.svelte';
   import { onMount } from 'svelte';
   import { Tween } from 'svelte/motion';
   import { cubicOut } from 'svelte/easing';
@@ -11,6 +12,7 @@
   import { t } from '$lib/i18n';
   import { haptic, ms } from '$lib/haptics';
   import { num } from '$lib/model/format';
+  const curvy = $derived(prefs.look === 'curvy');
 
   let { training, ondone }: { training: boolean; ondone: () => void } = $props();
 
@@ -43,7 +45,7 @@
 <section class="flex min-h-svh flex-col items-center justify-center px-4 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]" aria-label={t.onboarding.building} data-testid="building">
   <!-- the ring: the percent in it, then a violet check once the rows are done (no gradient: DESIGN.md section 8) -->
   <div class="relative size-44" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={shown} aria-label={t.onboarding.buildPercent(num(shown))} data-testid="build-ring">
-    <div class="bg-surface/60 absolute inset-2 rounded-full backdrop-blur-xl" aria-hidden="true"></div>
+    <div class="absolute inset-2 rounded-full {curvy ? 'bg-surface/60 backdrop-blur-xl' : 'bg-surface'}" aria-hidden="true"></div>
     <svg viewBox="0 0 120 120" class="absolute inset-0 -rotate-90" aria-hidden="true">
       <circle cx="60" cy="60" r={R} fill="none" stroke="var(--track-bg)" stroke-width="8" />
       <circle cx="60" cy="60" r={R} fill="none" stroke="var(--progress)" stroke-width="8" stroke-linecap="round" stroke-dasharray={C} stroke-dashoffset={C * (1 - percent.current)} />

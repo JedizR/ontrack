@@ -3,6 +3,7 @@
      raise or a lower offers Use the new target and Keep my current target; any other outcome ends on Done. A stored
      check-in opens the same steps and ends on what was decided. -->
 <script lang="ts">
+  import { prefs } from '$lib/prefs.svelte';
   import Figure from '$lib/components/Figure.svelte';
   import Count from '$lib/components/Count.svelte';
   import { untrack } from 'svelte';
@@ -27,6 +28,7 @@
   import CoachCard from '$lib/components/CoachCard.svelte';
   import { checkinFacts } from '$lib/model/coach';
   import type { CoachRequest } from '../../../shared/coach';
+  const curvy = $derived(prefs.look === 'curvy');
 
   // what the sheet shows is read once as it opens, so a sync arriving mid-way cannot change the numbers under the user
   let shown = $state<{ date: string; result: CheckinResult; stored?: Checkin } | null>(null);
@@ -143,7 +145,7 @@
         </div>
         <p class="text-body text-ink-2 pb-0.5" data-testid="checkin-target-rate">{t.checkin.target(num(targetRate, 1))}</p>
       </div>
-      <div class="bg-surface shadow-card mt-5 rounded-lg px-5 py-1" data-list>
+      <div class="mt-5 py-1 {curvy ? 'bg-surface shadow-card rounded-lg px-5' : ''}" data-list>
         <Row title={t.checkin.intake} caption={t.checkin.target(num(Math.round(s.meanTarget)))} value={s.meanIntake == null ? t.plan.noneYet : num(Math.round(s.meanIntake))} unit={s.meanIntake == null ? undefined : t.after.kcal} testid="checkin-intake" />
         <Row title={t.checkin.days} value={t.checkin.of(num(s.completeDays), num(s.days))} testid="checkin-days" />
         <Row title={t.checkin.weighIns} value={num(s.weighIns)} testid="checkin-weighins" />

@@ -29,7 +29,7 @@
   --success-soft: #daf9f1;      /* derived: 16 percent of the fill on white */
 
   /* Neutrals */
-  --canvas: #f5f5f5;            /* Neutral/09 */
+  --canvas: #ffffff;            /* the Default style: the page is white, cards are grey boxes on it, never a card in a card */
   --surface: #ffffff;
   --surface-2: #efefef;         /* Neutral/08 */
   --surface-3: #d9d9d9;         /* Neutral/07 */
@@ -117,15 +117,6 @@
   --gutter: 16px;               /* the page's side margin */
   --inset: 24px;                /* inside cards and sheets */
 
-  /* Shape. Nested corners step down by the gap between them */
-  --r-xs: 8px;                  /* chips inside text, checkboxes */
-  --r-sm: 16px;                 /* inputs, thumbnails, small buttons, tab cells, the wheel band */
-  --r-control: 20px;            /* the large button face, the segmented track */
-  --r-md: 24px;                 /* choice cards, tiles, rows that lift */
-  --r-lg: 32px;                 /* cards */
-  --r-sheet: 40px;              /* the top of sheets */
-  --r-xl: 48px;                 /* the hero card */
-  --r-full: 999px;
 
   /* Sizes */
   --tap: 44px;
@@ -217,6 +208,27 @@
 
 /* a light island (data-theme="light" inside a dark page, the haze, the featured card): ink words, and secondary words at 73
    percent, which holds 4.5 to 1 across a photo gradient (docs/DESIGN.md section 4) */
+/* Shape, on the root only (not redeclared in light islands, so a style can change it everywhere). Nested corners step
+   down by the gap between them. The Default style has one radius, 24, for every card, box, panel and sheet top */
+:root {
+  --r-xs: 8px;                  /* chips inside text, checkboxes */
+  --r-sm: 16px;                 /* inputs, thumbnails, small buttons, tab cells, the wheel band */
+  --r-control: 20px;            /* the large button face, the segmented track */
+  --r-md: 24px;                 /* choice cards, tiles, rows that lift; in Default every card */
+  --r-lg: var(--r-md);
+  --r-sheet: var(--r-md);
+  --r-xl: var(--r-md);
+  --r-full: 999px;
+}
+/* The Curvy style (Settings, Style; <html data-look="curvy">): R3's look. Cards 32, sheet tops 40, the hero shell 48 with
+   its boxes nested in it, and the light page grey under white cards. Dark keeps its canvas: the dark blocks come later */
+:root[data-look="curvy"] {
+  --r-lg: 32px;
+  --r-sheet: 40px;
+  --r-xl: 48px;
+}
+:root[data-look="curvy"][data-theme="light"] { --canvas: #f5f5f5; }
+
 [data-theme="light"]:not(:root), .haze, .feature { --ink-2: var(--haze-ink-2); color: var(--ink); }
 
 /* the root in the dark theme, and any element marked dark: the landing page's dark sections in either theme */

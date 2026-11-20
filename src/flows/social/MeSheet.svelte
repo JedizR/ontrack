@@ -3,6 +3,7 @@
      it. Friends open from their box; Settings is the button pinned at the foot. Mounts the Edit profile sheet, which the
      food map and the friends panel open too, so there is only ever one. -->
 <script lang="ts">
+  import { prefs } from '$lib/prefs.svelte';
   import { untrack } from 'svelte';
   import Settings from '@lucide/svelte/icons/settings';
   import Pencil from '@lucide/svelte/icons/pencil';
@@ -22,6 +23,7 @@
   import { friends, refreshFriends, waiting } from '$lib/friends.svelte';
   import Avatar from './Avatar.svelte';
   import ProfileSheet from './ProfileSheet.svelte';
+  const curvy = $derived(prefs.look === 'curvy');
 
   const social = $derived(db.get('social', 'social'));
   const profile = $derived(db.get('profile', 'profile'));
@@ -58,7 +60,7 @@
 
 <Sheet bind:open={() => sheets.me, (v) => (sheets.me = v)} title={t.profile.title} layer="base" testid="me-sheet" {footer}>
   <Canvas footer>
-    <section class="bg-surface shadow-card flex flex-col gap-2 rounded-xl p-2" aria-label={t.profile.title} data-testid="me-card">
+    <section class="flex flex-col gap-2 {curvy ? 'bg-surface shadow-card rounded-xl p-2' : ''}" aria-label={t.profile.title} data-testid="me-card">
       <div class="bg-surface-2 rounded-t-sheet flex items-center gap-4 rounded-b-md p-5 [@media(max-height:620px)]:p-3" data-testid="me-head">
         <Avatar {name} local={social?.photo ?? null} size="lg" class="[@media(max-height:620px)]:size-14" />
         <div class="min-w-0 flex-1">

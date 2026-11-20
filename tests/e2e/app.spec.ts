@@ -292,7 +292,7 @@ test('corners nest on every tab, a sheet, a toast and a pressed row', async ({ p
   await page.evaluate(() => document.querySelectorAll('[data-testid^="probe"], style:last-of-type').forEach((e) => e.remove()));
   const today = await unnested(page);
   expect(today.bad).toEqual([]);
-  expect(today.checked).toBeGreaterThanOrEqual(5); // the haze's two top corners, the tiles' two outer ones, the dock's pill
+  expect(today.checked).toBeGreaterThanOrEqual(2); // ui-flat: no card holds another, so what nests on Today is the dock's pill
   // the dock's pill, 8 inside the dock on every side (U2, the owner's screenshot): 48 high at radius 24 in a 64 pill
   const pill = await page.getByTestId('dock-pill').evaluate((p) => {
     const d = p.parentElement!.getBoundingClientRect(), r = p.getBoundingClientRect();
