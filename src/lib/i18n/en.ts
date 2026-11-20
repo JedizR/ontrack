@@ -100,7 +100,7 @@ export const en = {
       thai: 'Search in Thai script: rice noodles, pad kee mao, boat noodles and more, each with its calories',
       supplement: 'Whey protein, two scoops with 242 ml of whole milk: 393 kcal and 55.9 g protein',
       train: 'Train: four strength sessions a week, adding 137 kcal a day on average',
-      progress: 'Progress: the weight trend at 60 kg, gaining 0.1 percent a week against a target of 0.5',
+      progress: 'Progress: the weight trend at 60 kg and 12 days on track, gaining 0.1 percent a week against a target of 0.5',
       map: 'The food map around Bangkok: photo pins with each friend\'s avatar, one with 2 more at the same spot, and Search for friends below',
       checkin: 'The weekly check-in proposing a raise to 2,560 kcal on training days and 2,320 on rest days',
     },
