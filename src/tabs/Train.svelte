@@ -48,6 +48,7 @@
   import Suggestion from '../flows/train/Suggestion.svelte';
   import Experience from '../flows/train/Experience.svelte';
   import { ids, type Program, type Session } from '../../shared/records';
+  import { sessionTitle } from '$lib/session-title';
   const tray = $derived(prefs.tray);
 
   const profile = $derived(db.get('profile', 'profile'));
@@ -190,7 +191,7 @@
           <div class="flex items-start gap-3">
             <div class="min-w-0 flex-1">
               <p class="text-eyebrow">{next.today ? t.train.nextToday : t.train.weekdays[next.s.weekday]}</p>
-              <h2 class="text-heading mt-1">{next.s.name}</h2>
+              <h2 class="text-heading mt-1">{sessionTitle(next.s)}</h2>
               <p class="text-callout mt-1"><Facts facts={[t.train.types[next.s.type], t.after.minN(num(next.s.minutes))]} /></p>
             </div>
             <div class="flex flex-none flex-col items-center gap-1" data-testid="train-week-pills">

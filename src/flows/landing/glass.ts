@@ -45,3 +45,49 @@ export function lean(el: HTMLElement, max = 6) {
   el.addEventListener('pointerleave', leave);
   return { destroy() { el.removeEventListener('pointermove', move); el.removeEventListener('pointerleave', leave); } };
 }
+
+/** 21 Nov, the owner: a chip floating over a phone turns night glass, with white words, where the screen under it is dark
+ *  (the ink boxes on Today). It reads the screenshot under its own box as the page scrolls and the phone floats; the
+ *  image is our own, so its pixels can be read. Over the sky or the bezel (less than half on the screen) it stays light. */
+export function overDark(el: HTMLElement, set: (dark: boolean) => void) {
+  const img = el.closest('[data-phone]')?.querySelector('img');
+  if (!img) return;
+  const W = 98, H = 199; // a quarter of the screenshot's points: enough to tell ink from grey
+  let g: CanvasRenderingContext2D | null = null;
+  let frame = 0;
+  // drawn once the image has decoded: WebKit draws an image with decoding="async" as nothing until then
+  const prep = () => img.decode().then(() => {
+    g = Object.assign(document.createElement('canvas'), { width: W, height: H }).getContext('2d', { willReadFrequently: true });
+    g?.drawImage(img, 0, 0, W, H);
+    ask();
+  }, () => undefined);
+  const read = () => {
+    frame = 0;
+    if (!g) return;
+    const i = img.getBoundingClientRect(), b = el.getBoundingClientRect();
+    const x0 = Math.max(0, Math.floor(((b.left - i.left) / i.width) * W)), x1 = Math.min(W, Math.ceil(((b.right - i.left) / i.width) * W));
+    const y0 = Math.max(0, Math.floor(((b.top - i.top) / i.height) * H)), y1 = Math.min(H, Math.ceil(((b.bottom - i.top) / i.height) * H));
+    const whole = ((b.width / i.width) * W) * ((b.height / i.height) * H);
+    if (x1 <= x0 || y1 <= y0 || (x1 - x0) * (y1 - y0) < whole / 2) return set(false);
+    const d = g.getImageData(x0, y0, x1 - x0, y1 - y0).data;
+    let sum = 0;
+    for (let k = 0; k < d.length; k += 4) sum += 0.2126 * d[k] + 0.7152 * d[k + 1] + 0.0722 * d[k + 2];
+    const lum = sum / (d.length / 4);
+    set(lum < 170); // about a third of it over ink: dark words would sit on black
+  };
+  const ask = () => { if (!frame) frame = requestAnimationFrame(read); };
+  img.addEventListener('load', prep);
+  addEventListener('scroll', ask, { passive: true });
+  addEventListener('resize', ask);
+  const tick = setInterval(ask, 400); // the chip bobs and the phone floats on their own
+  void prep();
+  return {
+    destroy() {
+      cancelAnimationFrame(frame);
+      clearInterval(tick);
+      img.removeEventListener('load', prep);
+      removeEventListener('scroll', ask);
+      removeEventListener('resize', ask);
+    },
+  };
+}

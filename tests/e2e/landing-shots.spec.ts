@@ -3,16 +3,24 @@
 // update t.landing.alt where a number changed:
 //   LANDING_SHOTS=1 E2E_REAL_TILES=1 pnpm exec playwright test --project=shots
 // (E2E_REAL_TILES draws the food map with OpenFreeMap's real tiles, so the map shot needs the network)
+// 21 Nov, the owner: Today and Train may show a real account's day and program instead of the fixtures, for a realistic
+// program. LANDING_SEED=<file> names a JSON { today, time, records } exported from Supabase with the owner's leave; the
+// file stays out of the repo, only the shots are committed.
 import { execFileSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';
-import { MEALS, SUPPLEMENTS, open, openSeeded, vision, withPrefs } from './helpers';
+import { MEALS, SUPPLEMENTS, open, openSeeded, seedAccount, vision, withPrefs } from './helpers';
 import { openMap, scene } from './social';
 
 test.skip(!process.env.LANDING_SHOTS, 'writes src/flows/landing/shots/; set LANDING_SHOTS=1');
 test.use({ colorScheme: 'light', viewport: { width: 393, height: 798 }, deviceScaleFactor: 1.6 });
 
 // the whole screen under the status bar, 393 by 798 points (an iPhone 16's 393 by 852 less its 54 point status bar)
+// 21 Nov, the owner: in the phone pictures the dock is the earlier landing shots' glass (white at 80 percent over a 24 px
+// blur, U1b's bar), so the rows under it do not read through at that size; the app itself keeps Tray's clearer glass
+const DEMO_CSS = '[data-testid="dock"] nav { --liquid-tint-share: 80% !important; --liquid-clear: blur(24px) !important; }';
 const shot = async (page: Page, name: string) => {
+  await page.addStyleTag({ content: DEMO_CSS });
   await page.waitForTimeout(500); // sheets and fades settle
   const png = test.info().outputPath(`${name}.png`);
   await page.screenshot({ path: png, clip: { x: 0, y: 0, width: 393, height: 798 } });
@@ -20,8 +28,20 @@ const shot = async (page: Page, name: string) => {
 };
 const settled = (page: Page, id: string) => expect(page.getByTestId(id)).toHaveCSS('transform', 'none');
 
+type Real = { today: string; time: string; records: NonNullable<Parameters<typeof seedAccount>[1]>['account'] };
+const real: Real | null = process.env.LANDING_SEED ? JSON.parse(readFileSync(process.env.LANDING_SEED, 'utf8')) : null;
+// the real account's day at its own clock, without the day's reminder cards (the shot is the day itself)
+async function openReal(page: Page, r: Real) {
+  await page.clock.setFixedTime(new Date(`${r.today}T${r.time}:00+07:00`));
+  await withPrefs(page, { remind: { meal: true, mealAt: '13:00', weigh: true, checkin: false, easy: false } });
+  await seedAccount(page, { account: r.records });
+  await page.goto('/');
+  await expect(page.getByTestId('dock')).toBeVisible();
+}
+
 test('today', async ({ page }) => {
-  await open(page, '/', MEALS);
+  if (real) await openReal(page, real);
+  else await open(page, '/', MEALS);
   await expect(page.getByTestId('meals')).toHaveCSS('opacity', '1');
   await shot(page, 'today');
 });
@@ -73,8 +93,9 @@ test('supplement', async ({ page }) => {
 });
 
 test('train', async ({ page }) => {
-  await withPrefs(page, { suggestOff: true }); // the week itself, without O1's suggestion card
-  await open(page);
+  await withPrefs(page, { suggestOff: true, liftAsked: true }); // the week itself, without O1's suggestion card or the experience question
+  if (real) await openReal(page, real);
+  else await open(page);
   await page.getByTestId('tab-1').click();
   await expect(page.getByTestId('train-week')).toBeVisible();
   await shot(page, 'train');
