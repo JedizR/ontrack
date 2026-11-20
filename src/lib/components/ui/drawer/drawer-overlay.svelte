@@ -13,6 +13,6 @@
 <DrawerPrimitive.Overlay
 	bind:ref
 	data-slot="drawer-overlay"
-	class={cn("bg-scrim fixed inset-0", prefs.look === "curvy" && "[-webkit-backdrop-filter:var(--blur-scrim)] [backdrop-filter:var(--blur-scrim)]", className)}
+	class={cn("bg-scrim fixed inset-0", prefs.tray && "[-webkit-backdrop-filter:var(--blur-scrim)] [backdrop-filter:var(--blur-scrim)]", className)}
 	{...restProps}
 />

@@ -48,7 +48,7 @@
   import Suggestion from '../flows/train/Suggestion.svelte';
   import Experience from '../flows/train/Experience.svelte';
   import { ids, type Program, type Session } from '../../shared/records';
-  const curvy = $derived(prefs.look === 'curvy');
+  const tray = $derived(prefs.tray);
 
   const profile = $derived(db.get('profile', 'profile'));
   const plans = $derived(db.live('plan'));
@@ -185,7 +185,7 @@
     {#if next}
       <!-- R2, the owner's one card with small boxes (as Today's): what is next on the featured panel with the week's ring
            and the one action, then the week on the body and in two numbers. The boxes at the card's corners nest in it -->
-      <section class="flex flex-col gap-2 {curvy ? 'bg-surface shadow-card rounded-xl p-2' : ''}" aria-label={t.train.upNext}>
+      <section class="flex flex-col gap-2 {tray ? 'bg-surface shadow-card rounded-xl p-2' : ''}" aria-label={t.train.upNext}>
         <div class="feature text-ink rounded-t-sheet {analysis?.hasExercises ? 'rounded-b-md' : 'rounded-b-sheet'} p-5 [background:var(--grad-feature)] [@media(max-height:620px)]:p-4" data-testid="train-next">
           <div class="flex items-start gap-3">
             <div class="min-w-0 flex-1">
@@ -254,7 +254,7 @@
     <!-- R2, the owner: the week takes a row, not a page. A column a day: its letter, an icon for each session (the type
          as a picture, green once done this week), the day's minutes. An icon opens its session; an empty day's plus adds
          one. Today wears the ink ring -->
-    <section class="rounded-lg p-3 pt-4 {curvy ? 'bg-surface shadow-card' : 'bg-surface-2 [&_.bg-surface-2]:bg-surface'}" aria-label={t.train.week} data-testid="train-week">
+    <section class="rounded-lg p-3 pt-4 {tray ? 'bg-surface shadow-card' : 'bg-surface-2 [&_.bg-surface-2]:bg-surface'}" aria-label={t.train.week} data-testid="train-week">
       <h2 class="text-subhead px-1">{t.train.week}</h2>
       <div class="mt-3 grid grid-cols-7 gap-1">
         {#each t.train.weekdays as dayName, d (dayName)}

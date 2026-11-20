@@ -4,6 +4,8 @@ Handoff note between contexts. Read first, update last. Keep it under one screen
 
 **R1 and R2 shipped as v2.0.0 (17 November 2026). Read `docs/HANDOFF-R2.md` first** (the owner's directions, open items, context files, tools); `docs/R2-PLAN.md` has what R2 built, page by page.
 
+**R4b, 21 November (v2.3.0):** the styles are renamed Tray (R3's look, now the default; v2.2.0's saved 'default' and 'curvy' read as Tray) and Bento (the flat one). The landing page is always Tray (`prefs.force`). Today shows a one-time card under the hero: two drawn tiles that restyle the app on a tap, Use to keep it (`prefs.stylePicked`); tests answer it unless they call `showStyleCard`.
+
 **R4, 19 and 20 November (v2.2.0): two styles, Settings > Style, at the top.** Default (new, for everyone): no card inside a card (grey boxes on a white page, a list is rows on the page), one radius 24, no glass (solid fills, a plain header bar with a hairline, no scrim blur), the selected tab a black pill, rounded rectangle controls. Curvy: R3's look exactly. Style-only differences branch on `prefs.look` (components) or `[data-look="curvy"]` (tokens.css, app.css); radii now sit in a root-only block. In both styles: session boxes keep their size after Done (time at the foot), the burn rides in the green check (counting down to its negative), exercise kcal reads negative (Today, Train's Burned), date chips centred with the dot at the foot and no fade at yesterday's edge, a dark fix for the second fact on a done box.
 
 **R3, 18 and 19 November (PR #53, v2.1.0): the owner's iPhone passes after a real tester.** The owner's calls are in memory `owner-r3-directions`; DESIGN.md and SCREENS.md still describe R2 and need bringing up to this.

@@ -28,7 +28,7 @@
   import CoachCard from '$lib/components/CoachCard.svelte';
   import { checkinFacts } from '$lib/model/coach';
   import type { CoachRequest } from '../../../shared/coach';
-  const curvy = $derived(prefs.look === 'curvy');
+  const tray = $derived(prefs.tray);
 
   // what the sheet shows is read once as it opens, so a sync arriving mid-way cannot change the numbers under the user
   let shown = $state<{ date: string; result: CheckinResult; stored?: Checkin } | null>(null);
@@ -145,7 +145,7 @@
         </div>
         <p class="text-body text-ink-2 pb-0.5" data-testid="checkin-target-rate">{t.checkin.target(num(targetRate, 1))}</p>
       </div>
-      <div class="mt-5 py-1 {curvy ? 'bg-surface shadow-card rounded-lg px-5' : ''}" data-list>
+      <div class="mt-5 py-1 {tray ? 'bg-surface shadow-card rounded-lg px-5' : ''}" data-list>
         <Row title={t.checkin.intake} caption={t.checkin.target(num(Math.round(s.meanTarget)))} value={s.meanIntake == null ? t.plan.noneYet : num(Math.round(s.meanIntake))} unit={s.meanIntake == null ? undefined : t.after.kcal} testid="checkin-intake" />
         <Row title={t.checkin.days} value={t.checkin.of(num(s.completeDays), num(s.days))} testid="checkin-days" />
         <Row title={t.checkin.weighIns} value={num(s.weighIns)} testid="checkin-weighins" />

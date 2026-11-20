@@ -1108,9 +1108,10 @@ export const en = {
   },
   loading: 'Loading',
   prefs: {
-    /** the app's style: flat (Default) or R3's cards in cards and glass (Curvy) */
+    /** the app's style: R3's cards on a tray with glass (Tray, the default) or flat boxes (Bento) */
     look: 'Style',
-    looks: { default: 'Default', curvy: 'Curvy' },
+    looks: { tray: 'Tray', bento: 'Bento' },
+    lookLines: { tray: 'Cards on a tray, with glass', bento: 'Flat boxes, no glass' },
     theme: 'Theme',
     textSize: 'Text size',
     system: 'System',
@@ -1119,6 +1120,14 @@ export const en = {
     m: 'Default',
     l: 'Large',
     xl: 'Larger',
+  },
+  /** the owner, 20 Nov: Today offers the two styles once, under the hero; a tap tries one on the spot */
+  style: {
+    eyebrow: 'New',
+    title: 'Pick your style',
+    line: 'Ontrack comes in two looks. Tap one and the app changes right away.',
+    use: (name: string) => `Use ${name}`,
+    later: 'Change it any time: tap your profile at the top right, then Settings.',
   },
   /** S1b, PRD F16 and F17: friends, profiles and the food map. Never a weight, a target, a day's total, a streak or a ranking. */
   social: {

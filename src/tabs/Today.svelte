@@ -24,6 +24,7 @@
   import ScanBarcode from '@lucide/svelte/icons/scan-barcode';
   import { t } from '$lib/i18n';
   import Card from '$lib/components/Card.svelte';
+  import StyleCard from '../flows/style/StyleCard.svelte';
   import Button from '$lib/components/Button.svelte';
   import Row from '$lib/components/Row.svelte';
   import CardHead from '$lib/components/CardHead.svelte';
@@ -59,7 +60,7 @@
   // the weigh-in flow loads on first use: it brings the onboarding limits with it
   const weighIn = (date: string) => import('../flows/log/weigh').then((m) => m.weighIn(date));
   import { ids, type Meal, type MealItem, type Session } from '../../shared/records';
-  const curvy = $derived(prefs.look === 'curvy');
+  const tray = $derived(prefs.tray);
 
   // a new device after sign in: nothing local yet, the first pull is on its way
   const bringing = $derived(!!session.user && !sync.pulled && sync.status === 'syncing');
@@ -271,7 +272,7 @@
     <!-- R2, the owner's pick (17 November): one card holding small boxes, as OneFin's Withdraw card. The haze panel leads
          with what is left; under it the three macros, then the day's session and its weigh-in, each a grey box 8 apart.
          The boxes at the card's corners take its corner less the gap (U1b) -->
-    <div {...rise(1)}><section class="flex flex-col gap-2 {curvy ? 'bg-surface shadow-card rounded-xl p-2' : ''}" aria-label={t.today.calories} data-testid="hero">
+    <div {...rise(1)}><section class="flex flex-col gap-2 {tray ? 'bg-surface shadow-card rounded-xl p-2' : ''}" aria-label={t.today.calories} data-testid="hero">
       <!-- the haze is the panel's, never the button's (DESIGN.md: no gradient on a button) -->
       <div class="haze rounded-t-sheet rounded-b-md"><button type="button" class="block w-full p-5 text-left transition-transform duration-[var(--d-press)] active:scale-[0.98] [@media(max-height:620px)]:p-4" aria-describedby="hero-how" aria-haspopup="dialog" onclick={() => (sheets.how = true)} data-testid="hero-open">
         <!-- R2, the owner: what was eaten leads (the figure the day is about), what is left beside it in the counterpart -->
@@ -377,6 +378,10 @@
          collapses or slides for a change of day; within a day, the one card and the meals come and go with motion -->
     {#key view.date}
     <div class="flex flex-col gap-3" in:fade={{ duration: dur('--d-fade') }}>
+    <!-- the owner, 20 Nov: the two styles, offered once on this device, under the hero and above the meals -->
+    {#if !prefs.stylePicked && !view.past}
+      <div out:collapse={{ leave: true }}><StyleCard /></div>
+    {/if}
     {#if checkinCard}
       <!-- U3: status cards, as Shop's order cards: the subject in the eyebrow, the status as the title, then why -->
       <div in:collapse out:collapse={{ leave: true }}><Card data-testid="checkin-card" {...rise(2)}>

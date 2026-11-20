@@ -10,7 +10,7 @@
   import { t } from '$lib/i18n';
   import { weekdayOf } from '$lib/model/dates';
   import { reducedMotion } from '$lib/haptics';
-  const curvy = $derived(prefs.look === 'curvy');
+  const tray = $derived(prefs.tray);
 
   let {
     days,
@@ -76,7 +76,7 @@
 
 {#snippet cell(d: { date: string; onTrack: boolean }, picked: boolean, isToday: boolean)}
   <span
-    class="text-caption relative mx-0.5 grid h-16 content-center gap-1 [@media(max-height:620px)]:h-12 [@media(max-height:620px)]:gap-0.5 justify-items-center {curvy ? 'rounded-md' : 'rounded-sm'}
+    class="text-caption relative mx-0.5 grid h-16 content-center gap-1 [@media(max-height:620px)]:h-12 [@media(max-height:620px)]:gap-0.5 justify-items-center {tray ? 'rounded-md' : 'rounded-sm'}
       {picked ? 'bg-ink text-canvas' : isToday ? 'ring-ink text-ink-2 ring-2 ring-inset group-enabled:group-active:bg-surface-2' : 'text-ink-2 group-enabled:group-active:bg-surface-2'}"
   >
     {t.week.letters[weekdayOf(d.date)]}

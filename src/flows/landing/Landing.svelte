@@ -19,6 +19,7 @@
   import { C } from '$lib/model/engine';
   import { SOURCES } from '$lib/data/sources';
   import { today, yearOf } from '$lib/model/dates';
+  import { onMount } from 'svelte';
   import { prefs } from '$lib/prefs.svelte';
   import { interactive, lean } from './glass';
   import { followEdges } from './edge';
@@ -28,6 +29,7 @@
   import Footer from './Footer.svelte';
   import Phone from './Phone.svelte';
   import { inview, live, onscreen } from './inview';
+
     import todayShot from './shots/today.webp';
   import photoShot from './shots/photo.webp';
   import scanShot from './shots/scan.webp';
@@ -39,6 +41,10 @@
   import mapShot from './shots/map.webp';
   import mark from '../../../design/brand/mark.svg?raw';
   import './landing.css';
+
+  // the owner, 20 Nov: the landing page is always Tray (its glass, its corners), whatever style the visitor picked in the app
+  // onMount, not an effect: forcing reads the style back, and an effect would track that and run again
+  onMount(() => { prefs.force('tray'); return () => prefs.force(null); });
 
   const L = t.landing;
 

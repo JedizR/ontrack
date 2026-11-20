@@ -49,7 +49,7 @@ These are the rules that are easy to break without noticing.
 - **No emoji.** Never type an emoji into the UI, the catalog, data or assets. Anything that needs a picture uses a real icon from the icon set. `tests/unit/invariants.test.ts` enforces it.
 - **The app icon is frozen.** `design/brand/app-icon.svg` is the only source and is never redrawn; `pnpm icons` makes the rest. See `design/brand/ICON.md`.
 - **Class names.** Never name a component class after a Tailwind utility (`block`, `flex`, `hidden`). It has bitten us before.
-- **Two styles.** Default (flat: no card in a card, one radius, no glass) and Curvy (R3), picked in Settings. A style-only difference branches on `prefs.look` or `[data-look="curvy"]`; every other change applies to both.
+- **Two styles.** Tray (the default, R3's cards on a tray with glass) and Bento (flat: no card in a card, one radius, no glass), picked in Settings or on Today's one-time card. A style-only difference branches on `prefs.tray` or `[data-look="tray"]`; every other change applies to both. The landing page is always Tray.
 
 ## Gotchas
 

@@ -9,7 +9,7 @@
   import { askCoach, type CoachAnswer } from '$lib/coach';
   import { t } from '$lib/i18n';
   import type { CoachRequest } from '../../../shared/coach';
-  const curvy = $derived(prefs.look === 'curvy');
+  const tray = $derived(prefs.tray);
 
   let {
     req,
@@ -41,7 +41,7 @@
 </script>
 
 {#if req}
-  <section class={plain ? '' : curvy ? 'bg-surface shadow-card rounded-lg p-5' : 'bg-surface-2 rounded-lg p-5 [&_.bg-surface-2]:bg-surface'} aria-busy={!answer} data-testid={testid}>
+  <section class={plain ? '' : tray ? 'bg-surface shadow-card rounded-lg p-5' : 'bg-surface-2 rounded-lg p-5 [&_.bg-surface-2]:bg-surface'} aria-busy={!answer} data-testid={testid}>
     {#if eyebrow}<p class="text-eyebrow text-ink-2">{eyebrow}</p>{/if}
     {#if answer}
       <div class="appear">

@@ -5,7 +5,7 @@
   import SyncMark, { type SyncState } from './SyncMark.svelte';
   import { t } from '$lib/i18n';
   import { num } from '$lib/model/format';
-  const curvy = $derived(prefs.look === 'curvy');
+  const tray = $derived(prefs.tray);
 
   let {
     title,
@@ -18,20 +18,20 @@
 
   // once content scrolls under the header it fades into the canvas below it (U1b), never a hard edge
   let scrolled = $state(false);
-  const circle = $derived(`${curvy ? 'bg-surface ' : ''}text-ink group-active:bg-surface-2 grid size-11 place-items-center rounded-full transition-[background-color,transform] duration-[var(--d-press)] group-active:scale-[0.97]`);
+  const circle = $derived(`${tray ? 'bg-surface ' : ''}text-ink group-active:bg-surface-2 grid size-11 place-items-center rounded-full transition-[background-color,transform] duration-[var(--d-press)] group-active:scale-[0.97]`);
 </script>
 
 <svelte:window onscroll={() => (scrolled = scrollY > 4)} />
 
-<!-- Default (the owner, 19 Nov): no glass. The header is a plain bar the colour of the page; once anything scrolls under
-     it, a hairline marks its foot. Curvy (R2): at rest the header is the page; once anything scrolls under it, it becomes
+<!-- Bento (the owner, 19 Nov): no glass. The header is a plain bar the colour of the page; once anything scrolls under
+     it, a hairline marks its foot. Tray (R2): at rest the header is the page; once anything scrolls under it, it becomes
      the landing page's floating glass capsule, its title moving in from 8 to 24 -->
 <header
-  class="sticky top-0 z-30 px-2 pt-[env(safe-area-inset-top)] {curvy ? '' : `bg-canvas transition-shadow duration-[var(--d-ui)] ${scrolled ? 'shadow-[0_1px_0_var(--line)]' : ''}`}"
+  class="sticky top-0 z-30 px-2 pt-[env(safe-area-inset-top)] {tray ? '' : `bg-canvas transition-shadow duration-[var(--d-ui)] ${scrolled ? 'shadow-[0_1px_0_var(--line)]' : ''}`}"
   data-scrolled={scrolled || undefined}
   data-testid="header"
 >
-  <div class="relative mt-1 flex h-[var(--header-h)] items-center gap-3 pr-1.5 {curvy ? `rounded-full transition-[background-color,box-shadow,padding] duration-[var(--d-ui)] ${scrolled ? 'liquid pl-6' : 'pl-2'}` : 'pl-2'}" data-testid="header-bar">
+  <div class="relative mt-1 flex h-[var(--header-h)] items-center gap-3 pr-1.5 {tray ? `rounded-full transition-[background-color,box-shadow,padding] duration-[var(--d-ui)] ${scrolled ? 'liquid pl-6' : 'pl-2'}` : 'pl-2'}" data-testid="header-bar">
     <h1 class="text-heading min-w-0 flex-1 truncate">{title}</h1>
     <SyncMark state={sync} />
     <!-- S1b: friends and the food map, one tap from every tab; the badge counts requests waiting for a yes -->

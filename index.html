@@ -22,7 +22,7 @@
         var t = ui.theme || 'system';
         if (t === 'system') t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
         document.documentElement.dataset.theme = t;
-        document.documentElement.dataset.look = ui.look === 'curvy' ? 'curvy' : 'default';
+        document.documentElement.dataset.look = ui.look === 'bento' ? 'bento' : 'tray';
         var lvl = ui.fontSize || 'system';
         if (lvl === 'system') {
           var pr = document.createElement('span'); pr.style.cssText = 'position:absolute;visibility:hidden;font:-apple-system-body';

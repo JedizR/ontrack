@@ -43,7 +43,7 @@
   import { weekFacts } from '$lib/model/coach';
   import type { CoachRequest } from '../../shared/coach';
   import type { Checkin } from '../../shared/records';
-  const curvy = $derived(prefs.look === 'curvy');
+  const tray = $derived(prefs.tray);
   // the weigh-in flow loads on first use, as on Today
   const weighIn = (date: string) => import('../flows/log/weigh').then((m) => m.weighIn(date));
 
@@ -223,7 +223,7 @@
          less the gap (U1b). Words on the gradients are night in both themes, as the Add sheet's composer -->
     {@const unit = metric ? t.after.kg : t.after.lb}
     {@const trending = trendNow != null && points.length > 1}
-    <section class="flex flex-col gap-2 {curvy ? 'bg-surface shadow-card rounded-xl p-2' : ''}" aria-label={SHOWS.find((x) => x.value === show)?.label} data-testid="progress-{show === 'weight' ? 'weight' : `chart-${show}`}">
+    <section class="flex flex-col gap-2 {tray ? 'bg-surface shadow-card rounded-xl p-2' : ''}" aria-label={SHOWS.find((x) => x.value === show)?.label} data-testid="progress-{show === 'weight' ? 'weight' : `chart-${show}`}">
       <div class="grid grid-cols-2 gap-2">
         <button type="button" class="text-night rounded-tl-sheet flex min-w-0 flex-col rounded-md p-5 text-left transition-transform duration-[var(--d-press)] active:scale-[0.98] [@media(max-height:620px)]:p-4 [background:var(--grad-trend)]" data-theme="light" aria-describedby="weigh-hint" onclick={() => weighIn(today)} data-testid="progress-log-weight">
           <span class="text-eyebrow text-night/70">{t.progress.weightTrend}</span>
@@ -267,7 +267,7 @@
       {/snippet}
 
       <!-- the chart, always there: with nothing to show yet it is a grey box with one line. A new range or metric draws it again -->
-      <div class={curvy ? 'px-2' : ''} data-testid="progress-chart">
+      <div class={tray ? 'px-2' : ''} data-testid="progress-chart">
         {#key `${show}${range}`}
           {#if !hasData}
             <div class="text-caption text-ink-2 bg-surface-2 grid h-[156px] place-items-center rounded-md" data-testid="chart-empty">{t.progress.noData}</div>

@@ -79,7 +79,13 @@ export async function swipeAt(page: Page, dx: number, at: { x?: number; y?: numb
 export const EMAIL = 'me@example.com';
 /** A fresh world on the mock backend for one test; two contexts in one space are two phones on one account. */
 export const space = (name: string) => `e2e-${name}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-export const useSpace = (page: Page, s: string) => page.addInitScript((v) => localStorage.setItem('ontrack:mock-space', v), s);
+// Today's one-time style card (20 Nov) is answered in every test (here and in seedAccount) unless the test asks for it
+// with showStyleCard first. Inlined: an init script runs in the page, without this file's functions.
+export const useSpace = (page: Page, s: string) => page.addInitScript((v) => {
+  localStorage.setItem('ontrack:mock-space', v);
+  if (!(window as unknown as { __styleCard?: boolean }).__styleCard) localStorage.setItem('ot-ui', JSON.stringify({ ...JSON.parse(localStorage.getItem('ot-ui') ?? '{}'), stylePicked: true }));
+}, s);
+export const showStyleCard = (page: Page) => page.addInitScript(() => { (window as unknown as { __styleCard?: boolean }).__styleCard = true; });
 
 /**
  * Sign in through the sheet with the mock's code. Opens the sheet from the avatar, or from the landing page, unless it is open.
@@ -146,6 +152,7 @@ export async function seedAccount(page: Page, o: { space?: string; email?: strin
   const signedIn = o.signedIn === false ? '' : JSON.stringify({ token: session.token, userId: session.userId, email });
   await page.addInitScript(([sp, sess]) => {
     localStorage.setItem('ontrack:mock-space', sp);
+    if (!(window as unknown as { __styleCard?: boolean }).__styleCard) localStorage.setItem('ot-ui', JSON.stringify({ ...JSON.parse(localStorage.getItem('ot-ui') ?? '{}'), stylePicked: true }));
     if (sess && !sessionStorage.getItem('ot-seeded')) {
       sessionStorage.setItem('ot-seeded', '1');
       localStorage.setItem('ontrack:mock-session', sess);

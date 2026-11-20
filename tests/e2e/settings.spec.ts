@@ -3,7 +3,7 @@
 // 2,460 kcal, 2,220 on rest days.
 import { readFileSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';
-import { MEALS, SEED, TODAY, openFresh, openSeeded, pickerSave, seedAccount } from './helpers';
+import { MEALS, SEED, TODAY, openFresh, openSeeded, pickerSave, seedAccount, showStyleCard, withPrefs } from './helpers';
 import { C } from '../../src/lib/model/engine/constants';
 
 type Seed = { collection: string; id: string; updatedAt: number; deleted?: true; data: unknown };
@@ -52,28 +52,62 @@ test('display, units, the same target every day, Thai dishes first and the check
   await expect(kcalOf(page)).toHaveText('of 2,360 kcal');
 });
 
-test('Style: Default is flat, Curvy brings back the cards in cards and the glass, and the pick survives a reload', async ({ page }) => {
+test('Style: Tray is the default (cards on a tray, glass), Bento is flat, and the pick survives a reload', async ({ page }) => {
   await openAt(page, '10:00');
   const html = page.locator('html');
   const shell = () => page.getByTestId('hero').evaluate((h) => [getComputedStyle(h).backgroundColor, getComputedStyle(h).boxShadow !== 'none']);
   const glass = () => page.getByTestId('dock').locator('nav').evaluate((n) => getComputedStyle(n).backdropFilter);
-  await expect(html).toHaveAttribute('data-look', 'default');
-  expect(await shell()).toEqual(['rgba(0, 0, 0, 0)', false]);
-  expect(await glass()).toBe('none');
-  await settings(page);
-  const style = sheet(page).getByRole('radiogroup', { name: 'Style' });
-  await style.getByRole('radio', { name: 'Curvy' }).click();
-  await expect(html).toHaveAttribute('data-look', 'curvy');
-  await close(page);
+  await expect(html).toHaveAttribute('data-look', 'tray');
   expect(await shell()).toEqual(['rgb(255, 255, 255)', true]);
   expect(await glass()).toMatch(/^blur\(/);
-  await page.reload();
-  await expect(html).toHaveAttribute('data-look', 'curvy');
-  await expect(page.getByTestId('hero')).toBeVisible();
-  expect(await shell()).toEqual(['rgb(255, 255, 255)', true]);
   await settings(page);
-  await style.getByRole('radio', { name: 'Default' }).click();
-  await expect(html).toHaveAttribute('data-look', 'default');
+  const style = sheet(page).getByRole('radiogroup', { name: 'Style' });
+  await expect(style.getByRole('radio', { name: 'Tray' })).toHaveAttribute('aria-checked', 'true');
+  await style.getByRole('radio', { name: 'Bento' }).click();
+  await expect(html).toHaveAttribute('data-look', 'bento');
+  await close(page);
+  expect(await shell()).toEqual(['rgba(0, 0, 0, 0)', false]);
+  expect(await glass()).toBe('none');
+  await page.reload();
+  await expect(html).toHaveAttribute('data-look', 'bento');
+  await expect(page.getByTestId('hero')).toBeVisible();
+  expect(await shell()).toEqual(['rgba(0, 0, 0, 0)', false]);
+  await settings(page);
+  await style.getByRole('radio', { name: 'Tray' }).click();
+  await expect(html).toHaveAttribute('data-look', 'tray');
+});
+
+test('v2.2.0 saved its style as default or curvy: both read as Tray', async ({ page }) => {
+  await withPrefs(page, { look: 'default' });
+  await openAt(page, '10:00');
+  await expect(page.locator('html')).toHaveAttribute('data-look', 'tray');
+});
+
+test('the landing page is always Tray, even for a visitor who picked Bento', async ({ page }) => {
+  await withPrefs(page, { look: 'bento' });
+  await openFresh(page);
+  await expect(page.locator('html')).toHaveAttribute('data-look', 'tray');
+  await expect.poll(() => page.getByTestId('landing').locator('header .bar-glass').evaluate((n) => getComputedStyle(n).backdropFilter)).toMatch(/^blur\(/);
+});
+
+test('Today offers the two styles once: a tap restyles the app, Use keeps it and the card does not come back', async ({ page }) => {
+  await showStyleCard(page);
+  await openAt(page, '10:00');
+  const html = page.locator('html');
+  const card = page.getByTestId('style-card');
+  await expect(card).toBeVisible();
+  await expect(card).toContainText('tap your profile at the top right, then Settings');
+  await expect(card.getByRole('radio', { name: /Tray/ })).toHaveAttribute('aria-checked', 'true');
+  await card.getByRole('radio', { name: /Bento/ }).click();
+  await expect(html).toHaveAttribute('data-look', 'bento');
+  await expect(card.getByRole('radio', { name: /Bento/ })).toHaveAttribute('aria-checked', 'true');
+  await expect(page.getByTestId('style-use')).toHaveText('Use Bento');
+  await page.getByTestId('style-use').click();
+  await expect(card).toHaveCount(0);
+  await page.reload();
+  await expect(page.getByTestId('hero')).toBeVisible();
+  await expect(page.getByTestId('style-card')).toHaveCount(0);
+  await expect(html).toHaveAttribute('data-look', 'bento');
 });
 
 test('goal and pace: the new target shows before saving and starts tomorrow; today keeps its own', async ({ page }) => {
