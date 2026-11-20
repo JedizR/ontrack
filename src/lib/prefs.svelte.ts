@@ -5,8 +5,9 @@ import type { Draft } from '../flows/onboarding/draft';
 export type Theme = 'system' | 'light' | 'dark';
 /** system follows the device text size, mapped onto one of the three levels */
 export type FontSize = 'system' | 'm' | 'l' | 'xl';
-/** the app's style: Default is flat (grey boxes on a white page, one radius, no glass); Curvy is R3's cards in cards and glass */
-export type Look = 'default' | 'curvy';
+/** the app's style (the owner, 20 Nov): Tray, the default, is R3's white cards holding grey boxes, with glass; Bento is flat
+ *  (grey boxes on a white page, one radius, no glass). v2.2.0 stored 'default' and 'curvy': both read as Tray now */
+export type Look = 'tray' | 'bento';
 export type Tab = 0 | 1 | 2;
 export const FONT_SCALE = { m: 1, l: 1.15, xl: 1.3 } as const;
 // index.html reads the same key and fields before first paint
@@ -14,10 +15,10 @@ export const PREFS_KEY = 'ot-ui';
 
 /** F23: which reminder cards Today shows, and from what time the nothing logged card does */
 export type Remind = { meal: boolean; mealAt: string; weigh: boolean; checkin: boolean; easy: boolean };
-interface Saved { theme: Theme; look: Look; fontSize: FontSize; tab: Tab; lastUser: string | null; lastEmail: string | null; draft: Draft | null; photoOk: boolean; firstDay: string | null; suggestOff: boolean; gapFolded: boolean; locationOk: boolean; remind: Remind; thai: boolean | null; liftAsked: boolean }
+interface Saved { theme: Theme; look: Look; fontSize: FontSize; tab: Tab; lastUser: string | null; lastEmail: string | null; draft: Draft | null; photoOk: boolean; firstDay: string | null; suggestOff: boolean; gapFolded: boolean; locationOk: boolean; remind: Remind; thai: boolean | null; liftAsked: boolean; stylePicked: boolean }
 const DEFAULTS: Saved = {
-  theme: 'system', look: 'default', fontSize: 'system', tab: 0, lastUser: null, lastEmail: null, draft: null, photoOk: false, firstDay: null, suggestOff: false, gapFolded: false, locationOk: false,
-  remind: { meal: true, mealAt: '13:00', weigh: true, checkin: true, easy: true }, thai: null, liftAsked: false,
+  theme: 'system', look: 'tray', fontSize: 'system', tab: 0, lastUser: null, lastEmail: null, draft: null, photoOk: false, firstDay: null, suggestOff: false, gapFolded: false, locationOk: false,
+  remind: { meal: true, mealAt: '13:00', weigh: true, checkin: true, easy: true }, thai: null, liftAsked: false, stylePicked: false,
 };
 const load = (): Saved => {
   try { return { ...DEFAULTS, ...JSON.parse(localStorage.getItem(PREFS_KEY) ?? '{}') }; }
@@ -29,8 +30,15 @@ class Prefs {
 
   get theme() { return this.#s.theme; }
   set theme(t: Theme) { this.#s.theme = t; this.#save(); applyTheme(); }
-  get look(): Look { return this.#s.look; }
+  get look(): Look { return this.#s.look === 'bento' ? 'bento' : 'tray'; }
   set look(v: Look) { this.#s.look = v; this.#save(); applyLook(); }
+  /** the style on screen: the landing page always shows Tray, whatever was picked */
+  #forced = $state<Look | null>(null);
+  get tray() { return (this.#forced ?? this.look) === 'tray'; }
+  force(v: Look | null) { this.#forced = v; applyLook(); }
+  /** Today's one-time card offering the two styles has been answered */
+  get stylePicked() { return this.#s.stylePicked; }
+  set stylePicked(v: boolean) { this.#s.stylePicked = v; this.#save(); }
   get fontSize(): FontSize { return this.#s.fontSize; }
   set fontSize(v: FontSize) { this.#s.fontSize = v; this.#save(); applyFontSize(); }
   /** the last tab is remembered per device */
@@ -91,7 +99,7 @@ export function deviceFontLevel(): 'm' | 'l' | 'xl' {
 
 /** the style on <html data-look>, as index.html sets it before first paint; the page colour can change with it */
 export function applyLook() {
-  document.documentElement.dataset.look = prefs.look;
+  document.documentElement.dataset.look = prefs.tray ? 'tray' : 'bento';
   paintTop();
 }
 

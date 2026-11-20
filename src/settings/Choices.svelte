@@ -3,7 +3,7 @@
 <script lang="ts" generics="T extends string | number">
   import { prefs } from '$lib/prefs.svelte';
   import { haptic } from '$lib/haptics';
-  const curvy = $derived(prefs.look === 'curvy');
+  const tray = $derived(prefs.tray);
 
   let { value, options, label, onchange, testid }: {
     value: T;
@@ -21,7 +21,7 @@
       type="button"
       role="radio"
       aria-checked={on}
-      class="text-callout min-h-12 min-w-0 {curvy ? 'rounded-md' : 'rounded-sm'} px-3 py-2 text-center font-semibold transition-[background-color,color] duration-[var(--d-ui)] {on ? 'bg-ink text-canvas' : 'bg-surface-2 text-ink active:bg-surface-3'}"
+      class="text-callout min-h-12 min-w-0 {tray ? 'rounded-md' : 'rounded-sm'} px-3 py-2 text-center font-semibold transition-[background-color,color] duration-[var(--d-ui)] {on ? 'bg-ink text-canvas' : 'bg-surface-2 text-ink active:bg-surface-3'}"
       onclick={() => { if (!on) { haptic(); onchange(o.value); } }}
     >{o.label}</button>
   {/each}

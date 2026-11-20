@@ -24,6 +24,8 @@
   import ScanBarcode from '@lucide/svelte/icons/scan-barcode';
   import { t } from '$lib/i18n';
   import Card from '$lib/components/Card.svelte';
+  import StyleCard from '../flows/style/StyleCard.svelte';
+  import { sessionTitle } from '$lib/session-title';
   import Button from '$lib/components/Button.svelte';
   import Row from '$lib/components/Row.svelte';
   import CardHead from '$lib/components/CardHead.svelte';
@@ -59,7 +61,7 @@
   // the weigh-in flow loads on first use: it brings the onboarding limits with it
   const weighIn = (date: string) => import('../flows/log/weigh').then((m) => m.weighIn(date));
   import { ids, type Meal, type MealItem, type Session } from '../../shared/records';
-  const curvy = $derived(prefs.look === 'curvy');
+  const tray = $derived(prefs.tray);
 
   // a new device after sign in: nothing local yet, the first pull is on its way
   const bringing = $derived(!!session.user && !sync.pulled && sync.status === 'syncing');
@@ -170,8 +172,6 @@
   /** an entry edits in its amount step, so its scoops stay true; once its supplement is gone it edits as a meal */
   const bySupplement = (m: Meal) => m.method === 'supplement' && !!m.items[0]?.supplementId && !!db.get('supplement', m.items[0].supplementId);
   const kindOf = (s: Session) => t.train.types[s.type];
-  // 19 Nov, the owner: a cardio session named only "Cardio" shows its machine ("Treadmill"), with Cardio under it, as Strength is
-  const sessionTitle = (s: Session) => (s.name === kindOf(s) && s.setup ? t.train.machines[s.setup.machine] : s.name);
   // the facts under a session: its type only when the name says something else, then minutes, then its calories (a done session's green check says Done)
   const burnOf = (s: Session) => Math.round(sessionKcal(s, day!.plan.weightKg));
   const lineOf = (s: Session, status: string | undefined) => {
@@ -271,7 +271,7 @@
     <!-- R2, the owner's pick (17 November): one card holding small boxes, as OneFin's Withdraw card. The haze panel leads
          with what is left; under it the three macros, then the day's session and its weigh-in, each a grey box 8 apart.
          The boxes at the card's corners take its corner less the gap (U1b) -->
-    <div {...rise(1)}><section class="flex flex-col gap-2 {curvy ? 'bg-surface shadow-card rounded-xl p-2' : ''}" aria-label={t.today.calories} data-testid="hero">
+    <div {...rise(1)}><section class="flex flex-col gap-2 {tray ? 'bg-surface shadow-card rounded-xl p-2' : ''}" aria-label={t.today.calories} data-testid="hero">
       <!-- the haze is the panel's, never the button's (DESIGN.md: no gradient on a button) -->
       <div class="haze rounded-t-sheet rounded-b-md"><button type="button" class="block w-full p-5 text-left transition-transform duration-[var(--d-press)] active:scale-[0.98] [@media(max-height:620px)]:p-4" aria-describedby="hero-how" aria-haspopup="dialog" onclick={() => (sheets.how = true)} data-testid="hero-open">
         <!-- R2, the owner: what was eaten leads (the figure the day is about), what is left beside it in the counterpart -->
@@ -318,10 +318,12 @@
             <div class="bg-surface-2 text-ink relative flex flex-1 {day.sessions.length > 1 ? 'min-h-14' : 'min-h-[calc(var(--s-16)+var(--s-4))]'} min-w-0 items-center gap-2 overflow-hidden rounded-md py-2 pr-2 pl-4 {i === day.sessions.length - 1 ? 'rounded-bl-sheet' : ''} [@media(max-height:620px)]:py-1" style={inked(s.key, status) ? '--ink: var(--on-action); --ink-2: color-mix(in srgb, var(--on-action) 68%, transparent); --ink-3: color-mix(in srgb, var(--on-action) 56%, transparent)' : undefined} data-done={status === 'done' || undefined} data-testid="todo">
               {#if status === 'done'}<span class="bg-action absolute inset-0 {justDone?.key === s.key ? 'ink-in' : undoing?.key === s.key ? 'ink-out' : ''}" style="--x: {ink?.x ?? 0}px; --y: {ink?.y ?? 0}px" aria-hidden="true"></span>{/if}
               <div class="relative flex min-w-0 flex-1 items-center gap-1.5 self-stretch" data-testid="session-{s.key}">
-                <button type="button" class="flex min-w-0 flex-1 flex-col justify-between self-stretch rounded-sm py-1 text-left transition-opacity duration-[var(--d-press)] active:opacity-60 disabled:cursor-default" disabled={!!status} aria-label={t.today.more(sessionTitle(s))} onclick={() => (sheets.session = { date: view.date, key: s.key, name: sessionTitle(s) })} data-testid="session-more">
+                <!-- several sessions: the name at the top and the facts at the foot, so a box keeps its size after Done; one session: the
+                     name and its facts together in the middle (the owner, 21 Nov) -->
+                <button type="button" class="flex min-w-0 flex-1 flex-col {day.sessions.length > 1 ? 'justify-between' : 'justify-center'} self-stretch rounded-sm py-1 text-left transition-opacity duration-[var(--d-press)] active:opacity-60 disabled:cursor-default" disabled={!!status} aria-label={t.today.more(sessionTitle(s))} onclick={() => (sheets.session = { date: view.date, key: s.key, name: sessionTitle(s) })} data-testid="session-more">
                   <span class="text-body block truncate font-semibold">{sessionTitle(s)}</span>
                   <!-- two lines kept, the facts at their foot: when Done takes the kcal away the box keeps its size and the time drops to the bottom -->
-                  <span class="text-caption text-ink-2 flex min-h-[3em] flex-col justify-end"><Facts facts={lineOf(s, status)} /></span>
+                  <span class="text-caption text-ink-2 flex flex-col justify-end {day.sessions.length > 1 ? 'min-h-[3em]' : ''}"><Facts facts={lineOf(s, status)} /></span>
                 </button>
                 <!-- outside the block below, so it already exists when Done is tapped: only then does the check pop -->
                 {#if status === 'done'}
@@ -377,6 +379,10 @@
          collapses or slides for a change of day; within a day, the one card and the meals come and go with motion -->
     {#key view.date}
     <div class="flex flex-col gap-3" in:fade={{ duration: dur('--d-fade') }}>
+    <!-- the owner, 20 Nov: the two styles, offered once on this device, under the hero and above the meals -->
+    {#if !prefs.stylePicked && !view.past}
+      <div out:collapse={{ leave: true }}><StyleCard /></div>
+    {/if}
     {#if checkinCard}
       <!-- U3: status cards, as Shop's order cards: the subject in the eyebrow, the status as the title, then why -->
       <div in:collapse out:collapse={{ leave: true }}><Card data-testid="checkin-card" {...rise(2)}>

@@ -19,8 +19,9 @@
   import { C } from '$lib/model/engine';
   import { SOURCES } from '$lib/data/sources';
   import { today, yearOf } from '$lib/model/dates';
+  import { onMount } from 'svelte';
   import { prefs } from '$lib/prefs.svelte';
-  import { interactive, lean } from './glass';
+  import { interactive, lean, overDark } from './glass';
   import { followEdges } from './edge';
   import { sheets } from '$lib/sheets.svelte';
   import { t } from '$lib/i18n';
@@ -28,6 +29,7 @@
   import Footer from './Footer.svelte';
   import Phone from './Phone.svelte';
   import { inview, live, onscreen } from './inview';
+
     import todayShot from './shots/today.webp';
   import photoShot from './shots/photo.webp';
   import scanShot from './shots/scan.webp';
@@ -39,6 +41,11 @@
   import mapShot from './shots/map.webp';
   import mark from '../../../design/brand/mark.svg?raw';
   import './landing.css';
+
+  // the owner, 20 Nov: the landing page is always Tray (its glass, its corners), whatever style the visitor picked in the app
+  // onMount, not an effect: forcing reads the style back, and an effect would track that and run again
+  onMount(() => { prefs.force('tray'); return () => prefs.force(null); });
+  let onTrackDark = $state(false);
 
   const L = t.landing;
 
@@ -168,7 +175,7 @@
             <p class="text-caption pop" style:--d="0.75s">{L.noAccount}</p>
           </div>
         </div>
-        <div class="exit-tilt relative mx-auto w-[min(70vw,300px)] lg:w-[min(100%,300px)]">
+        <div class="exit-tilt relative mx-auto w-[min(70vw,300px)] lg:w-[min(100%,300px)]" data-phone>
           <div class="rise"><div class="float" style:--t="8s"><Phone src={todayShot} alt={L.alt.today} eager /></div></div>
           <!-- the chips float over the sky and the phone, as OneFin's "Direct pay" and "Paid" (glass-03): clear glass with
                their words over the phone's light screen, where they read in both themes (the first's icon over the
@@ -180,9 +187,10 @@
               </span>
             </div>
           </div>
-          <div class="drift absolute top-[60%] -right-[0.5%] z-10" style:--speed="0.24" aria-hidden="true">
+          <!-- 21 Nov, the owner: a little further in, and night glass with white words while the screen under it is dark -->
+          <div class="drift absolute top-[60%] right-[5%] z-10" style:--speed="0.24" aria-hidden="true">
             <div class="bob" style:--t="5.8s" style:--d="-2s" style:--spin="-2deg">
-              <span class="liquid-clear liquid-touch liquid-grow text-night fly text-callout flex rotate-[9deg] items-center gap-2 rounded-full py-1 pr-4 pl-1 font-semibold" style:--fx="120px" style:--fy="-80px" style:--fr="30deg" style:--d="0.7s" use:interactive>
+              <span class="liquid-clear liquid-touch liquid-grow fly text-callout flex rotate-[9deg] items-center gap-2 rounded-full py-1 pr-4 pl-1 font-semibold transition-[color,background-color] duration-[var(--d-ui)] {onTrackDark ? 'text-ink [--liquid-tint:var(--night)] [--liquid-tint-share:65%]' : 'text-night'}" data-theme={onTrackDark ? 'dark' : undefined} style:--fx="120px" style:--fy="-80px" style:--fr="30deg" style:--d="0.7s" use:interactive use:overDark={(d) => (onTrackDark = d)}>
                 <i class="bg-success text-night grid size-8 place-items-center rounded-full"><Check size={16} strokeWidth={3} /></i>{t.today.onTrack}
               </span>
             </div>
@@ -369,7 +377,9 @@
 
   /* MOTION.md: every recipe only when motion is welcome. With reduced motion the end state shows at once. */
   @media (prefers-reduced-motion: no-preference) {
-    .float-cta { transition: opacity 0.25s var(--ease-out), scale 0.5s var(--spring-pop), translate 0.5s var(--spring-pop); }
+    .float-cta { transition: opacity 0.25s var(--ease-out), scale 0.5s var(--spring-pop), translate 0.5s var(--spring-pop), var(--theme-ease); }
+    /* the bar eases between light and dark as the section under it changes (landing.css, --theme-ease) */
+    .bar { transition: var(--theme-ease); }
     /* the glass flows out of Sign in across the bar and back (callstack's materialize, and its container's merge) */
     .bar-glass { transition: opacity 0.2s var(--ease-out), scale 0.7s var(--spring-pop); }
 

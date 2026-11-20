@@ -23,7 +23,7 @@
   import { friends, refreshFriends, waiting } from '$lib/friends.svelte';
   import Avatar from './Avatar.svelte';
   import ProfileSheet from './ProfileSheet.svelte';
-  const curvy = $derived(prefs.look === 'curvy');
+  const tray = $derived(prefs.tray);
 
   const social = $derived(db.get('social', 'social'));
   const profile = $derived(db.get('profile', 'profile'));
@@ -60,7 +60,7 @@
 
 <Sheet bind:open={() => sheets.me, (v) => (sheets.me = v)} title={t.profile.title} layer="base" testid="me-sheet" {footer}>
   <Canvas footer>
-    <section class="flex flex-col gap-2 {curvy ? 'bg-surface shadow-card rounded-xl p-2' : ''}" aria-label={t.profile.title} data-testid="me-card">
+    <section class="flex flex-col gap-2 {tray ? 'bg-surface shadow-card rounded-xl p-2' : ''}" aria-label={t.profile.title} data-testid="me-card">
       <div class="bg-surface-2 rounded-t-sheet flex items-center gap-4 rounded-b-md p-5 [@media(max-height:620px)]:p-3" data-testid="me-head">
         <Avatar {name} local={social?.photo ?? null} size="lg" class="[@media(max-height:620px)]:size-14" />
         <div class="min-w-0 flex-1">

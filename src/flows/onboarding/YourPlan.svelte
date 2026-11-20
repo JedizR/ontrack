@@ -25,7 +25,7 @@
   import Breakdown from '../plan/Breakdown.svelte';
     import { t } from '$lib/i18n';
   import { LIMITS, START, goalWeightOf, inputOf, minGoalWeightKg, paceChoices, programOf, weightWheel, type Draft } from './draft';
-  const curvy = $derived(prefs.look === 'curvy');
+  const tray = $derived(prefs.tray);
 
   let { d, year, set, back, onsave }: {
     d: Draft;
@@ -149,9 +149,9 @@
 
     <!-- the screen's hero: the target on the haze panel, protein on a grey stat tile beneath, as the "Withdraw" card -->
     <Card hero data-testid="plan-hero" class="rise" style="--i: 0">
-      <!-- Default: onboarding's page is the gradient, so its cards are white, as the choices. Curvy: the haze panel in the
+      <!-- Bento: onboarding's page is the gradient, so its cards are white, as the choices. Tray: the haze panel in the
            white shell, its corners 40 (48 less the 8 gap), corners facing each other 24 (U1b) -->
-      <div class="p-6 {curvy ? 'haze rounded-t-sheet rounded-b-md' : 'bg-surface shadow-card rounded-md'}">
+      <div class="p-6 {tray ? 'haze rounded-t-sheet rounded-b-md' : 'bg-surface shadow-card rounded-md'}">
         <p class="text-hero" aria-hidden="true">{num(Math.round(hero.current))}</p>
         <p class="sr-only" data-testid="plan-kcal">{num(parts.total)}</p>
         <p class="text-caption text-ink-2 mt-1">{matched ? t.after.kcalTraining : t.after.kcalDay}</p>
@@ -159,7 +159,7 @@
       </div>
       <div class="mt-2 grid grid-cols-3 gap-2">
         {#each tiles as m, i (m.key)}
-          <div class="flex min-h-20 min-w-0 flex-col justify-between rounded-md px-4 pt-3 pb-4 {curvy ? 'bg-surface-2 first:rounded-bl-sheet last:rounded-br-sheet' : 'bg-surface shadow-card'}" data-testid="plan-tile-{m.key}">
+          <div class="flex min-h-20 min-w-0 flex-col justify-between rounded-md px-4 pt-3 pb-4 {tray ? 'bg-surface-2 first:rounded-bl-sheet last:rounded-br-sheet' : 'bg-surface shadow-card'}" data-testid="plan-tile-{m.key}">
             <p class="text-caption text-ink-2">{m.label}</p>
             <p class="text-subhead num" aria-hidden="true">{num(Math.round(counts[i].current))}<span class="text-caption text-ink-2 font-medium">{' '}{t.after.g}</span></p>
             <p class="sr-only" data-testid="plan-{m.key}">{num(m.g)}</p>

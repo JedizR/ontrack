@@ -3,16 +3,12 @@
      raise or a lower offers Use the new target and Keep my current target; any other outcome ends on Done. A stored
      check-in opens the same steps and ends on what was decided. -->
 <script lang="ts">
-  import { prefs } from '$lib/prefs.svelte';
   import Figure from '$lib/components/Figure.svelte';
   import Count from '$lib/components/Count.svelte';
   import { untrack } from 'svelte';
   import { toast } from 'svelte-sonner';
-  import X from '@lucide/svelte/icons/x';
-  import ChevronLeft from '@lucide/svelte/icons/chevron-left';
-  import { fade } from 'svelte/transition';
-  import { dur } from '$lib/haptics';
   import Button from '$lib/components/Button.svelte';
+  import Sheet from '$lib/components/Sheet.svelte';
   import Row from '$lib/components/Row.svelte';
   import { sheets } from '$lib/sheets.svelte';
   import { db } from '$lib/db/store.svelte';
@@ -28,7 +24,6 @@
   import CoachCard from '$lib/components/CoachCard.svelte';
   import { checkinFacts } from '$lib/model/coach';
   import type { CoachRequest } from '../../../shared/coach';
-  const curvy = $derived(prefs.look === 'curvy');
 
   // what the sheet shows is read once as it opens, so a sync arriving mid-way cannot change the numbers under the user
   let shown = $state<{ date: string; result: CheckinResult; stored?: Checkin } | null>(null);
@@ -95,9 +90,6 @@
     shown && s ? { kind: 'checkin', facts: checkinFacts({ stats: s, proposal: shown.result.proposal, goal, targetRate }), localDate: shown.date } : null,
   );
   const close = () => (sheets.checkin = null);
-  // the story takes focus as it opens, so a screen reader and the keyboard start inside it
-  let layer = $state<HTMLElement>();
-  $effect(() => { if (layer) layer.focus(); });
   function decide(decision?: 'accepted' | 'kept') {
     if (shown && !shown.stored && !decided) {
       decided = true;
@@ -109,32 +101,30 @@
   }
 </script>
 
-<svelte:window onkeydown={(e) => { if (sheets.checkin && e.key === 'Escape') close(); }} />
-
-{#if sheets.checkin && shown && s}
-  <!-- R2, the check-in as a story (Strava's Month in Sport, research/r2/strava-ia): the landing page's sky, full screen,
-       the three steps as bars at the top, Back and Close beside them, the step's action pinned at the foot. Nothing moves
-       on by itself (the owner): Next, Use or Keep, or Done -->
-  <div class="text-ink fixed inset-0 z-[60] flex flex-col [background:var(--grad-sky)]" data-theme="light" role="dialog" aria-modal="true" aria-labelledby="checkin-title" data-testid="checkin-sheet" bind:this={layer} tabindex="-1" in:fade={{ duration: dur('--d-fade') }} out:fade={{ duration: dur('--d-fade') }}>
-    <div class="mx-auto flex w-full max-w-[480px] items-center gap-2 px-3 pt-[calc(env(safe-area-inset-top)+8px)]">
-      <button type="button" class="active:bg-ink/10 grid size-11 flex-none place-items-center rounded-full transition-[opacity,background-color] duration-[var(--d-press)] {step > 0 ? '' : 'pointer-events-none opacity-0'}" aria-label={t.checkin.steps[step - 1] ?? ''} aria-hidden={step === 0} tabindex={step > 0 ? 0 : -1} onclick={() => step--} data-testid="sheet-back">
-        <ChevronLeft size={24} strokeWidth={2.25} />
-      </button>
-      <div class="flex flex-1 gap-1.5" aria-hidden="true">
-        {#each [0, 1, 2] as i (i)}<span class="h-1 flex-1 rounded-full transition-colors duration-[var(--d-ui)] {i <= step ? 'bg-ink' : 'bg-ink/15'}"></span>{/each}
-      </div>
-      <button type="button" class="active:bg-ink/10 grid size-11 flex-none place-items-center rounded-full transition-colors duration-[var(--d-press)]" aria-label={t.sheet.close} onclick={close} data-testid="checkin-close">
-        <X size={24} strokeWidth={2.25} />
-      </button>
+<!-- 21 Nov, the owner: a sheet over Today again (R1's, which reads at a glance in the app and on the landing page),
+     keeping R2's story: three bars under the title, one step at a time, Back to step back, the step's action at the foot.
+     Each step's key number sits on the landing page's sky in a panel, a card in either style. Nothing moves on by itself:
+     Next, Use or Keep, or Done. -->
+<Sheet
+  bind:open={() => !!sheets.checkin && !!shown, (v) => { if (!v) close(); }}
+  title={t.checkin.title}
+  {step}
+  layer="base"
+  testid="checkin-sheet"
+  onback={step > 0 ? () => step-- : undefined}
+  backLabel={t.checkin.steps[step - 1]}
+  {footer}
+>
+  {#if shown && s}
+    <div class="flex gap-1.5" aria-hidden="true">
+      {#each [0, 1, 2] as i (i)}<span class="h-1 flex-1 rounded-full transition-colors duration-[var(--d-ui)] {i <= step ? 'bg-ink' : 'bg-ink/15'}"></span>{/each}
     </div>
-    <div class="mx-auto w-full max-w-[480px] flex-1 overflow-y-auto px-6 pt-5">
-      <p class="text-eyebrow" id="checkin-title">{t.checkin.title}</p>
-      <p class="text-callout text-ink-2 mt-1" data-testid="checkin-step">{t.checkin.steps[step]}</p>
+    <p class="text-callout text-ink-2 mt-3" data-testid="checkin-step">{t.checkin.steps[step]}</p>
     <!-- U1c: each step rises in; the last one reveals the result, counting from today's target to the new one -->
     {#key step}
     <div class="appear">
     {#if step === 0}
-      <div class="mt-3 flex items-end justify-between gap-4">
+      <div class="text-ink mt-3 flex items-end justify-between gap-4 rounded-md p-5 [background:var(--grad-sky)]" data-theme="light">
         <div>
           {#if s.ratePctPerWeek != null}
             <p class="text-display" data-testid="checkin-rate"><Figure text={num(s.ratePctPerWeek, 1)} /></p>
@@ -145,7 +135,7 @@
         </div>
         <p class="text-body text-ink-2 pb-0.5" data-testid="checkin-target-rate">{t.checkin.target(num(targetRate, 1))}</p>
       </div>
-      <div class="mt-5 py-1 {curvy ? 'bg-surface shadow-card rounded-lg px-5' : ''}" data-list>
+      <div class="mt-2 py-1" data-list>
         <Row title={t.checkin.intake} caption={t.checkin.target(num(Math.round(s.meanTarget)))} value={s.meanIntake == null ? t.plan.noneYet : num(Math.round(s.meanIntake))} unit={s.meanIntake == null ? undefined : t.after.kcal} testid="checkin-intake" />
         <Row title={t.checkin.days} value={t.checkin.of(num(s.completeDays), num(s.days))} testid="checkin-days" />
         <Row title={t.checkin.weighIns} value={num(s.weighIns)} testid="checkin-weighins" />
@@ -160,28 +150,30 @@
         </div>
       {/if}
     {:else if f}
-      <p class="text-lead mt-3">{lead}</p>
-      <p class="text-display mt-2" data-testid="checkin-proposal"><Count value={f.main} from={current && change ? figures(current).main : 0} /></p>
-      <p class="text-caption text-ink-2 mt-1">{f.caption}</p>
-      {#if f.rest != null}<p class="text-lead num mt-3" data-testid="checkin-rest">{t.plan.onRest(num(f.rest))}</p>{/if}
+      <div class="text-ink mt-3 rounded-md p-5 [background:var(--grad-sky)]" data-theme="light">
+        <p class="text-lead">{lead}</p>
+        <p class="text-display mt-2" data-testid="checkin-proposal"><Count value={f.main} from={current && change ? figures(current).main : 0} /></p>
+        <p class="text-caption text-ink-2 mt-1">{f.caption}</p>
+        {#if f.rest != null}<p class="text-lead num mt-3" data-testid="checkin-rest">{t.plan.onRest(num(f.rest))}</p>{/if}
+      </div>
       {#if deciding}
         <p class="text-callout text-ink-2 mt-4 appear [--i:8]" data-testid="checkin-change">{change > 0 ? t.checkin.up(num(change)) : t.checkin.down(num(-change))}</p>
       {/if}
     {/if}
     </div>
     {/key}
+  {/if}
+</Sheet>
+
+{#snippet footer()}
+  {#if step < 2}
+    <Button variant="primary" size="lg" full onclick={() => step++} data-testid="checkin-next">{t.checkin.next}</Button>
+  {:else if deciding}
+    <div class="flex flex-col gap-1">
+      <Button variant="primary" size="lg" full onclick={() => decide('accepted')} data-testid="checkin-use">{t.checkin.use}</Button>
+      <Button variant="plain" size="md" full onclick={() => decide('kept')} data-testid="checkin-keep">{t.checkin.keep}</Button>
     </div>
-    <div class="mx-auto w-full max-w-[480px] px-6 pt-3 pb-[max(24px,env(safe-area-inset-bottom))]">
-    {#if step < 2}
-      <Button variant="primary" size="lg" full onclick={() => step++} data-testid="checkin-next">{t.checkin.next}</Button>
-    {:else if deciding}
-      <div class="flex flex-col gap-1">
-        <Button variant="primary" size="lg" full onclick={() => decide('accepted')} data-testid="checkin-use">{t.checkin.use}</Button>
-        <Button variant="plain" size="md" full onclick={() => decide('kept')} data-testid="checkin-keep">{t.checkin.keep}</Button>
-      </div>
-    {:else}
-      <Button variant="primary" size="lg" full onclick={() => decide()} data-testid="checkin-done">{t.checkin.done}</Button>
-    {/if}
-    </div>
-  </div>
-{/if}
+  {:else}
+    <Button variant="primary" size="lg" full onclick={() => decide()} data-testid="checkin-done">{t.checkin.done}</Button>
+  {/if}
+{/snippet}

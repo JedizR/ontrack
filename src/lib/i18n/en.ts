@@ -100,7 +100,7 @@ export const en = {
       thai: 'Search in Thai script: rice noodles, pad kee mao, boat noodles and more, each with its calories',
       supplement: 'Whey protein, two scoops with 242 ml of whole milk: 393 kcal and 55.9 g protein',
       train: 'Train: four strength sessions a week, adding 137 kcal a day on average',
-      progress: 'Progress: the weight trend at 60 kg, gaining 0.1 percent a week against a target of 0.5',
+      progress: 'Progress: the weight trend at 60 kg and 12 days on track, gaining 0.1 percent a week against a target of 0.5',
       map: 'The food map around Bangkok: photo pins with each friend\'s avatar, one with 2 more at the same spot, and Search for friends below',
       checkin: 'The weekly check-in proposing a raise to 2,560 kcal on training days and 2,320 on rest days',
     },
@@ -1108,9 +1108,10 @@ export const en = {
   },
   loading: 'Loading',
   prefs: {
-    /** the app's style: flat (Default) or R3's cards in cards and glass (Curvy) */
+    /** the app's style: R3's cards on a tray with glass (Tray, the default) or flat boxes (Bento) */
     look: 'Style',
-    looks: { default: 'Default', curvy: 'Curvy' },
+    looks: { tray: 'Tray', bento: 'Bento' },
+    lookLines: { tray: 'Cards on a tray, with glass', bento: 'Flat boxes, no glass' },
     theme: 'Theme',
     textSize: 'Text size',
     system: 'System',
@@ -1119,6 +1120,14 @@ export const en = {
     m: 'Default',
     l: 'Large',
     xl: 'Larger',
+  },
+  /** the owner, 20 Nov: Today offers the two styles once, under the hero; a tap tries one on the spot */
+  style: {
+    eyebrow: 'New',
+    title: 'Pick your style',
+    line: 'Ontrack comes in two looks. Tap one and the app changes right away.',
+    use: (name: string) => `Use ${name}`,
+    later: 'Change it any time: tap your profile at the top right, then Settings.',
   },
   /** S1b, PRD F16 and F17: friends, profiles and the food map. Never a weight, a target, a day's total, a streak or a ranking. */
   social: {

@@ -18,7 +18,7 @@
   import { t } from '$lib/i18n';
   import ExercisePicker from './ExercisePicker.svelte';
   import type { Program, Session } from '../../../shared/records';
-  const curvy = $derived(prefs.look === 'curvy');
+  const tray = $derived(prefs.tray);
 
   let { editing = $bindable(), program, weightKg }: {
     /** a copy of the session being edited, or a new one */
@@ -166,7 +166,7 @@
         </div>
       {:else}
         <!-- cardio after the lifting, one switch: its minutes, how hard, and its setup -->
-        <div class="flex flex-col gap-3 {curvy ? 'bg-surface-2 rounded-md p-4' : ''}" data-testid="session-after">
+        <div class="flex flex-col gap-3 {tray ? 'bg-surface-2 rounded-md p-4' : ''}" data-testid="session-after">
           <div class="flex min-h-11 items-center justify-between gap-3">
             <span class="text-body font-semibold">{t.train.cardioAfter}</span>
             <Switch bind:checked={after.on} label={t.train.cardioAfter} testid="session-after-on" />

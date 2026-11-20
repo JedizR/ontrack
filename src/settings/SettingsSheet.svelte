@@ -83,7 +83,7 @@
     location.href = `mailto:${import.meta.env.VITE_SUPPORT_EMAIL ?? ''}?subject=${encodeURIComponent(t.settings.reportSubject)}&body=${encodeURIComponent(body)}`;
   }
 
-  const LOOKS: { value: Look; label: string }[] = [{ value: 'default', label: t.prefs.looks.default }, { value: 'curvy', label: t.prefs.looks.curvy }];
+  const LOOKS: { value: Look; label: string }[] = [{ value: 'tray', label: t.prefs.looks.tray }, { value: 'bento', label: t.prefs.looks.bento }];
   const THEMES: { value: Theme; label: string }[] = [{ value: 'system', label: t.prefs.system }, { value: 'light', label: t.prefs.light }, { value: 'dark', label: t.prefs.dark }];
   const SIZES: { value: FontSize; label: string }[] = [{ value: 'system', label: t.prefs.system }, { value: 'm', label: t.prefs.m }, { value: 'l', label: t.prefs.l }, { value: 'xl', label: t.prefs.xl }];
   const hour = `${String(V.easyAdds.fromHour).padStart(2, '0')}:00`;
@@ -93,6 +93,7 @@
   <div><p class="text-callout text-ink-2 px-4 pt-3 pb-2 font-semibold">{title}</p>{@render body()}</div>
 {/snippet}
 {#snippet units()}<Segmented label={t.settings.units} value={profile!.units} onchange={(v) => set({ units: v })} options={[{ value: 'metric', label: t.body.metric }, { value: 'imperial', label: t.body.imperial }]} />{/snippet}
+{#snippet look()}<Segmented label={t.prefs.look} bind:value={() => prefs.look, (v) => (prefs.look = v)} options={LOOKS} />{/snippet}
 {#snippet theme()}<Segmented label={t.prefs.theme} bind:value={() => prefs.theme, (v) => (prefs.theme = v)} options={THEMES} />{/snippet}
 <!-- four sizes do not fit a segmented control at the largest text on the SE: two boxes to a line -->
 {#snippet size()}<Choices label={t.prefs.textSize} value={prefs.fontSize} onchange={(v) => (prefs.fontSize = v)} options={SIZES} testid="set-text-size" />{/snippet}
@@ -136,17 +137,13 @@
     <p class="text-callout text-danger mt-3 min-h-5" role="alert">{error}</p>
   {:else}
     <Canvas>
-      <!-- the owner, 20 Nov: the app's style first, on every device, signed in or not -->
-      <Group id="set-g-look" title={t.prefs.look}>
-        <Segmented label={t.prefs.look} bind:value={() => prefs.look, (v) => (prefs.look = v)} options={LOOKS} />
+      <!-- the owner, 20 Nov: the app's style first, on every device, signed in or not; units need a profile -->
+      <Group id="set-g-display" title={t.settings.display}>
+        {@render pick(t.prefs.look, look)}
+        {#if profile}{@render pick(t.settings.units, units)}{/if}
+        {@render pick(t.prefs.theme, theme)}
+        {@render pick(t.prefs.textSize, size)}
       </Group>
-      {#if profile}
-        <Group id="set-g-display" title={t.settings.display}>
-          {@render pick(t.settings.units, units)}
-          {@render pick(t.prefs.theme, theme)}
-          {@render pick(t.prefs.textSize, size)}
-        </Group>
-      {/if}
 
       <Group id="set-g-remind" title={t.settings.reminders} line={t.settings.remindersLine}>
         <Box title={t.settings.remindMeal} on={remind.meal} onchange={(v) => setRemind({ meal: v })} wrap testid="set-remind-meal" />

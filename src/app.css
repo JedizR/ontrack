@@ -185,14 +185,14 @@
   &::placeholder { color: var(--ink-3); }
   &:focus-visible { box-shadow: 0 0 0 2px var(--ink); }
 }
-/* The Default style (the owner, 20 Nov) has no glass: what is glass in Curvy is a plain solid fill with no blur, rim or glow.
+/* The Bento style (the owner, 20 Nov) has no glass: what is glass in Tray is a plain solid fill with no blur, rim or glow.
    `liquid` (the dock, the map's buttons, the landing bar) is the surface with a hairline, since things pass under it;
    `liquid-clear` (chips and actions over colour) is the surface alone. `--liquid-tint` tints either one. */
 .liquid, .liquid-clear {
   background-color: color-mix(in srgb, var(--liquid-tint, transparent) var(--liquid-tint-share, 0%), var(--surface));
 }
 .liquid { box-shadow: 0 0 0 1px var(--line); }
-/* Curvy: Liquid Glass. callstack/liquid-glass wraps iOS 26's UIGlassEffect: `effect` regular, clear or none, a `tintColor`,
+/* Tray: Liquid Glass. callstack/liquid-glass wraps iOS 26's UIGlassEffect: `effect` regular, clear or none, a `tintColor`,
    a `colorScheme`, `interactive`, and a container that merges nearby glass. The web version, light enough for a phone
    without a GPU: one backdrop filter per glass and no SVG filter, so nothing is redrawn while the page scrolls but the
    blur itself.
@@ -201,22 +201,22 @@
      whose words already read over what is under them (the owner)
    - both catch the light at the rim: bright at the top, faint at the foot, an inner glow at the edges
    - `--liquid-tint` tints either one, as tintColor does; `data-theme` on a glass is its colorScheme */
-[data-look="curvy"] :is(.liquid, .liquid-clear) {
+[data-look="tray"] :is(.liquid, .liquid-clear) {
   box-shadow: var(--liquid-rim), var(--shadow-liquid);
   background-color: color-mix(in srgb, var(--liquid-tint, transparent) var(--liquid-tint-share, 0%), var(--liquid-base));
 }
-[data-look="curvy"] .liquid {
+[data-look="tray"] .liquid {
   --liquid-base: var(--liquid-fill);
   -webkit-backdrop-filter: var(--liquid-blur);
   backdrop-filter: var(--liquid-blur);
 }
-[data-look="curvy"] .liquid-clear {
+[data-look="tray"] .liquid-clear {
   --liquid-base: transparent;
   -webkit-backdrop-filter: var(--liquid-clear);
   backdrop-filter: var(--liquid-clear);
 }
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  [data-look="curvy"] :is(.liquid, .liquid-clear) { --liquid-base: var(--liquid-solid); }
+  [data-look="tray"] :is(.liquid, .liquid-clear) { --liquid-base: var(--liquid-solid); }
 }
 /* U2: a row whose pressed grey runs edge to edge. In a list card (Card's `list`, 4 px above and below its rows) the first
    and last rows carry their fill 4 px further, into that padding, so the grey meets the card's edge and the card's clip
