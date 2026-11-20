@@ -231,7 +231,7 @@
           {#each TRAIN as c, i (i)}
             {@const Icon = c.icon}
             <article class="settle lean rounded-xl bg-[color-mix(in_srgb,var(--surface)_65%,var(--surface-2))] p-2 pb-8" style:--tilt="{i ? 9 : -9}deg" style:--dx="{i ? 64 : -64}px" style:--dy="110px" use:lean>
-              <div class="{c.panel} flex justify-center overflow-clip rounded-sheet px-8 pt-8 pb-8">
+              <div class="{c.panel} flex justify-center overflow-clip rounded-[calc(var(--r-xl)-var(--s-2))] px-8 pt-8 pb-8">
                 <div class="counter w-[min(100%,240px)]" style:--tilt="{i ? -6 : 6}deg"><Phone src={c.shot} alt={c.alt} /></div>
               </div>
               <div class="mt-6 flex items-center justify-between px-4">

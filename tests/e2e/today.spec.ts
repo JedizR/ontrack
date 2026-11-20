@@ -111,7 +111,7 @@ test('done keeps the training target, skip returns to rest; a past day shows its
   await open(page, '/', MEALS);
   const training = page.getByTestId('training');
   await expect(training).toContainText('Strength');
-  await expect(training).toContainText('60 min, 240 kcal'); // the type is not repeated when it is the name
+  await expect(training).toContainText('60 min, -240 kcal'); // the type is not repeated when it is the name; ui-flat: a burn reads negative
   await expect(page.getByTestId('day-kind')).toHaveText('Training day');
   await training.getByTestId('session-done').click();
   await expect(training.getByTestId('session-tick')).toBeVisible(); // R2: the green check says done

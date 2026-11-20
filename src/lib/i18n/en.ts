@@ -1108,6 +1108,9 @@ export const en = {
   },
   loading: 'Loading',
   prefs: {
+    /** the app's style: flat (Default) or R3's cards in cards and glass (Curvy) */
+    look: 'Style',
+    looks: { default: 'Default', curvy: 'Curvy' },
     theme: 'Theme',
     textSize: 'Text size',
     system: 'System',

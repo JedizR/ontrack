@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Drawer as DrawerPrimitive } from "vaul-svelte";
 	import { cn } from "$lib/utils.js";
+	import { prefs } from "$lib/prefs.svelte";
 
 	let {
 		ref = $bindable(null),
@@ -12,6 +13,6 @@
 <DrawerPrimitive.Overlay
 	bind:ref
 	data-slot="drawer-overlay"
-	class={cn("bg-scrim fixed inset-0 [-webkit-backdrop-filter:var(--blur-scrim)] [backdrop-filter:var(--blur-scrim)]", className)}
+	class={cn("bg-scrim fixed inset-0", prefs.look === "curvy" && "[-webkit-backdrop-filter:var(--blur-scrim)] [backdrop-filter:var(--blur-scrim)]", className)}
 	{...restProps}
 />

@@ -127,8 +127,8 @@ async function checkAll(page: Page, dir: string) {
   await page.goto('/');
   await expect(page.getByTestId('landing')).toBeVisible();
   await checkPage(page, 'landing', dir);
-  // L4: the bar's glass is one plain blur, no SVG filter (speed, DECISIONS L4)
-  expect(await page.getByTestId('landing').locator('header .bar-glass').evaluate((n) => getComputedStyle(n).backdropFilter)).toMatch(/^blur\(\d+px\) saturate/);
+  // ui-flat: no glass anywhere, so the bar blurs nothing
+  expect(await page.getByTestId('landing').locator('header .bar-glass').evaluate((n) => getComputedStyle(n).backdropFilter)).toBe('none');
   await page.getByTestId('landing-signin').click();
   await expect(page.getByTestId('signin-sheet')).toHaveCSS('transform', 'none');
   await expect(page.getByTestId('signin-send')).toBeInViewport({ ratio: 1 });

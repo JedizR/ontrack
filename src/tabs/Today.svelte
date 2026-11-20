@@ -59,6 +59,7 @@
   // the weigh-in flow loads on first use: it brings the onboarding limits with it
   const weighIn = (date: string) => import('../flows/log/weigh').then((m) => m.weighIn(date));
   import { ids, type Meal, type MealItem, type Session } from '../../shared/records';
+  const curvy = $derived(prefs.look === 'curvy');
 
   // a new device after sign in: nothing local yet, the first pull is on its way
   const bringing = $derived(!!session.user && !sync.pulled && sync.status === 'syncing');
@@ -172,9 +173,11 @@
   // 19 Nov, the owner: a cardio session named only "Cardio" shows its machine ("Treadmill"), with Cardio under it, as Strength is
   const sessionTitle = (s: Session) => (s.name === kindOf(s) && s.setup ? t.train.machines[s.setup.machine] : s.name);
   // the facts under a session: its type only when the name says something else, then minutes, then its calories (a done session's green check says Done)
+  const burnOf = (s: Session) => Math.round(sessionKcal(s, day!.plan.weightKg));
   const lineOf = (s: Session, status: string | undefined) => {
     if (status === 'skipped') return [t.today.skippedLine];
-    const end = status === 'done' ? undefined : t.after.kcalN(num(Math.round(sessionKcal(s, day!.plan.weightKg))));
+    // ui-flat, the owner: exercise kcal is a burn, so it reads negative; once done it moves into the check
+    const end = status === 'done' ? undefined : t.after.kcalN(num(-burnOf(s)));
     return [sessionTitle(s) !== kindOf(s) && kindOf(s), t.after.minN(num(s.minutes)), end];
   };
   // R2: a meal logged while Today is open lands with a short violet glow, so the eye finds it (not on first paint)
@@ -268,7 +271,7 @@
     <!-- R2, the owner's pick (17 November): one card holding small boxes, as OneFin's Withdraw card. The haze panel leads
          with what is left; under it the three macros, then the day's session and its weigh-in, each a grey box 8 apart.
          The boxes at the card's corners take its corner less the gap (U1b) -->
-    <div {...rise(1)}><section class="bg-surface shadow-card flex flex-col gap-2 rounded-xl p-2" aria-label={t.today.calories} data-testid="hero">
+    <div {...rise(1)}><section class="flex flex-col gap-2 {curvy ? 'bg-surface shadow-card rounded-xl p-2' : ''}" aria-label={t.today.calories} data-testid="hero">
       <!-- the haze is the panel's, never the button's (DESIGN.md: no gradient on a button) -->
       <div class="haze rounded-t-sheet rounded-b-md"><button type="button" class="block w-full p-5 text-left transition-transform duration-[var(--d-press)] active:scale-[0.98] [@media(max-height:620px)]:p-4" aria-describedby="hero-how" aria-haspopup="dialog" onclick={() => (sheets.how = true)} data-testid="hero-open">
         <!-- R2, the owner: what was eaten leads (the figure the day is about), what is left beside it in the counterpart -->
@@ -312,25 +315,28 @@
         <div class="col-span-2 flex min-w-0 flex-col gap-2" aria-label={t.today.upNext} data-testid="training">
           {#each day.sessions as { session: s, status }, i (s.key)}
             {@const ink = (justDone?.key === s.key ? justDone : undoing?.key === s.key ? undoing : null)}
-            <div class="bg-surface-2 text-ink relative flex flex-1 {day.sessions.length > 1 ? 'min-h-14' : 'min-h-[calc(var(--s-16)+var(--s-4))]'} min-w-0 items-center gap-2 overflow-hidden rounded-md py-2 pr-2 pl-4 {i === day.sessions.length - 1 ? 'rounded-bl-sheet' : ''} [@media(max-height:620px)]:py-1" style={inked(s.key, status) ? '--ink: var(--on-action); --ink-2: color-mix(in srgb, var(--on-action) 68%, transparent)' : undefined} data-done={status === 'done' || undefined} data-testid="todo">
+            <div class="bg-surface-2 text-ink relative flex flex-1 {day.sessions.length > 1 ? 'min-h-14' : 'min-h-[calc(var(--s-16)+var(--s-4))]'} min-w-0 items-center gap-2 overflow-hidden rounded-md py-2 pr-2 pl-4 {i === day.sessions.length - 1 ? 'rounded-bl-sheet' : ''} [@media(max-height:620px)]:py-1" style={inked(s.key, status) ? '--ink: var(--on-action); --ink-2: color-mix(in srgb, var(--on-action) 68%, transparent); --ink-3: color-mix(in srgb, var(--on-action) 56%, transparent)' : undefined} data-done={status === 'done' || undefined} data-testid="todo">
               {#if status === 'done'}<span class="bg-action absolute inset-0 {justDone?.key === s.key ? 'ink-in' : undoing?.key === s.key ? 'ink-out' : ''}" style="--x: {ink?.x ?? 0}px; --y: {ink?.y ?? 0}px" aria-hidden="true"></span>{/if}
-              <div class="relative flex min-w-0 flex-1 items-center gap-2" data-testid="session-{s.key}">
-                <button type="button" class="min-w-0 flex-1 rounded-sm py-1 text-left transition-opacity duration-[var(--d-press)] active:opacity-60 disabled:cursor-default" disabled={!!status} aria-label={t.today.more(sessionTitle(s))} onclick={() => (sheets.session = { date: view.date, key: s.key, name: sessionTitle(s) })} data-testid="session-more">
+              <div class="relative flex min-w-0 flex-1 items-center gap-1.5 self-stretch" data-testid="session-{s.key}">
+                <button type="button" class="flex min-w-0 flex-1 flex-col justify-between self-stretch rounded-sm py-1 text-left transition-opacity duration-[var(--d-press)] active:opacity-60 disabled:cursor-default" disabled={!!status} aria-label={t.today.more(sessionTitle(s))} onclick={() => (sheets.session = { date: view.date, key: s.key, name: sessionTitle(s) })} data-testid="session-more">
                   <span class="text-body block truncate font-semibold">{sessionTitle(s)}</span>
-                  <span class="text-caption text-ink-2 block"><Facts facts={lineOf(s, status)} /></span>
+                  <!-- two lines kept, the facts at their foot: when Done takes the kcal away the box keeps its size and the time drops to the bottom -->
+                  <span class="text-caption text-ink-2 flex min-h-[3em] flex-col justify-end"><Facts facts={lineOf(s, status)} /></span>
                 </button>
                 <!-- outside the block below, so it already exists when Done is tapped: only then does the check pop -->
                 {#if status === 'done'}
-                  <span class="bg-success text-night relative grid size-7 flex-none place-items-center rounded-full transition-[opacity,scale] duration-[var(--d-press)] {undoing?.key === s.key ? 'scale-50 opacity-0' : ''}" in:pop data-testid="session-tick">
+                  <!-- ui-flat, the owner: the burn rides in the check, counting down from 0 to its negative as the check pops -->
+                  <span class="bg-success text-night relative flex h-7 flex-none items-center gap-0.5 rounded-full pr-1 pl-2.5 transition-[opacity,scale] duration-[var(--d-press)] {undoing?.key === s.key ? 'scale-50 opacity-0' : ''}" in:pop data-testid="session-tick">
+                    <span class="text-caption num font-semibold" data-testid="session-burn"><Count value={-burnOf(s)} from={justDone?.key === s.key ? 0 : undefined} format={(v) => num(Math.round(v) || 0)} /></span>
                     <Check size={17} strokeWidth={3.5} aria-hidden="true" />
                     {#if justDone?.key === s.key}<Burst />{/if}
                   </span>
                   <!-- where Done was, the same size: Undo on a grey that sits on the ink -->
-                  <Button variant="on-ink" size="sm" class="min-w-[4.5rem]" disabled={undoing?.key === s.key} onclick={(e: MouseEvent) => undoDone(e, s)} data-testid="session-undo">{t.today.undo}</Button>
+                  <Button variant="on-ink" size="sm" disabled={undoing?.key === s.key} onclick={(e: MouseEvent) => undoDone(e, s)} data-testid="session-undo">{t.today.undo}</Button>
                 {:else if status}
                   <Button variant="plain" size="sm" onclick={() => clearSessionLog(view.date, s.key)} data-testid="session-undo">{t.today.undo}</Button>
                 {:else}
-                  <Button variant="primary" size="sm" class="min-w-[4.5rem]" onclick={(e: MouseEvent) => markDone(e, s)} data-testid="session-done">{t.today.done}</Button>
+                  <Button variant="primary" size="sm" onclick={(e: MouseEvent) => markDone(e, s)} data-testid="session-done">{t.today.done}</Button>
                 {/if}
               </div>
             </div>
@@ -345,7 +351,7 @@
         <!-- 19 Nov, the owner: the weigh-in as the sessions are: once weighed the box turns the action's ink (spread from its
              button when it happens here) with the filled green check centred above the weight, and Edit under the words;
              before, the grey box with Add -->
-        <div class="bg-surface-2 text-ink rounded-br-sheet relative flex min-h-[calc(var(--s-16)+var(--s-4))] min-w-0 flex-col items-center justify-center gap-2 overflow-hidden rounded-md px-2 py-3 text-center [@media(max-height:620px)]:gap-0.5 [@media(max-height:620px)]:py-1.5" style={weighedOn && !weighLate ? '--ink: var(--on-action); --ink-2: color-mix(in srgb, var(--on-action) 68%, transparent)' : undefined} data-done={!!weighedOn || undefined} data-testid="weigh-card">
+        <div class="bg-surface-2 text-ink rounded-br-sheet relative flex min-h-[calc(var(--s-16)+var(--s-4))] min-w-0 flex-col items-center justify-center gap-2 overflow-hidden rounded-md px-2 py-3 text-center [@media(max-height:620px)]:gap-0.5 [@media(max-height:620px)]:py-1.5" style={weighedOn && !weighLate ? '--ink: var(--on-action); --ink-2: color-mix(in srgb, var(--on-action) 68%, transparent); --ink-3: color-mix(in srgb, var(--on-action) 56%, transparent)' : undefined} data-done={!!weighedOn || undefined} data-testid="weigh-card">
           {#if weighedOn}<span class="bg-action absolute inset-0 {weighJust ? 'ink-in' : ''}" style="--x: 50%; --y: 80%" aria-hidden="true"></span>{/if}
           <!-- under 620 high (the SE with toolbars) the check sits beside the weight and the second line goes, so the card stays whole -->
           <span class="relative flex min-w-0 flex-col items-center [@media(max-height:620px)]:flex-row [@media(max-height:620px)]:gap-1.5">
