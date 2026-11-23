@@ -1,6 +1,8 @@
 # Feature research for Ontrack: Cal AI, Strava, Alma
 
-Researched on 15 Nov 2026 with the Mobbin MCP (iOS captures), then re-cut for Ontrack; Bevel was added on 16 Nov (section 6). The first pass listed 107 features the three apps ship, with how each works. This version filters them through what Ontrack is, keeps the ones that fit with their status, and lists the rest in their own section with the reason they are not taken. Everything marked **Built, R1** is on the branch `app-research-onboarding-polish`, for the owner to review and keep or roll back.
+Researched on 15 Nov 2026 with the Mobbin MCP (iOS captures), then re-cut for Ontrack; Bevel was added on 16 Nov (section 5). The first pass listed 107 features the three apps ship, with how each works. This version filters them through what Ontrack is, keeps the ones that fit with their status, and lists the rest in their own section with the reason they are not taken. Everything marked **Built, R1** is on the branch `app-research-onboarding-polish`, for the owner to review and keep or roll back.
+
+> **Status, 22 Nov 2026 (v2.3.0).** This is research from 15 and 16 Nov. Its Status cells (Has, Built R1, Next, Owner call) are R1's: R1 shipped with R2 as v2.0.0 on 17 Nov, and the branch it names is merged. Later rounds (R2 to R4b) removed some of what R1 built and added things the research did not list. Section 4 gives where every feature taken stands today; trust it over a Status cell. What Ontrack is now is in `docs/PRD.md`.
 
 ## 1. What Ontrack is (the filter)
 
@@ -144,33 +146,40 @@ Researched on 15 Nov 2026 with the Mobbin MCP (iOS captures), then re-cut for On
 | TR7 | Route builder | Training | Strava | Maps tab: map with Length, Elevation, Surface, Difficulty filters; "Create Route": tap points and the line snaps to roads, with undo, distance, elevation, est. time, a profile chart and "74% Paved"; Save; a saved route offers Offline, Edit, Start. | Routes are a map product; out of scope for a calorie and lifting tracker. |
 | TR9 | Segments and PRs | Training | Strava | A Results card lists segments with a PR medal, time and pace ("Got Wood? 3:09, 5:56 /km"). | Set PRs need set by set logging (PRD "later"). |
 
-## 4. What this branch built from the research
+## 4. Status (v2.3.0)
 
-- **G3 Goal chips by category.** Goal weight is a dedicated section, with the pace and what to expect.
-- **T16 Edit a goal number on its own screen.** Goal weight edits on its own wheel; targets change through the weekly check-in, by design.
-- **P11 Goal reached banner.** The goal weight card reads "Reached" in neutral ink. No banner, no confetti.
-- **N2 Tab badges.** A bell on every tab with a red dot while anything is unread; it holds the starting checklist (moved off Today), the check-in and the weigh-in prompt. In-app only, nothing pushed.
-- **O6 Goal, then desired weight, then speed slider.** Goal weight is its own section on Your plan with the day the pace reaches it ("About 3 Feb"), and its own card on Progress. The pace stays a segmented control with only the paces the guardrails allow.
-- **O14 Fake wait: percent counter and ticking checklist.** About 4 s: a percent ring and five rows that tick, then a check. Plays under reduced motion too (pacing is not motion).
-- **O15 Plan reveal.** Target counts up from zero over 1.4 s, with protein, carbs and fat counting in behind; goal weight and its date below; the working behind the number is in closed disclosures.
-- **S6 Result with thumbs and Fix Issue.** Review has Something off? with a field; the numbers are re-read from the photo or words plus your sentence. No thumbs (no feedback loop behind them).
-- **S7 AI fix: type what is wrong, numbers recalculate.** The owner's example: "It was brown rice, 2 eggs" re-reads the photo or description with that note and replaces items, grams and numbers; a second sentence adds to the first. Food table values still win over the model's.
-- **S9 Speak or type a meal.** Speak in Describe, then Find the foods.
-- **T5 Log Food with tabs.** Search, Recent, Describe and Saved meals; Describe has a mic where the browser can listen.
-- **T8 My meals: combine foods.** A bookmark on the Meal sheet saves or unsaves it; a Saved meals sheet lists them with swipe to delete. Creating one from scratch is Next.
-- **T12 Composer with Track and Ask.** Speak or type in Describe. The Ask tab is out (see excluded).
-- **S1 One camera.** Barcode, Meal and Label in the Scan sheet's viewfinder, with Take photo.
-- **R1 Notification inbox, R4 Goal card, R6 Disclosures, R7 Soft Continue, R8 Sliding day strip** (above).
+Where each feature taken in R1, each item listed as next, and each Bevel feature stands in the app today (22 Nov 2026), checked against the code. In the app: shipped and live. Removed: shipped, then taken out on purpose. Not built: never built. The Status columns in sections 2 and 5 are R1's and are not updated.
 
-## 5. Next, in the order Sonnet would take them
+| # | Feature | Now | Where it is, or why not |
+| --- | --- | --- | --- |
+| G3, T16, P11 | Goal weight as its own section, edited on its own wheel, "Reached" without a banner | In the app | A step in onboarding for lose and gain, a row on Your plan, and a Goal box and card on Progress (PRD F25). "Reached" reads in neutral ink |
+| O6, O15 | Goal weight, pace and the plan reveal | In the app, changed | The target counts up with protein, carbs and fat; the pace is a segmented control of the paces the guardrails allow. The day the pace reaches the goal ("About 3 Feb") was not kept |
+| O14 | Fake wait: percent counter and ticking rows | In the app | "Building your plan" plays once and always, even under reduced motion |
+| N2, R1 | Bell, tab badges and notification inbox | Removed (R2) | A waiting check-in is a card on Today and a dot on the Progress tab. There is no bell and no notice store |
+| S6, S7 | Something off? re-reads the photo or words with a sentence | In the app | In Review for photos and descriptions. No thumbs |
+| S9 | Speak a meal | In the app | The mic on the Add field and Speak in Describe, where the browser can listen |
+| T5, T12 | Log Food with tabs, the composer | In the app, reshaped | The plus is one sheet: whey and creatine on top, the camera, the Describe field, Photos, Search, Quick add, then Recent and Saved. The Ask tab stayed out |
+| T8 | Saved meals | In the app, partly | A bookmark on the Meal sheet and Save meal in Review; a Saved meals sheet with swipe to delete. Creating one from scratch is not built |
+| S1 | One camera for Meal, Label and barcode | In the app, extended | The plus opens it at once, a barcode is read in any mode, no guide frames |
+| R4 | Goal card | In the app | The Goal box and a goal card with a track; Clear is on the wheel |
+| R6 | Disclosures for secondary information | In the app | On Your plan, and on Progress for maintenance and week by week |
+| R7 | A not-yet Continue that still answers | In the app | The choices shake, with a buzz |
+| R8 | Sliding day strip with Today pinned | In the app, changed | One-letter days, six slots, eight weeks back. The weigh-in is a box in Today's card, not a standing card |
+| O20, O29 | A guided first meal, a first-meal moment | Not built | Today's "Log your first meal" row is the quiet version: no pulse, no celebration |
+| T13 | Meals grouped by time | Not built | Meals are newest first |
+| R3 | Weight changes table | In part | A 7 day box and the change over the range on Progress; no table of 3, 7, 14, 30 and 90 days |
+| S2 | Flash and zoom | In part | The light shows where the camera has one; zoom is not built |
+| O30, S5, M4, R5 | Coach marks, pre-scan tips, badges, milestones | Not built | Owner calls that were never made |
+| B1 to B6 | Strength log set by set, rest timer, values from last time, how was the workout, workout summary, closing saves what was done | Removed (R3) | The owner's call, 18 Nov: Ontrack is a calorie tracker first. Every session is marked Done, with no workout sheet, timer or set logging (PRD F26). Old set data stays readable but unused |
+| B7 | Primary muscles of an exercise | In the app | Muscle chips and primary muscles in the exercise picker. Train also has a muscle map (R2, from MIT-licensed body data), which B18 had ruled out |
+| B8 | Best lifts per exercise | Removed (R3) | It needed set logging |
+| B9 | Review date row | In the app | "Eaten at" under the meal's name |
+| B10 | Photo and a sentence in one sheet | In the app | Something off? (S6) |
+| B11 | Metric or imperial as a question | In the app | Metric first on Height and weight, imperial one tap away |
 
-1. **O20 and O29 A guided first meal** on Today, quiet, no count.
-2. **T13 Meals grouped by time** on Today.
-3. **R3 Weight changes** on Progress.
-4. **T8 Create a saved meal from scratch.**
-5. **S2 Flash and zoom** on the camera.
+Not taken in sections 3 and 5, but overtaken: an AI that answers questions (S10, C1, C2, B15). Ontrack has an AI coach since R2, built to explain and never to decide: a week recap, Ask Ontrack about your own logged weeks, "why this target" in the check-in, protein suggestions on Today, and Adjust with AI for the program (PRD F24). Where a row in this file says "PRD later" for set by set logging, read removed, not postponed.
 
-## 6. Bevel (added 16 Nov)
+## 5. Bevel (added 16 Nov)
 
 Bevel is an all-in-one health app built on Apple Health and a Watch. Everything that needs an OS connection (Apple Health, Watch, sleep, recovery, strain, heart rate, HRV, SpO2, temperature, blood pressure, glucose, push) is cut: Ontrack is a phone browser and will not pay for an Apple developer account. What is left is its strength log and its food review.
 

@@ -1,5 +1,5 @@
 // A plan turned into the numbers a screen shows: the day's target and the lines that sum to it.
-import { calorieBand, calorieStatus, dayMacros, dayTarget, floorFor, rawTarget, tdeeAvg, weeklyEee, U, V, type CalorieMode, type PlanNumbers, type Sex } from '$lib/model/engine';
+import { calorieBand, calorieStatus, dayCounts, dayMacros, dayTarget, floorFor, rawTarget, sessionKcal, tdeeAvg, weeklyEee, U, V, type CalorieMode, type PlanNumbers, type Sex } from '$lib/model/engine';
 import { daysBetween, weekdayOf } from '$lib/model/dates';
 import type { Meal, MealItem, Plan, Session, SessionLog } from '../../../shared/records';
 
@@ -76,7 +76,10 @@ export function dayView({ plan, sex, mode, date, sessions, logs, meals }: DayInp
   const today = (plan.sessions ?? sessions).filter((s) => s.weekday === weekday);
   const status = (key: string) => logs.find((l) => l.date === date && l.sessionKey === key)?.status;
   const skipped = today.length > 0 && today.every((s) => status(s.key) === 'skipped');
-  const eee = mode === 'even' ? evenEee(plan) : skipped ? 0 : plan.eeeByWeekday[weekday];
+  // R5: an activity added on the day adds its own energy, in either mode, to that day only
+  const extras = logs.filter((l) => l.date === date && l.extra).map((l) => l.extra!);
+  const added = extras.reduce((a, s) => a + sessionKcal(s, plan.weightKg), 0);
+  const eee = (mode === 'even' ? evenEee(plan) : skipped ? 0 : plan.eeeByWeekday[weekday]) + added;
   const target = targetWith(plan, sex, eee);
   const eaten = totals(meals.flatMap((m) => m.items));
   return {
@@ -86,8 +89,10 @@ export function dayView({ plan, sex, mode, date, sessions, logs, meals }: DayInp
     macros: dayMacros(plan, target),
     eaten,
     status: calorieStatus(plan.goal, eaten.kcal, target, sex),
-    training: today.length > 0 && !skipped,
-    sessions: today.map((s) => ({ session: s, status: status(s.key) })),
+    /** R5: the day counts toward consistency (in the band, or past it in the goal's direction) */
+    counts: dayCounts(plan.goal, eaten.kcal, target, sex),
+    training: (today.length > 0 && !skipped) || extras.length > 0,
+    sessions: [...today.map((s) => ({ session: s, status: status(s.key) })), ...extras.map((s) => ({ session: s, status: 'done' as const, extra: true }))],
   };
 }
 

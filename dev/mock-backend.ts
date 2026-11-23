@@ -10,6 +10,9 @@ import { mealSchema, recSchema, socialSchema, type Rec } from '../shared/records
 import { SEARCH_MAX, SHARED_MAX, type Friend, type Person, type SharedMeal } from '../src/lib/backend/types.ts';
 import { analyze } from '../server/handlers/analyze.ts';
 import { coach } from '../server/handlers/coach.ts';
+import { billing } from '../server/handlers/billing.ts';
+import { FREE, FREE_AI_PER_DAY, TRIAL_DAYS, type Billing } from '../shared/plans.ts';
+import type { StripeCall } from '../server/stripe.ts';
 import { envInt } from '../server/env.ts';
 import { fixture, isFixture, mockProvider } from '../server/vision/mock.ts';
 import { mockCoach } from '../server/coach/mock.ts';
@@ -33,7 +36,8 @@ type Row = { userId: string; rec: Rec; ts: number };
 type Published = { profiles: Map<string, Person & { showProgram: boolean }>; programs: Map<string, unknown>; shared: Map<string, SharedMeal>; friends: Map<string, { requester: string; addressee: string; accepted: boolean; yesAt?: number }> };
 /** vision: the fixture every analysis returns until cleared; ai: analyses per user and day, aiFrom where a count starts.
  * thumbs are keyed by storage path, `<userId>/<name>.jpg` */
-type Space = Published & { demo: boolean; epoch: number; rows: Map<string, Row>; thumbs: Map<string, ArrayBuffer>; lastTs: number; vision: string | null; ai: Map<string, number>; aiFrom: number };
+/** billing (R5): each user's plan; `pro` is the plan of a user with none yet (tests seed Pro, the dev server starts free) */
+type Space = Published & { demo: boolean; epoch: number; rows: Map<string, Row>; thumbs: Map<string, ArrayBuffer>; lastTs: number; vision: string | null; ai: Map<string, number>; aiFrom: number; billing: Map<string, Billing>; pro: boolean };
 type Token = { u: string; e: string; ep: number; s: string };
 
 const json = (status: number, body: unknown, headers: Record<string, string> = {}) =>
@@ -54,6 +58,7 @@ const emailBody = z.object({ email: z.email() });
 const verifyBody = z.object({ email: z.email(), code: z.string() });
 const pushBody = z.object({ records: z.array(recSchema).check(z.maxLength(100)) });
 const pullBody = z.object({ after: z.nullable(z.string()), inclusive: z.optional(z.boolean()), limit: z.int().check(z.gte(1), z.lte(PAGE_MAX)) });
+const planBody = z.object({ pro: z.boolean() });
 const visionBody = z.object({ fixture: z.optional(z.nullable(z.string())), used: z.optional(z.int().check(z.gte(0))) });
 const handleBody = z.object({ handle: z.string() });
 const searchBody = z.object({ prefix: z.string() });
@@ -63,6 +68,22 @@ const boxBody = z.object({ south: z.number(), west: z.number(), north: z.number(
 const publishable = (r: Rec) =>
   r.deleted || (r.collection === 'social' ? socialSchema.safeParse(r.data).success : r.collection !== 'meal' || mealSchema.shape.share.safeParse((r.data as { share?: unknown }).share).success);
 const round = (n: number, places: number) => Math.round(n * 10 ** places) / 10 ** places;
+
+const planOf = (space: Space, userId: string): Billing => space.billing.get(userId) ?? (space.pro ? { tier: 'pro' } : FREE);
+/** Stripe in memory (R5): Checkout comes straight back paid, as the 0 THB preview does, into the trial. Only the calls server/handlers/billing.ts makes. */
+function fakeStripe(space: Space, userId: string): StripeCall {
+  const sub = (interval: string, cancel = false) => ({
+    id: `sub_mock_${userId}`, status: 'trialing', customer: `cus_mock_${userId}`, cancel_at_period_end: cancel,
+    items: { data: [{ current_period_end: Math.floor(Date.now() / 1000) + TRIAL_DAYS * 86_400, price: { recurring: { interval } } }] },
+  });
+  return async (method, path, params = {}) => {
+    if (path === 'coupons') return {} as never;
+    if (path === 'checkout/sessions') return { url: params.success_url.replace('{CHECKOUT_SESSION_ID}', `mock_${params['line_items[0][price_data][recurring][interval]']}`) } as never;
+    if (path.startsWith('checkout/sessions/mock_')) return { client_reference_id: userId, status: 'complete', subscription: sub(path.split('_').pop()!) } as never;
+    if (path.startsWith('subscriptions/')) return sub(space.billing.get(userId)?.interval ?? 'month', method === 'POST' ? params.cancel_at_period_end === 'true' : false) as never;
+    throw new Error(`fake stripe: ${method} ${path}`);
+  };
+}
 
 /** The trigger records_publish: a user's accepted write, published for friends or taken back. */
 function publish(space: Space, userId: string, rec: Rec) {
@@ -112,7 +133,7 @@ const DEMO_YES_MS = 4000;
 export function createMockServer() {
   const spaces = new Map<string, Space>();
   const spaceOf = (name: string) => {
-    if (!spaces.has(name)) spaces.set(name, { demo: name === 'default', epoch: 0, rows: new Map(), thumbs: new Map(), lastTs: 0, vision: null, ai: new Map(), aiFrom: 0, profiles: new Map(), programs: new Map(), shared: new Map(), friends: new Map() });
+    if (!spaces.has(name)) spaces.set(name, { demo: name === 'default', epoch: 0, rows: new Map(), thumbs: new Map(), lastTs: 0, vision: null, ai: new Map(), aiFrom: 0, billing: new Map(), pro: false, profiles: new Map(), programs: new Map(), shared: new Map(), friends: new Map() });
     const space = spaces.get(name)!;
     if (space.demo && !space.profiles.size) for (const [handle, who] of DEMO) space.profiles.set(demoId(handle), { id: demoId(handle), handle, name: who, photo: null, showProgram: false });
     return space;
@@ -174,6 +195,14 @@ export function createMockServer() {
       space.epoch++;
       return json(200, { ok: true });
     }
+    if (path === '/plan') {
+      // tests: { pro } sets the plan of every user in the space without one of their own (R5)
+      const b = await body(planBody);
+      if (!b.success) return fail(400, 'bad_request');
+      space.pro = b.data.pro;
+      space.billing.clear();
+      return json(200, { ok: true });
+    }
     if (path === '/vision') {
       // tests: { fixture } answers every analysis with it (null clears), { used } sets where today's count starts
       const b = await body(visionBody);
@@ -223,7 +252,7 @@ export function createMockServer() {
     if (path === '/api/analyze' || path === '/api/coach') {
       // one count for both: a coach answer costs what an analysis does
       const deps = {
-        caller: async () => ({ id: userId }),
+        caller: async () => ({ id: userId, billing: planOf(space, userId) }),
         async bump(u: string, day: string, limit: number) {
           const k = `${u}|${day}`;
           const used = (space.ai.get(k) ?? space.aiFrom) + 1;
@@ -231,6 +260,7 @@ export function createMockServer() {
           return { allowed: used <= limit, used, total: used };
         },
         limit: envInt('AI_DAILY_USER_LIMIT', 40),
+        freeLimit: envInt('AI_DAILY_FREE_LIMIT', FREE_AI_PER_DAY),
         cap: envInt('AI_DAILY_GLOBAL_CAP', 400),
       };
       if (path === '/api/coach') return coach(req, { ...deps, provider: async () => mockCoach });
@@ -241,6 +271,9 @@ export function createMockServer() {
           return name ? { model: 'mock', analyze: async () => fixture(name) } : mockProvider;
         },
       });
+    }
+    if (path === '/api/billing') {
+      return billing(req, { caller: async () => ({ id: userId, billing: planOf(space, userId) }), save: async (id, b) => void space.billing.set(id, b), stripe: fakeStripe(space, userId), configured: true });
     }
     if (path.startsWith('/social/')) return social(space, userId, path.slice('/social/'.length), req);
     if (path === '/api/account') {
@@ -349,6 +382,7 @@ export function mockBackend(): Plugin {
     if (process.env.VITE_BACKEND === 'mock') m.use('/api/account', (req, res, next) => (req.method === 'DELETE' ? void mw(req, res, next) : next()));
     if (process.env.VITE_BACKEND === 'mock') m.use('/api/analyze', mw);
     if (process.env.VITE_BACKEND === 'mock') m.use('/api/coach', mw);
+    if (process.env.VITE_BACKEND === 'mock') m.use('/api/billing', mw);
   };
   return { name: 'ontrack-mock-backend', configureServer: (s) => mount(s.middlewares), configurePreviewServer: (s) => mount(s.middlewares) };
 }

@@ -1,6 +1,7 @@
 // Thai dishes and their variants (docs/AI-THAI.md). The model reports a dish, its protein and what came with it; this
 // finds the food table's entry for that plate, deterministically, from the names and aliases the table already has.
 import foods from '../../src/lib/data/foods.json' with { type: 'json' };
+import { V } from '../../src/lib/model/engine/constants.js';
 import { compact, fold, norm } from '../../shared/text.js';
 import { EXTRAS, PROTEINS, type ModelItem } from './schema.js';
 
@@ -62,7 +63,7 @@ export function plateOf(name: string): Plate {
 }
 
 const THAI = foods.filter((f) => (f.tags as string[]).includes('thai'));
-const PLATES = new Map(THAI.map((f) => [f.id, plateOf(f.name)]));
+export const PLATES = new Map(THAI.map((f) => [f.id, plateOf(f.name)]));
 /** Bases with variants (a protein or an extra in some name), and every Thai food on such a base. */
 const BASES = new Set([...PLATES.values()].filter((p) => p.protein || p.rice || p.egg).map((p) => p.base));
 const MEMBERS = [...PLATES].filter(([, p]) => BASES.has(p.base));
@@ -141,6 +142,70 @@ function nearest(want: Plate) {
     .sort((a, b) => a.cost - b.cost);
 }
 
+/** The dish families: each base with variants, to the table ids on it (the prompt lists a family once, not each plate). */
+export const FAMILIES = new Map<string, string[]>();
+for (const [id, p] of MEMBERS) FAMILIES.set(p.base, [...(FAMILIES.get(p.base) ?? []), id]);
+
+/** The same dish and extras with the same or a near protein (pork and minced pork): plates that may stand in for `id`. */
+export function siblings(id: string): string[] {
+  const p = PLATES.get(id);
+  if (!p?.protein) return [];
+  return MEMBERS.filter(([o, q]) => o !== id && q.base === p.base && q.rice === p.rice && q.egg === p.egg && q.protein && (q.protein === p.protein || NEAR[p.protein!]?.includes(q.protein))).map(([o]) => o);
+}
+
+/** The same dish with each other protein, one plate each, nearest `id`'s rice and egg: what a wrong protein guess may have been. */
+export function otherProteins(id: string): string[] {
+  const p = PLATES.get(id);
+  if (!p || !BASES.has(p.base)) return [];
+  const best = new Map<Protein, { id: string; miss: number }>();
+  for (const [o, q] of MEMBERS) {
+    const miss = (q.rice !== p.rice ? 2 : 0) + (q.egg !== p.egg ? 1 : 0);
+    if (q.base === p.base && q.protein && q.protein !== p.protein && miss < (best.get(q.protein)?.miss ?? Infinity)) best.set(q.protein, { id: o, miss });
+  }
+  return [...best.values()].map((b) => b.id);
+}
+
+/** A name as a set of tokens: each protein and extra as its canonical word (moo, หมู, pork all "pork"), fillers dropped,
+ * the rest folded; a Thai word as its trigrams, as Thai has no spaces to split on. */
+const WORD_KEYS = [...PROTEIN_WORDS, ...EXTRA_WORDS].sort((a, b) => b[1].length - a[1].length);
+const PROTEIN_KEYS = new Set<string>(PROTEINS);
+const ARTICLES = ['a', 'an', 'the', 'of'];
+function tokens(name: string): Set<string> {
+  let s = pad(norm(name));
+  const out = new Set<string>();
+  for (const [k, w] of WORD_KEYS) for (let rest = cut(s, w); rest !== null; rest = cut(s, w)) { s = rest; out.add(k); }
+  for (const w of s.trim().split(' ')) {
+    if (!w || FILLERS.includes(w) || ARTICLES.includes(w)) continue;
+    const f = fold(w), g = V.fuzzyMatch.letters;
+    if (!/[฀-๿]/.test(f) || f.length <= g) out.add(f);
+    else for (let i = 0; i + g <= f.length; i++) out.add(f.slice(i, i + g));
+  }
+  return out;
+}
+let NAMES: { id: string; set: Set<string> }[] | undefined;
+/** Words a name may carry that its table row need not: "Tom yum shrimp soup" is "Tom yum kung". */
+const GENERIC = ['soup', 'salad', 'style', 'plate', 'bowl', 'dish'];
+/**
+ * The Thai food whose name or alias has the same tokens as `name`, for a name no plate, id or whole name reached
+ * ("Tom yum shrimp soup", "Larb pork salad"). Every word of the name must be in the row's (a protein too, so a typo
+ * like "cicken" is not read past), the row may add no protein the name lacks (so beef never lands on pork), the
+ * overlap must reach the threshold and lead the runner up.
+ */
+function fuzzy(name: string): string | null {
+  const q = tokens(name);
+  if (!q.size) return null;
+  const qp = [...q].filter((t) => PROTEIN_KEYS.has(t));
+  NAMES ??= THAI.flatMap((f) => [f.name, ...f.aliases].map((t) => ({ id: f.id, set: tokens(t) })));
+  const best = new Map<string, number>();
+  for (const { id, set } of NAMES) {
+    if ([...q].some((t) => !set.has(t) && !GENERIC.includes(t)) || [...set].some((t) => PROTEIN_KEYS.has(t) && !qp.includes(t))) continue;
+    const common = [...q].filter((t) => set.has(t)).length;
+    best.set(id, Math.max(best.get(id) ?? 0, common / (q.size + set.size - common)));
+  }
+  const [a, b] = [...best].sort((x, y) => y[1] - x[1]);
+  return a && a[1] >= V.fuzzyMatch.jaccard && a[1] - (b?.[1] ?? 0) >= V.fuzzyMatch.margin ? a[0] : null;
+}
+
 /**
  * The table id for a model item, or null for an estimate. The exact plate the model reported (or its name reads as)
  * wins; then the model's own food_id, unless it is the same dish with another protein (the user said duck, the id is
@@ -153,5 +218,5 @@ export function foodIdFor(it: ModelItem, known: (id: string) => boolean): string
   const own = it.food_id && known(it.food_id) ? PLATES.get(it.food_id) : undefined;
   const contradicted = want && own && own.base === want.base && proteinCost(own, want) === Infinity;
   if (it.food_id && known(it.food_id) && !contradicted) return it.food_id;
-  return ranked[0]?.id ?? EXACT.get(norm(it.name)) ?? FOLDED.get(fold(it.name))?.id ?? (compact(it.name).length >= 4 ? COMPACT.get(compact(it.name))?.id : undefined) ?? null;
+  return ranked[0]?.id ?? EXACT.get(norm(it.name)) ?? FOLDED.get(fold(it.name))?.id ?? (compact(it.name).length >= 4 ? COMPACT.get(compact(it.name))?.id : undefined) ?? fuzzy(it.name);
 }

@@ -27,7 +27,6 @@
   let full = $state(0);
   let head = $state(0);
   let drag = $state<number | null>(null);
-  let scrolled = $state(false);
 
   const social = $derived(db.get('social', 'social'));
   const incoming = $derived(friends.list.filter((f) => f.status === 'incoming'));
@@ -171,8 +170,8 @@
     </div>
   </div>
 
-  <!-- the list fades under the field as it scrolls, never a hard edge -->
-  <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 pb-[max(24px,env(safe-area-inset-bottom))] {scrolled ? '[mask-image:linear-gradient(to_bottom,transparent,black_24px)]' : ''}" inert={!raised} onscroll={(e) => (scrolled = e.currentTarget.scrollTop > 0)}>
+  <!-- the list scrolls under the field with no fade (the owner, 18 Nov: no fades) -->
+  <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 pb-[max(24px,env(safe-area-inset-bottom))]" inert={!raised}>
     {#if query}
       {#if searching === 'loading' && !results}
         {@render skeleton()}

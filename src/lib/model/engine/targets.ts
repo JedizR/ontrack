@@ -51,6 +51,16 @@ export function calorieStatus(goal: Goal, intake: number, target: number, sex: S
   return intake < min ? 'below' : intake > max ? 'above' : 'on';
 }
 
+/**
+ * R5, the owner ("a missed day is just a day"): whether a day counts as on track for consistency. In the band, or off it
+ * in the goal's own direction: under it on a lose goal down to the floor, over it on a gain goal up to the cap.
+ */
+export function dayCounts(goal: Goal, intake: number, target: number, sex: Sex): boolean {
+  const [min, max] = calorieBand(goal, target, sex);
+  if (goal === 'lose') return intake >= floorFor(sex) && intake <= max;
+  return intake >= min && intake <= (goal === 'gain' ? V.onTrackGainCap * target : max);
+}
+
 export const proteinOnTrack = (grams: number, target: number) => grams >= V.proteinOnTrack * target;
 /** Protein's band: from the on track share of the target, with no upper end. */
 export const proteinBand = (target: number): [number, number] => [V.proteinOnTrack * target, Infinity];

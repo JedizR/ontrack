@@ -91,13 +91,15 @@ Protein and fat are the same every day. Carbs move with the day's calories.
 
 ## 9. On track, per day
 
-| Goal | Calories on track when intake is | Protein on track when |
-| --- | --- | --- |
-| `gain` | 95 to 115 percent of target | 90 percent of target or more |
-| `maintain` | 90 to 110 percent | same |
-| `lose` | 90 to 105 percent, and not below the floor | same |
+| Goal | Calories on track when intake is (the band) | The day still counts when (R5) | Protein on track when |
+| --- | --- | --- | --- |
+| `gain` | 90 to 115 percent of target | over the band, up to 125 percent | 90 percent of target or more |
+| `maintain` | 90 to 110 percent | only in the band | same |
+| `lose` | 90 to 110 percent, and not below the floor | under the band, down to the floor | same |
 
-These bands are assumptions for feedback, not science. A day counts toward the week when calories are on track. Below the band reads "to go" (gain) or is simply neutral (lose). Above the band is neutral ink with a plain note. Nothing is ever red.
+These bands are assumptions for feedback, not science. The 10 percent under the target on every goal is about the error of a logged day. The band is what Today's bar shades and what turns today's hero to "On track".
+
+**A missed day is just a day (R5, the owner, 22 November).** A day counts toward consistency (the week strip's dots, Progress's Consistency and week by week, History) when it has a meal and is in the band, or off it in the goal's own direction: under it on a lose goal (down to the floor, so a very low day never counts), over it on a gain goal (up to 125 percent). A past or finished day's hero says "On track" when the day counts. Consistency is a count of days in four weeks, never a streak, so a day that does not count takes nothing away. Below the band reads "to go" (gain) or is simply neutral (lose). Above the band is neutral ink with a plain note. Nothing is ever red.
 
 ## 10. Weight trend and the weekly check-in
 

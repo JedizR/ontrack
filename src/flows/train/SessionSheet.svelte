@@ -1,8 +1,17 @@
-<!-- SCREENS.md section 8, Session sheet: name, day, type, minutes in fives, intensity with a line for each level, the
-     calories the session adds, the exercises with sets and reps, Add exercise, Delete session. Edits a copy; Save
+<!-- SCREENS.md section 8, Session sheet. R5, the owner: the activity drawer's way, type first as icon tiles, the day as
+     seven tiles, minutes as quick picks, how hard with a line for each level, then the setup or the cardio after, the
+     exercises with sets and reps, a name if wanted, and Delete. The kcal it adds sits over Save. Edits a copy; Save
      changes the program, and the targets follow at once (R2). -->
 <script lang="ts">
   import { prefs } from '$lib/prefs.svelte';
+  import type { Component } from 'svelte';
+  import Dumbbell from '@lucide/svelte/icons/dumbbell';
+  import Timer from '@lucide/svelte/icons/timer';
+  import HeartPulse from '@lucide/svelte/icons/heart-pulse';
+  import Volleyball from '@lucide/svelte/icons/volleyball';
+  import Flower from '@lucide/svelte/icons/flower-2';
+  import Footprints from '@lucide/svelte/icons/footprints';
+  import { haptic } from '$lib/haptics';
   import Sheet from '$lib/components/Sheet.svelte';
   import Button from '$lib/components/Button.svelte';
   import Chip from '$lib/components/Chip.svelte';
@@ -28,6 +37,15 @@
   } = $props();
 
   const TYPES: SessionType[] = ['strength', 'circuit', 'cardio', 'sport', 'mobility', 'walk'];
+  const ICONS: Record<SessionType, Component<{ size?: number; strokeWidth?: number }>> = { strength: Dumbbell, circuit: Timer, cardio: HeartPulse, sport: Volleyball, mobility: Flower, walk: Footprints };
+  // quick picks, as on the rest day's activity; a length the session already has joins them
+  const minutesOf = (m: number) => [...new Set([15, 30, 45, 60, 90, m])].sort((a, b) => a - b);
+  function setType(ty: SessionType) {
+    if (!s || s.type === ty) return;
+    haptic();
+    s.type = ty;
+    if (isCardio(ty) && !s.setup) s.setup = { machine: ty === 'walk' ? 'outdoor' : 'treadmill', speedKmh: 6, inclinePct: 0 };
+  }
   const INTENSITIES: Intensity[] = ['light', 'moderate', 'hard'];
   // the record schema's limits: 600 minutes a session, 20 exercises, 20 sets, 100 reps
   const MAX = { minutes: 600, exercises: 20, sets: 20, reps: 100 };
@@ -94,6 +112,8 @@
 </script>
 
 {#snippet footer()}
+  <!-- the payoff over the action, as on the rest day's activity -->
+  {#if s}<p class="text-callout num text-ink-2 mb-3 text-center" aria-live="polite" data-testid="session-kcal">{t.train.sessionAdds(num(Math.round(sessionKcal(s, weightKg) + (!isCardio(s.type) && after.on ? sessionKcal({ ...s, type: 'cardio', minutes: after.minutes, intensity: after.intensity }, weightKg) : 0))))}</p>{/if}
   <Button variant="primary" size="lg" full onclick={save} data-testid="session-save">{editing?.isNew ? t.train.add : t.train.save}</Button>
 {/snippet}
 
@@ -106,43 +126,46 @@
 >
   {#if s}
     <div class="flex flex-col gap-5">
-      <div class="flex flex-col gap-2">
-        <label for="session-name" class={label}>{t.train.name}</label>
-        <input
-          id="session-name"
-          placeholder={t.train.types[s.type]}
-          maxlength={60}
-          autocomplete="off"
-          bind:value={s.name}
-          class="input-field text-body w-full"
-          data-testid="session-name"
-        />
-      </div>
-      <div class="flex flex-col gap-3">
-        <span class={label}>{t.train.day}</span>
-        <div class="flex flex-wrap gap-2" role="group" aria-label={t.train.day}>
-          {#each t.train.weekdaysShort as d, i (d)}
-            <Chip selected={s.weekday === i} onclick={() => (s.weekday = i)}>{d}</Chip>
-          {/each}
-        </div>
-      </div>
-      <div class="flex flex-col gap-3">
-        <span class={label}>{t.train.type}</span>
-        <div class="flex flex-wrap gap-2" role="group" aria-label={t.train.type}>
+      <!-- type first, as tiles with their icons -->
+      <div>
+        <h3 class="{label} mb-2">{t.train.type}</h3>
+        <div class="grid grid-cols-3 gap-2" role="radiogroup" aria-label={t.train.type} data-testid="session-type">
           {#each TYPES as ty (ty)}
-            <Chip selected={s.type === ty} onclick={() => { s.type = ty; if (isCardio(ty) && !s.setup) s.setup = { machine: ty === 'walk' ? 'outdoor' : 'treadmill', speedKmh: 6, inclinePct: 0 }; }}>{t.train.types[ty]}</Chip>
+            {@const on = s.type === ty}
+            {@const Icon = ICONS[ty]}
+            <button type="button" role="radio" aria-checked={on} class="flex min-h-18 min-w-0 flex-col items-center justify-center gap-1.5 {tray ? 'rounded-md' : 'rounded-sm'} px-2 py-2 transition-[background-color,color] duration-[var(--d-ui)] {on ? 'bg-ink text-canvas' : 'bg-surface-2 text-ink active:bg-surface-3'}" onclick={() => setType(ty)} data-testid="session-type-{ty}">
+              <Icon size={22} strokeWidth={2} />
+              <span class="text-callout font-semibold">{t.train.types[ty]}</span>
+            </button>
           {/each}
         </div>
       </div>
-      <div class="flex items-center justify-between gap-3">
-        <span class={label}>{t.train.minutes}</span>
-        <Stepper bind:value={s.minutes} min={5} max={MAX.minutes} step={5} label={t.train.minutes} />
+      <!-- the day, one tile each -->
+      <div>
+        <h3 class="{label} mb-2">{t.train.day}</h3>
+        <!-- seven across when each can be 44 wide, else four and three -->
+        <div class="@container"><div class="grid grid-cols-4 gap-1 @min-[20.75rem]:grid-cols-7" role="radiogroup" aria-label={t.train.day} data-testid="session-day">
+          {#each t.train.weekdaysShort as d, i (d)}
+            {@const on = s.weekday === i}
+            <button type="button" role="radio" aria-checked={on} aria-label={t.train.weekdays[i]} class="text-callout min-h-11 min-w-0 {tray ? 'rounded-sm' : 'rounded-xs'} font-semibold transition-[background-color,color] duration-[var(--d-ui)] {on ? 'bg-ink text-canvas' : 'bg-surface-2 text-ink active:bg-surface-3'}" onclick={() => { if (!on) { haptic(); s.weekday = i; } }}>{d}</button>
+          {/each}
+        </div></div>
+      </div>
+      <div>
+        <h3 class="{label} mb-2">{t.train.minutes}</h3>
+        <!-- quick picks as tiles (a segmented control holds at most four), five or six across -->
+        <div class="grid gap-1.5" style:grid-template-columns="repeat({minutesOf(s.minutes).length}, minmax(0, 1fr))" role="radiogroup" aria-label={t.train.minutes} data-testid="session-minutes">
+          {#each minutesOf(s.minutes) as m (m)}
+            {@const on = s.minutes === m}
+            <button type="button" role="radio" aria-checked={on} class="text-callout num min-h-11 min-w-0 {tray ? 'rounded-sm' : 'rounded-xs'} font-semibold transition-[background-color,color] duration-[var(--d-ui)] {on ? 'bg-ink text-canvas' : 'bg-surface-2 text-ink active:bg-surface-3'}" onclick={() => { if (!on && s) { haptic(); s.minutes = m; } }}>{num(m)}</button>
+          {/each}
+        </div>
       </div>
       <!-- SCREENS.md section 8: a three way segmented control (U1b); the longest label fits at the largest text on the SE -->
-      <div class="flex flex-col gap-3">
-        <span class={label}>{t.train.intensity}</span>
+      <div>
+        <h3 class="{label} mb-2">{t.train.intensity}</h3>
         <Segmented bind:value={s.intensity} label={t.train.intensity} options={INTENSITIES.map((i) => ({ value: i, label: t.train.intensities[i] }))} />
-        <p class="text-caption text-ink-2">{t.train.intensityLines[s.intensity]}</p>
+        <p class="text-caption text-ink-2 mt-2">{t.train.intensityLines[s.intensity]}</p>
       </div>
       {#snippet setupOf(setup: Setup, testid: string)}
         <div class="flex flex-col gap-3" data-testid={testid}>
@@ -178,7 +201,6 @@
           {/if}
         </div>
       {/if}
-      <p class="text-subhead num" data-testid="session-kcal">{t.train.sessionAdds(num(Math.round(sessionKcal(s, weightKg))))}</p>
 
       <!-- cardio is its setup, not a list of exercises -->
       <div hidden={isCardio(s.type)}>
@@ -211,6 +233,18 @@
           <p class="text-body text-ink-2 mt-1">{t.train.noneListed}</p>
         {/each}
         <Button variant="plain" class="-ml-5 mt-1" disabled={(s.exercises?.length ?? 0) >= MAX.exercises} onclick={() => (picking = true)} data-testid="exercise-add">{t.train.addExercise}</Button>
+      </div>
+      <div class="flex flex-col gap-2">
+        <label for="session-name" class={label}>{t.train.name}</label>
+        <input
+          id="session-name"
+          placeholder={t.train.types[s.type]}
+          maxlength={60}
+          autocomplete="off"
+          bind:value={s.name}
+          class="input-field text-body w-full"
+          data-testid="session-name"
+        />
       </div>
       {#if !editing?.isNew}
         <div><Button variant="danger" class="-ml-5" onclick={remove} data-testid="session-delete">{t.train.deleteSession}</Button></div>

@@ -243,7 +243,7 @@ describe('POST /api/coach', () => {
   function deps(o: Partial<Deps> = {}): Deps {
     let used = 0;
     return {
-      caller: async (r) => (r.headers.get('authorization') === 'Bearer good' ? { id: 'u1' } : null),
+      caller: async (r) => (r.headers.get('authorization') === 'Bearer good' ? { id: 'u1', billing: { tier: 'pro' as const } } : null),
       bump: async (_u, _d, limit) => { used++; return { allowed: used <= limit, used, total: used }; },
       provider: async () => mockCoach,
       limit: 40,
@@ -415,7 +415,13 @@ describe('the app side', () => {
         picks: [{ id: 'tuna', reason: '25.5 g protein for 116 kcal' }, { id: 'chicken', reason: '30.5 g protein for 151 kcal' }, { id: 'yogurt', reason: '15 g protein for 100 kcal' }],
       });
     });
-    test('an ask offers the facts it has', () => {
+    test('the free plan (R5) gets no coach words: pro_only, before any count', async () => {
+    let bumped = 0;
+    const d: Deps = { caller: async () => ({ id: 'u1', billing: { tier: 'free' as const } }), bump: async () => { bumped++; return { allowed: true, used: 1, total: 1 }; }, provider: async () => mockCoach, limit: 40, cap: 400 };
+    const r = await coach(new Request('http://x/api/coach', { method: 'POST', headers: { authorization: 'Bearer good' }, body: JSON.stringify(KINDS[0]) }), d);
+    expect([r.status, ((await r.json()) as { error: string }).error, bumped]).toEqual([402, 'pro_only', 0]);
+  });
+  test('an ask offers the facts it has', () => {
       expect(template(ASK).text.lines).toEqual([en.coach.ask.offline, 'Label: 2,310 kcal', 'Label: 2,400 kcal', 'Label: 6 of 7']);
       expect(template({ ...ASK, facts: {} }).text.lines).toEqual([en.coach.ask.offline]);
     });
@@ -425,7 +431,7 @@ describe('the app side', () => {
     const store = new Map<string, string>();
     const calls = vi.fn();
     let fetchWith: (r: Request) => Promise<Response>;
-    const d: Deps = { caller: async () => ({ id: 'u1' }), bump: async () => ({ allowed: true, used: 1, total: 1 }), provider: async () => mockCoach, limit: 40, cap: 400 };
+    const d: Deps = { caller: async () => ({ id: 'u1', billing: { tier: 'pro' as const } }), bump: async () => ({ allowed: true, used: 1, total: 1 }), provider: async () => mockCoach, limit: 40, cap: 400 };
     beforeEach(() => {
       store.clear();
       calls.mockClear();

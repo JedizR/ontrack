@@ -33,7 +33,7 @@ const real: Real | null = process.env.LANDING_SEED ? JSON.parse(readFileSync(pro
 // the real account's day at its own clock, without the day's reminder cards (the shot is the day itself)
 async function openReal(page: Page, r: Real) {
   await page.clock.setFixedTime(new Date(`${r.today}T${r.time}:00+07:00`));
-  await withPrefs(page, { remind: { meal: true, mealAt: '13:00', weigh: true, checkin: false, easy: false } });
+  await withPrefs(page, { remind: { meal: true, mealAt: '13:00', checkin: false, easy: false } });
   await seedAccount(page, { account: r.records });
   await page.goto('/');
   await expect(page.getByTestId('dock')).toBeVisible();

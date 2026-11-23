@@ -200,3 +200,23 @@ for (const [name, viewport] of [['390 by 664', { width: 390, height: 664 }], ['S
     expect(hero.y + hero.height).toBeLessThanOrEqual(dock.y);
   });
 }
+
+test('a rest day takes an activity for that day only (R5): the box asks, the target grows, Undo takes it back', async ({ page }) => {
+  await open(page);
+  await page.getByTestId('week').getByRole('button', { name: /Tuesday, November 10/ }).click();
+  await expect(kcalOf(page)).toHaveText('of 2,220 kcal');
+  await page.getByTestId('rest-add').click();
+  const sheet = page.getByTestId('activity-sheet');
+  await expect(sheet).toContainText('Any activity today?');
+  await expect(sheet.getByTestId('activity-walk')).toHaveAttribute('aria-checked', 'true'); // prefilled: one tap to add
+  await sheet.getByTestId('activity-run').click();
+  await expect(page.getByTestId('activity-kcal')).toHaveText('Adds 174 kcal to today'); // the engine's moderate cardio for 30 min at 60 kg
+  await page.getByTestId('activity-add').click();
+  await expect(page.getByTestId('session-done')).toHaveCount(0);
+  await expect(page.getByTestId('training')).toContainText('Run');
+  await expect(kcalOf(page)).not.toHaveText('of 2,220 kcal');
+  // Undo takes it back, and the day is a rest day again
+  await page.locator('[data-sonner-toast]').getByRole('button', { name: 'Undo' }).click();
+  await expect(kcalOf(page)).toHaveText('of 2,220 kcal');
+  await expect(page.getByTestId('rest-add')).toBeVisible();
+});

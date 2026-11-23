@@ -276,7 +276,7 @@ async function walkLogging(page: Page, dir: string, part: (typeof LOGGING)[numbe
     await sheet('supplement-sheet', 'supplement-label', 'supplement-save');
     await close('supplement-sheet');
     await page.getByTestId('add').click();
-    await page.getByTestId('supplement-entry').click(); // R2: the plus beside the pinned whey and creatine
+    await page.getByTestId('supplement-entry').click(); // the plus beside the pinned whey (R5)
     await sheet('supplement-sheet', 'supplement-kinds');
     await page.getByTestId('kind-whey').click();
     await checkPage(page, 'supplement-source', dir);
@@ -310,7 +310,7 @@ async function walkLogging(page: Page, dir: string, part: (typeof LOGGING)[numbe
   await page.getByTestId('meal').first().getByRole('button').click();
   await sheet('meal-sheet', 'meal', 'meal-save');
   await close('meal-sheet');
-  await takePhoto(page, true);
+  await takePhoto(page);
   await expect(page.getByTestId('meal-item').first()).toBeVisible();
   await sheet('review-sheet', 'review', 'review-add');
   // an item open with Correct: four steppers in rows (N1)

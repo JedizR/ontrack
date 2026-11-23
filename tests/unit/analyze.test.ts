@@ -11,10 +11,11 @@ const text = { kind: 'text', text: 'Two eggs and toast', localDate: photo.localD
 function deps(o: Partial<Deps> & { provider?: () => Promise<VisionProvider> } = {}): Deps {
   let used = 0;
   return {
-    caller: async (r) => (r.headers.get('authorization') === 'Bearer good' ? { id: 'u1' } : null),
+    caller: async (r) => (r.headers.get('authorization') === 'Bearer good' ? { id: 'u1', billing: { tier: 'pro' as const } } : null),
     bump: async (_u, _d, limit) => { used++; return { allowed: used <= limit, used, total: used }; },
     provider: async () => mockProvider,
     limit: 40,
+    freeLimit: 3,
     cap: 400,
     ...o,
   };
@@ -48,7 +49,7 @@ describe('POST /api/analyze', () => {
     const r = await read(await post(photo));
     expect(r.status).toBe(200);
     expect(r.body.ok).toBe(true);
-    expect(r.body.usage).toEqual({ usedToday: 1, limit: 40 });
+    expect(r.body.usage).toEqual({ usedToday: 1, limit: 40, plan: 'pro' });
     expect(r.body.analysis.model).toBe('mock');
     expect(r.body.analysis.items.length).toBeGreaterThan(0);
     for (const it of r.body.analysis.items) expect(['db', 'estimate']).toContain(it.source);
@@ -58,8 +59,18 @@ describe('POST /api/analyze', () => {
     expect((await read(await post({ ...text, text: 'this is not food' }))).body.error).toBe('not_food');
     const d = deps({ limit: 1 });
     await post(text, d);
-    expect(await read(await post(text, d))).toEqual({ status: 429, body: { ok: false, error: 'daily_limit', usage: { usedToday: 1, limit: 1 } } });
+    expect(await read(await post(text, d))).toEqual({ status: 429, body: { ok: false, error: 'daily_limit', usage: { usedToday: 1, limit: 1, plan: 'pro' } } });
     expect((await read(await post(text, deps({ cap: 0 })))).body.error).toBe('busy');
+  });
+
+  test('the free plan (R5) has its own daily limit, and says which plan it was', async () => {
+    const d = deps({ caller: async () => ({ id: 'u1', billing: { tier: 'free' } }), freeLimit: 2 });
+    await post(text, d);
+    await post(text, d);
+    expect(await read(await post(text, d))).toEqual({ status: 429, body: { ok: false, error: 'daily_limit', usage: { usedToday: 2, limit: 2, plan: 'free' } } });
+    // a Pro period that ended over a day ago is the free plan's limit
+    const lapsed = deps({ caller: async () => ({ id: 'u1', billing: { tier: 'pro', periodEnd: '2020-01-01T00:00:00.000Z' } }), freeLimit: 0 });
+    expect((await read(await post(text, lapsed))).body.usage.plan).toBe('free');
   });
 
   test('a 5xx is retried once, then reported as a provider error', async () => {

@@ -26,7 +26,6 @@
   import Button from '$lib/components/Button.svelte';
   import Stepper from '$lib/components/Stepper.svelte';
   import { sheets } from '$lib/sheets.svelte';
-  import { prefs } from '$lib/prefs.svelte';
   import { view } from '$lib/view.svelte';
   import { db } from '$lib/db/store.svelte';
   import { deleteMeal, findProduct, logSupplement, readLabel, removeSupplement, saveSupplement, undoToast, type Found, type LabelResult } from '$lib/actions';
@@ -62,8 +61,6 @@
   let limit = $state(0);
   let input = $state<HTMLInputElement>();
   let code = $state('');
-  /** the photo notice, before the first photo sent to Gemini (shared with the Photo tile) */
-  let notice = $state(false);
   /** each lookup or label read gets a number; one that is no longer the latest is dropped (back, closed, retaken) */
   let ask = 0;
   let id = $state<string | null>(null);
@@ -141,7 +138,6 @@
     const o = sheets.supplement;
     untrack(() => {
       ask++;
-      notice = false;
       if (!o) return;
       if (!foods) void load();
       id = o.id;
@@ -205,7 +201,6 @@
     toLabel(fromServing({ per100: p.per100, servingG: p.servingG, scoops: scoopsIn(p.serving) }), p.source === 'off' ? 'off' : p.source === 'label' ? 'label' : 'typed');
   }
   function photoTub() {
-    if (!prefs.photoOk) return void (notice = true);
     input?.click();
   }
   async function taken() {
@@ -299,7 +294,7 @@
     undoToast(t.supplement.deleted(n), undo);
   }
 
-  const title = $derived(notice ? t.add.consentTitle : step === 'kind' ? t.supplement.setup : step !== 'amount' && !id ? t.supplement.kinds[kind] : (s?.name ?? ''));
+  const title = $derived(step === 'kind' ? t.supplement.setup : step !== 'amount' && !id ? t.supplement.kinds[kind] : (s?.name ?? ''));
   const back = $derived<(() => void) | undefined>(
     step === 'source' ? () => (step = id ? 'amount' : 'kind')
     : step === 'scan' && typing ? () => (typing = false)
@@ -330,8 +325,8 @@
   {step}
   layer="base"
   testid="supplement-sheet"
-  footer={!notice && (step === 'label' || step === 'amount' || step === 'new') ? footer : undefined}
-  onback={notice ? undefined : back}
+  footer={(step === 'label' || step === 'amount' || step === 'new') ? footer : undefined}
+  onback={back}
   backLabel={t.supplement.back}
 >
   {#if step === 'kind'}
@@ -343,16 +338,10 @@
       {/each}
     </div>
     <p class="text-caption text-ink-2 mt-3">{t.supplement.noAdvice}</p>
-  {:else if notice}
-    <p class="text-body" data-testid="photo-notice">{t.scan.consent}</p>
-    <div class="mt-6 flex flex-col gap-2">
-      <Button variant="primary" size="lg" full onclick={() => { prefs.photoOk = true; notice = false; input?.click(); }} data-testid="photo-continue">{t.add.consentContinue}</Button>
-      <Button variant="plain" size="lg" full onclick={() => (notice = false)}>{t.add.consentNotNow}</Button>
-    </div>
   {:else if step === 'source'}
     <div class="flex flex-col gap-4" data-testid="supplement-source">
       <p class="text-body">{t.supplement.tubLine}</p>
-      <!-- the tub first: Scan is the step's featured way, the one violet featured card, as on the Add sheet (U1b) -->
+      <!-- the tub first: Scan is the step's featured way, shown first as on the Add sheet (U1b) -->
       <div class="grid grid-cols-2 gap-3">
         <button type="button" class="feature text-ink active:brightness-90 active:scale-[0.97] {tiles}" onclick={scanTub} data-featured data-testid="tub-scan">
           <span class="bg-ink/10 grid size-10 place-items-center rounded-sm"><ScanBarcode size={22} strokeWidth={2} /></span>

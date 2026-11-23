@@ -15,7 +15,6 @@
   import SourceLabel from '$lib/components/SourceLabel.svelte';
   import Scanner from './Scanner.svelte';
   import { sheets } from '$lib/sheets.svelte';
-  import { prefs } from '$lib/prefs.svelte';
   import { view } from '$lib/view.svelte';
   import { findProduct, logProduct, readLabel, saveProduct, undoToast, type Found, type LabelResult } from '$lib/actions';
   import { OFF_SOURCE } from '$lib/data/sources';
@@ -49,17 +48,17 @@
   let correcting = $state(false);
   let failure = $state<Exclude<LabelResult, { ok: true }>['error'] | null>(null);
   let limit = $state(0);
+  /** R5: the limit was the free plan's */
+  let free = $state(false);
   /** why Use default values left the user's numbers: no connection, no answer, or Open Food Facts has none */
   let stuck = $state<'offline' | 'failed' | 'none' | null>(null);
   let input = $state<HTMLInputElement>();
-  /** the photo notice, before the first photo sent to Gemini (shared with the Photo tile) */
-  let notice = $state(false);
   /** each lookup or label read gets a number; one that is no longer the latest is dropped (back, closed, retaken) */
   let ask = 0;
 
   $effect(() => {
     if (sheets.scan) untrack(() => {
-      ask++; step = 'scan'; scans++; typing = false; notice = false; product = null; found = null;
+      ask++; step = 'scan'; scans++; typing = false; product = null; found = null;
       const from = sheets.scanFrom;
       sheets.scanFrom = null;
       if (from) 'code' in from ? void look(from.code) : frame(from.label, 'label');
@@ -125,7 +124,6 @@
 
   function photo() {
     correcting = false;
-    if (!prefs.photoOk) return void (notice = true);
     input?.click();
   }
   async function taken() {
@@ -133,13 +131,8 @@
     if (input) input.value = '';
     if (file) await readFrom(file);
   }
-  // R1: a frame from the scanner's camera, the same consent first. A meal goes to Review, a label is read here
-  let held: { file: Blob; as: 'meal' | 'label' } | null = null;
+  // R1: a frame from the scanner's camera. A meal goes to Review, a label is read here
   function frame(file: Blob, as: 'meal' | 'label') {
-    if (!prefs.photoOk) { held = { file, as }; notice = true; return; }
-    useFrame(file, as);
-  }
-  function useFrame(file: Blob, as: 'meal' | 'label') {
     if (as === 'meal') { sheets.scan = false; sheets.review = { kind: 'photo', file }; }
     else void readFrom(file);
   }
@@ -152,6 +145,7 @@
     if (r.ok) return fromRead(r.label);
     failure = r.error;
     limit = ('usage' in r && r.usage?.limit) || 0;
+    free = 'usage' in r && r.usage?.plan === 'free';
   }
 
   function saveLabel() {
@@ -199,12 +193,11 @@
   const readWords = $derived(
     failure === 'offline' ? t.scan.readOffline
     : failure === 'not_food' ? t.scan.notLabel
-    : failure === 'daily_limit' ? t.scan.limit(num(limit))
+    : failure === 'daily_limit' ? (free ? t.review.limitFree(num(limit)) : t.scan.limit(num(limit)))
     : t.scan.readFailed,
   );
   const title = $derived(
-    notice ? t.add.consentTitle
-    : step === 'product' && product ? product.name
+    step === 'product' && product ? product.name
     : step === 'new' ? t.scan.newTitle
     : step === 'label' || step === 'reading' ? (correcting ? t.scan.correct : t.scan.checkTitle)
     : t.scan.title,
@@ -252,17 +245,11 @@
   {step}
   layer="base"
   testid="scan-sheet"
-  footer={!notice && (step === 'product' || step === 'new' || step === 'label') ? footer : undefined}
-  onback={notice ? undefined : back}
+  footer={(step === 'product' || step === 'new' || step === 'label') ? footer : undefined}
+  onback={back}
   backLabel={t.scan.back}
 >
-  {#if notice}
-    <p class="text-body" data-testid="photo-notice">{t.scan.consent}</p>
-    <div class="mt-6 flex flex-col gap-2">
-      <Button variant="primary" size="lg" full onclick={() => { prefs.photoOk = true; notice = false; if (held) { useFrame(held.file, held.as); held = null; } else input?.click(); }} data-testid="photo-continue">{t.add.consentContinue}</Button>
-      <Button variant="plain" size="lg" full onclick={() => { notice = false; held = null; scans++; }}>{t.add.consentNotNow}</Button>
-    </div>
-  {:else if step === 'scan'}
+  {#if step === 'scan'}
     {#key scans}<Scanner oncode={look} onphoto={frame} bind:typing />{/key}
   {:else if step === 'finding'}
     {@render pending(t.scan.finding, 'product')}
@@ -322,7 +309,8 @@
       <div class="flex flex-col gap-3" data-testid="label-failed">
         <p class="text-body" role="alert">{readWords}</p>
         <div class="flex flex-wrap gap-2">
-          <Button onclick={photo} data-testid="label-retry">{t.scan.retry}</Button>
+          {#if failure === 'daily_limit' && free}<Button variant="primary" onclick={() => (sheets.paywall = { from: 'limit' })} data-testid="label-pro">{t.review.getPro}</Button>
+          {:else}<Button onclick={photo} data-testid="label-retry">{t.scan.retry}</Button>{/if}
           <Button variant="plain" onclick={typeIt} data-testid="label-type">{t.scan.typeLabel}</Button>
         </div>
       </div>

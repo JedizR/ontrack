@@ -1,0 +1,8 @@
+{
+  "is_food": true,
+  "title": "Crispy pork basil with rice and fried egg",
+  "scene": { "vessel": "round plate about 24 cm", "references": "spoon and fork, about 18 cm" },
+  "items": [
+    { "name": "Pad kra pao crispy pork with rice and fried egg", "grams": 380, "grams_low": 330, "grams_high": 430, "portion_note": "One plate", "food_id": null, "alt_food_id": "kra-pao-pork-rice-egg", "est_per_100g": { "kcal": 190, "protein_g": 9, "carbs_g": 20, "fat_g": 8 }, "confidence": "medium", "hidden_fat": true, "dish": "Pad kra pao", "protein": "crispy pork", "extras": ["rice", "fried egg"] }
+  ]
+}

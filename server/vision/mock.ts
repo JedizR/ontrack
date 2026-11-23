@@ -8,14 +8,15 @@ import oatsBanana from '../../tests/fixtures/vision/oats-banana.json' with { typ
 import notFood from '../../tests/fixtures/vision/not-food.json' with { type: 'json' };
 import fail from '../../tests/fixtures/vision/fail.json' with { type: 'json' };
 import padThai from '../../tests/fixtures/vision/pad-thai.json' with { type: 'json' };
+import krapaoCrispy from '../../tests/fixtures/vision/kra-pao-crispy.json' with { type: 'json' };
 import labelSnack from '../../tests/fixtures/vision/label-snack.json' with { type: 'json' };
 import labelWhey from '../../tests/fixtures/vision/label-whey.json' with { type: 'json' };
 import labelDrink from '../../tests/fixtures/vision/label-drink.json' with { type: 'json' };
 import notLabel from '../../tests/fixtures/vision/not-label.json' with { type: 'json' };
 
-// pad-thai (N1, a Thai dish from the table) is chosen by name only, so the hash below picks what it always did
+// pad-thai (N1, a Thai dish from the table) and kra-pao-crispy (R5: a plate whose protein may be another, so the review offers alternatives) are chosen by name only, so the hash below picks what it always did
 // the labels (B1) answer label reads: rice crackers by default, whey, a drink whose photo cuts off protein and carbs (M9a) and not a label by name
-const FIXTURES: Record<string, object> = { 'basil-pork': basilPork, 'chicken-rice': chickenRice, 'oats-banana': oatsBanana, 'not-food': notFood, fail, 'pad-thai': padThai, 'label-snack': labelSnack, 'label-whey': labelWhey, 'label-drink': labelDrink, 'not-label': notLabel };
+const FIXTURES: Record<string, object> = { 'basil-pork': basilPork, 'chicken-rice': chickenRice, 'oats-banana': oatsBanana, 'not-food': notFood, fail, 'pad-thai': padThai, 'kra-pao-crispy': krapaoCrispy, 'label-snack': labelSnack, 'label-whey': labelWhey, 'label-drink': labelDrink, 'not-label': notLabel };
 const FOOD = ['basil-pork', 'chicken-rice', 'oats-banana'];
 export const isFixture = (name: unknown): name is string => typeof name === 'string' && Object.hasOwn(FIXTURES, name);
 

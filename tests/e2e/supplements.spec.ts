@@ -22,9 +22,9 @@ test('F21: whey set up from its label, then 2 scoops in three taps from the plus
   // set up: the entry under the ways, the kind, then the label
   await page.getByTestId('add').click();
   // O1: a lifter's entry row asks the question, and gaining lists whey and mass gainer first
-  // R2: whey and creatine are pinned at the top of Add; the plus beside them sets up any supplement
+  // R5, the owner: whey is the one preset at the top of Add; the plus beside it sets up any other, creatine included
   await expect(page.getByTestId('add-pinned')).toContainText("Whey"); // the short name in the pill (19 Nov)
-  await expect(page.getByTestId('add-pinned')).toContainText('Creatine');
+  await expect(page.getByTestId('add-pinned')).not.toContainText('Creatine');
   await page.getByTestId('supplement-entry').click();
   await expect(sheet(page)).toContainText('Ontrack logs what you take. It does not recommend supplements or amounts.');
   await expect(page.locator('[data-testid^="kind-"]')).toHaveText([/Whey protein/, /Mass gainer/, /Plant protein/, /Casein/, /Creatine/, /Something else/]);

@@ -1,197 +1,76 @@
-# Ontrack: build plan
+# Build plan: what is next
 
-Ten milestones and eleven the owner added (D1, N1, N2, B1, D2, N3, T1, O1, L1, S1, U1), each built in its own fresh context: a session when the owner is present, a subagent in an unattended run. Each has a goal, what to read, the steps, a gate that proves it is done, and what the owner checks. Start and finish every milestone with the `milestone` skill. In an unattended run, owner checks are recorded in `docs/BLOCKERS.md` and never hold up the build.
+Every planned milestone has shipped (M0 to M9, then the rounds L5 and R1 to R4b; v2.3.0 is live; R5 is built on `r5-freemium`). This is the backlog from 23 November 2026, most useful first. Claude owns the order (`docs/DIRECTIONS.md` section 1), but the owner usually arrives with their own list from the phone: that list goes first. The old milestone plans are in `docs/archive/BUILD-PLAN-SHIPPED.md`.
 
-| | Milestone | Outcome | Owner is needed for |
-| --- | --- | --- | --- |
-| M0 | Foundations | An empty, installable shell deployed with CI green | CLI logins |
-| M1 | Design system | Tokens, components and a gallery that looks like Ontrack | Approving the look on the iPhone |
-| M2 | Engine | The science engine with checked sources | Nothing |
-| M3 | Data, sync, sign-in | Local store, sync on both backends, Google and email code | Google client setup, sign-in test on the iPhone |
-| M4 | Onboarding and plan | First run through to a saved plan | A walkthrough |
-| M5 | Today and logging | Today, search, quick add, saved meals, weigh-ins | Using it for a day |
-| M6 | Photo logging | Camera to reviewed meal | A Gemini key, ten real meals |
-| M7 | Training | Program, analysis, training day targets | Entering a real program |
-| M8 | Progress and check-ins | Trends and the weekly correction | A review with seeded data |
-| N1 | Thai foods and remembered nutrition | Thai dishes from a published table, corrections remembered | Logging five usual Thai meals |
-| N2 | Supplements | Whey, creatine and the like logged by scoop in three taps | Logging the morning shake for a few days |
-| B1 | Barcode scanning | Scan a packaged food and log it exactly | Scanning ten packaged foods |
-| D2 | Visual refinement | Clean flat actions, glass and gradients only where they help | The new look on the iPhone |
-| N3 | Thai nutrition from Thai sources | Thai dishes with numbers from Thai pages and the owner's finds | Sending Thai nutrient facts they find |
-| T1 | Gain pace and hybrid training | A faster gain pace, strength and cardio planned together, training on Progress | The friends who asked trying it |
-| O1 | Onboarding redesign | Engaging, least effort onboarding that personalizes the app | Doing it cold, timed |
-| L1 | Landing page | A page for signed-out visitors | Scrolling it on the iPhone |
-| S1 | Friends, profiles and the food map | Friends, a profile with an optional program, shared meal photos on a map | A second account as a friend |
-| U1 | Feel and polish | The owner's iPhone pass fixed, and motion, feedback and satisfaction app wide | Using it for a day on the iPhone |
-| L2 | Landing glass and photo gradients | Liquid glass throughout the landing page, gradients made from photos, a real iPhone 16 frame | Looking at it on desktop and on the iPhone |
-| L3 | Landing glass that bends, and Safari's top bar | Glass that blurs more and warps at its edges, no white bar above the page, an ink Sign in | Looking at it on the iPhone |
-| P1 | Palette and photo gradients | The owner's wider palette, and every gradient remade from it | Seeing them on the iPhone |
-| L4 | Landing rework | Safari's bars left alone, a calm new footer, real liquid glass, a phone-width nav, playful scroll animation, speed | The landing on the iPhone and desktop |
-| U2 | App polish: corners, transitions, update prompt, speed | Every radius nested, in-page changes that animate, an update prompt that goes away, a faster app | A day of use on the iPhone |
-| U3 | Text hierarchy and cards (Mobbin research) | App text hierarchy and card design from research on Airbnb and Shop, run in a separate session | The app on the iPhone |
-| M9 | Hardening and release | Settings, export, accessibility, speed, security, production | Full device check |
+Each item: what, why, where to start, and when it is done. Ship a round as one branch, shown on localhost, released when the owner says (`docs/WORKFLOW.md` sections 2 and 5).
 
-After M8 the order is N1, N2, B1, D2, N3, T1, O1, L1, S1, then M9. D2 comes straight after B1 so every later screen is built on the refined look. It follows the owner's MoSCoW and RICE prioritization: B1 is Must (the owner made barcode scanning a main feature); N1, N2, N3, T1 and L1 are Should, with N2 the highest RICE score of the features not yet built, (high value for little effort), S1 is Could, and M9 hardens everything last. O1 comes after N2 and T1 so onboarding can personalize with supplements, the faster pace and hybrid templates, and before L1 because the landing page leads into it.
+## 0. What is left before Ontrack is a finished app (the R5 evaluation, 23 Nov)
 
-After S1 the order is U1, then M9, in lanes (worktrees, `docs/WORKFLOW.md` section 1):
+Must have, for a real launch:
+- **Payments for real:** Stripe webhooks (renewals, failed payments, cancellations made outside the app) and the customer portal; live mode with the business verified, receipts, a refund policy, Thai VAT once sales pass 1.8M baht a year. Vercel Hobby forbids commercial use, so Vercel Pro; Supabase Pro for daily backups.
+- **A trial reminder** two days before the first bill. Ontrack sends no email or push today (out of scope), so it is an in-app card only until one exists.
+- **AI cost control at scale:** the R5 model loses money if every free user's photo runs on a 3.x Flash class price. Route the free plan (or routine photos) to Flash-Lite and measure the accuracy cost, keep the fair use cap.
+- **AI accuracy measured:** a weighed-plate truth set (30 to 40 photos, kitchen scale) and `eval:vision` with repeats and the new replay mode, before claiming R5's resolver gains. The coach has never run on live Gemini (item 3).
+- **Analytics and error reporting:** nothing measures the funnel (landing, onboarding, plans sheet, Checkout) or reports a crash; both are needed to run the business the model describes, privacy first.
+- **Legal review:** the terms, privacy page and PDPA consent by a lawyer before taking money.
+- **Accessibility on a device:** a VoiceOver pass on the iPhone (the stress matrix checks sizes and contrast, not a screen reader's flow).
 
-| Wave | Lanes, side by side | Why this order |
-| --- | --- | --- |
-| 1 | S1b, and U1a | Onboarding shares no screen with the social screens |
-| 2 | U1b, and M9a | U1b changes the shared look; M9a's new Settings screens take it through the shared components |
-| 3 | U1c | Motion and feel go over every screen once they all exist, Settings included |
-| 4 | M9b, and L2 | Hardening measures the app as it ships, then `v1.0.0`; L2 (the owner's desktop pass) touches only the landing page, and M9b re-measures after it merges |
+Should have:
+- Personal portion priors (the user's own grams habit per food) and a per-dish calibration from corrected meals (AI audit items 10 and 11).
+- Food table gaps (item 4) and the oil and sugar questions for drinks and fried dishes (AI audit item 9).
+- The rest of the wording audit (`docs/archive/WORDS-AUDIT-R5.md`, 62 rows, about 20 applied in R5): "item" to "food", "Save meal" to "Save for next time", first person on the friends screens.
 
-U1 comes before the release because the owner judged the UI about 70 percent and the UX about 30 percent done on the iPhone (13 November): too few good feelings. M9 is split because its features (M9a) and its hardening (M9b) are different work, and only M9b has to be last.
+Nice to have: a monthly recap, milestones without streaks, progress photos, Ask Ontrack from other pages (item 8).
 
-Order: the look is settled before any screen is built (M1), and the logic is settled before any screen needs it (M2, M3). With the owner present, no screen work past M1 starts before he approves the gallery. In an unattended run a clean rubric pass stands in for that approval and the gallery goes on his review list.
+## 1. The owner's iPhone pass of v2.3.0
 
-Shipped milestones (M0 to L1) have their sections in `docs/archive/BUILD-PLAN-SHIPPED.md`.
+- **What:** the owner looks at the app on the phone in both styles: the style card on Today, Bento's flat pages, the check-in sheet, the nav and header glass (they said they would show how the glass looks on their phone), the sheet colour under the keyboard, the Done and Undo feel, and the light gradient panels in dark mode (never reviewed).
+- **Why:** headless WebKit draws no blur and cannot judge feel; every round so far has come back with device feedback.
+- **Done when:** their notes are fixed or recorded in `docs/DIRECTIONS.md`.
 
-## S1 Friends, profiles and the food map
+## 2. Thai photo accuracy, measured
 
-Read: `docs/PRD.md` F16, F17 and section 7, `docs/TECH-SPEC.md` sections 3, 5, 6 and 8, `docs/SCREENS.md`.
+- **What:** run the photo eval (`pnpm eval:vision`) on Thai dishes with the R2 fields (`dish`, `protein`, `extras`) and the 983-food table, including the protein variants (pad kra pao with chicken, pork, beef, duck, shrimp). Add photos of the new variants to the fixtures.
+- **Why:** Thai food is the reason the app exists. The last eval (R2) was text only, 30 of 30; no photo eval has run since the table grew. The key is on the paid tier, so it is cheap.
+- **Where:** `scripts/eval-vision.ts`, `server/vision/` (`thai.ts`, `prompt.ts`), `docs/AI-THAI.md`, results in `docs/EVAL-NOTES.md`. 30 s between photos.
+- **Done when:** a dated entry in EVAL-NOTES with dish, protein and calorie accuracy, and fixes for what it finds.
 
-1. Data: profiles with a unique handle, friendships (requested, accepted), shared meals (owner, photo path, rounded latitude and longitude, taken at, title, nutrition). Row level security: a shared row is readable by its owner and accepted friends only. Shared photos sit in a private bucket readable the same way. Removing a friendship, unsharing and deleting the account all take effect on the server. Supabase advisors clean.
-2. The mock backend matches, and a visibility suite runs on both backends: a stranger cannot read, a friend can, a removed friend cannot.
-3. Profile and friends screens: handle, display name, optional photo, search by handle, requests, remove, the program visibility switch.
-4. "Share to map" in the photo review sheet, off by default. Location: the GPS data in the original file if present, read before the canvas strips it, otherwise one `getCurrentPosition` call after the user turns sharing on. Round to about 100 m on the device.
-5. The map: MapLibre GL JS with OpenFreeMap tiles (free, no key; confirm the terms and show the attribution), in a lazy chunk. Photo pins with the person's avatar, grouping with "+N more", back and recenter controls, a bottom sheet with friend search, taking its layout cues from Instagram's map and its look from DESIGN.md. Tapping a pin shows the photo, title and nutrition. Offline shows a plain message.
-6. Add one landing page section about friends and the map.
+## 3. The coach on live Gemini
 
-Gate: end to end tests on the mock with two users: request, accept, share, see the pin, open it, unshare, remove the friend. The visibility suite passes on live Supabase. The initial JavaScript budget still holds. `verify-ui` passes.
-Owner checks: make a second account a friend, share three meals from different places, check what each account can see.
+- **What:** call `/api/coach` live for each kind (week, check-in, session, gap, ask, program) and check the words against the catalog's voice (DESIGN.md section 2), the latency (program retries twice at 25 s), and the shared daily quota (`AI_DAILY_USER_LIMIT`, photos and coach together).
+- **Why:** only the mock has spoken so far.
+- **Where:** `server/coach/`, `server/handlers/coach.ts`, TECH-SPEC section 7b.
+- **Done when:** an entry in EVAL-NOTES and prompt fixes for anything off voice.
 
-## U1 Feel and polish (the owner's iPhone pass, 13 November)
+## 4. Food table gaps
 
-The owner used the deployed app in Safari on an iPhone, annotated ten screenshots, and asked for animation, micro-interactions and satisfaction throughout. The screenshots are in `/Users/admin/destination/ontrack-design/feedback/2026-11-13/`; the number after each step names one. Read the text first and open a screenshot only if a step is unclear. Three pull requests.
+- 7-Eleven ready meals (no box weights found), jok variants, beef and pork khao soi, pad pak dishes, garlic pepper stir fries.
+- A plain table item picked for a fried food loses its oil flag (`docs/AI-THAI.md`).
+- **Where:** `data/thai/` (sources and `recipes/`), `pnpm foods:build`.
 
-Read: `docs/DESIGN.md` sections 4 to 9 and its motion section, `docs/SCREENS.md` for each screen touched, `docs/DECISIONS.md` O1 and D2.
+## 5. Small design leftovers
 
-### U1a Onboarding feel (alongside S1b)
+- From the design critic after R3: planned days in ink on Train's week, the Up next ring, the sparkle on Adjust with AI.
+- **Where:** `src/tabs/Train.svelte`; run `verify-ui` on Train after.
 
-1. A choice never advances on its own. A tap selects it and enables Continue; Continue moves on. Every choice step, Goal and How fast included. The owner overrides O1's auto-advance: record it in `docs/DECISIONS.md`. (9, 10)
-2. A selected choice is clear in both themes: its icon tile turns violet with a light glyph, and the card's selected fill or ring has 3:1 contrast against the page. (9)
-3. Goal: a small underlined link under the three goals, "Not what you're looking for?", shows two more. Gain weight, for lean people who want to put on weight in a healthy way and keep their muscle. And one between Build muscle and Lose fat (lose fat while building muscle). Use the fewest new rules: Gain weight is the gain goal leading with the faster pace where `paceOptions` offers it; the in-between goal eats near maintenance with the cut's protein. A new number goes through `science-check` into `constants.ts`, words through the voice guide. (9)
-4. Building your plan: after the last step, a short progress screen (about 2 seconds: three steps tick off, energy, training days and protein, then a success mark), then Your plan with its numbers counting up. Under reduced motion, Your plan shows at once. It names only work the app really does. (8)
+## 6. Loose ends found in the 22 Nov docs refresh
 
-Gate: end to end tests on the mock: a tap selects without leaving the step and enables Continue; each new goal makes the plan its engine vector expects; the progress screen leads to Your plan and is skipped under reduced motion. The new gesture counts against O1's (one more per choice step) in the pull request.
-Owner checks: onboard cold on the iPhone, once per new goal.
+- **Unused since R3:** the coach's `session` kind has no caller (the finish screen went with set logging; `sessionFacts`, its server rules and template remain): wire it to Done or remove it. `bits-ui` is a direct dependency nothing imports.
+- **Unused tokens:** `--glass-*`, `--bar-*`, `--blur-glass`, `--blur-bar`, `--fade-h`, `--spring-reveal` in `design/tokens.css` (only `contrast.test.ts` still reads `glass-solid` and `bar-solid`).
+- **Bento's corners are untested:** the `unnested` corner gate in the stress matrix runs only in Tray.
+- **More stale comments:** `Header.svelte` line 19 ("fades into the canvas"), `SupplementSheet.svelte` ("the one violet featured card").
+- **`--grad-streak`** is still named streak although the box is Consistency and the app has no streaks. Rename with `scripts/gradients.sh`.
 
-### U1b The look, app wide (after S1b, alongside M9a)
+## 7. Engine questions (need `science-check` before any number changes)
 
-1. Corners nest: an inner radius is the outer radius minus the gap between them, and padding grows with the radius so text never sits in the curve. Keep the large outer radius the owner likes and raise the padding to match. Write the pairs in `docs/DESIGN.md` and apply them to Today's hero and stat tiles, Your plan, Progress's cards, list cards and sheets. (2, 5, 8)
-2. Dark theme contrast: the page, cards, the selected day in the week, "Back to today", the dock and its edge stand apart. Controls and selected states need 3:1 against what is next to them (WCAG 1.4.11); a unit test checks the token pairs in both themes. (3)
-3. The dock's active tab: a grey pill behind it, its icon and label in violet. (3, 7)
-4. Content scrolling under a sticky header or a sheet header fades out (a short blur or gradient into the page or sheet colour) instead of meeting a hard edge. (2, 6)
-5. A line with two facts (a meal's time and its source, and the like) separates them with a designed divider, never a comma or a middle dot; the second fact one step lighter. (2)
-6. The status bar area continues the colour at the top of the screen: the hero on the landing page and onboarding, the page elsewhere (`theme-color` and the top safe area). (1)
-7. The Add sheet's Photo card takes the sheet's one gradient, as its featured method. The button sweep test allows that one featured card, changed in its own commit. (4)
-8. The look items carried from earlier milestones: calorie numbers in rows without "kcal" (Search, Add's supplement rows, Review, History); the Session sheet's heading and intensity control (SCREENS.md asks for a segmented control); "Continue with Google" at `lg` in content; Today's training card caption wrapping on the SE; the Add sheet's Recent and Saved rows without a leading tile; Your plan's protein in Display where section 7 asks for Body 600.
-9. Rubric items for 1 to 6 in `docs/DESIGN.md` section 9, so the design critic checks them from now on.
+- **Calories out** on Progress is the plan's baseline plus logged exercise, a formula. Consider showing the check-in's measured maintenance once it exists.
+- **Program changes apply from today.** Changing the program after training today also changes today's target. Consider asking "from today or tomorrow?" when a session is already done.
+- **Cardio setup is descriptive:** speed, incline and level do not change the energy; intensity does. ACSM walking and running equations would need sources and constants in `constants.ts`.
 
-Gate: the token contrast test; the stress matrix green; the button sweep green; one design critic round over every screen with the new rubric items, all fixed.
-Owner checks: the same screens on the iPhone, light and dark.
+## 8. Ideas from research the owner has not asked for
 
-### U1c Motion and feel, app wide (after U1b and M9a)
+Suggest these, do not build them unasked: a monthly recap, neutral milestones, coach marks, a first-meal moment, meals grouped by time, per-exercise charts, creating a saved meal from scratch, camera flash and zoom, Ask Ontrack from pages other than Progress, progress photos. Sources: `docs/FEATURE-RESEARCH.md`, `ontrack-design/research/`.
 
-1. Motion tokens in `design/tokens.css` (durations beside the existing `--ease-*`), used by everything below. Reduced motion turns movement into a fade or nothing.
-2. Every tap answers: a pressed state on buttons, rows and tiles; `haptic` where the platform allows, on select, log, delete and reaching a target.
-3. Changing numbers move: Today's totals count and its bars fill when a meal is logged, edited or removed; Progress's figures count up on arrival.
-4. Lists move: a new meal slides in, a deleted one collapses. Swipe to delete works like iOS Mail: the row slides over a full height red action clipped to its card, with no edges showing, a long swipe deletes, Undo stays. (7)
-5. Waits show progress: the photo under a scanning effect with its steps in words while it is read; skeletons, never a blank screen, while something loads.
-6. Satisfaction, never guilt: a target reached turns its bar green with a short check and pulse; the check-in reveals its result; a finished session ticks off.
-7. A UX walk: count taps and time the eight main tasks (photo, scan, search, describe, quick add, a supplement, a weigh-in, a session done) and fix whatever makes one slower, unclear or silent. Counts in the pull request.
+## Not planned
 
-Gate: end to end tests that each animation reaches its end state and that reduced motion leaves none running; the start time and the initial JavaScript budget hold; short videos of the eight tasks (Playwright, light and dark) on `pr-assets` under `u1/` for the owner.
-Owner checks: use it for a day on the iPhone. Does it feel good?
-
-## L2 Landing glass and photo gradients (the owner's desktop pass, 13 November)
-
-The owner liked the landing page on desktop but saw too little glass and a plain gradient. References in `/Users/admin/destination/ontrack-design/feedback/2026-11-13-landing/`: `landing-01.png` (the page now), `glass-01` to `glass-05` (OneFin's glass mixed with solid elements: the footer's glass panels over a glow, glass cards and chips around a ring, the invoice's frosted chips over a gradient header, a glass chip on a photo, glass percentage chips on a donut), `photogradient-ui.png` (the tool's controls: gradient type, warp shape, warp, warp size, noise, colours), `pad-krapao-fried-eggs.avif` (the meal photo to use).
-
-1. Gradients made from photos, not CSS ramps: make the hero and section backgrounds with https://photogradient.com/ (from a photo, or colours set by hand from the brand palette; warp, positions and a little grain), exported as images. If the site cannot be driven, generate the same kind of warped mesh gradient with grain with a script in `scripts/`. Keep assets small (WebP; the grain as a tiny tiling overlay if that is lighter).
-2. Glass throughout, mixed with solid elements as in the references: the nav, floating chips, feature cards over the gradients, the footer's panels. The material follows the "iOS 26 Liquid Glass (Community)" file in Figma (through the Figma MCP): blur, light edge, specular rim, tint. A solid fallback without `backdrop-filter`; text on glass keeps 4.5:1.
-3. The phone: frame the app with the iPhone 16 from "iPhone 16 and 16 Plus Mockups (Community)" in Figma, top part only, with its status bar and Dynamic Island, so the app no longer touches the top of the phone.
-4. The meal photo in every mockup is the owner's pad kra pao with fried eggs.
-
-If the Figma MCP cannot open a community file without its link, record "Needs your action: the two Figma links" and build from the published dimensions meanwhile.
-
-Gate: `landing.spec.ts` and reduced motion green; initial JavaScript unchanged (the landing is lazy); the landing chunk and its images within a budget stated in the pull request; screenshots at 1440 desktop and 390 phone, light and dark; one critic round against the references.
-Owner checks: the landing on desktop and on the iPhone.
-
-## L3 Landing glass that bends, and Safari's top bar (the owner's iPhone pass, 13 November, after L2)
-
-References: `safari-top-white-bar.jpg` in `/Users/admin/destination/ontrack-design/feedback/2026-11-13-landing/`, and L2's pull request screenshots.
-
-1. The landing's top "Sign in" is the ink pill: black with white words (white with ink in dark).
-2. No white bar above the page in Safari on iOS: the status bar area shows the colour at the top of the screen (the hero's sky on the landing, the page elsewhere). Safari 26 ignores `theme-color` and samples the page's own background and what sits at the top, so the page background and the hero extend under the top safe area (`viewport-fit=cover` is set), while the nav keeps its place below the status bar (`env(safe-area-inset-top)`).
-3. Liquid glass that is liquid: more blur, and what is behind warps a little at the glass's edges, as in iOS 26. Safari draws no SVG displacement inside `backdrop-filter`, so over the landing's fixed images (the gradients) draw the bend with a lens layer (the same image, scaled and blurred, aligned to the background and masked to the rim); where the browser supports displacement, use it; elsewhere the stronger blur and rim. Keep it light on the GPU (CI's WebKit has none).
-
-4. The footer, in two states (`footer-currently.png`, `new-footer-unextended.png`). The page ends on the teaser: after the last call to action and "Already have an account? Sign in", the top of the giant wordmark with its glow and the back-to-top button cut by the bottom of the screen. Scrolling on past the bottom meets a sticky resistance (the teaser follows the pull at a fraction); past a threshold it gives way and the extended footer opens; let go earlier and it springs back. Once the extended part has left the screen upwards it closes again, so it has to be pulled open again. The extended footer is redesigned to look professional, as OneFin's footer (glass-01): the wordmark behind, nested glass panels with link columns (start, learn, good to know, contact and legal) and a bottom bar. A button opens it too, for keyboards and screen readers; reduced motion opens it without the pull.
-
-Gate: `landing.spec.ts`, reduced motion and the stress matrix green; the press check covers the landing; the footer's pull, spring back, open, close on leaving and the button in end to end tests; screenshots at 390 and 1440, light and dark, against L2's; one critic round.
-Owner checks: the landing in Safari on the iPhone: the top bar, the glass bending at its edges, pulling the footer open.
-
-## Round 3: the owner's review of L2 and L3 (13 November, evening)
-
-The owner judged most of the L2 and L3 round not good. Screenshots in `/Users/admin/destination/ontrack-design/feedback/2026-11-13-round3/` (numbered below). Quality comes first this round: low quality work costs more tokens in rework than it saves. Lanes: P1 first and fast, then L4 and U2 side by side; U3 runs in another session from `docs/briefs/U3-text-and-cards.md`.
-
-### P1 Palette and photo gradients (first, small)
-
-1. Brand colours stay `#381ac9` and `#bebeff`. Add every colour in screenshot 07 as an occasional palette: `#EDDECC`, `#6C9BBB`, `#FFFFFF`, `#F89183`, `#E46D58`, `#F9BBA1`, `#A7BEDB`, `#A69EB4`. Tokens in `design/tokens.css` with names and a rule in DESIGN.md for when each may be used (never for actions; contrast checked).
-2. Remake every gradient, app and landing, in the manner of screenshot 08: photogradient.com with Gradient "Sharp Bézier", Warp Shape "Worley Noise", Warp about 25 percent, Warp Size about 35 percent, Noise about 60 percent, eight colour points. Each gradient unique (different colours chosen from the palette and different positions), all from the same settings. Through Yab (`yab exec`), settings and colours recorded in `scripts/gradients.sh`. Dark theme variants deeper but from the same palette. The grain comes from the export, not a separate overlay, unless that is lighter.
-3. Text on every gradient keeps its contrast (`contrast.test.ts` and the landing's check).
-
-Gate: verify; screenshots of every gradient in place, light and dark; one critic round.
-
-### L4 Landing rework (after P1, alongside U2)
-
-1. Safari's bars: no tint, band or fade at the top or the bottom (screenshots 02 to 05; before L3 the bottom was fine). Read WebKit's own notes on how Safari 26 colours its bars (fixed elements at the edges, the page background, `theme-color` ignored) and cite them in DECISIONS. If no colour can be made to disappear, roll L3's change back to the state before it.
-2. The footer: roll back to a normal footer, no pull to open. Redesign it to fit the landing's mood, with some creativity and professional restraint: not OneFin's footer, not the current violet panels.
-3. Liquid glass (screenshot 06): no frosted layer behind text where the text already reads; the nav bar gets the liquid glass too; on desktop the nav is no wider than a phone (about 430 px), centred. Study https://github.com/callstack/liquid-glass (clone it, read its effect styles, tint, interactive highlight and the container that merges nearby glass) and make our own web version of those behaviours; record what was taken in DECISIONS.
-4. Scroll animation, maximised: playful, asymmetric, like the "02 Training" card; looping ambient motion; micro-interactions on every control. Reduced motion respected.
-5. Speed: measure the landing (largest paint, total weight, images, fonts, layout shift, scroll smoothness with the glass) before and after, and fix what costs most.
-
-Gate: landing tests, reduced motion, stress; before and after numbers in the PR; screenshots at 390 and 1440, light and dark; two critic rounds; videos of the scroll for the owner.
-
-### U2 App polish (after P1, alongside L4)
-
-1. Every corner radius nested (screenshot 01: the dock's active pill against the dock); audit every element with a check that measures it.
-2. Changes on the same page animate, minimal and pleasant: content swaps, toggles, segmented controls, expanding rows, values changing, items appearing. Reduced motion respected.
-3. "A new version is ready": after Update it must not come back on reload. Find why the waiting service worker does not take over, fix it, test it.
-4. Speed: measure the app (start, interaction, bundle) and fix what costs most.
-
-Gate: verify, stress, motion tests, the update flow tested; before and after numbers; one critic round.
-
-### U3 Text hierarchy and cards (separate session)
-
-Run by the owner in another session: `docs/briefs/U3-text-and-cards.md`. Research on Mobbin (Airbnb, Shop), then the app's text hierarchy and card design.
-
-## M9 Hardening and release
-
-Two pull requests: M9a during wave 2, M9b last.
-
-### M9a Settings and the last features (alongside U1b)
-
-1. Settings in full, exports, The science (with the food table credits: INMU's Thai FCD, SG FoodID, USDA, Open Food Facts), Report a problem.
-2. Privacy and Terms as plain language drafts in `public/`, marked for the owner's review, covering sharing, location, friends and barcode lookups; the line on the sign in sheet.
-3. Gain mode easy adds (127 foods carry `dense`), the finish day control, in-app reminders (F23, no push).
-4. Carried from earlier milestones (details under each in `docs/STATE.md`, `docs/archive/STATE-NOTES.md` and `docs/BLOCKERS.md`): Settings' "Thai dishes first", stepping down from the faster pace, the check-in day (keeping `checkinDueOn` the one rule), experience asked in context on Train, an exact birth year; deleting a meal's thumbnail with the meal (and on Undo's expiry) and a replaced profile photo; a supplement entry's time editable in the amount step; "Use default values" for products; the label reader leaving a nutrient it cannot see empty instead of 0; the "onboarding failed to load" console error in the smoke run.
-
-Gate: end to end tests for each setting, export, the reminders and easy adds on the mock; conformance green on both backends.
-
-### M9b Hardening and release (last)
-
-1. Accessibility pass against `docs/DESIGN.md` section 12. The stress matrix over every screen.
-2. Speed: bundle report against the budgets in the PRD, lazy chunks confirmed, start time measured with a year of seeded data.
-3. Offline pass: every feature in airplane mode.
-4. Security: advisors, a scan of the build output for secrets, quota tests, the account deletion test.
-5. Production: environment variables and the production Gemini key in Vercel, the budget alert, the production smoke test, the N1 Thai photo rerun that the free key could not finish (`docs/EVAL-NOTES.md`), `README.md`, tag `v1.0.0`.
-
-Gate: every bar in `docs/PRD.md` section 8 is measured and met, with the numbers in the pull request. All feature tests pass.
-Owner checks, on the iPhone, installed: sign in, onboard, log by every method, weigh in, edit a program, go offline and log, come back online, switch theme and text size, export, sign out and back in on a second device if one is available.
-
-## After v1
-
-Set by set logging. Not planned: a Thai language interface (English only, for the class), push notifications (not possible from an iPhone browser tab without install), and a dietitian's review (Ontrack is a class proof of concept and is not launched publicly; accuracy comes from checked sources).
+Push notifications, Apple Health, Watch or anything needing a paid Apple developer account; a Thai language interface; set by set workout logging and a workout timer (removed on purpose, 18 Nov); a dietitian's review; a public launch.

@@ -17,26 +17,22 @@
   import { db } from '$lib/db/store.svelte';
   import { view } from '$lib/view.svelte';
   import { sheets } from '$lib/sheets.svelte';
+  import { membership } from '$lib/billing.svelte';
   import { prefs } from '$lib/prefs.svelte';
   import { accountOf, checkinDueOn } from '$lib/model/progress';
-  import { baseline, calorieStatus, effectiveRate, proteinBand, roundTarget, weeklyEee, U, V } from '$lib/model/engine';
-  import { totals } from '$lib/model/workout';
+  import { baseline, dayCounts, effectiveRate, proteinBand, roundTarget, weeklyEee, U, V } from '$lib/model/engine';
   import DayChart from '$lib/components/DayChart.svelte';
   import AskSheet from '../flows/progress/AskSheet.svelte';
   import Sparkles from '@lucide/svelte/icons/sparkles';
   import { planFor } from '$lib/model/day';
   import { addDays, dayTitle, daysBetween, shortDate } from '$lib/model/dates';
-  import { kgToLb, lbToKg, weightText } from '$lib/model/units';
+  import { kgToLb, weightText } from '$lib/model/units';
   import { haptic } from '$lib/haptics';
   import Check from '@lucide/svelte/icons/check';
   import Disclosure from '$lib/components/Disclosure.svelte';
   import Dumbbell from '@lucide/svelte/icons/dumbbell';
   import ChevronRight from '@lucide/svelte/icons/chevron-right';
-  import { guardrails } from '$lib/model/engine';
-  import { picker } from '$lib/picker.svelte';
-  import { setGoalWeight } from '$lib/actions';
   import { LIBRARY } from '$lib/data/exercises';
-  import { LIMITS, weightWheel } from '../flows/onboarding/draft';
   import { num } from '$lib/model/format';
   import HistorySheet from '../flows/progress/HistorySheet.svelte';
   import CoachCard from '$lib/components/CoachCard.svelte';
@@ -101,21 +97,6 @@
     if (left <= 0) return t.progress.goalReached;
     return t.plan.toGo(weightText(left, profile?.units ?? 'metric'));
   });
-  const round1 = (x: number) => Math.round(x * 10) / 10;
-  async function askGoal() {
-    if (!plan || !profile) return;
-    const minKg = Math.max(guardrails({ age: 0, heightCm: profile.heightCm, weightKg: plan.weightKg }).minGoalWeightKg, LIMITS.weightKg[0]);
-    const { min, max } = weightWheel(profile.units, minKg);
-    const from = round1(inUnit(goalKg ?? trendNow ?? plan.weightKg));
-    const v = await picker.ask({
-      title: t.plan.goalWeight, value: Math.min(max, Math.max(min, from)), min, max, decimals: 1, unit: metric ? t.after.kg : t.after.lb,
-      hint: t.plan.goalWeightHint, clearable: !!goalKg,
-      range: (typed) => (typed < min ? t.plan.goalWeightLow(weightText(minKg, profile.units)) : t.body.weightRange(weightText(LIMITS.weightKg[0], profile.units, 0), weightText(LIMITS.weightKg[1], profile.units, 0))),
-    });
-    if (v === null) return;
-    setGoalWeight(today, v === 0 ? null : Math.max(minKg, Math.round((metric ? v : lbToKg(v)) * 100) / 100));
-  }
-
 
   const measured = $derived(result?.stats.tdeeObserved ?? null);
   const formula = $derived(plan && profile ? baseline(plan.bmr, profile.neat) + weeklyEee(plan) / U.daysPerWeek : 0);
@@ -124,7 +105,7 @@
   const complete = $derived(weeks.flatMap((w) => w.days.filter((d) => d.complete)));
   const mean = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
   const bars = $derived(
-    weeks.map((w) => ({ avg: w.meanIntake, target: w.meanTarget, reached: w.meanIntake != null && !!plan && !!profile && calorieStatus(plan.goal, w.meanIntake, w.meanTarget, profile.sex) === 'on' })),
+    weeks.map((w) => ({ avg: w.meanIntake, target: w.meanTarget, reached: w.meanIntake != null && !!plan && !!profile && dayCounts(plan.goal, w.meanIntake, w.meanTarget, profile.sex) })),
   );
   const four = $derived(acct ? acct.weeks(today, 4) : []);
 
@@ -188,8 +169,6 @@
   const proDays = $derived(inRange.map((d) => ({ value: d.items ? d.protein : null, faint: !d.complete, reached: d.complete && inBand(d.protein) })));
   const proteinHit = $derived(complete.filter((d) => inBand(d.protein)).length);
   const proBars = $derived(weeks.map((w) => ({ avg: w.meanProtein, target: plan?.proteinG ?? 0, reached: w.meanProtein != null && inBand(w.meanProtein) })));
-  // training: kg lifted in the range, from the sets logged
-  const liftedKg = $derived(db.live('slog').map((r) => r.data).filter((l) => l.workout && l.date >= from && l.date <= today).reduce((a, l) => a + totals(l.workout!).volumeKg, 0));
   // what the chart has to draw; with nothing, it says so in its middle
   const hasData = $derived(
     show === 'weight' ? points.length > 1 : show === 'training' ? training.planned > 0 : inRange.some((d) => d.items > 0),
@@ -256,11 +235,11 @@
 
       {#snippet box(label: string, value: string, cap: string, corner: string, testid: string, onclick?: () => void)}
         {#if onclick}
-          <button type="button" class="bg-surface-2 active:bg-surface-3 {corner} flex min-h-[calc(var(--s-16)+var(--s-4))] min-w-0 flex-col justify-center rounded-md px-4 py-2 text-left transition-colors duration-[var(--d-press)]" {onclick} data-testid={testid}>
+          <button type="button" class="bg-surface-2 active:bg-surface-3 {corner} flex min-h-[calc(var(--s-16)+var(--s-4))] min-w-0 flex-col justify-start rounded-md px-4 py-3 text-left transition-colors duration-[var(--d-press)]" {onclick} data-testid={testid}>
             <span class="text-caption text-ink-2">{label}</span><span class="text-subhead num">{value}</span>{#if cap}<span class="text-caption text-ink-2">{cap}</span>{/if}
           </button>
         {:else}
-          <div class="bg-surface-2 {corner} flex min-h-[calc(var(--s-16)+var(--s-4))] min-w-0 flex-col justify-center rounded-md px-4 py-2" data-testid={testid}>
+          <div class="bg-surface-2 {corner} flex min-h-[calc(var(--s-16)+var(--s-4))] min-w-0 flex-col justify-start rounded-md px-4 py-3" data-testid={testid}>
             <span class="text-caption text-ink-2">{label}</span><span class="text-subhead num">{value}</span>{#if cap}<span class="text-caption text-ink-2">{cap}</span>{/if}
           </div>
         {/if}
@@ -307,7 +286,7 @@
             {@render box(t.progress.boxCheckin, acct.points.length < V.minWeighIns ? t.after.daysOf(num(acct.points.length), num(V.minWeighIns)) : t.after.daysOf(num(Math.min(V.minSpanDays, spanDays)), num(V.minSpanDays)), acct.points.length < V.minWeighIns ? t.after.weighIns : t.after.days, 'rounded-bl-sheet', 'progress-box-pace')}
           {/if}
           {@render box(t.progress.boxWeek, changeOf(7) ?? t.progress.dash, changeOf(7) ? unit : '', '', 'progress-box-week')}
-          {@render box(t.progress.boxGoal, goalKg ? weightText(goalKg, profile.units) : t.progress.boxSet, goalKg ? goalLine : '', 'rounded-br-sheet', 'progress-goal-row', askGoal)}
+          {@render box(t.progress.boxGoal, goalKg ? weightText(goalKg, profile.units) : t.goal[plan.goal], goalKg ? goalLine : t.progress.change, 'rounded-br-sheet', 'progress-goal-row', () => (sheets.goal = true))}
         {:else if show === 'calories'}
           {@render box(t.progress.boxIn, avgKcal == null ? t.progress.dash : num(avgKcal), avgKcal == null ? '' : t.after.perDay, 'rounded-bl-sheet', 'progress-box-in')}
           {@render box(t.progress.boxOut, avgOut == null ? t.progress.dash : num(avgOut), avgExercise ? t.progress.outSplit(num(avgExercise)) : t.after.perDay, '', 'progress-box-out')}
@@ -319,14 +298,15 @@
         {:else}
           {@render box(t.progress.boxStrength, num(training.strength, 1), t.after.aWeek, 'rounded-bl-sheet', 'progress-box-strength')}
           {@render box(t.progress.boxCardio, num(training.cardio), t.after.minAWeek, '', 'progress-box-cardio')}
-          {@render box(t.progress.boxLifted, weightText(liftedKg, profile.units, 0), '', 'rounded-br-sheet', 'progress-box-lifted')}
+          <!-- R5: sessions marked Done of those planned in the range (set logging, and the kg it lifted, went in R3) -->
+          {@render box(t.progress.boxDone, t.after.daysOf(num(training.done), num(training.planned)), t.after.sessions, 'rounded-br-sheet', 'progress-box-done')}
         {/if}
       </div>
     </section>
 
     <CoachCard req={weekReq} eyebrow={t.progress.yourWeek} testid="progress-coach">
       {#snippet action()}
-        <Button variant="plain" size="sm" class="-ml-4 mt-1 -mb-2" onclick={() => (asking = true)} data-testid="ask-open"><Sparkles size={16} strokeWidth={2.25} aria-hidden="true" />{t.ask.open}</Button>
+        <Button variant="plain" size="sm" class="-ml-4 mt-1 -mb-2" onclick={() => (membership.pro ? (asking = true) : (sheets.paywall = { from: 'ask' }))} data-testid="ask-open"><Sparkles size={16} strokeWidth={2.25} aria-hidden="true" />{t.ask.open}</Button>
       {/snippet}
     </CoachCard>
     {#if weekReq}<AskSheet bind:open={asking} facts={weekReq.facts} localDate={today} />{/if}
@@ -419,6 +399,7 @@
               </div>
             </div>
           {/each}
+          {#if plan}<p class="text-caption text-ink-2" data-testid="consistency-counts">{t.progress.counts[plan.goal]}</p>{/if}
         </div>
       </Disclosure>
     </Card>

@@ -82,7 +82,8 @@ export const C = {
   fatFloorPerKg: k(0.5, 'g per kg', 'S7', 'verified', 'Bottom of 0.5 to 1.5'),
 
   // On track, section 9
-  onTrackBand: k({ gainMin: 0.95, gainMax: 1.15, maintainMin: 0.9, maintainMax: 1.1, loseMin: 0.9, loseMax: 1.05 }, 'share of the day target', 'OT', 'assumption'),
+  onTrackBand: k({ gainMin: 0.9, gainMax: 1.15, maintainMin: 0.9, maintainMax: 1.1, loseMin: 0.9, loseMax: 1.1 }, 'share of the day target', 'OT', 'assumption', 'R5: 10 percent under, about the error of a logged day'),
+  onTrackGainCap: k(1.25, 'share of the day target', 'OT', 'assumption', 'R5: a gain day over its band still counts up to here'),
   proteinOnTrack: k(0.9, 'share of the protein target', 'OT', 'assumption'),
 
   // Trend and check-in, section 10
@@ -123,6 +124,19 @@ export const C = {
   underweightBmi: k(18.5, 'kg/m2', 'S15', 'verified'),
   gentleOnlyBmi: k(20, 'kg/m2', 'OT', 'assumption'),
   doctorBmi: k(16, 'kg/m2', 'S15', 'verified', 'Severe thinness'),
+
+  // AI resolver, R5 (docs/AI-THAI.md): checks on the model's reply against the food table's own numbers
+  rowKcalGap: k({ estimateShare: 0.35, kcal: 25 }, 'share of the model estimate, or kcal per 100 g if more', 'OT', 'assumption',
+    'A table row further than this from the model estimate swaps to a closer sibling plate, else its confidence drops to low'),
+  rowFatGap: k(5, 'g of fat per 100 g', 'OT', 'assumption', 'Model fat this far above the row keeps the oil question on'),
+  portionBand: k({ min: 0.3, max: 3 }, 'times the table serving', 'OT', 'assumption', 'Grams outside are clamped to the edge and marked low confidence'),
+  portionShrink: k({ low: 0.25, medium: 0.1, high: 0 }, 'weight of the table serving, in log space', 'OT', 'assumption', 'grams to the power 1 - w, times the serving to the power w'),
+  countBand: k({ min: 0.6, max: 1.6 }, 'times the table piece weight', 'OT', 'assumption', 'A counted note (2 eggs) whose grams per piece is outside becomes count times piece'),
+  rangeWidth: k({ medium: 1.4, low: 2 }, 'high over low grams', 'OT', 'assumption', 'A wider range from the model caps confidence at medium, then low'),
+  fuzzyMatch: k({ jaccard: 0.75, margin: 0.1, letters: 3 }, 'token overlap, lead over the runner up, Thai letters per token', 'OT', 'assumption',
+    'A name no plate or alias read is matched by tokens; never across proteins'),
+  altKcalGap: k(0.15, 'share of the chosen kcal', 'OT', 'assumption', 'Alternatives are returned only when one differs from the choice by more than this'),
+  altMax: k(3, 'alternatives per item', 'OT', 'assumption'),
 } as const;
 
 type Values<T> = { [K in keyof T]: T[K] extends { value: infer V } ? V : never };

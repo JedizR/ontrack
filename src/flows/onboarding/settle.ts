@@ -21,8 +21,8 @@ export function settle() {
   try {
     finishOnboarding(toRecords(d, today(), nowIso()));
     prefs.draft = null;
-    // Today's Getting started card, on the phone that saved the plan (O1)
-    prefs.firstDay = today();
+    // R5, the owner: the plans sheet follows Save the plan, once, on the phone that saved it
+    prefs.paywallDue = true;
   } catch (e) {
     // nothing was written; back to Your plan rather than a Today with no plan
     console.error('the plan could not be saved', e);

@@ -8,7 +8,7 @@ The reuse map is in `docs/ARCHITECTURE.md`. This skill is the method.
 
 ## Scouting (once, in M0, in a subagent)
 
-Brief for the `repo-scout` subagent: read the watermelon repo and write `docs/PORT-NOTES.md`, at most 150 lines, covering for each row of the reuse map:
+Brief for the `repo-scout` subagent: read the watermelon repo and write `docs/archive/PORT-NOTES.md`, at most 150 lines, covering for each row of the reuse map:
 
 - the exact source files and their line counts
 - what the code depends on (other files, packages, globals)
@@ -19,7 +19,7 @@ Also record: the exact dependency versions from `package.json`, the contents of 
 
 ## Porting (every time)
 
-1. Read the relevant lines of `docs/PORT-NOTES.md`, not the watermelon repo.
+1. Read the relevant lines of `docs/archive/PORT-NOTES.md`, not the watermelon repo.
 2. `cp` the source file into place, then edit it. Do not read a file and type it out again.
 3. Strip what is app specific. Rename to Ontrack's vocabulary. Replace Thai strings with catalog keys.
 4. Bring the tests that cover the file and make them pass before building on it.

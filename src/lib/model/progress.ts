@@ -92,7 +92,7 @@ export function account(r: Records) {
     const items = meals.reduce((a, m) => a + m.items.filter((i) => i.kcal > 0 || !i.supplementId).length, 0);
     const d = { target: v.target, intake: v.eaten.kcal, items, closed: closed.has(date) };
     return {
-      date, ...d, protein: v.eaten.protein, onTrack: meals.length > 0 && v.status === 'on', complete: isComplete({ day: 0, ...d }), sessions: v.sessions,
+      date, ...d, protein: v.eaten.protein, onTrack: meals.length > 0 && v.counts, complete: isComplete({ day: 0, ...d }), sessions: v.sessions,
       living: plan.baseline,
       exercise: Math.round(v.sessions.filter((s) => s.status === 'done').reduce((a, s) => a + sessionKcal(s.session, plan.weightKg), 0)),
     };

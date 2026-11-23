@@ -3,6 +3,7 @@
      it. Friends open from their box; Settings is the button pinned at the foot. Mounts the Edit profile sheet, which the
      food map and the friends panel open too, so there is only ever one. -->
 <script lang="ts">
+  import { membership } from '$lib/billing.svelte';
   import { prefs } from '$lib/prefs.svelte';
   import { untrack } from 'svelte';
   import Settings from '@lucide/svelte/icons/settings';
@@ -64,7 +65,7 @@
       <div class="bg-surface-2 rounded-t-sheet flex items-center gap-4 rounded-b-md p-5 [@media(max-height:620px)]:p-3" data-testid="me-head">
         <Avatar {name} local={social?.photo ?? null} size="lg" class="[@media(max-height:620px)]:size-14" />
         <div class="min-w-0 flex-1">
-          <p class="text-subhead truncate" data-testid="me-name">{name}</p>
+          <p class="flex min-w-0 items-center gap-2"><span class="text-subhead truncate" data-testid="me-name">{name}</span>{#if membership.pro}<span class="bg-accent text-on-accent text-caption flex-none rounded-full px-2 py-0.5 font-semibold" data-testid="me-pro">{t.paywall.badge}</span>{/if}</p>
           <p class="text-callout text-ink-2 truncate">{social ? t.social.handle(social.handle) : t.profile.noHandle}</p>
         </div>
       </div>
@@ -77,10 +78,14 @@
           {@render box(t.profile.days, days, '')}
         </div>
       </div>
-      <div class="bg-surface-2 flex min-h-[var(--s-16)] min-w-0 items-center justify-between gap-3 rounded-md px-4 py-2" data-testid="me-goal">
-        <div class="flex min-w-0 flex-col"><span class="text-caption text-ink-2">{t.profile.goal}</span><span class="text-subhead">{plan ? t.goal[plan.goal] : ''}</span></div>
-        {#if pace}<span class="text-caption text-ink-2 max-w-[45%] text-right">{pace}</span>{/if}
-      </div>
+      <!-- R5, the owner: the goal opens the goal sheet, to change it here -->
+      <button type="button" class="bg-surface-2 active:bg-surface-3 flex min-h-[var(--s-16)] min-w-0 items-center justify-between gap-3 rounded-md px-4 py-2 text-left transition-colors duration-[var(--d-press)]" disabled={!plan} onclick={() => (sheets.goal = true)} data-testid="me-goal">
+        <span class="flex min-w-0 flex-col"><span class="text-caption text-ink-2">{t.profile.goal}</span><span class="text-subhead">{plan ? t.goal[plan.goal] : ''}</span></span>
+        <span class="flex min-w-0 items-center gap-1">
+          {#if pace}<span class="text-caption text-ink-2 text-right">{pace}</span>{/if}
+          <ChevronRight class="text-ink-2 flex-none" size={20} strokeWidth={2} aria-hidden="true" />
+        </span>
+      </button>
 
       <button type="button" class="bg-surface-2 active:bg-surface-3 flex min-h-14 items-center gap-3 rounded-t-md rounded-b-sheet px-5 py-3 text-left transition-colors duration-[var(--d-press)]" onclick={() => (sheets.profile = {})} data-testid="me-edit">
         <Pencil class="flex-none" size={20} strokeWidth={2} aria-hidden="true" />
