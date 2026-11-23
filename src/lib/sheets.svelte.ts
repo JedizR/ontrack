@@ -20,6 +20,10 @@ export const sheets = $state({
   scanFrom: null as { code: string } | { label: Blob } | null,
   /** what the Review sheet analyses: a photo just taken, or a description */
   review: null as { kind: 'photo'; file: Blob } | { kind: 'text'; text: string } | null,
+  /** R5: the date a rest day's activity is added to */
+  activity: null as string | null,
+  /** R5: the session key just added from a sheet, inked in on Today as Done is, once the sheet has gone */
+  inked: null as string | null,
   /** the session whose menu is open: Skip today */
   session: null as { date: string; key: string; name: string } | null,
   /** the Supplement sheet (N2): `id` null sets one up; `meal` edits a logged entry */
@@ -30,6 +34,10 @@ export const sheets = $state({
   checkin: null as string | null,
   /** the food map and friends (S1b), full screen over the tab */
   friends: false,
+  /** R5: the plans: after onboarding, at a free limit, from a Pro feature or Settings; welcome back from Checkout */
+  paywall: null as { from: 'onboarding' | 'limit' | 'ask' | 'adjust' | 'settings' | 'welcome' } | null,
+  /** R5: the goal, its pace and goal weight, from Progress's Goal box and Profile's goal */
+  goal: false,
   /** the Profile page, from the header's person button; Settings is a button at its foot */
   me: false,
   /** Edit profile, over the Profile page or the map; `then` runs once it is saved (a friend request waiting for a profile) */
@@ -39,4 +47,4 @@ export const sheets = $state({
 });
 
 /** The sheets the logging flow owns, loaded together. */
-export const logOpen = () => sheets.add || sheets.saved || sheets.scan || sheets.search || sheets.quick || sheets.how || sheets.describe || sheets.review !== null || sheets.meal !== null || sheets.session !== null || sheets.supplement !== null;
+export const logOpen = () => sheets.add || sheets.saved || sheets.scan || sheets.search || sheets.quick || sheets.how || sheets.describe || sheets.review !== null || sheets.meal !== null || sheets.session !== null || sheets.supplement !== null || sheets.activity !== null;

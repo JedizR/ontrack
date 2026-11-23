@@ -3,6 +3,8 @@
 //   pnpm eval:vision <photo folder> [<output folder for the raw replies>]
 //   pnpm eval:vision --label <folder of nutrition label photos>   (B1: the label reader, printed values only)
 //   pnpm eval:vision --text <cases.json> [<output folder>]   (R2: described meals, each scored on the id it should reach)
+//   pnpm exec tsx scripts/eval-vision.ts --replay <folder of saved raw replies>   (R5: re-scores replies saved by the runs above
+//     with today's resolver, offline: no API call, no key; the folder is what the runs wrote to their output folder)
 // shortcut: resizes with macOS `sips`; the evaluation runs on the owner's Mac, not in CI
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
@@ -15,8 +17,36 @@ import { labelOutput, toLabel } from '../server/vision/label.ts';
 
 const label = process.argv.includes('--label');
 const text = process.argv.includes('--text');
+const replay = process.argv.includes('--replay');
 const [dir, out] = process.argv.slice(2).filter((a) => !a.startsWith('--'));
 if (!dir) throw new Error('usage: pnpm eval:vision <photo folder> [<output folder>]');
+
+/** One resolved meal as lines: the title and total, then each item. A photo's grams are checked against the table's serving. */
+const meal = (data: { title: string; items: Parameters<typeof resolveItems>[0] }, photo: boolean) => {
+  const items = resolveItems(data.items, { photo });
+  const total = items.reduce((s, i) => s + i.kcal, 0);
+  return { total, line: `"${data.title}", ${total} kcal\n` + items.map((i) => `    ${i.name}, ${i.grams} g, ${i.kcal} kcal, ${i.source}${i.foodId ? ` (${i.foodId})` : ''}${i.hiddenFat ? ', hidden fat' : ''}, ${i.confidence}${i.alternatives ? `, or ${i.alternatives.map((a) => `${a.name} ${a.kcal}`).join(' / ')}` : ''}`).join('\n') };
+};
+
+if (replay) {
+  // the saved files: a photo run wrote the raw reply, a text run wrote { case: { text, expect }, raw }
+  let kcal = 0, files = 0, right = 0, cases = 0;
+  for (const f of readdirSync(dir).filter((n) => n.endsWith('.json')).sort()) {
+    const saved = JSON.parse(readFileSync(join(dir, f), 'utf8'));
+    const isCase = 'case' in saved && 'raw' in saved;
+    const parsed = modelOutput.safeParse(isCase ? saved.raw : saved);
+    if (!parsed.success || !parsed.data.is_food) { console.log(`${f}  ${parsed.success ? 'not food' : 'reply does not match the schema'}`); continue; }
+    const { total, line } = meal(parsed.data, !isCase);
+    files++, kcal += total;
+    if (isCase) {
+      const ids = resolveItems(parsed.data.items).map((i) => i.foodId ?? 'estimate');
+      cases++, right += +ids.includes(saved.case.expect);
+      console.log(`${ids.includes(saved.case.expect) ? 'right' : 'WRONG'}  ${saved.case.text}  ->  ${ids.join(', ')}`);
+    } else console.log(`${f}  ${line}`);
+  }
+  console.log(`\n${files} replies re-scored, ${kcal} kcal in all${cases ? `, ${right} of ${cases} cases right` : ''}`);
+  process.exit(0);
+}
 if (out) mkdirSync(out, { recursive: true });
 const tmp = mkdtempSync(join(tmpdir(), 'ontrack-eval-'));
 const provider = await visionProvider();
@@ -64,9 +94,7 @@ for (const f of readdirSync(dir).filter((n) => /\.(jpe?g|png|heic)$/i.test(n)).s
     else if (!parsed.success) line = `reply does not match the schema`;
     else if (!parsed.data.is_food) line = 'not food';
     else {
-      const items = resolveItems(parsed.data.items);
-      const total = items.reduce((s, i) => s + i.kcal, 0);
-      line = `"${parsed.data.title}", ${total} kcal\n` + items.map((i) => `    ${i.name}, ${i.grams} g, ${i.kcal} kcal, ${i.source}${i.foodId ? ` (${i.foodId})` : ''}${i.hiddenFat ? ', hidden fat' : ''}, ${i.confidence}`).join('\n');
+      line = meal(parsed.data, true).line;
     }
     console.log(`${f}  ${(ms / 1000).toFixed(1)} s  ${line}`);
   } catch (e) {

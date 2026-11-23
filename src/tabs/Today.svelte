@@ -84,7 +84,7 @@
 
   const day = $derived(viewOf(view.date));
   // R1: eight weeks of days to slide through, the last one today (the strip anchors it); older days are in History
-  const week = $derived(Array.from({ length: 56 }, (_, i) => addDays(view.today, i - 55)).map((date) => ({ date, onTrack: !!byDate.get(date)?.length && viewOf(date)?.status === 'on' })));
+  const week = $derived(Array.from({ length: 56 }, (_, i) => addDays(view.today, i - 55)).map((date) => ({ date, onTrack: !!byDate.get(date)?.length && !!viewOf(date)?.counts })));
   const logged = $derived([...(byDate.get(view.date) ?? [])].sort((a, b) => b.data.at.localeCompare(a.data.at)));
   // a supplement with no calories is not a meal row: it shows as taken (F21)
   const isTaken = (m: Meal) => m.method === 'supplement' && totals(m.items).kcal === 0;
@@ -95,7 +95,8 @@
   const lead = $derived.by(() => {
     if (!day) return { n: 0, cap: '', on: false };
     const { kcal } = day.eaten;
-    const on = kcal >= day.zone[0] && kcal <= day.zone[1];
+    // R5: today, on track in the band; a past or finished day, as it counts (under the band on a lose goal counts too)
+    const on = view.past || db.get('day', ids.day(view.date))?.closed ? day.counts : kcal >= day.zone[0] && kcal <= day.zone[1];
     if (kcal > day.target) return { n: Math.round(kcal - day.target), cap: t.after.kcalOver, on };
     return { n: Math.round(day.target - kcal), cap: day.plan.goal === 'gain' ? t.after.kcalToGo : t.after.kcalLeft, on };
   });
@@ -193,6 +194,17 @@
   let justDone = $state<{ key: string; x: number; y: number } | null>(null);
   // the words of the box just tapped turn once the ink has reached them, a quarter of a second in
   let lateKey = $state<string | null>(null);
+  // R5: an activity added on a rest day lands as Done does: the ink spreads from where the plus was, the burst, the count
+  $effect(() => {
+    const key = sheets.inked;
+    if (!key) return;
+    sheets.inked = null;
+    const box = document.querySelector(`[data-testid="session-${key}"]`)?.closest('[data-testid="todo"]')?.getBoundingClientRect();
+    justDone = { key, x: box ? box.width - 40 : 0, y: box ? box.height / 2 : 0 };
+    lateKey = key;
+    setTimeout(() => { if (lateKey === key) lateKey = null; }, 240);
+    setTimeout(() => (justDone = null), 1400);
+  });
   const inked = (key: string, status: string | undefined) => status === 'done' && lateKey !== key;
   function markDone(e: MouseEvent, s: Session) {
     const btn = e.currentTarget as HTMLElement;
@@ -343,10 +355,22 @@
               </div>
             </div>
           {:else}
-            <div class="bg-surface-2 text-ink rounded-bl-sheet flex min-h-[calc(var(--s-16)+var(--s-4))] min-w-0 flex-1 items-center gap-3 rounded-md py-2 pr-2 pl-4" data-testid="todo">
-              <span class="text-ink-2 inline-grid"><TrainIcon /></span>
-              <p class="text-body text-ink-2 font-semibold">{(day.plan.sessions ?? sessions).length ? t.today.restDay : t.today.noProgram}</p>
-            </div>
+            {#if (day.plan.sessions ?? sessions).length && view.date <= view.today}
+              <!-- R5, the owner: a rest day asks for an activity, added for this day only -->
+              <button type="button" class="bg-surface-2 text-ink rounded-bl-sheet active:bg-surface-3 flex min-h-[calc(var(--s-16)+var(--s-4))] min-w-0 flex-1 items-center gap-3 rounded-md py-2 pr-2 pl-4 text-left transition-colors duration-[var(--d-press)]" onclick={() => (sheets.activity = view.date)} data-testid="todo">
+                <span class="text-ink-2 inline-grid"><TrainIcon /></span>
+                <span class="flex min-w-0 flex-1 flex-col">
+                  <span class="text-body text-ink-2 font-semibold">{t.today.restDay}</span>
+                  <span class="text-caption text-ink-2" data-testid="rest-add">{t.activity.restAdd}</span>
+                </span>
+                <span class="bg-surface text-ink grid size-11 flex-none place-items-center rounded-full" aria-hidden="true"><Plus size={20} strokeWidth={2.25} /></span>
+              </button>
+            {:else}
+              <div class="bg-surface-2 text-ink rounded-bl-sheet flex min-h-[calc(var(--s-16)+var(--s-4))] min-w-0 flex-1 items-center gap-3 rounded-md py-2 pr-2 pl-4" data-testid="todo">
+                <span class="text-ink-2 inline-grid"><TrainIcon /></span>
+                <p class="text-body text-ink-2 font-semibold">{(day.plan.sessions ?? sessions).length ? t.today.restDay : t.today.noProgram}</p>
+              </div>
+            {/if}
           {/each}
         </div>
         <!-- the weigh-in: one tap, a weight once done, the prompt while it is due -->
@@ -433,7 +457,7 @@
       </section></div>
     {:else if nothingCard}
       <div in:collapse out:collapse={{ leave: true }}><Card data-testid="nothing-card" {...rise(2)}>
-        <CardHead eyebrow={t.today.meals} title={t.today.nothingTitle} line={t.today.nothingLine}>
+        <CardHead eyebrow={t.today.meals} title={t.today.nothingTitle}>
           {#snippet action()}<Button size="sm" onclick={() => (sheets.add = true)} data-testid="nothing-add">{t.today.nothingAction}</Button>{/snippet}
         </CardHead>
       </Card></div>

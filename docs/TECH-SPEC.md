@@ -2,18 +2,21 @@
 
 ## 1. Stack
 
-| Layer | Packages | Version policy |
+Every dependency is pinned to an exact version in `package.json` and installed with `--frozen-lockfile`.
+
+| Layer | Packages | Notes |
 | --- | --- | --- |
-| Runtime | Node, pnpm through corepack | Copy `.nvmrc` and `pnpm-workspace.yaml` from watermelon |
-| App | svelte 5.57.3, vite 8.3.5, @sveltejs/vite-plugin-svelte 7.3.1, typescript 6.0.3, svelte-check 4.7.7 | Watermelon pins |
-| Style | tailwindcss 4.3.3, @tailwindcss/vite 4.3.3, clsx 2.1.1 | Watermelon pins |
-| Components | bits-ui 2.20.2, vaul-svelte 1.0.0-next.7, svelte-sonner 1.2.2, @lucide/svelte 1.62.0, shadcn-svelte CLI | Watermelon pins. CLI at latest |
-| Data | idb-keyval 6.3.0, zod, @supabase/supabase-js | New ones at latest stable, pinned in M0 |
-| Charts | d3-scale 4.0.2, d3-shape 3.2.0 | Watermelon pins |
-| PWA | vite-plugin-pwa 2.0.0, workbox-window 7.4.1, @vite-pwa/assets-generator 2.0.0 | Watermelon pins |
-| Server | @google/genai, Vercel functions on the Node runtime with web standard handlers | Latest stable, pinned |
-| Tests | vitest 5.0.5, @playwright/test 1.64.1 | Watermelon pins |
-| Tools | prettier, prettier-plugin-svelte, tsx, vercel CLI, supabase CLI | Latest stable, pinned |
+| Runtime | Node 22 (`.nvmrc`, `engines` `>=22.12`), pnpm 12.15.0 through corepack | `pnpm-workspace.yaml` holds the build script allowlist |
+| App | svelte 5.57.3, vite 8.3.5, @sveltejs/vite-plugin-svelte 7.3.1, typescript 6.0.3, svelte-check 4.7.7 | TypeScript stays on the major svelte-check supports |
+| Style | tailwindcss and @tailwindcss/vite 4.3.3, clsx 2.1.1, @fontsource-variable/geist 5.3.0, @fontsource/roboto-condensed 5.3.0 | Tokens in `design/tokens.css` |
+| Components | vaul-svelte 1.0.0-next.7 (the shadcn Drawer), svelte-sonner 1.2.2, @lucide/svelte 1.62.0, bits-ui 2.20.2 | `components.json` for the shadcn CLI. Nothing in `src/` imports bits-ui |
+| Data | idb-keyval 6.3.0, zod 4.6.7, @supabase/supabase-js 2.119.0 | `shared/` uses `zod/mini` |
+| Charts and map | d3-scale 4.0.2, d3-shape 3.2.0, maplibre-gl 6.16.0 | Map in its own lazy chunk |
+| Camera | barcode-detector 3.2.3 on zxing-wasm 3.1.6 | A unit test keeps the two versions matched |
+| PWA | vite-plugin-pwa 2.0.0, workbox-window 7.4.1, @vite-pwa/assets-generator 2.0.0 | |
+| Server | @google/genai 3.0.0, Vercel functions on the Node runtime with web standard handlers | |
+| Tests | vitest 5.0.5, @playwright/test 1.64.1, fake-indexeddb 6.2.7 | |
+| Tools | prettier 3.9.10, prettier-plugin-svelte 4.1.1, tsx 4.23.15, vercel CLI, supabase CLI | |
 
 A bump needed for a fix is fine. Note it in `docs/DECISIONS.md`.
 
@@ -24,51 +27,53 @@ api/                    Vercel wrappers, a few lines each
   analyze.ts  coach.ts  account.ts  cron/keepalive.ts
 server/                 portable handlers and server only code. Never imported from src/
   handlers/   analyze.ts coach.ts account.ts keepalive.ts
-  vision/     provider.ts gemini.ts mock.ts prompt.ts schema.ts resolve.ts
-  coach/      provider.ts gemini.ts mock.ts prompt.ts validate.ts
+  vision/     provider.ts gemini.ts mock.ts prompt.ts schema.ts resolve.ts thai.ts label.ts
+  coach/      provider.ts gemini.ts mock.ts prompt.ts validate.ts program.ts mock-program.ts
   auth.ts quota.ts env.ts http.ts call.ts
-shared/                 types and zod schemas used by both sides
-  records.ts analysis.ts coach.ts
+shared/                 types, zod schemas and text matching used by both sides
+  records.ts analysis.ts coach.ts text.ts
 src/
-  main.ts App.svelte app.css
+  main.ts App.svelte app.css fonts.css
   tabs/       Today.svelte Train.svelte Progress.svelte
-  flows/      onboarding/ signin/ add/ checkin/
-  settings/
+  flows/      landing/ onboarding/ signin/ log/ checkin/ train/ progress/ plan/ social/ style/
+  settings/   the settings sheet and its boxes, the plan page, The science
+  gallery/    the component gallery at /gallery: dev server and Vercel previews only
   lib/
-    model/    engine/ dates.ts units.ts format.ts day.ts trend.ts foods.ts export.ts
-    geo.ts    the food map's positions: GPS from a photo, rounding, pin grouping (S1)
-    db/       store.svelte.ts schema.ts migrations.ts
+    model/    engine/ coach.ts day.ts progress.ts replan.ts easy.ts products.ts supplements.ts workout.ts
+              export.ts dates.ts units.ts format.ts
+    db/       store.svelte.ts migrations.ts
     sync/     engine.svelte.ts
     backend/  types.ts supabase.ts mock.ts index.ts
-    actions.ts
-    data/     foods.json exercises.ts templates.ts
+    actions.ts coach.ts session.svelte.ts view.svelte.ts sheets.svelte.ts picker.svelte.ts friends.svelte.ts
+    prefs.svelte.ts barcode.ts scanner.ts photo.ts geo.ts session-title.ts wheel.ts swipe.ts keyboard.ts haptics.ts platform.ts
+    data/     foods.json foods.ts exercises.ts templates.ts off.ts sources.ts science.ts body.ts
     i18n/     en.ts index.ts
-    components/   ui/ (shadcn) plus app components
-    prefs.svelte.ts theme.ts textsize.ts haptics.ts
-data/                   food-list.csv (curated, committed), usda/ (downloaded, ignored)
-dev/                    mock-backend.ts api-middleware.ts
-scripts/                build-foods.ts check-pwa.mjs
-supabase/migrations/
-tests/                  unit/ e2e/ fixtures/
-design/ docs/ public/
+    components/   ui/ (the shadcn Drawer) plus app components
+data/                   food-list.csv, sgfoodid/, thai/ (owner/, inmu/, pages.json, recipes/): committed. usda/ is downloaded and ignored
+dev/                    mock-backend.ts api-middleware.ts seed.ts
+scripts/                build-foods.ts check-pwa.mjs bundle-report.mjs smoke-prod.sh live-env.sh eval-vision.ts barcode-fixtures.ts gradients.sh
+supabase/               config.toml, migrations/ (0001 to 0006), templates/code.html
+tests/                  unit/ e2e/ fixtures/ (vision/, off/, barcodes/, photos)
+design/                 tokens.css brand/ gradients/ references/
+public/                 icons, favicon, privacy.html, terms.html
+docs/ .github/workflows/ci.yml  index.html vite.config.ts playwright.config.ts pwa-assets.config.ts vercel.json
 ~~~
 
-`src/lib/model/engine/` holds `constants.ts bmr.ts plan.ts targets.ts checkin.ts program.ts index.ts`. It imports nothing outside itself.
+`src/lib/model/engine/` holds `constants.ts bmr.ts plan.ts targets.ts checkin.ts program.ts trend.ts index.ts`. It imports nothing outside itself. `server/` reads the food table, the engine's constants, the exercise library and the templates from `src/lib/`; nothing in `src/` imports `server/` or `api/`.
 
 ## 3. Data model
 
-Everything a user owns is a record in a named collection. Weekdays are numbered 0 for Monday to 6 for Sunday. Dates are `YYYY-MM-DD` strings in the device's calendar.
+Everything a user owns is a record in a named collection. Weekdays are numbered 0 for Monday to 6 for Sunday. Dates are `YYYY-MM-DD` strings in the device's calendar. The zod schemas are in `shared/records.ts` (`zod/mini`); the types below show their shape. An id is 1 to 80 characters and a record's data at most 32 KB (the database allows 64 KB).
 
 ~~~ts
-// shared/records.ts
 export type Collection =
   | 'profile' | 'plan' | 'weight' | 'meal' | 'saved'
   | 'program' | 'slog' | 'checkin' | 'day' | 'food' | 'supplement' | 'product' | 'social';
 
 export type Rec<T = unknown> = {
   collection: Collection;
-  id: string;          // 1 to 80 characters
-  updatedAt: number;   // ms since epoch on the editing device. Set only in actions.ts
+  id: string;
+  updatedAt: number;   // ms since epoch on the editing device. Set only by the store, through actions.ts
   deleted?: true;      // tombstone
   data: T;
 };
@@ -112,8 +117,9 @@ export type MealItem = {
   name: string;
   grams?: number;
   kcal: number; protein: number; carbs: number; fat: number;
-  source: 'db' | 'estimate' | 'manual' | 'yours'    // yours: the user's remembered numbers for the food (F15)
-    | 'off' | 'label' | 'typical';                  // B1: Open Food Facts, a pack's label read and confirmed, a supplement on typical values
+  source: 'db' | 'estimate' | 'manual'
+    | 'yours'                          // the user's remembered numbers for the food (F15)
+    | 'off' | 'label' | 'typical';     // Open Food Facts, a pack's label read and confirmed, a supplement on typical values (B1)
   foodId?: string;
   confidence?: 'high' | 'medium' | 'low';
   supplementId?: string;              // a logged supplement (F21): the supplement it came from
@@ -125,10 +131,10 @@ export type Meal = {                  // id: uuid
   at: string;                         // ISO timestamp
   title: string;
   method: 'photo' | 'text' | 'search' | 'quick' | 'saved' | 'supplement' | 'barcode';
-  items: MealItem[];
+  items: MealItem[];                  // at most 30
   thumb?: true;
-  ai?: { model: string; raw?: unknown };   // compact model output, at most 4 KB, kept for later evaluation
-  share?: { lat: number; lng: number };    // S1, F17: on the food map, where the photo was taken, rounded to 0.001 degree
+  ai?: { model: string; raw?: unknown };   // the model's output, kept for later evaluation unless over 8,000 characters
+  share?: { lat: number; lng: number };    // on the food map (S1, F17): where the photo was taken, rounded to 0.001 degree
 };
 
 export type Saved = { title: string; items: MealItem[]; uses: number; lastUsedAt: string };   // id: uuid
@@ -140,11 +146,15 @@ export type Session = {
   type: 'strength' | 'circuit' | 'cardio' | 'sport' | 'mobility' | 'walk';
   minutes: number;
   intensity: 'light' | 'moderate' | 'hard';
+  setup?: { machine: 'treadmill' | 'bike' | 'elliptical' | 'rower' | 'stairs' | 'outdoor'; speedKmh?: number; inclinePct?: number; level?: number };   // a cardio session's machine and settings (R2)
   exercises?: Array<{ exerciseId: string; sets: number; repsMin: number; repsMax: number }>;
 };
-export type Program = { name: string; sessions: Session[] };   // id: 'program'
+export type Program = { name: string; sessions: Session[] };   // id: 'program'. At most 28 sessions
 
-export type SessionLog = { date: string; sessionKey: string; status: 'done' | 'skipped' };  // id: `slog:${date}:${key}`
+// id: `slog:${date}:${key}`. Every session is marked Done or Skipped; there is no set by set log (R3).
+// `workout` is the old set log (R1): nothing writes it now, Train and Progress still read it from old days.
+type Workout = { startedAt: string; seconds: number; effort?: number; lifts: Array<{ exerciseId: string; sets: Array<{ kg: number; reps: number }> }> };
+export type SessionLog = { date: string; sessionKey: string; status: 'done' | 'skipped'; workout?: Workout };
 
 export type Checkin = {               // id: `checkin:${date}`
   date: string;
@@ -159,13 +169,13 @@ export type Checkin = {               // id: `checkin:${date}`
   planId?: string;
 };
 
-export type Day = { date: string; closed?: true };            // id: `day:${date}`
+export type Day = { date: string; closed?: true };            // id: `day:${date}`. "Finish day" closes it
 
 // Remembered nutrition (F15), what the user corrected a food to. id: the food's table id, or `name:` and its
 // normalised name (lower case, accents dropped, Thai script kept) when it has none; at most 80 characters.
 export type FoodMemory = { name: string; per100: { kcal: number; protein: number; carbs: number; fat: number } };
 
-// A supplement set up from its tub's label (F21, N2). id: uuid. scoopG 0: the scoop's weight is not known.
+// A supplement set up from its tub's label (F21). id: uuid. scoopG 0: the scoop's weight is not known.
 export type Supplement = {
   name: string;                       // 1 to 60 characters
   kind: 'whey' | 'casein' | 'plant' | 'gainer' | 'creatine' | 'other';
@@ -173,7 +183,7 @@ export type Supplement = {
   perScoop: { kcal: number; protein: number; carbs: number; fat: number };
   lastScoops: number;                 // 0.5 to 10: where the amount step starts, the scoops the user takes at first
   lastMix?: { foodId: string; grams: number };   // the milk from the food table it was last mixed with; none is water
-  typical?: true;                     // B1: still on the table's typical values, labelled Typical until set from the tub
+  typical?: true;                     // still on the table's typical values, labelled Typical until set from the tub
 };
 
 // A packaged food by its barcode (F22, B1). id: the barcode, 13 digits (a UPC-A gets a leading 0, as Open Food Facts
@@ -190,7 +200,7 @@ export type Product = {
   lastG?: number;                     // where the amount starts next time
 };
 
-// Your profile for friends (F16, S1). id: 'social'. Published by the server as it syncs (section 6).
+// Your profile for friends (F16, S1). id: 'social'. Published by the database as it syncs (section 6).
 export type Social = {
   handle: string;                     // 3 to 20 of a-z, 0-9 and _, unique across users
   name: string;                       // 1 to 40 characters
@@ -199,38 +209,39 @@ export type Social = {
 };
 ~~~
 
-Remembered nutrition is written by `rememberFoods` when a Review or Meal sheet is saved with items the user corrected (per 100 g, two decimals, from the item's numbers and grams; an item without grams or past 900 kcal in 100 g is not remembered) and removed by `forgetFood` ("Use default values"). It is applied on the device: to a photo or description's items after the server's resolution, and to Search's results and portion step. The server never sees it.
+Remembered nutrition is written by `rememberFoods` when a Review or Meal sheet is saved with items the user corrected (per 100 g, two decimals, from the item's numbers and grams; an item without grams, or past `foodSchema`'s bounds of 1,000 kcal or 100 g of a macro in 100 g, is not remembered) and removed by `forgetFood` ("Use default values"). It is applied on the device: to a photo or description's items after the server's resolution, and to Search's results and portion step. The server never sees it.
 
-A logged supplement (F21) is a meal with `method: 'supplement'`: its first item is the supplement at its scoops (`supplementId`, `scoops`, source `yours`, from the label's values per scoop), then the milk it was mixed with as a table item. `logSupplement` writes it from the supplement's current label; a new entry's amount and mix become the supplement's `lastScoops` and `lastMix`, a corrected one leaves them. A supplement with no calories is shown as taken, and its item does not count toward a complete day. Presets start from the food table where USDA has the powder (whey: SR Legacy 173180, plant: SR Legacy 173181, soy based); casein, mass gainer and creatine have no USDA entry and start at 0, for the label.
+A logged supplement (F21) is a meal with `method: 'supplement'`: its first item is the supplement at its scoops (`supplementId`, `scoops`, source `yours`, from the label's values per scoop), then the milk it was mixed with as a table item. `logSupplement` writes it from the supplement's current label; a new entry's amount and mix become the supplement's `lastScoops` and `lastMix`, a corrected one leaves them. A supplement with no calories is shown as taken, and its item does not count toward a complete day. Whey and plant presets start from the food table (`whey-protein`, `soy-protein-powder`); casein, mass gainer and creatine have no table entry and start at 0, for the label.
 
 A scanned product (F22) is kept in `product` when the user logs it from Open Food Facts or confirms its label, so the next scan of that barcode is instant and works offline. `logProduct` writes a meal with `method: 'barcode'` and one item carrying `barcode`, labelled as the product is; it keeps the amount as the product's `lastG`. Correcting such an item in the Meal sheet (`rememberFoods`) rewrites the product's values as Yours instead of a food memory. A supplement saved with the table's typical values untouched carries `typical`; its logged items read Typical, and setting it from the tub (a scan or a label photo) clears it.
 
-Friends and the food map (S1, F16, F17). What a user owns stays a record: the profile for friends (`social`), the program, and a meal's place on the map (`share`). `saveSocial` checks a new or changed handle with the server first (so a handle needs the network) and saves the rest offline; a new photo is redrawn as a 256 px square on a canvas (`avatarPhoto`, so the file's location is dropped), stored like a thumbnail and uploaded from the same queue. `shareMeal(id, position)`, or `logReviewed(meal, thumb, position)` from the review sheet, needs a meal with a photo and rounds the position before it is stored (`roundPosition`, 0.001 degree); `unshareMeal` drops `share`. The server publishes these records into read only tables (section 6), so sharing works offline and takes effect when it syncs. Friendships, search and friends' data are read from the server: those actions need the network and answer `{ ok: false, error: 'offline' }` without it (`SocialResult` in `actions.ts`). A friend's photo is fetched each time and never kept on the phone. Positions come from the photo file's Exif (`photoPosition`, read before the canvas strips it; JPEG and HEIC) or one `getCurrentPosition` (S1b); `clusterPins(pins, zoom)` groups pins closer than 48 px at a zoom level, newest first, for "+N more". `mapMeals(box)` takes the map's bounds as they come and wraps them (`wrapBox`).
+Friends and the food map (S1, F16, F17). What a user owns stays a record: the profile for friends (`social`), the program, and a meal's place on the map (`share`). `saveSocial` checks a new or changed handle with the server first (so a handle needs the network) and saves the rest offline; a new photo is redrawn as a 256 px square on a canvas (`avatarPhoto`, so the file's location is dropped), stored like a thumbnail and uploaded from the same queue. `shareMeal(id, position)`, or `logReviewed(meal, thumb, position)` from the review sheet, needs a meal with a photo and rounds the position before it is stored (`roundPosition`); `unshareMeal` drops `share`. The database publishes these records into read only tables (section 6), so sharing works offline and takes effect when it syncs. Friendships, search and friends' data are read from the server: those actions need the network and answer `{ ok: false, error: 'offline' }` without it (`SocialResult` in `actions.ts`). A friend's photo is fetched each time and never kept on the phone. Positions come from the photo file's Exif (`photoPosition`, read before the canvas strips it; JPEG and HEIC) or one `getCurrentPosition`; `clusterPins(pins, zoom)` groups pins closer than 48 px at a zoom level, newest first, for "+N more". `mapMeals(box)` takes the map's bounds as they come and wraps them (`wrapBox`).
 
 Derived and never stored: day totals, the day's target, on track status, trend weight, weekly averages. They are functions in `src/lib/model/`.
 
-Device only, kept in `localStorage` under `ontrack:prefs` and never synced: theme, text size, last tab, dismissed cards, the id of the last signed in user, and the onboarding draft.
+Device only, kept in `localStorage` under `ot-ui` (`src/lib/prefs.svelte.ts`) and never synced: `theme`, `fontSize`, the style `look` (`tray` or `bento`; the landing page forces Tray whatever is picked) and `stylePicked` (Today's one-time style card was answered), the last `tab`, `lastUser` and `lastEmail`, the onboarding `draft`, `photoOk` and `locationOk` (the photo and location notices were accepted), `firstDay` (the day this phone saved the plan; nothing reads it now), `suggestOff` (Train's suggested program dismissed), `gapFolded` (Today's suggestions folded), `remind` (the reminder cards), `thai` (Thai dishes first in search, or follow the phone's languages) and `liftAsked`. `index.html` reads `ot-ui` before first paint. Coach answers are kept under `ot-coach:*` (section 7b), and supabase-js keeps the session under `ontrack:auth`. Sign out clears `lastUser`, `lastEmail` and the per account notices.
 
 ## 4. On the device
 
-- One idb-keyval store per user, named `ontrack-<userId>`. Keys: `r:<collection>:<id>` holds a `Rec`. `outbox` holds the keys changed since the last successful push. `meta` holds `{ schemaVersion, cursor, lastSyncAt }`. `blob:<mealId>` holds a thumbnail. `blobq` holds meal ids waiting to upload.
-- At start the store reads every record into `$state` maps, one per collection. Screens read from these maps. Schema changes are handled by numbered migrations in `src/lib/db/migrations.ts`, as in watermelon. A migration takes the records and the meta. Adding a collection needs one: an older version on another device skips the new collection's records but moves its cursor past them, so the migration sets a cursor back to the epoch (schema 2 for `food` in N1, schema 3 for `supplement` in N2, schema 4 for `product` in B1), which pulls everything once without the first load state.
-- Every mutation goes through `actions.ts`: validate with zod, stamp `updatedAt` with `Date.now()`, write memory, write IndexedDB, add the key to the outbox, wake the sync engine. Actions that delete return an undo function.
-- Onboarding happens before sign-in. Answers live in the prefs draft so they survive the Google redirect. Since O1 the draft also gives `prefs.firstDay` when it becomes records, for Today's Getting started card. After sign-in and the first pull: if the account already has a profile, the draft is discarded. If not, the draft becomes the profile, program and first plan.
+- One idb-keyval store per user, named `ontrack-<userId>`. Keys: `r:<collection>:<id>` holds a `Rec`. `outbox` holds the keys changed since the last successful push. `meta` holds `{ schemaVersion, cursor, lastSyncAt }`. `blob:<mealId>` holds a thumbnail. `blobq` holds meal ids waiting to upload. `dropq` holds thumbnails to delete, each with when it was asked.
+- At start the store reads every record into `$state` maps, one per collection. Screens read from these maps. Schema changes are handled by numbered migrations in `src/lib/db/migrations.ts` (`SCHEMA_VERSION` 5). A migration takes the records and the meta. Adding a collection needs one: an older version on another device skips the new collection's records but moves its cursor past them, so the migration sets the cursor back to the epoch, which pulls everything once without the first load state. Migrations 1 to 4 do this for `food`, `supplement`, `product` and `social`.
+- Every mutation goes through `actions.ts`: validate with zod and the record envelope (`recSchema`), stamp `updatedAt` (later than the record's last stamp and every other the store holds), write memory, write IndexedDB (one transaction per microtask), add the key to the outbox, wake the sync engine. Actions that delete return an undo function, and `undoToast` shows one Undo at a time.
+- Onboarding happens before sign-in. Answers live in the prefs draft so they survive the Google redirect. After sign-in and the first pull of the session (`src/flows/onboarding/settle.ts`): if the account already has a profile, the draft is discarded. If not, a saved draft becomes the profile, program, first plan and first weigh-in (`finishOnboarding`, all four checked before any is written).
+- In development, `window.ontrack` exposes `actions`, `db` and `sync` so end to end tests can drive data through the real actions.
 
 ## 5. Sync protocol
 
 The engine and both backends implement these rules. `tests/unit/sync-conformance.test.ts` checks them against any `Backend`.
 
-1. **Push.** Take up to 100 outbox keys, send their records. On success remove each key whose local `updatedAt` still equals what was sent.
+1. **Push.** Take up to 100 outbox keys, send their records. On success remove each key whose local `updatedAt` still equals what was sent. A batch the server refuses as a whole (`bad_request`) is sent record by record; a refused record stays on the phone, out of the outbox, and is logged.
 2. **Merge on the server.** A write replaces the stored row only if its `updated_at` is greater than the stored one. Otherwise it is ignored without error. Every accepted write gets a fresh `server_ts`.
 3. **Pull.** Ask for rows with `server_ts` greater than the cursor minus 30 seconds, ordered by `server_ts`, 500 at a time, until a short page. The overlap covers writes that committed slightly out of order. Merging is idempotent.
 4. **Merge on the device.** Accept a pulled record if there is no local copy, or its `updatedAt` is greater, or it is equal and the key is not in the outbox. The new cursor is the largest `server_ts` seen.
 5. **Order.** Push, then pull. On a device with no cursor, pull everything before deciding whether to show onboarding.
-6. **When.** 1.5 s after a local change, at start, when the app becomes visible, when the network returns, and every 5 minutes while visible. Failures back off from 2 s, doubling to 5 minutes, and reset on success.
+6. **When.** 1.5 s after a local change (not while backing off), at start, when the app becomes visible, when the network returns, and every 5 minutes while visible. Failures back off from 2 s, doubling to 5 minutes, and reset on success.
 7. **Status** shown in the header: `idle`, `syncing`, `offline`, `error`, `auth`. `auth` means the session expired. Data stays safe locally and the app asks the user to sign in again.
-8. **Thumbnails.** After a meal with a thumbnail is saved, upload `meal-photos/<userId>/<mealId>.jpg` from the queue with retry. Another device downloads a thumbnail the first time its meal scrolls into view and caches it.
-9. **Sign out.** If the outbox is not empty, try to sync and wait. Then sign out and delete the local store.
+8. **Thumbnails.** After a meal with a thumbnail is saved, upload `meal-photos/<userId>/<mealId>.jpg` from the queue with retry. A deleted meal's thumbnail, and a replaced profile photo, wait 30 s in `dropq` (past the Undo toast), then leave the phone and storage unless a meal or the profile uses it again. Another device downloads a thumbnail the first time its meal scrolls into view and caches it.
+9. **Sign out.** If the outbox is not empty, try to sync and wait. If changes still cannot be sent, stop and say so; the user may sign out anyway. Then send the waiting thumbnail deletes, sign out of this device only (other phones stay signed in), and delete the local store.
 
 ~~~ts
 // src/lib/backend/types.ts
@@ -238,7 +249,7 @@ export interface Backend {
   auth: {
     session(): Promise<{ userId: string; email?: string } | null>;
     onChange(cb: (s: { userId: string; email?: string } | null) => void): () => void;
-    googleEnabled(): Promise<boolean>;                 // false hides the Google button (M3)
+    googleEnabled(): Promise<boolean>;                 // false hides the Google button
     signInWithGoogle(): Promise<void>;                 // leaves the page
     sendEmailCode(email: string): Promise<void>;
     verifyEmailCode(email: string, code: string): Promise<void>;
@@ -248,8 +259,9 @@ export interface Backend {
   pull(cursor: string | null): Promise<{ records: Rec[]; cursor: string }>;
   putThumb(mealId: string, blob: Blob): Promise<void>;
   getThumb(mealId: string): Promise<Blob | null>;
+  dropThumb(mealId: string): Promise<void>;           // a deleted meal's thumbnail or a replaced profile photo; one already gone succeeds
   accessToken(): Promise<string | null>;               // for /api calls
-  social: {                                            // S1: network only; what others may read is row level security's call
+  social: {                                            // network only; what others may read is row level security's call
     handleFree(handle: string): Promise<boolean>;      // nobody else has it
     search(prefix: string): Promise<Person[]>;         // by the start of a handle, not you, at most 20
     friends(): Promise<Friend[]>;                      // Person & { status: 'friend' | 'incoming' | 'outgoing' }
@@ -266,17 +278,19 @@ export interface Backend {
 // the meal's own nutrition, never a day's total, a target or a weight (PRD section 7).
 ~~~
 
-`VITE_BACKEND=mock` selects `mock.ts`, which talks to `dev/mock-backend.ts`: an in memory implementation of the same rules, with a fake sign-in, isolated per test through a key in the request.
+Failures reach the engine as a `BackendError` with a kind: `auth`, `network`, `wrong_code`, `rate_limited`, `bad_request`, `server`.
+
+`VITE_BACKEND=mock` selects `src/lib/backend/mock.ts`, which talks to `dev/mock-backend.ts` over `/__mock`: an in memory implementation of the same rules (records, thumbnails, friends and the tables the database publishes), with a fake sign-in (the code is `123456`), an in memory quota, and `/api/analyze`, `/api/coach` and `/api/account` served by the real handlers with the mock providers. Each request names a space (`x-mock-space`), so every test has its own world and two browser contexts in one space are two phones on one account. `dev/seed.ts` fills an account (`<outcome>@seed.test`) with four weeks of logs that reach each check-in outcome. In `pnpm dev` the default space has a few friends who answer requests.
 
 ## 6. Database
 
-~~~sql
--- supabase/migrations/0001_init.sql
+Migrations are in `supabase/migrations/`, applied with `supabase db push`: `0001_init` (records, quota, bucket), `0002_food`, `0003_supplement` and `0004_product` (each widens the collection check), `0005_social` (friends and the food map), `0006_publish_upsert`.
 
+~~~sql
 create table public.records (
   user_id    uuid        not null default auth.uid() references auth.users (id) on delete cascade,
   collection text        not null check (collection in
-               ('profile','plan','weight','meal','saved','program','slog','checkin','day','food','supplement','product','social')),   -- 'food' from 0002, 'supplement' from 0003, 'product' from 0004, 'social' from 0005
+               ('profile','plan','weight','meal','saved','program','slog','checkin','day','food','supplement','product','social')),
   id         text        not null check (char_length(id) between 1 and 80),
   data       jsonb       not null check (octet_length(data::text) <= 65536),
   updated_at bigint      not null,
@@ -285,62 +299,14 @@ create table public.records (
   primary key (user_id, collection, id)
 );
 create index records_pull on public.records (user_id, server_ts);
-
-create function public.records_lww() returns trigger
-language plpgsql as $$
-begin
-  if tg_op = 'UPDATE' and new.updated_at <= old.updated_at then
-    return null;                       -- stale or repeated write: keep the stored row
-  end if;
-  new.server_ts := clock_timestamp();
-  return new;
-end $$;
-
-create trigger records_lww before insert or update on public.records
-  for each row execute function public.records_lww();
-
-alter table public.records enable row level security;
-create policy records_select on public.records for select to authenticated
-  using (user_id = (select auth.uid()));
-create policy records_insert on public.records for insert to authenticated
-  with check (user_id = (select auth.uid()));
-create policy records_update on public.records for update to authenticated
-  using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
-revoke all on public.records from anon;
-grant select, insert, update on public.records to authenticated;
-
-create table public.ai_usage (
-  user_id uuid not null references auth.users (id) on delete cascade,
-  day     date not null,
-  count   int  not null default 0,
-  primary key (user_id, day)
-);
-alter table public.ai_usage enable row level security;   -- no policies: server only
-
-create function public.bump_ai_usage(p_user uuid, p_day date, p_limit int) returns boolean
-language plpgsql security definer set search_path = public as $$
-declare c int;
-begin
-  insert into public.ai_usage (user_id, day, count) values (p_user, p_day, 1)
-  on conflict (user_id, day) do update set count = public.ai_usage.count + 1
-  returning count into c;
-  return c <= p_limit;
-end $$;
-revoke execute on function public.bump_ai_usage(uuid, date, int) from public, anon, authenticated;
-
-insert into storage.buckets (id, name, public) values ('meal-photos', 'meal-photos', false)
-  on conflict (id) do nothing;
-create policy thumbs_read on storage.objects for select to authenticated
-  using (bucket_id = 'meal-photos' and (storage.foldername(name))[1] = (select auth.uid())::text);
-create policy thumbs_write on storage.objects for insert to authenticated
-  with check (bucket_id = 'meal-photos' and (storage.foldername(name))[1] = (select auth.uid())::text);
-create policy thumbs_update on storage.objects for update to authenticated
-  using (bucket_id = 'meal-photos' and (storage.foldername(name))[1] = (select auth.uid())::text);
-create policy thumbs_delete on storage.objects for delete to authenticated
-  using (bucket_id = 'meal-photos' and (storage.foldername(name))[1] = (select auth.uid())::text);
 ~~~
 
-**Friends and the food map** (`0005_social.sql`, S1). The `records_publish` trigger runs after each accepted write of a `social`, `program` or `meal` record (a stale write is skipped by `records_lww` and publishes nothing) and keeps three tables that clients may only read:
+- `records_lww`, a before insert or update trigger: an update whose `updated_at` is not greater than the stored one returns null, so the stored row stays; otherwise `server_ts` is set to `clock_timestamp()`.
+- Row level security: select, insert and update only where `user_id = (select auth.uid())`. Anon holds no privilege, and no client holds delete, since deletes are tombstones.
+- `ai_usage (user_id, day, count)` has row level security on and no client privilege. `bump_ai_usage(p_user, p_day, p_limit)` is security definer: it adds one and returns whether `count <= p_limit`. Its execute right is revoked from every client role.
+- The private bucket `meal-photos`: its policies match the first folder name to `auth.uid()` for select, insert, update and delete.
+
+**Friends and the food map** (`0005_social.sql`, S1). The `records_publish` trigger runs after each accepted write of a `social`, `program` or `meal` record (a stale write is skipped by `records_lww` and publishes nothing) and keeps three tables that clients may only read, plus one they write:
 
 | Table | Holds | Who reads it |
 | --- | --- | --- |
@@ -349,15 +315,15 @@ create policy thumbs_delete on storage.objects for delete to authenticated
 | `shared_meals` (owner, meal_id, lat, lng, taken_at, title, kcal, protein, carbs, fat, photo_path) | A meal with `share`; its nutrition summed (kcal whole, macros to 0.1); lat and lng `numeric(_, 3)`, rounded again whatever a client sends. Without `share`, or deleted, the row goes | The owner and accepted friends |
 | `friendships` (requester, addressee, status `requested` or `accepted`) | Written by users: insert as requester, update to `accepted` as addressee only (the `status` column only), delete by either side. One row per pair | Its two people |
 
-"Accepted friends" is `private.sees(owner)`, a security invoker function in a schema the API does not expose: the owner, or an accepted friendship either way, read under friendships' own policy. The trigger is `private.publish()`, security definer, since clients hold no write privilege on the published tables. A handle taken by someone else between the app's check and the sync is not published (the rest is); the old handle stays. Photos: the `meal-photos` read policy also lets a caller read an object named by a `shared_meals.photo_path` they may read, or by any `profiles.photo_path`. A shared meal's photo is its thumbnail, so unsharing, deleting the meal or ending the friendship takes it out of friends' reach at once; the object itself goes with the account (and with the meal from M9). One limit: what a friend could reach, they may keep. Supabase's CDN serves an object a token already downloaded until that token expires (an hour), and a friend could have made a signed link to a shared photo while a friend (docs/DECISIONS.md, S1a). `0006_publish_upsert.sql` makes the program's publishing an upsert.
+"Accepted friends" is `private.sees(owner)`, a security invoker function in a schema the API does not expose: the owner, or an accepted friendship either way, read under friendships' own policy. The trigger is `private.publish()`, security definer, since clients hold no write privilege on the published tables; `0006` makes the program's publishing an upsert. A handle taken by someone else between the app's check and the sync is not published (the rest is); the old handle stays. Photos: the `meal-photos` read policy also lets a caller read an object named by a `shared_meals.photo_path` they may read, or by any `profiles.photo_path`. A shared meal's photo is its thumbnail, so unsharing, deleting the meal or ending the friendship takes it out of friends' reach at once. One limit: what a friend could reach, they may keep. Supabase's CDN serves an object a token already downloaded until that token expires (an hour), and a friend could have made a signed link to a shared photo while a friend (`docs/DECISIONS.md`, S1a).
 
-The upsert from the client uses `onConflict: 'user_id,collection,id'`. Apply migrations with `supabase db push`. After applying, run the Supabase security advisors and fix anything they flag.
+The upsert from the client uses `onConflict: 'user_id,collection,id'`. After applying a migration, run the Supabase security advisors and fix anything they flag.
 
-Supabase settings to make by hand or by CLI: Google provider on. Email one time code on, 6 digits, 10 minute expiry, with `{{ .Token }}` in the email template. Site URL set to production. Redirect allow list: `http://localhost:5173/**`, the production URL, and the project's Vercel preview pattern.
+Supabase settings, in `supabase/config.toml` and pushed: site URL set to production; redirect allow list `http://localhost:5173/**`, the production URL and the project's Vercel preview pattern; email one time code, 6 digits, 10 minute expiry, with `{{ .Token }}` in the template (`supabase/templates/code.html`), sent over the product's SMTP mailbox. The Google provider is switched on in the dashboard, not in the config file.
 
 ## 7. Server functions
 
-All handlers live in `server/handlers/`, take a `Request`, return a `Response` with JSON, and read configuration through `server/env.ts`. Confirm Vercel's current signature for web standard handlers in non framework projects in M0 and write the three wrappers accordingly.
+All handlers live in `server/handlers/`, take a `Request`, return a `Response` with JSON, and read configuration through `server/env.ts`. Each file in `api/` exports one named method handler, for example `export const POST = (request: Request) => analyze(request)`; `account` exports `DELETE` and `keepalive` `GET`. A handler takes its dependencies as a second argument (`Deps`: the caller check, the quota, the provider, the limits, a timeout), so the mock backend and the unit tests run the same code. `vercel.json` sets the region `sin1` and `maxDuration` 60 s for `analyze` and `coach`.
 
 ### POST /api/analyze
 
@@ -365,9 +331,9 @@ Header `Authorization: Bearer <access token>`. Body, at most 900 KB:
 
 ~~~ts
 type AnalyzeRequest =
-  | { kind: 'photo'; image: string /* base64 JPEG, 1024 px longest edge */; localDate: string; locale: 'en'; hint?: string }
+  | { kind: 'photo'; image: string /* base64 JPEG, 1024 px longest edge */; localDate: string; locale: 'en'; hint?: string /* the user's correction */ }
   | { kind: 'text'; text: string /* at most 500 characters */; localDate: string; locale: 'en' }
-  | { kind: 'label'; image: string /* a nutrition label, as a photo */; localDate: string; locale: 'en' };   // B1
+  | { kind: 'label'; image: string /* a nutrition label, as a photo */; localDate: string; locale: 'en' };
 
 // shared/analysis.ts
 type AnalysisItem = {
@@ -383,32 +349,32 @@ type AnalyzeResponse =
   | { ok: false; error: 'bad_request' | 'unauthorized' | 'too_large' | 'not_food' | 'daily_limit' | 'busy' | 'provider_error' | 'timeout' };
 ~~~
 
-A label (B1) answers `{ ok: true; label: LabelRead; model; usage }` instead of an analysis (`shared/analysis.ts`): its name if printed, `unit` g or ml, `servingG`, `scoops` per serving, `servingsPerPack`, and the `perServing` and `per100` columns, each null when not printed. A photo with no readable label is `not_food`. Label reads count toward the same daily quota.
+A label answers `{ ok: true; label: LabelRead; model; usage }` instead of an analysis (`shared/analysis.ts`): its name if printed, `unit` g or ml, `servingG`, `scoops` per serving, `servingsPerPack`, and the `perServing` and `per100` columns, each null when not printed. A photo with no readable label is `not_food`. Label reads count toward the same daily quota.
 
 Status codes: 200, 400, 401, 413, 422 for `not_food`, 429 for `daily_limit` and `busy`, 502, 504.
 
 Steps, in order:
 1. Verify the token with `supabase.auth.getUser(token)`.
-2. Validate the body with zod.
-3. Call `bump_ai_usage` with `AI_DAILY_USER_LIMIT`. If the day's total across users exceeds `AI_DAILY_GLOBAL_CAP`, return `busy`.
-4. Build the prompt (section 8) and call the provider with a 20 s timeout and one retry on a 5xx or timeout.
+2. Check the size and validate the body with zod. An image must start with the JPEG marker.
+3. Call `bump_ai_usage` with `AI_DAILY_USER_LIMIT` (default 40), on the server's UTC day so a phone cannot pick dates to multiply its quota (it resets at 07:00 in Thailand). Over it: `daily_limit`. If the day's total across users exceeds `AI_DAILY_GLOBAL_CAP` (default 400), `busy`. `/api/coach` shares the same count.
+4. Build the prompt (section 8) and call the provider with a 20 s timeout and one retry on a 5xx or timeout. The provider's own 429 reads as `busy`.
 5. Validate the model's JSON with zod. Keep at most 12 items. Clamp grams to 1 through 2000.
 6. Resolve each item (section 8) and compute its totals.
 7. Return. Log duration, model and item count. Never log the image or the text.
 
 ### DELETE /api/account
 
-Verifies the token, deletes the user's `shared_meals`, `shared_programs` and `profiles` rows (friendships go with the profile) so friends stop seeing them at once, then their objects under `meal-photos/<userId>/`, their records, then the auth user with the secret key. Returns `{ ok: true }`.
+Verifies the token, deletes the user's `shared_meals`, `shared_programs` and `profiles` rows (friendships go with the profile) so friends stop seeing them at once, then their objects under `meal-photos/<userId>/`, their records, then the auth user with the secret key. Returns `{ ok: true }`, or `502` with `provider_error` if a step fails.
 
 ### GET /api/cron/keepalive
 
-Requires `Authorization: Bearer <CRON_SECRET>`. Runs one trivial query so the free project is not paused for inactivity. Scheduled daily in `vercel.json`.
+Requires `Authorization: Bearer <CRON_SECRET>`, compared in constant time, and stays closed when the secret is unset. Runs one trivial query so the free project is not paused for inactivity. Scheduled daily at 03:17 UTC in `vercel.json`.
 
-`vercel.json` also holds the SPA fallback (everything except `/api/` and real files goes to `/index.html`) and long cache headers for hashed assets.
+`vercel.json` also holds the SPA fallback (everything except `/api/` and real files goes to `/index.html`), long cache headers for hashed assets, `no-cache` for `/`, `index.html`, `sw.js`, `registerSW.js`, the Workbox runtime and the manifest, and the security headers (`nosniff`, a referrer policy, `Permissions-Policy: camera=(self), microphone=(), geolocation=(self)`).
 
 ## 7b. The AI coach: POST /api/coach
 
-R2. One endpoint beside `/api/analyze`, text only, for five kinds of short coaching text and, as a sixth kind, a change to the training program (`program`, below). Header `Authorization: Bearer <access token>`. Body at most 16 KB, checked by `shared/coach.ts`:
+One endpoint beside `/api/analyze`, text only, for five kinds of short coaching text and, as a sixth kind, a change to the training program (`program`, below). Header `Authorization: Bearer <access token>`. Body at most 16 KB, checked by `shared/coach.ts`:
 
 ~~~ts
 type CoachRequest = {
@@ -423,6 +389,8 @@ type CoachResponse =
   | { ok: false; error: AnalyzeError; usage? };       // the same error kinds and status codes as /api/analyze, never not_food
 ~~~
 
+Where each kind is asked: `week` on Progress, `checkin` in the weekly check-in sheet, `gap` in Today's suggestions, `ask` in Progress's ask sheet. No screen asks `session` since R3 removed the set log; the endpoint, `sessionFacts` and the template keep it.
+
 The app builds the facts from the engine (`src/lib/model/coach.ts`) and formats every value ("2,310 kcal", "+0.3 kg"). The model sees the labels and values and sends nothing back but words.
 
 **The slot rule.** The model never writes a digit. It names a number as `{{id}}` with an id from `facts`. The server (`server/coach/validate.ts`) refuses a reply with a digit outside a slot, a slot that was not given, a stray brace, or a shape that is too long. It then sanitises: em and en dashes become a comma and a space, emoji go, `!` becomes `.`, spaces collapse. A refused reply is asked for once more; a second refusal answers `provider_error`. The handler returns the text with its slots still in it, and the app fills them (`fill` in `src/lib/coach.ts`), so the model cannot change a number.
@@ -432,18 +400,18 @@ The app builds the facts from the engine (`src/lib/model/coach.ts`) and formats 
 | `week` | at most 6 words | 2 or 3 | none |
 | `checkin` | none | 2 sentences in all | none |
 | `session` | one line, at most 8 words | 0 or 1 | none |
-| `gap` | none | none | 3 of the candidate ids, each a reason of at most 8 words with no digits or slots |
+| `gap` | none | none | 3 of the candidate ids (fewer if fewer were sent), each a reason of at most 8 words with no digits or slots |
 | `ask` | none | 1 to 4, 100 words in all | none |
 
 A card (`week`, `checkin`, `session`) is 40 words or fewer. A field a kind does not use is dropped, not refused. The system prompt (`server/coach/prompt.ts`) also holds the refusals: it never proposes or names a calorie or macro target (it answers "Your weekly check-in sets that."), gives no medical advice, uses no guilt words, and writes plain, warm, short sentences in the second person.
 
 Steps: token, body, the quota (`bump_ai_usage`, the same count, per user limit and global cap as `/api/analyze`, so a coach answer costs one analysis), the provider with a 10 s timeout and one retry on a 5xx or timeout, the reply checked. Logs kind, model and duration, never the facts or the question.
 
-Provider: `server/coach/gemini.ts`, text in and JSON out under the response schema, minimal thinking, `GEMINI_MODEL` with `GEMINI_FALLBACK_MODEL` on a 429 or 503 (`server/call.ts`, shared with vision). `VISION_PROVIDER=mock` picks `server/coach/mock.ts`, which writes from the facts, every number a slot, and passes the same validator.
+Provider: `server/coach/gemini.ts`, text in and JSON out under the response schema, minimal thinking, `GEMINI_MODEL` with `GEMINI_FALLBACK_MODEL` on a 429 or 503 (`server/call.ts`, shared with vision, which also holds the timeout). `VISION_PROVIDER=mock` picks `server/coach/mock.ts`, which writes from the facts, every number a slot, and passes the same validator.
 
 **The app** (`src/lib/coach.ts`): `askCoach(request)` never throws. It answers from the device if the same request was kept (`localStorage`, key `ot-coach:<kind>:<hash>`, 40 kept, oldest dropped), else from the server (online, signed in, 25 s), else from a template in the catalog (`t.coach`) built from the same facts, marked `source: 'template'`. Only `source: 'ai'` text carries "Written by AI". For `gap` the template picks the 3 candidates with the most protein per kcal.
 
-**Kind `program`: change the program from a request.** The owner: let the AI analyse or adjust the program from what the user asks, such as "I train 4 days upper/lower split, 60 mins each, with 30 mins cardio after". It has its own request branch in `shared/coach.ts` (`programRequest`, so the body is `coachRequest | programRequest`), the same endpoint, token, quota (one request costs one), 16 KB body, timeout and retry as the text kinds.
+**Kind `program`: change the program from a request.** Let the AI analyse or adjust the program from what the user asks, such as "I train 4 days upper/lower split, 60 mins each, with 30 mins cardio after". It has its own request branch in `shared/coach.ts` (`programRequest`, so the body is `coachRequest | programRequest`), the same endpoint, token, quota (one request costs one), 16 KB body and retry as the text kinds, but a longer clock: 25 s a try on the server, and the app waits 55 s.
 
 ~~~ts
 type ProgramRequest = {
@@ -462,7 +430,16 @@ The server adds the exercise library itself (id, name and primary muscles from `
 
 `VISION_PROVIDER=mock` answers from `server/coach/mock-program.ts`: it reads a split (upper lower, push pull legs, full body), days (2 to 6, digits or words), the session minutes, and "cardio after N min" with a machine word (treadmill, bike, elliptical, rower, stairs, outdoor; and speed or incline) out of the request, builds the week from `src/lib/data/templates.ts`, and adds a cardio session after each lifting session. With no split and no days it keeps the current program and changes only the minutes and the cardio. A request it cannot place changes nothing and says so.
 
-**The app:** `askProgram(question, program, profile, localDate)` in `src/lib/coach.ts` returns `{ ok: true; program; summary; source: 'ai' }` or `{ ok: false; error }`, where `error` is a sentence from `t.programAi` (offline, signed out, daily limit, busy, failed). It never throws and keeps nothing, so each ask is a new answer. The program is a proposal: the caller shows it, and saves it with `changeProgram` only when the user agrees.
+**The app:** `askProgram(question, program, profile, localDate)` in `src/lib/coach.ts` (asked from Train's `ProgramAiSheet`) returns `{ ok: true; program; summary; source: 'ai' }` or `{ ok: false; error }`, where `error` is a sentence from `t.programAi` (offline, signed out, daily limit, busy, failed). It never throws and keeps nothing, so each ask is a new answer. The program is a proposal: the caller shows it, and saves it with `changeProgram` only when the user agrees.
+
+## 7c. Plans: POST /api/billing (R5)
+
+- **The plan** is `app_metadata.billing` on the Supabase user (`shared/plans.ts` `billingSchema`: tier free or pro, interval, periodEnd, trial, cancelAt, Stripe's customer and subscription ids). Only the server writes it (`saveBilling`, the secret key); `caller()` reads it with the token, free when there is none. `isPro` allows a day of grace past `periodEnd`.
+- **Actions** (`server/handlers/billing.ts`): `status` (re-reads the subscription from Stripe once a period has ended), `checkout` (a Checkout Session: subscription mode, THB price inline from `PRICES`, 7 trial days, the `ontrack-preview` 100 percent coupon made on first use, `payment_method_collection: if_required`, back to `/?checkout={CHECKOUT_SESSION_ID}` or `/?checkout=cancel`), `confirm` (the caller's own complete session only), `cancel` and `resume` (at the period's end). Errors: `unauthorized`, `bad_request`, `unavailable` (no key), `not_paid`, `provider_error`.
+- **Limits:** `/api/analyze` counts every request in one daily counter; the limit is `AI_DAILY_USER_LIMIT` on Pro and `AI_DAILY_FREE_LIMIT` on free, and `usage.plan` says which. `/api/coach` answers `pro_only` (402) on free before counting; the app then uses its own template words, and offers the plans for Ask and Adjust with AI.
+- **No webhook and no customer portal** (they need Stripe dashboard setup); Stripe is called with fetch, no SDK (`server/stripe.ts`).
+- **Mock:** `dev/mock-backend.ts` runs the same handler with an in-memory fake Stripe (Checkout comes straight back into the trial); `POST /__mock/plan { pro }` sets a space's default plan, and e2e accounts are Pro unless a test asks for free.
+
 
 ## 8. Vision pipeline
 
@@ -471,7 +448,8 @@ Provider interface:
 ~~~ts
 // server/vision/provider.ts
 export interface VisionProvider {
-  analyze(input: { image?: Uint8Array; text?: string; catalog: string; locale: string; hint?: string }): Promise<ModelOutput>;
+  model: string;                                       // the model that answered, recorded with each analysis
+  analyze(input: { image?: Uint8Array; text?: string; locale: string; hint?: string; label?: true; signal?: AbortSignal }): Promise<unknown>;
 }
 // server/vision/schema.ts, also sent to the model as the response schema
 type ModelOutput = {
@@ -485,7 +463,7 @@ type ModelOutput = {
     est_per_100g: { kcal: number; protein_g: number; carbs_g: number; fat_g: number };
     confidence: 'high' | 'medium' | 'low';
     hidden_fat: boolean;
-    // R2, a Thai dish's parts (docs/AI-THAI.md); null, 'none' and [] for anything else
+    // a Thai dish's parts (docs/AI-THAI.md); null, 'none' and [] for anything else
     dish: string | null;          // the base dish as the catalog writes it: Pad kra pao, Fried rice, Rad na
     protein: 'pork' | 'minced pork' | 'crispy pork' | 'chicken' | 'beef' | 'duck' | 'shrimp' | 'squid' | 'seafood' | 'fish' | 'tofu' | 'egg' | 'none';
     extras: Array<'rice' | 'fried egg'>;   // what is part of this item, not listed as its own item
@@ -493,36 +471,27 @@ type ModelOutput = {
 };
 ~~~
 
-System prompt, in `server/vision/prompt.ts`. Tune it against real photos in M6, keep the rules:
+The system prompt is in `server/vision/prompt.ts`: the rules, then the catalog, one `id|name` line per food in `foods.json`, built once at module load. The rules:
 
-~~~
-You identify food for a nutrition log. Reply with JSON only, matching the schema.
+- A whole dish in the catalog (pad thai, khao man kai, pad kra pao pork with rice and fried egg) is one item with its `food_id`; otherwise each distinct component is its own item. Identical items share a line, with the count in `portion_note`.
+- Estimate the edible weight in grams as served, one best number, from visible cues (plate and bowl size, cutlery, hands, packaging).
+- Set `food_id` only when the entry matches the food and how it was cooked, else null. Always fill `est_per_100g` from the model's own knowledge of the food as cooked.
+- For a Thai dish also give `dish`, `protein` and `extras`.
+- `hidden_fat` is true for oil, butter, coconut milk or sugar a photo cannot show; stir-fried and deep-fried items always.
+- Names are short, plain and specific. No food: `is_food` false and no items. No advice, no total.
 
-- When a whole dish is in the catalog (pad thai, khao man kai, pad kra pao pork with rice and fried egg, boat noodles), give it as one item with that food_id rather than its parts. Otherwise list each distinct component as its own item (rice, curry, fried egg).
-- For each item estimate the edible weight in grams as served. Use visible cues: plate and bowl size, cutlery, hands, packaging. Give your single best number.
-- If an item matches a catalog entry, set food_id to that entry's id. Match the food and how it was cooked. If nothing fits well, set food_id to null.
-- Always fill est_per_100g from your own knowledge of the food as cooked.
-- Set hidden_fat to true for items likely cooked in or dressed with oil, butter, coconut milk or sugar that a photo cannot show.
-- For a Thai dish, also give its dish, protein and extras (R2).
-- Names are short and plain, in the user's language. No brand names unless printed on packaging.
-- If there is no food or drink, set is_food to false and return no items.
-- Do not give advice. Do not total the meal.
+A user's correction on the Review sheet goes as `hint`, which the prompt tells the model to follow over the photo. Gemini settings: the model from `GEMINI_MODEL`, JSON response type with the schema, thinking level minimal, default temperature. The `mock` provider returns fixtures from `tests/fixtures/vision/` chosen by a hash of the input, including a not food case and a failure case.
 
-Catalog, one entry per line as id|name:
-~~~
-
-The catalog is the food table's `id|name` lines, built once at module load. Gemini settings: the model from `GEMINI_MODEL`, JSON response type with the schema, thinking level minimal, default temperature. The `mock` provider returns fixtures from `tests/fixtures/vision/` chosen by a hash of the input, including a not food case and a failure case.
-
-Resolution, in `server/vision/resolve.ts` and `server/vision/thai.ts` (R2, `docs/AI-THAI.md`):
-- The table id is, in order: the Thai plate the model reported (`dish`, `protein`, `extras`) or the item's name reads as ("กะเพราหมูกรอบไข่ดาว", "kaprao gai"), matched exactly against the plates read from the table's Thai names and aliases; the model's `food_id` if it is in the table, unless it is the same dish with another protein (a correction to duck beats a stale pork id); the nearest plate of that dish (the same or a near protein, then rice, then the egg, then the dish that names no protein); a Thai name or alias equal to the item's name. Otherwise none.
+Resolution, in `server/vision/resolve.ts` and `server/vision/thai.ts` (`docs/AI-THAI.md`):
+- The table id is, in order: the Thai plate the model reported (`dish`, `protein`, `extras`) or the item's name reads as ("กะเพราหมูกรอบไข่ดาว", "kaprao gai"), matched exactly against the plates read from the table's Thai names and aliases; the model's `food_id` if it is in the table, unless it is the same dish with another protein (a correction to duck beats a stale pork id); the nearest plate of that dish (the same or a near protein, then rice, then the egg, then the dish that names no protein); a Thai name or alias equal to the item's name, exactly, or by its folded or spaceless spelling (`fold` and `compact` in `shared/text.ts`). Otherwise none.
 - An id: `per100` comes from the table and `source` is `db`.
 - Otherwise `per100` comes from `est_per_100g` and `source` is `estimate`. Clamp kcal to 0 through 900 and each macro to 0 through 100. If kcal differs from `4p + 4c + 9f` by more than 25 percent, recompute kcal from the macros.
 - Item totals are `per100` times grams over 100, rounded to whole kcal and one decimal for macros.
-- `hiddenFat` is false for an item with a table id, whose values already include their cooking oil, and the model's `hidden_fat` for an estimate. The prompt flags stir-fried and deep-fried items always.
+- `hiddenFat` is false for an item with a table id, whose values already include their cooking oil, and the model's `hidden_fat` for an estimate.
 
-**Label reading (B1, F22)**, in `server/vision/label.ts`: the same provider with `label: true`, its own system prompt and schema (`labelOutput`, also the response schema). The model copies printed numbers only and returns null for anything not printed: `per_serving` and `per_100` columns of kcal, kJ, protein, total carbohydrate and total fat, the serving size, scoops per serving, servings per pack, the unit and the printed name; it knows the Thai label terms. `toLabel` takes kcal from kJ (4.184, SCIENCE S19) when only kilojoules are printed, a macro not printed (or cut off in the photo) as null, which the confirm step asks the user to fill in (M9a), drops a per 100 column past 1,000 kcal, and answers `not_food` when no column has energy. The mock provider answers `label-snack` (or the fixture a test names: `label-whey`, `label-drink` with protein and carbohydrate not shown, `not-label`).
+**Label reading (B1, F22)**, in `server/vision/label.ts`: the same provider with `label: true`, its own system prompt and schema (`labelOutput`, also the response schema). The model copies printed numbers only and returns null for anything not printed: `per_serving` and `per_100` columns of kcal, kJ, protein, total carbohydrate and total fat, the serving size, scoops per serving, servings per pack, the unit and the printed name; it knows the Thai label terms. `toLabel` takes kcal from kJ (4.184, SCIENCE S19) when only kilojoules are printed, a macro not printed (or cut off in the photo) as null, which the confirm step asks the user to fill in, drops a per 100 column past 1,000 kcal, and answers `not_food` when no column has energy. The mock provider answers `label-snack` (or the fixture a test names: `label-whey`, `label-drink` with protein and carbohydrate not shown, `not-label`).
 
-On the device before upload: draw the capture to a canvas at 1024 px on the longest edge, export JPEG at quality 0.8, which also strips location data. Make the 320 px thumbnail at quality 0.7 from the same canvas. Capture uses `<input type="file" accept="image/*" capture="environment">`, the reliable path on iPhone.
+On the device before upload: draw the capture to a canvas at 1024 px on the longest edge, export JPEG at quality 0.8, which also strips location data (`src/lib/photo.ts`). Make the 320 px thumbnail at quality 0.7 from the same canvas. The Add sheet shows a live camera (`Scanner.svelte`: `getUserMedia`, rear camera) with Meal, Label and Barcode modes; a frame is taken as a JPEG and goes down the same path. "Photos" picks one already taken through a plain file input, and the label and tub photos in the scan and supplement sheets use `<input type="file" accept="image/*" capture="environment">`. The first photo shows a privacy notice (`prefs.photoOk`).
 
 ## 9. Food table
 
@@ -537,36 +506,36 @@ type Food = {
   portions: Array<{ label: string; grams: number }>;   // first is the default
   tags: Array<'dense' | 'protein' | 'drink' | 'oil' | 'staple' | 'thai'>;
   source: { set: 'usda-sr-legacy' | 'usda-fndds' | 'sg-foodid' | 'thai-fcd' | 'thai-fcd-owner' | 'recipe'; id: string;   // the food's id in that table
-            url?: string;                 // a Thai FCD page the values were read from (N3)
-            derived?: 'kcal' | 'carbs' }; // worked out by Atwater because the Thai row lacked it (N3)
+            url?: string;                 // a Thai FCD page the values were read from
+            derived?: 'kcal' | 'carbs' }; // worked out by Atwater because the Thai row lacked it
 };
 ~~~
 
-- `data/food-list.csv` is the curated list: `id, name, aliases, source_id, portions, tags`. A numeric `source_id` is a USDA FoodData Central id, looked up in SR Legacy, then FNDDS; one like `F05060092` is an SG FoodID id; `owner:T102` and `inmu:T184` are Thai FCD codes (N3). Claude drafts the list (M5, N1) and the script validates every id against the data.
-- Four tables (N1, N3; sources and terms in `docs/DECISIONS.md`):
+- `data/food-list.csv` is the curated list: `id, name, aliases, source_id, portions, tags`. A numeric `source_id` is a USDA FoodData Central id, looked up in SR Legacy, then FNDDS; one like `F05060092` is an SG FoodID id; `owner:T102` and `inmu:T184` are Thai FCD codes; `recipe:<id>` is a computed dish. The script validates every id against the data.
+- Sources (terms in `docs/DECISIONS.md`):
   - USDA SR Legacy (2018) and FNDDS 2021 to 2023 (public domain, CC0): the script downloads their CSV archives into `data/usda/` and `data/usda/fndds/` (gitignored). FNDDS names nutrients by number (208 energy), SR Legacy by id (1008).
   - SG FoodID, Health Promotion Board, Singapore (licence: use and redistribution, commercial or not, with a conspicuous notice of the source and a link to the terms): no bulk file, so the API's answer for each listed food (`https://pphtpc.hpb.gov.sg/bff/v1/food-portal/foods/details/<id>`) is kept verbatim in `data/sgfoodid/foods.json` with its URL and the date read, under `foods.json.sha256`. The script fetches a listed food the extract lacks and fails if the file no longer matches its checksum. Values are `baseFoodNutrients`, per 100 g edible portion; null or a negative number is missing.
-  - Thai Food Composition Database, INMU, Mahidol University (N3; terms and the owner's decision in `docs/DECISIONS.md`), two ways in. `owner:<code>` is a row of the extract the owner supplied, `data/thai/owner/nutrition_dataset.csv` (per 100 g, "-" missing), under `nutrition_dataset.csv.sha256`. `inmu:<code>` is the database's online page for that food: the server's answer (`foodsearch/food_name_result?selected_id=<id>&selected_dbcode=STD`) kept verbatim in `data/thai/inmu/<code>.html`, listed in `data/thai/pages.json` with the page URL, the date read and a SHA-256. The script finds a missing page's id in its food group's list, fetches it (one a second) and fails on a page that no longer matches its checksum. A page's energy is its energy by calculation, or its total energy where it has only that; its carbohydrate is available carbohydrate, or total.
-  - A recipe (R2), `recipe:<id>`: `data/thai/recipes/<id>.json` lists a dish's ingredients as food ids from this table with their grams, the dish's weight as served (`yield_g`) and at least 2 recipe pages read; the build works out its values per 100 g from the ingredients' own rows (the sum of per100 x grams / 100, times 100 / `yield_g`), so a recipe never states a nutrient. `data/thai/recipes/README.md` says how to write one.
+  - Thai Food Composition Database, INMU, Mahidol University, two ways in. `owner:<code>` is a row of the extract the owner supplied, `data/thai/owner/nutrition_dataset.csv` (per 100 g, "-" missing), under `nutrition_dataset.csv.sha256`. `inmu:<code>` is the database's online page for that food: the server's answer (`foodsearch/food_name_result?selected_id=<id>&selected_dbcode=STD`) kept verbatim in `data/thai/inmu/<code>.html`, listed in `data/thai/pages.json` with the page URL, the date read and a SHA-256. The script finds a missing page's id in its food group's list, fetches it (one a second) and fails on a page that no longer matches its checksum. A page's energy is its energy by calculation, or its total energy where it has only that; its carbohydrate is available carbohydrate, or total.
+  - A recipe, `recipe:<id>`: `data/thai/recipes/<id>.json` lists a dish's ingredients as food ids from this table with their grams, the dish's weight as served (`yield_g`) and at least 2 recipe pages read; the build works out its values per 100 g from the ingredients' own rows (the sum of per100 x grams / 100, times 100 / `yield_g`), so a recipe never states a nutrient. `data/thai/recipes/README.md` says how to write one.
   - A Thai row lacking energy gets 4p + 4c + 9f, one lacking carbohydrate gets (energy - 4p - 9f) / 4, and `source.derived` says which. A row is left out, with the reason in the build's output, when its energy is more than 25 percent or 40 kcal from 4p + 4c + 9f, or its derived carbohydrate is below -2 g (`C.tableKcalTolerance`, `C.derivedCarbsMin`); a few rows are left out by hand with the reason in the script (`OWNER_OUT`).
-- The script reads energy, protein, carbohydrate, fat and fibre for each listed food and writes the JSON. It fails on a missing id or a missing nutrient (fibre is optional). A unit test checks the extract's checksum and that every SG FoodID food carries its values exactly.
+- The script reads energy, protein, carbohydrate, fat and fibre for each listed food and writes the JSON. It fails on a missing id or a missing nutrient (fibre is optional). A unit test checks the extract's checksum and that every SG FoodID and Thai FCD food carries its source's values exactly.
 - Search's portion step cites the food's table under the numbers (`FOOD_SOURCES` in `src/lib/data/sources.ts`); for SG FoodID with the date read and a link to its terms, for a Thai FCD page with the date read and a link to that page. The citation hides while the numbers are the user's own.
-- Coverage: 983 foods (N2 added soy protein powder, the Plant protein preset; N3 98 Thai foods from the Thai FCD; R2 313 more: 139 Thai FCD, 97 Thai dishes computed from sourced ingredients by recipe (`recipe:`, data/thai/recipes), 74 USDA, 3 owner). v1 asked for at least 350: staples and grains cooked and raw (40), meat, poultry, fish and eggs by common cut and cooking method (70), dairy and alternatives (30), fruit (40), vegetables (50), legumes, nuts and seeds (30), oils, fats and sauces (25), breads, noodles and breakfast foods (30), snacks and sweets (20), drinks (15). At least 25 foods carry the `dense` tag for gain mode. N1: at least 80 carry `thai`, each with a Thai script alias (138 at N1, 236 at N3). N3: at least 60 read their values from the Thai FCD (115).
+- Coverage: 983 foods. By table: USDA SR Legacy 551, FNDDS 38, SG FoodID 40, Thai FCD 231, the owner's Thai extract 26, recipes 97. 484 carry the `thai` tag, each with a Thai script alias; 194 carry `dense`. The tests require at least 350 foods, 25 dense, 80 Thai and 60 from the Thai FCD.
 - Two entries have fixed ids used by the oil control: `oil-vegetable` and `butter`.
-- Search on the device is a small scored match over `name` and `aliases`: a whole match beats prefix beats word start beats substring, shorter names win ties (the whole match since N3, so ข้าวต้ม finds plain rice soup before khao tom mat). No library. Normalising keeps Thai script (U+0E00 to U+0E7F); Thai has no spaces, so a Thai query matches by prefix or substring.
+- Search on the device is a small scored match over `name` and `aliases` (`searchFoods`): a whole match beats prefix beats word start beats substring, then Thai dishes when Thai first is on, then shorter names. Common romanisation variants fold to one form (khao and kao, pad and phad, moo and mu), ranked below an exact match. No library. Normalising keeps Thai script (U+0E00 to U+0E7F); Thai has no spaces, so a Thai query matches by prefix or substring. Thai first follows the phone's languages unless Settings says otherwise.
 
 ## 10. Exercise library and templates
 
-`src/lib/data/exercises.ts` exports at least 60 exercises:
+`src/lib/data/exercises.ts` exports 71 exercises:
 
 ~~~ts
 type Muscle = 'chest' | 'back' | 'shoulders' | 'biceps' | 'triceps' | 'quads' | 'hamstrings' | 'glutes' | 'calves' | 'core';
 type Exercise = { id: string; name: string; primary: Muscle[]; secondary: Muscle[]; equipment: 'barbell' | 'dumbbell' | 'machine' | 'cable' | 'bodyweight' | 'other' };
 ~~~
 
-Every muscle has at least four exercises where it is primary. A unit test checks the schema, unique ids and coverage. `templates.ts` holds the four programs named in the PRD and two that mix strength and cardio (T1, F20: `full-body-cardio-3`, `upper-lower-cardio-5`), each built from library ids, each landing inside the bands in `docs/SCIENCE.md` section 11 when analysed. A test asserts that.
+Every muscle has at least four exercises where it is primary. A unit test checks the schema, unique ids, at least 60 exercises and coverage. `templates.ts` holds the four programs named in the PRD (`full-body-3`, `upper-lower-4`, `push-pull-legs-6`, `minimal-2`) and two that mix strength and cardio (`full-body-cardio-3`, `upper-lower-cardio-5`, F20), each built from library ids, each landing inside the bands in `docs/SCIENCE.md` section 11 when analysed. A test asserts that.
 
-Engine contract added in T1 (`docs/SCIENCE.md` sections 6 and 11):
+Engine contract for training and onboarding (`docs/SCIENCE.md` sections 6 and 11):
 
 ~~~ts
 // plan.ts: a third gain pace under BMI 20, never for advanced lifters, never the default. planFromBaseline limits a
@@ -577,12 +546,12 @@ type HybridPoint = { kind: 'liftFirst' | 'spaceOut' | 'legDayCardio'; weekdays: 
 analyseProgram(...).hybrid: HybridPoint[]   // only when a day has lifting and cardio; spaceOut's value is hours
 aerobicMinutes(sessions): number; aerobicBand(minutes): 'below' | 'inRange' | 'above'; STRENGTH: Set<SessionType>
 // templates.ts
-type TrainKind = 'lifting' | 'cardio' | 'both';   // "What do you train?" (O1)
+type TrainKind = 'lifting' | 'cardio' | 'both';   // "What do you train?"
 suggestTemplate(kind, days, experience, goal): string | null
 // src/flows/onboarding/draft.ts
 sessionsFor(kind, days): Session[]   // the week an answer makes: lifting 60 min, cardio 30, both taking turns
-type Draft = { at; goal?; screening?; sex?; birthYear?; heightCm?; weightKg?; units; neat?; days?; kind?; experience?; rate?; bodyFatPct?; goalWeightKg?; even?; saved? }   // O1: days (0 = Not yet) and kind replace train
-upgrade(draft): Draft   // a draft saved before O1, in O1's terms
+type Draft = { at; goal?; aim?; screening?; sex?; birthYear?; heightCm?; weightKg?; units; neat?; days?; kind?; experience?; rate?; bodyFatPct?; goalWeightKg?; even?; saved? }   // days: 0 is Not yet; aim: the two goals behind "Not what you're looking for?"
+upgrade(draft): Draft   // a draft saved by an older version, in today's terms
 soFar(draft, year): { row: 'bmr' | 'movement' | 'training'; value; added } | null   // "Your number so far", on maintenance
 // src/lib/model/progress.ts, the training card (F20)
 type TrainingStats = { planned; done; skipped; strength; cardioMinutes; cardioBand };
@@ -591,36 +560,41 @@ account(r).weeks(end, n)[i].training: TrainingStats;  DayStats.sessions: { sessi
 
 ## 11. Client notes
 
-- **Start.** An inline script in `index.html` sets the theme and text size before first paint. The shell mounts. If prefs name a last user, the local store opens and Today renders from memory. The backend module then loads lazily, restores the session and starts sync. With no last user the welcome screen shows.
-- **Lazy chunks.** Only the shell and Today load at first. Train, Progress, settings, the add flow, the chart, the food table, the exercise library and supabase-js are separate chunks, preloaded when idle and precached by the service worker.
-- **Dates.** `dates.ts` is the only place that touches `Date`. It exposes `today()`, `addDays`, `weekdayOf`, `weekStart`, and formatting. Tests run with `TZ=Asia/Bangkok` and one suite repeats under `TZ=America/Los_Angeles`.
+- **Start.** An inline script in `index.html` sets the theme, style and text size from `ot-ui` before first paint. The shell mounts. If prefs name a last user, the local store opens and Today renders from memory. The backend module then loads lazily, restores the session and starts sync. With no last user, or an account with no plan yet, the landing page shows and onboarding loads beside it; the landing page always draws in Tray (`prefs.force('tray')`). A first visit also preloads the landing chunk and its hero shot (`vite.config.ts`).
+- **Lazy chunks.** Only the shell and Today load at first (`pnpm bundle` holds the initial JavaScript to 130 KB gzipped and names the chunks that must stay lazy). Train, Progress, settings, Profile, the sign-in sheet, the Add flow and its sheets, the check-in sheet, the landing page, the charts, the food table, the exercise library, supabase-js, the scanner's reader and the food map are separate chunks, preloaded when idle and precached by the service worker, except as noted below.
+- **Dates.** `dates.ts` holds all day maths: `today()`, `addDays`, `daysBetween`, `weekdayOf`, `lastWeek`, `localDayOf`, `timeOf`, `atTime` and the formatters. CI sets `TZ=Asia/Bangkok`, and the Playwright phone projects set the same time zone.
 - **Units.** Stored in kg, cm and kcal. `units.ts` converts for display only.
 - **Numbers.** `format.ts` formats every number: grouping for kcal, one decimal for kg, no trailing zeros.
-
-- **Barcodes (B1, F22).** `src/lib/barcode.ts` checks the GS1 check digit and turns any read or typed code into the product id. `src/lib/scanner.ts` reads with the browser's `BarcodeDetector` when it supports EAN-13, EAN-8, UPC-A and UPC-E (Chrome on Android), otherwise with zxing-cpp compiled to WebAssembly through the `barcode-detector` ponyfill (3.2.3, MIT, on `zxing-wasm` 3.1.6, MIT; a unit test keeps the two versions matched). Both load when the scanner opens; the 947 KB WebAssembly (414 KB gzip) is served from the site and cached by the service worker on first use, not precached. The camera is `getUserMedia` with the rear camera; denial, no camera, a page that is not secure and a camera in use each have their own words and fall back to typing on the number pad. The light shows only where the track reports `torch`.
+- **Barcodes (B1, F22).** `src/lib/barcode.ts` checks the GS1 check digit and turns any read or typed code into the product id. `src/lib/scanner.ts` reads with the browser's `BarcodeDetector` when it supports EAN-13, EAN-8, UPC-A and UPC-E (Chrome on Android), otherwise with zxing-cpp compiled to WebAssembly through the `barcode-detector` ponyfill (MIT, on `zxing-wasm`, MIT). Both load when the scanner opens; the WebAssembly (about 1 MB) is served from the site and cached by the service worker on first use, not precached. The camera is `getUserMedia` with the rear camera; denial, no camera, a page that is not secure and a camera in use each have their own words and fall back to typing on the number pad. The light shows only where the track reports `torch`.
 - **Open Food Facts (B1).** `src/lib/data/off.ts` reads `world.openfoodfacts.org/api/v2/product/<code>` straight from the browser with a short `fields` list and `X-User-Agent: Ontrack/<version> (https://ontrack-black.vercel.app)`, 8 s timeout. `findProduct` asks the user's products first. On the mock backend the same path is answered from `tests/fixtures/off/` under `/__mock/off`.
-- **Friends and the food map (S1b, F16, F17).** The map is a full screen layer over the shell (`sheets.friends`), its component loaded on first open (`App.svelte`). `FoodMap.svelte` loads MapLibre GL JS 6.16.0, its worker and its CSS in their own chunk, left out of the service worker's precache (about 1.6 MB; `globIgnores`), on OpenFreeMap's Positron or Dark style by theme. No WebGL, or no network for the chunk or the tiles, shows a plain message instead. Shared meals come from one `mapMeals` call over the whole world when the map opens (newest 500, a `shortcut` comment); your own come from the phone, so they show before they sync. Pins are buttons placed with `map.project` as the map moves, grouped by `clusterPins` at the current zoom; a group opens its meals in one paged sheet. Friends' photos and avatars come from `sharedPhoto` into object URLs held in memory and revoked when the map closes (`photos.ts`). `friends.svelte.ts` holds the last `listFriends` answer for the header's badge and the friends panel, refreshed when the account has a profile, when the tab returns and after each friend action; a request from search waits for the profile to sync first (`syncNow`). The location sentence shows once per phone before the first prompt (`prefs.locationOk`); `currentPosition()` asks once, never watches, and answers `denied` or `unavailable` instead of throwing. "Share to map" (`ShareToMap.svelte`) sits in the Review and Meal sheets; the Meal sheet's switch writes at once through `shareMeal` or `unshareMeal`.
+- **Friends and the food map (S1b, F16, F17).** The map is a full screen layer over the shell (`sheets.friends`), its component loaded on first open (`App.svelte`). `FoodMap.svelte` loads MapLibre GL JS 6.16.0, its worker and its CSS in their own chunk, left out of the service worker's precache (about 1.6 MB; `globIgnores`), on OpenFreeMap's Positron or Dark style by theme. No WebGL, or no network for the chunk or the tiles, shows a plain message instead. Shared meals come from one `mapMeals` call over the whole world when the map opens (newest 500, a `shortcut` comment); your own come from the phone, so they show before they sync. Pins are buttons placed with `map.project` as the map moves, grouped by `clusterPins` at the current zoom; a group opens its meals in one paged sheet. Friends' photos and avatars come from `sharedPhoto` into object URLs held in memory and revoked when the map closes (`photos.ts`). `friends.svelte.ts` holds the last `listFriends` answer for the header's badge and the friends panel, refreshed when the account has a profile, every minute and when the tab returns, and after each friend action; a request from search waits for the profile to sync first (`syncNow`). The location sentence shows once per phone before the first prompt (`prefs.locationOk`); `currentPosition()` asks once, never watches, and answers `denied` or `unavailable` instead of throwing. "Share to map" (`ShareToMap.svelte`) sits in the Review and Meal sheets; the Meal sheet's switch writes at once through `shareMeal` or `unshareMeal`.
 
 ## 12. PWA
 
-Port watermelon's vite-plugin-pwa setup. Manifest: name and short name Ontrack, `display: standalone`, start URL and scope `/`, background and theme colour from the canvas token with a dark variant through `theme-color` meta tags, icons generated from `design/brand/app-icon.svg` by `pnpm icons`. Register with a prompt: when a new worker is waiting, show the update toast. Navigation falls back to `index.html`. `/api/` is never cached. `scripts/check-pwa.mjs` verifies the manifest, the service worker and an offline reload. Nothing in the interface asks anyone to install the app (D1).
+`vite-plugin-pwa` with `registerType: 'autoUpdate'` and `skipWaiting`, so a new worker takes over as soon as it installs; the page then offers "A new version is ready" with an Update that reloads (`App.svelte`). Manifest: name and short name Ontrack, `display: standalone`, portrait, start URL and scope `/`, background and theme colour from the canvas token with a dark variant through `theme-color` meta tags (`index.html`, kept in step with the style by `paintTop` in `prefs.svelte.ts`), icons generated from `design/brand/app-icon.svg` by `pnpm icons`. Navigation falls back to `index.html`, except `/api/`, `/__mock/` and the `public/` pages `privacy.html` and `terms.html`, which are their own documents. `/api/` is never cached. The precache holds the app, its fonts and the few photo gradients the app itself uses; the gallery chunk and MapLibre are left out, and the scanner's WebAssembly is cached on first use. `scripts/check-pwa.mjs` verifies the manifest, the service worker and an offline reload. Nothing in the interface asks anyone to install the app (D1).
 
 ## 13. Tests
 
 | Kind | Where | What |
 | --- | --- | --- |
-| Unit | `tests/unit/engine.test.ts` | Every vector in `docs/SCIENCE.md` section 13, plus caps, floors and guardrails |
-| Unit | `tests/unit/checkin.test.ts`, `trend.test.ts`, `day.test.ts`, `program.test.ts` | Check-in decisions, regression slope, day totals and on track status, program analysis |
-| Unit | `tests/unit/sync-conformance.test.ts` | Section 5 rules against the mock always, and against Supabase when `SUPABASE_TEST_EMAIL` is set (`pnpm test:live`). Includes the S1 visibility suite: a stranger, a friend and a removed friend, for rows and photos; handles and requests; what an edit, unsharing, deleting and the program switch publish; account deletion; and, on Supabase, direct writes the policies refuse. Supabase allows 30 code sign-ins per 5 minutes per address and a run makes about 25, so new tests reuse users and runs are 5 minutes apart |
-| Unit | `tests/unit/geo.test.ts` | GPS from Exif in both byte orders, rounding, pin grouping by zoom and across the 180th meridian, one position read without a watch |
-| Unit | `tests/unit/resolve.test.ts`, `foods.test.ts`, `data.test.ts` | Vision resolution and clamps, food search ranking, library and template validity |
-| End to end | `tests/e2e/*.spec.ts`, WebKit at 390 by 844, light and dark | One spec per feature F1 to F13 against the mock backend, including offline log then reconnect |
-| Camera | `tests/e2e/camera.spec.ts`, project `camera`, Chromium | A barcode read by a fake camera playing `tests/fixtures/barcodes/scan.y4m`, with the browser's reader and with the WebAssembly reader (B1). Full CI only |
-| Screens | `tests/e2e/screens.spec.ts`, project `screens` | Every screen and sheet in its main states, written to `screenshots/` |
-| Stress | project `stress` | Phone sizes in Safari with its toolbars and three text sizes: no overflow, no clipped text, tap targets, sheet actions on screen |
-| Production | project `prod`, run by hand | Sign in with the test account, one write, verify in the database, delete |
+| Unit | `tests/unit/*.test.ts`, run by `pnpm test` (Vitest) | The engine against every vector in `docs/SCIENCE.md` section 13 (`engine`, `checkin`, `trend`, `day`, `program`, `progress`, `settings`, `science`), actions and the store (`actions`), onboarding (`onboarding`), the vision and coach handlers and resolvers (`analyze`, `resolve`, `gemini`, `coach`, `keepalive`), food and data (`foods`, `data`, `products`, `barcode`, `items`), geo (`geo`), the mock's friends (`demo-friends`) and the design guards (`contrast`, `invariants`) |
+| Conformance | `tests/unit/sync-conformance.test.ts` | Section 5 rules against the mock always, and against Supabase when `SUPABASE_TEST_EMAIL` is set (`pnpm test:live`). Includes the visibility suite: a stranger, a friend and a removed friend, for rows and photos; handles and requests; what an edit, unsharing, deleting and the program switch publish; account deletion; and, on Supabase, direct writes the policies refuse. Supabase allows 30 code sign-ins per 5 minutes per address and a run makes about 25, so new tests reuse users and runs are 5 minutes apart |
+| End to end | `tests/e2e/*.spec.ts`, project `light`, WebKit as an iPhone 13 (390 by 844), mock backend | `app`, `sync`, `onboarding`, `landing`, `today`, `photo`, `train`, `progress`, `thai`, `supplements`, `scan`, `friends`, `settings` and `motion`, including offline log then reconnect. Project `dark` repeats `app` |
+| Camera | `tests/e2e/camera.spec.ts`, project `camera`, Chromium as a Pixel 7 | A barcode read by a fake camera playing `tests/fixtures/barcodes/scan.y4m`, with the browser's reader and with the WebAssembly reader. Full CI only |
+| Screens | `tests/e2e/screens.spec.ts`, project `screens` (scale 2) | Every screen and sheet in its main states, written to `screenshots/` (`pnpm screenshots`) |
+| Stress | `tests/e2e/stress.spec.ts`, project `stress`, Chromium | Phone sizes in Safari with its toolbars and three text sizes: no overflow, no clipped text, tap targets, sheet actions on screen |
+| Offline | `offline.spec.ts` and `update.spec.ts`, project `offline` | Every feature in airplane mode and the update flow, against a production build with its service worker (`E2E_BASE_URL`) |
+| Landing shots | `tests/e2e/landing-shots.spec.ts`, project `shots` | Writes the landing page's phone screens to `src/flows/landing/shots/` as WebP, only with `LANDING_SHOTS=1`. `E2E_REAL_TILES=1` draws the map with real tiles. `LANDING_SEED=<file>` shows a real account's day and program from an export kept outside the repo, `LANDING_PHOTOS=<dir>` real photos on the pins |
+| Measures | projects `measure` (`measure`, `start`) and `tasks` (`TASK_VIDEO=1` films them) | Taps and time per task, and cold start on a year of data. Printed for the pull request, never a gate |
+| Production | `pnpm smoke:prod [url]` | Pages and headers, the deployed version, the functions refusing a stranger, then installability and the offline reload (`check:pwa`). Signing in and syncing against the real backend are `pnpm test:live` and the owner's check on the phone |
 
-`pnpm verify` runs check, unit tests, build, and the end to end specs tagged `@smoke`.
+Helpers (`tests/e2e/helpers.ts`, `tests/e2e/social.ts`): `open` (a fresh space, optionally seeded), `useSpace` and `space` (one world per test), `seedAccount` (an account with a plan, signed in before the app loads), `openSeeded` (the dev seeder's check-in outcomes), `signIn`, `onboard`, `takePhoto`, `vision` (names the fixture the mock provider answers with), `withPrefs`, `showStyleCard` and the friends scene (`person`, `befriend`, `shareAt`). Today's one-time style card is answered in every test unless the test asks for it with `showStyleCard`. The app's "today" in tests is the frozen `2026-11-11`.
+
+**Playwright config.** Port 5199 (`E2E_PORT`), a Vite server on the mock backend and mock vision, one retry in CI. `E2E_BASE_URL` points the run at a deployed preview; `VERCEL_AUTOMATION_BYPASS_SECRET` adds the bypass header for Vercel's deployment protection.
+
+**CI** (`.github/workflows/ci.yml`, runner `ubuntu-24.04` because Playwright's WebKit does not launch on `ubuntu-latest` since 18 Nov 2026). Docs-only changes skip it (`docs/SOURCES.md` does not, since a unit test reads it). Quick, on every pull request and push to `main`: `pnpm check`, `pnpm test`, `pnpm build`, `pnpm bundle`, the `@smoke` end to end tests, and on a pull request the end to end files it changed (`--only-changed`, projects `light` and `dark`). Full, on a release tag (`v1` and later), a pull request labelled `full-ci` or a manual run: every Playwright project in three shards, with WebKit and Chromium, and the offline pass against a built `vite preview` on shard 1. Traces upload on failure.
+
+**Gates.** `pnpm verify` runs check, unit tests, build, `pnpm bundle` (the bundle budget and a scan for secrets) and the end to end specs tagged `@smoke`.
 
 ## 14. Environment
 
@@ -628,14 +602,22 @@ Port watermelon's vite-plugin-pwa setup. Manifest: name and short name Ontrack, 
 | --- | --- | --- |
 | `VITE_BACKEND` | browser | `mock` or `supabase` |
 | `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` | browser | Supabase client |
+| `VITE_SUPPORT_EMAIL` | browser | Where Settings' Report a problem addresses its email |
 | `SUPABASE_URL`, `SUPABASE_SECRET_KEY` | server | Token verification, quota, account deletion |
-| `VISION_PROVIDER` | server | `mock` or `gemini` |
-| `GEMINI_API_KEY`, `GEMINI_MODEL` | server | Vision. Development uses a free tier key. Production uses the billed project |
-| `AI_DAILY_USER_LIMIT`, `AI_DAILY_GLOBAL_CAP` | server | Quotas, default 40 and 400 |
+| `VISION_PROVIDER` | server | `mock` or `gemini`, for vision and the coach |
+| `GEMINI_API_KEY`, `GEMINI_MODEL`, `GEMINI_FALLBACK_MODEL` | server | The model, and the one used on a 429 or 503. Development uses a free tier key |
+| `AI_DAILY_USER_LIMIT`, `AI_DAILY_GLOBAL_CAP` | server | Quotas for analysis and coach together, default 100 (Pro's fair use) and 400 |
+| `AI_DAILY_FREE_LIMIT` | server | R5: the free plan's AI logs a day, default 3 |
+| `STRIPE_SECRET_KEY` | server | R5: Stripe, test mode for the course; unset, Checkout answers `unavailable` |
+| `GEMINI_THINKING` | server | R5: minimal (default), low or medium |
 | `CRON_SECRET` | server | Keep-alive |
+| `SUPABASE_TEST_EMAIL` | tests | Turns on the live conformance run |
+
+`pnpm dev` sets the mock backend and provider. `pnpm dev:live` (and `test:live`, `eval:vision`) runs through `scripts/live-env.sh`, which reads the Supabase keys from the CLI and the Gemini key from a file outside the repo, so none is written to disk or printed.
 
 ## 15. Errors and diagnostics
 
 - Every failure the user can meet has a message in the catalog that says what happened and what to do next. No raw error text reaches the screen.
-- The app keeps the last 50 errors and sync events in memory and in prefs. Settings, Report a problem copies them with the app version and device details.
-- No third party analytics or trackers in v1.
+- A server failure is a typed error kind (`AnalyzeError`, `BackendError`), never a message; a record the server refuses and a failed thumbnail are logged to the console and kept out of the way of sync. The sync status and its last error kind are in the engine (`sync.status`, `sync.lastError`).
+- Settings, Report a problem opens an email to `VITE_SUPPORT_EMAIL` with the app version and the device's user agent.
+- No third party analytics or trackers.

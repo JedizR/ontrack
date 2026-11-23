@@ -45,6 +45,9 @@
   pointer-events: none;
 }
 
+/* R5: under reduced motion the scan's chips stand still and its beam is not drawn */
+.scan-beam { display: none; }
+
 @media (prefers-reduced-motion: no-preference) {
   .liquid-touch::after { scale: 0.5; transition: opacity 0.35s var(--ease-out), scale 0.6s var(--spring-default); }
   .liquid-touch[data-pressed]::after { scale: 1.6; }
@@ -71,8 +74,14 @@
   /* a short wiggle, then still for most of the loop */
   .wiggle { animation: wiggle var(--t, 6s) ease-in-out var(--d, 0s) infinite both; }
   @keyframes wiggle { 0%, 12%, 100% { transform: none; } 3% { transform: rotate(-7deg); } 6% { transform: rotate(6deg); } 9% { transform: rotate(-3deg); } }
+  /* R5, the scan on the first phone: a 6 s loop. The beam passes down the photo in its first third, each chip pops in
+     behind it a beat apart and they all leave together at the end, so the loop starts clean */
+  .scan-beam { display: block; position: absolute; inset-inline: 0; top: 0; height: 2px; border-radius: 1px; background: var(--lavender); animation: beam 6s var(--ease-out) infinite both; }
+  @keyframes beam { 0% { top: 0; opacity: 0; } 4% { opacity: 1; } 32% { top: 100%; opacity: 1; } 36%, 100% { top: 100%; opacity: 0; } }
+  .scan-chip { animation: chip 6s var(--spring-pop) infinite both; animation-delay: calc(0.5s + var(--k) * 0.45s); }
+  @keyframes chip { 0% { scale: 0.3; opacity: 0; } 8%, 70% { scale: 1; opacity: 1; } 78%, 100% { scale: 0.9; opacity: 0; } }
   /* after the shorthands above, which would set it back to running */
-  .bob, .float, .breathe, .wiggle { animation-play-state: var(--play, paused); }
+  .bob, .float, .breathe, .wiggle, .scan-beam, .scan-chip { animation-play-state: var(--play, paused); }
   [data-live] { --play: running; }
 }
 

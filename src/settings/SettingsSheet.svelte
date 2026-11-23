@@ -27,6 +27,9 @@
   import { sheets } from '$lib/sheets.svelte';
   import { prefs, type FontSize, type Look, type Theme } from '$lib/prefs.svelte';
   import { thaiByLanguage } from '$lib/data/foods';
+  import { membership } from '$lib/billing.svelte';
+  import { localDayOf, shortDate } from '$lib/model/dates';
+  import { FREE_AI_PER_DAY } from '../../shared/plans';
   import { deleteAccount, exportAll, exportMeals, saveSettings, signOut, syncNow } from '$lib/actions';
   import type { Profile } from '../../shared/records';
 
@@ -56,6 +59,11 @@
   const set = (c: Partial<Profile>) => { if (profile) saveSettings({ ...$state.snapshot(profile), ...c }); };
   const setRemind = (c: Partial<typeof prefs.remind>) => (prefs.remind = { ...prefs.remind, ...c });
 
+  // R5: cancel or keep Pro, at the end of the period either way
+  async function changePlan() {
+    const cancel = !membership.current.cancelAt;
+    toast((await membership.change(cancel ? 'cancel' : 'resume')) ? (cancel ? t.membership.cancelled : t.membership.resumed) : t.membership.failed);
+  }
   // Settings opens from the Profile page: its Back goes there
   function toProfile() {
     open = false;
@@ -137,6 +145,19 @@
     <p class="text-callout text-danger mt-3 min-h-5" role="alert">{error}</p>
   {:else}
     <Canvas>
+      <!-- R5: the plan first, for a signed in account: Free with Get Pro, or Pro with its date and Cancel or Keep -->
+      {#if session.user}
+        <Group id="set-g-membership" title={t.membership.title}>
+          {@const b = membership.current}
+          {@const until = b.periodEnd ? shortDate(localDayOf(b.periodEnd)) : ''}
+          <Box title={membership.pro ? t.membership.pro : t.membership.free} caption={!membership.pro ? t.membership.freeLine(num(FREE_AI_PER_DAY)) : b.cancelAt ? t.membership.ends(until) : b.trial ? t.membership.trialEnds(until) : until ? t.membership.renews(until) : undefined} wrap testid="set-plan">
+            {#snippet trailing()}
+              {#if !membership.pro}<Button variant="primary" size="sm" onclick={() => (sheets.paywall = { from: 'settings' })} data-testid="set-plan-pro">{t.membership.upgrade}</Button>
+              {:else if b.subscription}<Button size="sm" disabled={membership.busy} onclick={changePlan} data-testid="set-plan-change">{b.cancelAt ? t.membership.resume : t.membership.cancel}</Button>{/if}
+            {/snippet}
+          </Box>
+        </Group>
+      {/if}
       <!-- the owner, 20 Nov: the app's style first, on every device, signed in or not; units need a profile -->
       <Group id="set-g-display" title={t.settings.display}>
         {@render pick(t.prefs.look, look)}
@@ -154,7 +175,6 @@
             {/snippet}
           </Box>
         {/if}
-        <Box title={t.settings.remindWeigh} on={remind.weigh} onchange={(v) => setRemind({ weigh: v })} wrap testid="set-remind-weigh" />
         <Box title={t.settings.remindCheckin} on={remind.checkin} onchange={(v) => setRemind({ checkin: v })} wrap testid="set-remind-checkin" />
         <Box title={t.settings.remindEasy} caption={t.settings.remindEasyLine(hour)} on={remind.easy} onchange={(v) => setRemind({ easy: v })} wrap testid="set-remind-easy" />
       </Group>

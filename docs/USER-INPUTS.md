@@ -1,62 +1,48 @@
-# What you supply
+# What the owner supplied
 
-Fill in what you have. Every slot has a default, so nothing here blocks the build except the rows marked needed. Claude reads this file at the start of M0 and again at M1.
+Accounts, keys and references the owner set up, and where each one lives. Never paste a secret into chat, a doc or a commit; never read `.env.local`. Ask the owner when a key is needed.
 
-## 1. Accounts and keys
+## 1. Services
 
-| Item | Needed by | What to do | Done |
-| --- | --- | --- | --- |
-| GitHub CLI | M0, needed | `gh auth login`. Claude creates the private repo `ontrack` | [ ] |
-| Vercel CLI | M0, needed | `pnpm dlx vercel login`. Hobby plan, no domain | [ ] |
-| Supabase CLI | M0, needed | `pnpm dlx supabase login`. Claude creates project `ontrack` in Singapore (`ap-southeast-1`) | [ ] |
-| Google sign-in client | M3, needed | Google Cloud console, Auth, create an OAuth client of type Web. Redirect URI is the callback URL Claude gives you from Supabase. Paste the client id and secret into Supabase, Authentication, Providers, Google. Set the consent screen to External and publish it (basic scopes need no review) | [ ] |
-| Email codes | M3, optional | Supabase's built in mailer only reaches project members. To email anyone without owning a domain: create a Gmail app password and enter it in Supabase, Authentication, Emails, SMTP (host `smtp.gmail.com`, port 587). Skip this and sign-in is Google only for non-members | [ ] |
-| Gemini key, development | M6, needed | Google AI Studio, key in a project with no billing. Put it in `.env.local` as `GEMINI_API_KEY` | [ ] |
-| Gemini key, production | M9 | A key in the project linked to the billing account that holds your Developer Program credits. Claude adds it to Vercel. Set a budget alert of 2,000 baht | [ ] |
-
-Never paste a secret into the chat. Put it in `.env.local` or the provider's dashboard and tell Claude it is there.
-
-## 2. Design references
-
-Ontrack has a complete default design in `docs/DESIGN.md` and `design/`. Anything you add here refines it.
-
-| Slot | Put it here | Default if empty |
+| Service | What | Notes |
 | --- | --- | --- |
-| Figma design system | Link: ______ . Or export it as `design/DESIGN-figma.md` the way you did for watermelon | `docs/DESIGN.md` tokens and components |
-| Figma screens | Links to frames, one per line, with the Ontrack screen each one informs: ______ | `docs/SCREENS.md` layouts |
-| Screenshots you like | Drop images in `design/references/`, named `screen-what-you-like.png`, for example `today-luma-card-spacing.png` | The Luma and Higgsfield reading in `docs/DESIGN.md` |
-| Things you dislike | One line each: ______ | The banned list in `docs/DESIGN.md` |
+| GitHub | `JedizR/ontrack`, private | GitHub Free: no branch protection, so `main` is held by habit and CI |
+| Vercel | `jedizrs-projects/ontrack`, Hobby | Git connected: a merge to `main` deploys https://ontrack-black.vercel.app. Previews sit behind Vercel Authentication (`vercel curl`, or `VERCEL_AUTOMATION_BYPASS_SECRET`) |
+| Supabase | project `ontrack`, ref `sbexrpzbzkzofnbpaauu`, Singapore, free plan | Migrations `0001` to `0006` applied. The Supabase MCP is connected. Leaked password protection is off (a Pro feature; Ontrack has no passwords) |
+| Google sign in | OAuth client in Google Cloud project `ontrack-514502`, in Testing | Only listed test users can sign in with Google; email codes work for anyone |
+| Email codes | 6 digit codes over Gmail SMTP from team.ontrackapp@gmail.com, the product's support and sender address | The app password is in `~/.config/ontrack/smtp-app-password`. Google and SMTP are set in the Supabase dashboard, not in `supabase/config.toml`, so a config push leaves them alone |
+| Gemini | `gemini-3.6-flash` (minimal thinking), Flash-Lite as the fallback | Paid tier on the owner's Google Cloud credits (a 150 baht prepayment sits on the billing account). The key is in `~/.config/ontrack/gemini-api-key`; `scripts/live-env.sh` reads it for `dev:live` and `eval:vision` |
+| Open Food Facts | barcode lookups | Sent with `Ontrack/<version>` and the site URL, no email |
 
-Precedence when sources disagree: what you say in chat, then your Figma screens, then your Figma design system, then `docs/DESIGN.md`. Three things hold unless you say otherwise: the name, the lime, and the copy rules. As on watermelon, the design system is a baseline, not a cage: Claude may deviate for better UX and must list each deviation in `docs/DECISIONS.md`.
+## 2. Environment variables
 
-## 3. Brand overrides
+Set in Vercel for production and preview; names only here (`vercel env ls` lists them).
 
-| Slot | Default |
+- Server: `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `CRON_SECRET`, `VISION_PROVIDER` (`gemini`), `GEMINI_API_KEY`, `GEMINI_MODEL`, `GEMINI_FALLBACK_MODEL`, `AI_DAILY_USER_LIMIT` (default 40 a user a day, photos and coach together), `AI_DAILY_GLOBAL_CAP` (code default 400; set to 150 a day on 13 Nov when the paid tier went on, about 60 baht a day at most). R5: `AI_DAILY_USER_LIMIT` is now Pro's fair use cap (code default 100), `AI_DAILY_FREE_LIMIT` the free plan's (default 3), `STRIPE_SECRET_KEY` a Stripe test mode secret key (`sk_test_...`, not set yet: the owner adds it; without it Checkout answers unavailable), `GEMINI_THINKING` (minimal, low or medium; default minimal).
+- Client (public, `VITE_` prefix): `VITE_BACKEND` (`supabase`), `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPPORT_EMAIL`.
+- `vercel env add NAME env < file` takes the value from one stdin redirect. Confirm with `vercel env pull` into a scratch file, never into `.env.local`.
+
+## 3. Real data
+
+- The owner uses the app daily on production with their own Google account. Their data has to survive every release: check a release that touches stored data against their records first (the R2 check is in `docs/archive/HANDOFF-R2.md`).
+- The landing page's demo screens may use the owner's day and food photos (the owner's call, 20 Nov), exported to a scratch folder and passed with `LANDING_SEED` and `LANDING_PHOTOS`. Never commit them.
+- Downloading other users' storage objects with the server key is not allowed.
+
+## 4. Design references
+
+| Reference | Where |
 | --- | --- |
-| Accent | OneFin violet `#381AC9`, the owner's choice in D1. Change `--accent` in `design/tokens.css` |
-| Logo | `design/brand/mark.svg` and `design/brand/app-icon.svg`. Replace the files to use your own |
-| Short name (tab and manifest) | Ontrack |
+| OneFin, the identity source | https://creative-hands-463340.framer.app/, its Framer project "OneFin - Finance SaaS (copy)", extracted to `/Users/admin/destination/ontrack-design/onefin/` |
+| The owner's picks from OneFin | `ontrack-design/onefin/owner-picks/` (the most direct answer to what to adopt) |
+| Liquid glass | Figma "iOS 26 Liquid Glass (Community)" and https://github.com/callstack/liquid-glass |
+| Phone frame | Figma "iPhone 16 and 16 Plus Mockups (Community)"; built from Apple's sizes, 71.6 by 147.6 mm |
+| Meal app UI kit | Figma "Meal AI - AI Calorie Tracking - Mobile Apps UI Kit" |
+| Research | Mobbin (Cal AI, Strava, Bevel, Alma, Apple Health, Airbnb, Shop); notes in `ontrack-design/research/` |
+| Owner feedback images | `ontrack-design/feedback/` |
+| Thai nutrition the owner found | `data/thai/owner/` |
 
-## 4. Product switches
+## 5. Brand
 
-| Switch | Default | Change to |
-| --- | --- | --- |
-| Language | English only, Thai ready through the string catalog | Write "add Thai now" and Claude ships both |
-| Units | Metric, imperial available in Settings | |
-| Photo analyses per user per day | 40 | |
-| Sign-in | Google and email code | |
-| Hosting | Vercel Hobby (personal, non commercial). Move to Pro or Cloudflare before charging money | |
-
-## 5. Decisions you may want to veto before M0
-
-These shape everything after them. Tell Claude now if you want a different call.
-
-1. Plain Vite single page app, like watermelon, not SvelteKit or Astro. The app is fully client side. The only server code is three small Vercel functions.
-2. Local first with background sync, ported from watermelon, with Supabase replacing Google Sheets.
-3. One generic `records` table in Postgres holding JSON documents, not a table per entity.
-4. Photo logging uses Gemini Flash. The model names foods and estimates grams. Calories come from a bundled USDA food table when there is a match and are labelled as estimates when there is not.
-5. Thai dishes are estimates in v1. A Thai food table and Thai language are the first items on the later list.
-6. Training input is a weekly program with optional exercises. There is no set by set workout logging in v1.
-7. Targets change on training days by default. One setting makes them the same every day.
-8. Adults only, no weight loss goal below BMI 18.5, and a screening step at onboarding.
-9. Three tabs (Today, Train, Progress) and a plus button. Settings open from the avatar.
+- Accent violet `#381ac9` and light violet `#bebeff`, with the wider palette in `design/tokens.css`.
+- `design/brand/app-icon.svg` (frozen), `mark.svg`, `wordmark.svg` (the mark as the O).
+- Name and short name: Ontrack.

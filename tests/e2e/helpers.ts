@@ -15,16 +15,19 @@ export async function open(page: Page, path = '/', records?: Seed[]) {
   return s;
 }
 
+/** R5: the plan of every account in a mock space that has none of its own. */
+export const setPlan = (page: Page, s: string, plan: 'free' | 'pro') =>
+  page.request.post('/__mock/plan', { headers: { 'x-mock-space': s }, data: { pro: plan === 'pro' } }).then((r) => expect(r.ok()).toBe(true));
+
 /** The mock vision provider in a space: answer every analysis with this fixture (null: by hash), start the day's count here. */
 export const vision = (page: Page, s: string | undefined, o: { fixture?: string | null; used?: number }) =>
   page.request.post('/__mock/vision', { headers: { 'x-mock-space': s ?? 'default' }, data: o }).then((r) => expect(r.ok()).toBe(true));
 
 /** Take a photo from the Add sheet's Photo tile: the camera is a file chooser in tests. */
-export async function takePhoto(page: Page, notice = false) {
+export async function takePhoto(page: Page) {
   await page.getByTestId('add').click();
   const chooser = page.waitForEvent('filechooser');
   await page.getByTestId('add-photo').click();
-  if (notice) await page.getByTestId('photo-continue').click();
   await (await chooser).setFiles('tests/fixtures/meal.jpg');
   await expect(page.getByTestId('review-sheet')).toBeVisible();
 }
@@ -141,10 +144,12 @@ export const SUPPLEMENTS: Seed[] = [
  * An account on the mock server in its own space. `onboarded` (default) gives it a plan, or `account` instead of SEED;
  * `signedIn` (default) signs this page in to it before the app loads, once per tab, so a sign out or a reload is not undone.
  */
-export async function seedAccount(page: Page, o: { space?: string; email?: string; onboarded?: boolean; signedIn?: boolean; records?: Seed[]; account?: Seed[] } = {}) {
+export async function seedAccount(page: Page, o: { space?: string; email?: string; onboarded?: boolean; signedIn?: boolean; records?: Seed[]; account?: Seed[]; plan?: 'free' | 'pro' } = {}) {
   const s = o.space ?? space('seed');
   const email = o.email ?? EMAIL;
   const headers = { 'x-mock-space': s };
+  // R5: a seeded account is on Pro unless the test asks for the free plan, so the AI works as before the paywall
+  await setPlan(page, s, o.plan ?? 'pro');
   const session = (await (await page.request.post('/__mock/auth/verify', { headers, data: { email, code: '123456' } })).json()) as { token: string; userId: string };
   // the mock takes at most 100 records a push, as the sync engine sends them
   const records = [...(o.account ?? SEED), ...(o.records ?? [])];

@@ -126,7 +126,7 @@ Median 4.4 s, slowest 4.9 s.
 
 **Reading it.**
 - The table now carries the dish when the dish is there. Pad thai was seven items (four from the table, the noodles an estimate); it is now one line of FNDDS pad thai with shrimp. Khao man kai was five items with "oily rice" estimated; it is now SG FoodID's laboratory analysis of the whole plate. Mango sticky rice was three items; it is now one.
-- Dishes the table does not have stay estimates: khao soi, massaman, beef green curry (the table has green curry with chicken, and the model rightly did not use it for beef), crispy pork kra pao (the table has minced pork), som tam and kai yang. These are the gap a Thai table would close (`docs/BLOCKERS.md`, the INMU licence).
+- Dishes the table does not have stay estimates: khao soi, massaman, beef green curry (the table has green curry with chicken, and the model rightly did not use it for beef), crispy pork kra pao (the table has minced pork), som tam and kai yang. These are the gap a Thai table would close (`docs/archive/BLOCKERS-M0-to-U3.md`, the INMU licence).
 - Time: the free tier dominated both passes. The four fastest answers took the same 3.4 to 4.8 s; the slow ones (17 to 30 s) came while it was answering 503 to other calls, and the after pass hit more of them. A median from eight free tier calls cannot show a change of this size. What the change does cut deterministically is output: replies are 41 percent shorter, because a dish is one line instead of three to seven.
 - `est_per_100g` was kept. For items with a `food_id` it is 14 percent of a reply before and somewhat more after (most items now match), about 0.3 s of output at Flash speeds, well inside the free tier's noise; and it is the fallback when a `food_id` is not in the table. Drop it when the billed key gives stable timings that show the saving (`docs/DECISIONS.md`).
 
@@ -137,7 +137,7 @@ Median 4.4 s, slowest 4.9 s.
 
 ## M6, 12 November 2026: ten Wikimedia Commons photos
 
-The owner's own photos were not available in this unattended run, so this used the fallback in `STARTING_PROMPT.md`: ten freely licensed food photos from Wikimedia Commons, six of them Thai, kept outside the repository. The owner's ten real meals are still an owner check (`docs/BLOCKERS.md`).
+The owner's own photos were not available in this unattended run, so this used the fallback in `docs/archive/STARTING_PROMPT.md`: ten freely licensed food photos from Wikimedia Commons, six of them Thai, kept outside the repository. The owner's ten real meals are still an owner check (`docs/archive/BLOCKERS-M0-to-U3.md`).
 
 **Method.** `pnpm eval:vision <folder> <out>` (`scripts/eval-vision.ts`) runs each photo as `/api/analyze` would: resized to 1024 px on the longest edge as JPEG at 0.8, the system prompt with the catalog, the JSON schema, the zod check and resolution against the food table. It times the provider call only, from the Mac. Free tier development key.
 

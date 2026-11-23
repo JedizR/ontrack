@@ -11,13 +11,13 @@
   import { db } from '$lib/db/store.svelte';
   import { view } from '$lib/view.svelte';
   import { picker } from '$lib/picker.svelte';
-  import { saveSettings } from '$lib/actions';
-  import { bmi, defaultPace, V, type Goal } from '$lib/model/engine';
+  import { saveSettings, setGoalWeight } from '$lib/actions';
+  import { bmi, defaultPace, guardrails, V, type Goal } from '$lib/model/engine';
   import { kgPerWeek, planFor } from '$lib/model/day';
   import { addDays, yearOf } from '$lib/model/dates';
-  import { ftInToCm, heightText, weightText } from '$lib/model/units';
+  import { ftInToCm, heightText, kgToLb, lbToKg, weightText } from '$lib/model/units';
   import { goalsFor, moves, nextPlan, pacesFor, targetsOf } from '$lib/model/replan';
-  import { LIMITS } from '../flows/onboarding/draft';
+  import { LIMITS, weightWheel } from '../flows/onboarding/draft';
   import type { Profile } from '../../shared/records';
 
   let { mode, done }: { mode: 'profile' | 'goal'; done: () => void } = $props();
@@ -33,10 +33,16 @@
   let draft = $state<Profile>(JSON.parse(JSON.stringify(was)));
   let goal = $state<Goal>(base.goal);
   let rate = $state(base.ratePctPerWeek);
+  // R5: the goal weight belongs to the goal, so it is edited here too (from Progress and Profile); a new goal starts without one
+  let goalKg = $state<number | undefined>(base.goalWeightKg);
 
-  const next = $derived(nextPlan(base, was, { profile: draft, goal, rate }, { weightKg: latest, sessions, year, from }));
+  const next = $derived.by(() => {
+    const { goalWeightKg: _was, ...n } = nextPlan(base, was, { profile: draft, goal, rate }, { weightKg: latest, sessions, year, from });
+    return goalKg && goal !== 'maintain' ? { ...n, goalWeightKg: goalKg } : n;
+  });
   // only what the user changed counts: a plan from an older engine version is not news on its own
-  const changed = $derived(goal !== base.goal || rate !== base.ratePctPerWeek || JSON.stringify(draft) !== JSON.stringify(was));
+  const planChanged = $derived(goal !== base.goal || rate !== base.ratePctPerWeek);
+  const changed = $derived(planChanged || goalKg !== base.goalWeightKg || JSON.stringify(draft) !== JSON.stringify(was));
   const moved = $derived(changed && moves(base, next));
   const targets = $derived(targetsOf(next, draft.sex, draft.calorieMode));
   const maintainOnly = base.flags.includes('maintainOnly');
@@ -48,6 +54,19 @@
   function pickGoal(g: Goal) {
     goal = g;
     rate = g === base.goal ? base.ratePctPerWeek : (defaultPace(g, bmi(base.weightKg, draft.heightCm), draft.experience)?.rate ?? 0);
+    goalKg = g === base.goal ? base.goalWeightKg : undefined;
+  }
+  const metric = $derived(draft.units === 'metric');
+  async function askGoalWeight() {
+    const minKg = Math.max(guardrails({ age: 0, heightCm: draft.heightCm, weightKg: latest }).minGoalWeightKg, LIMITS.weightKg[0]);
+    const { min, max } = weightWheel(draft.units, minKg);
+    const shown = (kg: number) => Math.round((metric ? kg : kgToLb(kg)) * 10) / 10;
+    const v = await picker.ask({
+      title: t.plan.goalWeight, value: Math.min(max, Math.max(min, shown(goalKg ?? latest))), min, max, decimals: 1, unit: metric ? t.after.kg : t.after.lb,
+      clearable: !!goalKg,
+      range: (typed) => (typed < min ? t.plan.goalWeightLow(weightText(minKg, draft.units)) : t.body.weightRange(weightText(LIMITS.weightKg[0], draft.units, 0), weightText(LIMITS.weightKg[1], draft.units, 0))),
+    });
+    if (v !== null) goalKg = v === 0 ? undefined : Math.max(minKg, Math.round((metric ? v : lbToKg(v)) * 100) / 100);
   }
   const edit = (c: Partial<Profile>) => { draft = { ...draft, ...c }; };
 
@@ -56,7 +75,10 @@
   export function save() {
     if (!changed) return;
     const { bodyFatPct, ...rest } = draft;
-    saveSettings({ ...rest, ...(bodyFatPct ? { bodyFatPct } : {}) }, moved ? next : undefined);
+    // a new goal or pace is saved as a plan even when its numbers round the same; a goal weight alone edits today's plan
+    const replan = moved || planChanged;
+    saveSettings({ ...rest, ...(bodyFatPct ? { bodyFatPct } : {}) }, replan ? next : undefined);
+    if (!replan && goalKg !== base.goalWeightKg) setGoalWeight(view.today, goalKg ?? null);
     toast(moved ? t.settings.saved : t.settings.savedOnly);
     done();
   }
@@ -119,6 +141,7 @@
   {:else if maintainOnly}
     <p class="text-body" data-testid="set-maintain-only">{t.settings.maintainOnly}</p>
   {:else}
+    {@render heading(t.goal.q)}
     <Options label={t.settings.goal} value={goal} onchange={pickGoal} testid="set-goal"
       options={goals.map((g) => ({ value: g, label: GOALS[g][0], caption: GOALS[g][1] }))} />
     {#if paces.length}
@@ -148,4 +171,7 @@
       <p class="text-callout text-ink-2">{t.settings.targetSame}</p>
     {/if}
   </div>
+  {#if mode === 'goal' && !maintainOnly && goal !== 'maintain'}
+    <div class="mt-2"><Row title={t.plan.goalWeight} caption={t.plan.goalWeightHint} value={goalKg ? weightText(goalKg, draft.units) : t.progress.boxSet} onclick={askGoalWeight} testid="set-goal-weight" /></div>
+  {/if}
 </div>

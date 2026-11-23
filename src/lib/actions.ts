@@ -446,11 +446,10 @@ export async function signOut(force = false): Promise<'ok' | 'unsent'> {
     prefs.lastUser = null;
     prefs.lastEmail = null;
     // the account's first days and its dismissed suggestion (O1) are not the next account's
-    prefs.firstDay = null;
+    prefs.paywallDue = false;
     prefs.suggestOff = false;
     prefs.liftAsked = false;
-    // the next account answers the photo and location notices for itself (M9a)
-    prefs.photoOk = false;
+    // the next account answers the location notice for itself (M9a)
     prefs.locationOk = false;
     location.reload();
   }

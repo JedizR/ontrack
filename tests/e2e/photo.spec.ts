@@ -11,11 +11,7 @@ const error = (page: Page) => page.getByTestId('review-error');
 test('a photo becomes a reviewed meal with its thumbnail, oil included', { tag: '@smoke' }, async ({ page }) => {
   const s = await open(page);
   await vision(page, s, { fixture: 'basil-pork' });
-  await page.getByTestId('add').click();
-  await page.getByTestId('add-photo').click();
-  await expect(page.getByTestId('photo-notice')).toHaveText("Your photo is sent to Google's Gemini to identify the food, then discarded. Ontrack keeps only a small thumbnail.");
-  await page.keyboard.press('Escape');
-  await takePhoto(page, true);
+  await takePhoto(page); // R5: no notice before the first photo
 
   await expect(page.getByTestId('review-photo')).toBeVisible();
   await expect(items(page)).toHaveCount(3);
@@ -53,11 +49,11 @@ test('not food, a provider failure and the daily limit each say so and offer ano
 
   await vision(page, s, { fixture: 'fail' });
   await page.getByTestId('review-retry').click();
-  await expect(error(page)).toContainText('Could not analyse the photo. Try again or add it by hand.');
+  await expect(error(page)).toContainText('Could not read the photo. Try again or add it by hand.');
 
   await vision(page, s, { fixture: null, used: 40 });
   await page.getByTestId('review-retry').click();
-  await expect(error(page)).toContainText("You have used today's 40 photo analyses. Search and quick add still work.");
+  await expect(error(page)).toContainText("You have used today's 40 AI logs. Search and quick add still work.");
   await expect(page.getByTestId('review-retry')).toBeHidden();
 
   // by hand keeps the photo and builds the meal from Search
@@ -80,7 +76,7 @@ test('offline, the photo waits for a connection, then Try again works', async ({
   await page.keyboard.press('Escape');
   await context.setOffline(true);
   await takePhoto(page);
-  await expect(error(page)).toContainText('Photo analysis needs a connection.');
+  await expect(error(page)).toContainText('Logging by photo needs a connection.');
   await context.setOffline(false);
   await page.getByTestId('review-retry').click();
   await expect(items(page)).toHaveCount(3);

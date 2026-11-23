@@ -347,11 +347,11 @@
   :focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 }
 
-/* svelte-sonner on phones: pin the toaster 16 px from both edges and let the toast fill it, so it sits centred. */
+/* svelte-sonner on phones: pin the toaster 16 px from both edges. R5: the toast hugs its words, centred in it. */
 @media (max-width: 600px) {
   [data-sonner-toaster] { width: auto !important; left: 16px !important; right: 16px !important; transform: none !important; }
-  [data-sonner-toaster] [data-sonner-toast] { width: 100% !important; }
 }
+[data-sonner-toaster] [data-sonner-toast] { left: 0 !important; right: 0 !important; width: fit-content !important; margin-inline: auto; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-delay: 0ms !important; transition-duration: 0.01ms !important; }

@@ -1,5 +1,4 @@
-// Per-device state, not synced: theme, text size, last tab, the last signed in user, the onboarding draft, whether
-// the photo notice has been seen, the day this phone saved the plan, a dismissed program suggestion, and (M9a) the
+// Per-device state, not synced: theme, text size, last tab, the last signed in user, the onboarding draft, the plans sheet due after onboarding, a dismissed program suggestion, and (M9a) the
 // reminder cards, Thai dishes first, and whether Train asked the lifting experience.
 import type { Draft } from '../flows/onboarding/draft';
 export type Theme = 'system' | 'light' | 'dark';
@@ -14,11 +13,11 @@ export const FONT_SCALE = { m: 1, l: 1.15, xl: 1.3 } as const;
 export const PREFS_KEY = 'ot-ui';
 
 /** F23: which reminder cards Today shows, and from what time the nothing logged card does */
-export type Remind = { meal: boolean; mealAt: string; weigh: boolean; checkin: boolean; easy: boolean };
-interface Saved { theme: Theme; look: Look; fontSize: FontSize; tab: Tab; lastUser: string | null; lastEmail: string | null; draft: Draft | null; photoOk: boolean; firstDay: string | null; suggestOff: boolean; gapFolded: boolean; locationOk: boolean; remind: Remind; thai: boolean | null; liftAsked: boolean; stylePicked: boolean }
+export type Remind = { meal: boolean; mealAt: string; checkin: boolean; easy: boolean };
+interface Saved { theme: Theme; look: Look; fontSize: FontSize; tab: Tab; lastUser: string | null; lastEmail: string | null; draft: Draft | null; paywallDue: boolean; suggestOff: boolean; gapFolded: boolean; locationOk: boolean; remind: Remind; thai: boolean | null; liftAsked: boolean; stylePicked: boolean }
 const DEFAULTS: Saved = {
-  theme: 'system', look: 'tray', fontSize: 'system', tab: 0, lastUser: null, lastEmail: null, draft: null, photoOk: false, firstDay: null, suggestOff: false, gapFolded: false, locationOk: false,
-  remind: { meal: true, mealAt: '13:00', weigh: true, checkin: true, easy: true }, thai: null, liftAsked: false, stylePicked: false,
+  theme: 'system', look: 'tray', fontSize: 'system', tab: 0, lastUser: null, lastEmail: null, draft: null, paywallDue: false, suggestOff: false, gapFolded: false, locationOk: false,
+  remind: { meal: true, mealAt: '13:00', checkin: true, easy: true }, thai: null, liftAsked: false, stylePicked: false,
 };
 const load = (): Saved => {
   try { return { ...DEFAULTS, ...JSON.parse(localStorage.getItem(PREFS_KEY) ?? '{}') }; }
@@ -52,12 +51,9 @@ class Prefs {
   /** onboarding answers before sign in, kept here so they survive the Google redirect (TECH-SPEC section 4) */
   get draft() { return this.#s.draft; }
   set draft(v: Draft | null) { this.#s.draft = v; this.#save(); }
-  /** the photo privacy notice was accepted (SCREENS.md section 7, first use) */
-  get photoOk() { return this.#s.photoOk; }
-  set photoOk(v: boolean) { this.#s.photoOk = v; this.#save(); }
-  /** the day this phone saved the onboarding plan: Today's Getting started card (O1) */
-  get firstDay() { return this.#s.firstDay; }
-  set firstDay(v: string | null) { this.#s.firstDay = v; this.#save(); }
+  /** R5: this phone just saved a new plan, so the plans sheet shows once (the owner: the paywall after Save the plan) */
+  get paywallDue() { return this.#s.paywallDue; }
+  set paywallDue(v: boolean) { this.#s.paywallDue = v; this.#save(); }
   /** "Not now" on Train's suggested program (O1) */
   get suggestOff() { return this.#s.suggestOff; }
   set suggestOff(v: boolean) { this.#s.suggestOff = v; this.#save(); }

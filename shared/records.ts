@@ -136,7 +136,8 @@ export const workoutSchema = z.object({
   effort: z.optional(int(1, 10)),
   lifts: z.array(z.object({ exerciseId: str(1, 80), sets: z.array(z.object({ kg: num(0, 1000), reps: int(0, 200) })).check(z.maxLength(30)) })).check(z.maxLength(20)),
 });
-export const sessionLogSchema = z.object({ date, sessionKey: str(1, 20), status: z.enum(['done', 'skipped']), workout: z.optional(workoutSchema) });
+/** R5: `extra` is an activity added on a rest day for that day only (the program does not change); it is always done. */
+export const sessionLogSchema = z.object({ date, sessionKey: str(1, 20), status: z.enum(['done', 'skipped']), workout: z.optional(workoutSchema), extra: z.optional(sessionSchema) });
 
 export const checkinSchema = z.object({
   date,

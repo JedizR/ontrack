@@ -16,7 +16,7 @@
     requests = 0,
   }: { title: string; sync?: SyncState; signedIn?: boolean; onaccount?: () => void; onfriends?: () => void; requests?: number } = $props();
 
-  // once content scrolls under the header it fades into the canvas below it (U1b), never a hard edge
+  // once content scrolls under the header, the title moves in and the bar becomes the landing's glass capsule (R2)
   let scrolled = $state(false);
   const circle = $derived(`${tray ? 'bg-surface ' : ''}text-ink group-active:bg-surface-2 grid size-11 place-items-center rounded-full transition-[background-color,transform] duration-[var(--d-press)] group-active:scale-[0.97]`);
 </script>

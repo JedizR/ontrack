@@ -1,4 +1,5 @@
-// R1: what a logged workout adds up to, and what the next one starts from. Pure; the screen is flows/train/WorkoutSheet.
+// R1: what a logged workout adds up to, and what the next one starts from. Pure. Set logging left in R3; the coach's
+// session facts still read it.
 import type { Workout } from '../../../shared/records';
 import { V, type Muscle } from './engine';
 

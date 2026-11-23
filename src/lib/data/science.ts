@@ -20,8 +20,8 @@ export const SCIENCE: { group: ScienceGroup; keys: (keyof typeof C)[] }[] = [
   },
   { group: 'targets', keys: ['floor', 'targetStep', 'easyAdds'] },
   { group: 'macros', keys: ['atwater', 'kjPerKcal', 'proteinPerKg', 'proteinRefBmi', 'fatShare', 'fatMinPerKg', 'fatFloorPerKg'] },
-  { group: 'foodChecks', keys: ['estimateKcalMax', 'estimateKcalTolerance', 'tableKcalTolerance', 'derivedCarbsMin'] },
-  { group: 'onTrack', keys: ['onTrackBand', 'proteinOnTrack'] },
+  { group: 'foodChecks', keys: ['estimateKcalMax', 'estimateKcalTolerance', 'tableKcalTolerance', 'derivedCarbsMin', 'rowKcalGap', 'rowFatGap', 'portionBand', 'portionShrink', 'countBand', 'rangeWidth', 'fuzzyMatch', 'altKcalGap', 'altMax'] },
+  { group: 'onTrack', keys: ['onTrackBand', 'onTrackGainCap', 'proteinOnTrack'] },
   {
     group: 'checkin',
     keys: ['trendSmoothing', 'rateWindowDays', 'minWeighIns', 'minSpanDays', 'completeMinItems', 'completeMinShare', 'finishDayHour', 'minCompleteDays',

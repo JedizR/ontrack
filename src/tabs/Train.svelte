@@ -1,8 +1,10 @@
 <!-- SCREENS.md section 8, Train: the summary with Change program, the week Monday to Sunday (a session opens the
-     Session sheet; its handle drags it to another day), then the analysis: muscle balance, up to three
+     Session sheet), then the analysis: muscle balance, up to three
      recommendations with their sources, cardio minutes against the guideline, and how to arrange days with both
      lifting and cardio. -->
 <script lang="ts">
+  import { sheets } from '$lib/sheets.svelte';
+  import { membership } from '$lib/billing.svelte';
   import { prefs } from '$lib/prefs.svelte';
   import type { Component } from 'svelte';
   import Repeat from '@lucide/svelte/icons/repeat';
@@ -93,7 +95,9 @@
   const lit = $derived(doneSessions.length && plan && profile ? analyseProgram(doneSessions, { goal: plan.goal, experience: profile.experience, library: LIBRARY }) : analysis);
   const levels = $derived(lit ? weekLevels(Object.fromEntries(MUSCLES.map((m) => [m, lit.muscles[m].sets]))) : {});
   // this week in two numbers, from the sessions marked Done: kcal burned and planned sets
-  const weekKcal = $derived(plan ? Math.round(doneSessions.reduce((a, s) => a + sessionKcal(s, plan.weightKg), 0)) : 0);
+  // R5: an activity added on a rest day counts toward the week's burn
+  const extras = $derived(db.live('slog').map((r) => r.data).filter((l) => l.extra && l.date >= monday && l.date <= view.today).map((l) => l.extra!));
+  const weekKcal = $derived(plan ? Math.round([...doneSessions, ...extras].reduce((a, s) => a + sessionKcal(s, plan.weightKg), 0)) : 0);
   const weekSets = $derived(doneSessions.reduce((a, s) => a + (s.exercises ?? []).reduce((n, e) => n + e.sets, 0), 0));
   const litNames = $derived((Object.keys(levels) as (keyof typeof M)[]).map((m) => M[m]).join(', '));
   // the same moment as Today's Done: a haptic, and the Burst on the tick
@@ -288,7 +292,7 @@
       <div class="flex flex-wrap items-center justify-between gap-x-2">
         <Button variant="plain" size="sm" class="-ml-2" disabled={sessions.length >= MAX_SESSIONS} onclick={() => add(todayIs)} data-testid="train-add">{t.train.addSession}</Button>
         <!-- R2: the coach changes the week from a sentence -->
-        <Button variant="plain" size="sm" class="-mr-2" onclick={() => (aiOpen = true)} data-testid="program-ai-open"><Sparkles size={16} strokeWidth={2.25} aria-hidden="true" />{t.aiProgram.open}</Button>
+        <Button variant="plain" size="sm" class="-mr-2" onclick={() => (membership.pro ? (aiOpen = true) : (sheets.paywall = { from: 'adjust' }))} data-testid="program-ai-open"><Sparkles size={16} strokeWidth={2.25} aria-hidden="true" />{t.aiProgram.open}</Button>
       </div>
     </section>
 

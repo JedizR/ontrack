@@ -33,7 +33,5 @@ test('R1: in the scanner Meal takes a photo of the plate to Review, without leav
   await expect(page.getByTestId('scanner-reading')).toBeVisible(); // no frame: a chip says barcodes are read
   await expect(page.getByTestId('scanner-type')).toHaveCount(0); // typing only when the camera cannot read
   await page.getByTestId('scanner-shutter').click();
-  await expect(page.getByTestId('photo-notice')).toBeVisible(); // the first photo still asks first
-  await page.getByTestId('photo-continue').click();
   await expect(page.getByTestId('review-sheet')).toBeVisible();
 });

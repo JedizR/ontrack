@@ -2,13 +2,13 @@
 
 A calorie and training tracker for the phone's browser: Safari on iPhone first, Chrome on Android too. You take a photo of a meal or search the food table, log your weight and your sessions, and a weekly check-in adjusts your target from what actually happened. Built for a university course as a proof of concept; it is not launched publicly.
 
-Live: https://ontrack-black.vercel.app (add it to the Home Screen to use it like an app).
+Live: https://ontrack-black.vercel.app
 
 ## How it is built
 
 - A local first Svelte 5 single page app on Vite. Everything you log is written to IndexedDB on the phone first, so the app opens instantly and works in airplane mode; a sync engine sends changes to Supabase when there is a connection.
 - Supabase: email code and Google sign in, one `records` table with row level security, and the friends tables (`supabase/migrations/`).
-- Vercel: hosting, plus three small server functions in `api/` (photo and text analysis with Gemini, account deletion, a daily keep-alive). Their code is in `server/`; secrets live only there.
+- Vercel: hosting, plus four small server functions in `api/` (photo and text analysis with Gemini, the AI coach, account deletion, a daily keep-alive). Their code is in `server/`; secrets live only there.
 - The numbers (energy, protein, training energy, check-in rules) come from `src/lib/model/engine/constants.ts`, each with its published source. The AI names foods and estimates grams; calories per 100 g come from the food table (`src/lib/data/foods.json`) whenever it has the food.
 
 ## Run it
@@ -51,10 +51,10 @@ The offline pass and the start time need a production build; how to run them is 
 | `src/lib/components/` | Shared components; `/gallery` shows them in dev |
 | `src/lib/i18n/en.ts` | Every word in the UI |
 | `design/tokens.css` | Colours, type, spacing, radii and motion |
-| `docs/` | The product (`PRD.md`), architecture, tech spec, science, design, screens, build plan and decisions |
+| `docs/` | Where things stand (`STATE.md`), the owner's directions (`DIRECTIONS.md`), the product (`PRD.md`), architecture, tech spec, science, design, screens, the backlog (`BUILD-PLAN.md`) and decisions |
 
-`CLAUDE.md` has the rules that are easy to break (one place for numbers, one way to change data, tokens only, words in the catalog). Read it before your first change.
+`CLAUDE.md` has the rules that are easy to break (one place for numbers, one way to change data, tokens only, words in the catalog). Read it, `docs/STATE.md` and `docs/DIRECTIONS.md` before your first change.
 
 ## Release
 
-Pull requests run CI (`.github/workflows/ci.yml`); the label `full-ci` runs every end to end test, the stress matrix and the offline pass. A merge to `main` deploys to production on Vercel. After a release, run `pnpm smoke:prod` and `pnpm test:live`, then tag it.
+Pull requests run CI (`.github/workflows/ci.yml`); the label `full-ci` runs every end to end test, the stress matrix and the offline pass. A merge to `main` deploys to production on Vercel. The full release procedure is in `docs/WORKFLOW.md` section 5.

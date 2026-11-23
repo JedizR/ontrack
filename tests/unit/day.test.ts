@@ -16,12 +16,23 @@ describe('dayView', () => {
   test('a training day carries its exercise energy, and the band and macros follow the target', () => {
     const v = dayView({ ...base, meals: [meal(`${WED}T05:00:00.000Z`, 'a', [item(1840)])] });
     expect(v.target).toBe(2460);
-    expect(v.zone).toEqual([0.95 * 2460, 1.15 * 2460]);
+    expect(v.zone).toEqual([0.9 * 2460, 1.15 * 2460]);
     expect(v.macros.proteinG).toBe(108);
     expect(v.eaten.kcal).toBe(1840);
     expect(v.status).toBe('below');
     expect(v.training).toBe(true);
     expect(v.sessions.map((s) => s.status)).toEqual([undefined]);
+  });
+  test('an activity added on a rest day (R5) adds its energy to that day only, done, and makes it a training day', () => {
+    const THU = '2026-11-12';
+    const walk: Session = { key: 'xa', weekday: 3, name: 'Walk', type: 'walk', minutes: 60, intensity: 'moderate' };
+    const logs = [{ date: THU, sessionKey: 'xa', status: 'done' as const, extra: walk }];
+    const v = dayView({ ...base, date: THU, logs });
+    expect(v.target).toBeGreaterThan(2220);
+    expect([v.training, v.sessions.length, v.sessions[0].status]).toEqual([true, 1, 'done']);
+    // the next Thursday, and the plan's own sessions, are untouched
+    expect(dayView({ ...base, date: '2026-11-19', logs }).target).toBe(2220);
+    expect(dayView({ ...base, logs }).sessions).toHaveLength(1);
   });
   test('a rest day, and a skipped session, use the rest target; done keeps the training target', () => {
     expect(dayView({ ...base, date: '2026-11-12' }).target).toBe(2220);

@@ -72,7 +72,7 @@ test('two friends: request, accept, share, see the pin, open it, unshare, remove
 
   // Nan shares a photo meal: no location in the photo, so one sentence comes before the phone is asked
   await vision(nan, s, { fixture: 'basil-pork' });
-  await takePhoto(nan, true);
+  await takePhoto(nan);
   const share = nan.getByTestId('review-share');
   await expect(share.getByTestId('review-share-note')).toHaveText('Friends see the photo and its nutrition where it was taken.');
   await share.getByTestId('review-share-switch').click();

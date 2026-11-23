@@ -26,10 +26,14 @@ export type AnalysisItem = Macros & {
   per100: Macros;
   confidence: 'high' | 'medium' | 'low';
   hiddenFat: boolean;
+  /** R5: up to 3 other table foods it may be (kcal at this item's grams), only when one differs from this by over 15 percent */
+  alternatives?: { foodId: string; name: string; kcal: number }[];
 };
 export type Analysis = { title: string; items: AnalysisItem[]; model: string; raw: unknown };
-export type AnalyzeError = 'bad_request' | 'unauthorized' | 'too_large' | 'not_food' | 'daily_limit' | 'busy' | 'provider_error' | 'timeout';
-type Usage = { usedToday: number; limit: number };
+/** pro_only (R5): a Pro feature asked for on the free plan */
+export type AnalyzeError = 'bad_request' | 'unauthorized' | 'too_large' | 'not_food' | 'daily_limit' | 'busy' | 'provider_error' | 'timeout' | 'pro_only';
+/** `plan` (R5): which plan's limit this is, so the app can offer Pro when a free limit is reached */
+type Usage = { usedToday: number; limit: number; plan?: 'free' | 'pro' };
 export type AnalyzeResponse = { ok: true; analysis: Analysis; usage: Usage } | { ok: false; error: AnalyzeError; usage?: Usage };
 
 /**

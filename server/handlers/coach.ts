@@ -12,9 +12,10 @@ import { validate } from '../coach/validate.js';
 import { validateProgram } from '../coach/program.js';
 import type { AnalyzeError } from '../../shared/analysis.js';
 import { coachBody, MAX_BODY_BYTES } from '../../shared/coach.js';
+import { isPro, PRO_AI_PER_DAY, type Billing } from '../../shared/plans.js';
 
 export type Deps = {
-  caller(request: Request): Promise<{ id: string } | null>;
+  caller(request: Request): Promise<{ id: string; billing?: Billing } | null>;
   bump(userId: string, day: string, limit: number): Promise<Usage>;
   provider(): Promise<CoachProvider>;
   limit: number;
@@ -22,7 +23,7 @@ export type Deps = {
   timeoutMs?: number;
 };
 
-const STATUS: Record<AnalyzeError, number> = { bad_request: 400, unauthorized: 401, too_large: 413, not_food: 422, daily_limit: 429, busy: 429, provider_error: 502, timeout: 504 };
+const STATUS: Record<AnalyzeError, number> = { bad_request: 400, unauthorized: 401, too_large: 413, not_food: 422, daily_limit: 429, busy: 429, provider_error: 502, timeout: 504, pro_only: 402 };
 const fail = (error: AnalyzeError, extra: object = {}) => json(STATUS[error], { ok: false, error, ...extra });
 // the app waits 25 s (src/lib/coach.ts): two tries must fit inside it
 const TIMEOUT_MS = 10_000;
@@ -36,7 +37,7 @@ export const liveDeps = (): Deps => {
     bump: (u, d, l) => bumpUsage(db, u, d, l),
     provider: coachProvider,
     // the same per-user limit and global cap as /api/analyze, and the same count
-    limit: envInt('AI_DAILY_USER_LIMIT', 40),
+    limit: envInt('AI_DAILY_USER_LIMIT', PRO_AI_PER_DAY),
     cap: envInt('AI_DAILY_GLOBAL_CAP', 400),
   };
 };
@@ -52,6 +53,9 @@ export async function coach(request: Request, deps: Deps = liveDeps()): Promise<
   try { parsed = coachBody.safeParse(JSON.parse(text)); } catch { return fail('bad_request'); }
   if (!parsed.success) return fail('bad_request');
   const req = parsed.data;
+  // R5: the coach's words are Pro; on the free plan the app writes its own from the engine's facts, and offers Pro for
+  // Ask and Adjust with AI
+  if (!isPro(user.billing)) return fail('pro_only');
 
   // the server's UTC day, so a phone cannot pick dates to multiply its quota
   const usage = await deps.bump(user.id, new Date().toISOString().slice(0, 10), deps.limit).catch((e: Error) => { console.error('coach quota failed', e.message); return null; });

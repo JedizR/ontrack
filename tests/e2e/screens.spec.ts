@@ -463,7 +463,7 @@ for (const theme of ['light', 'dark'] as const) {
         await page.getByTestId('add').click();
         await expect(page.getByTestId('add-sheet')).toHaveCSS('transform', 'none');
         await shot(page, 'supplements', 'add-typical');
-        await page.getByTestId('supplement-entry').click(); // R2: the plus beside the pinned whey and creatine
+        await page.getByTestId('supplement-entry').click(); // the plus beside the pinned whey (R5)
         await page.getByTestId('kind-creatine').click();
         await page.getByTestId('tub-type').click();
         await page.getByTestId('supplement-zero').scrollIntoViewIfNeeded();
@@ -581,12 +581,8 @@ for (const theme of ['light', 'dark'] as const) {
         let readIt = () => {};
         const reading = new Promise<void>((r) => (readIt = r));
         await page.route('**/api/analyze', async (route) => { await reading; await route.continue(); });
-        await page.getByTestId('label-photo').click();
-        await expect(page.getByTestId('photo-notice')).toBeVisible();
-        await settled();
-        await shot(page, 'scan', 'notice');
         const chooser = page.waitForEvent('filechooser');
-        await page.getByTestId('photo-continue').click();
+        await page.getByTestId('label-photo').click();
         await (await chooser).setFiles('tests/fixtures/meal.jpg');
         await expect(page.getByText('Reading the label')).toBeVisible();
         await shot(page, 'scan', 'reading');
@@ -638,14 +634,12 @@ for (const theme of ['light', 'dark'] as const) {
         const s = await open(page);
         await vision(page, s, { fixture: 'basil-pork' });
         await page.getByTestId('add').click();
-        await page.getByTestId('add-photo').click();
         await settled('add-sheet');
-        await shot(page, 'photo', 'notice');
         let release = () => {};
         const held = new Promise<void>((r) => (release = r));
         await page.route('**/api/analyze', async (route) => { await held; await route.continue(); });
         const chooser = page.waitForEvent('filechooser');
-        await page.getByTestId('photo-continue').click();
+        await page.getByTestId('add-photo').click();
         await (await chooser).setFiles('tests/fixtures/meal.jpg');
         await expect(page.getByTestId('review-photo')).toBeVisible();
         await settled('review-sheet');
@@ -747,7 +741,7 @@ for (const theme of ['light', 'dark'] as const) {
         await shot(page, 'friends', 'today-badge');
         // Share to map in the Review sheet, then the Meal sheet's switch
         await vision(page, s, { fixture: 'basil-pork' });
-        await takePhoto(page, true);
+        await takePhoto(page);
         await expect(page.getByTestId('meal-item')).toHaveCount(3);
         await page.getByTestId('review-share-switch').click();
         await page.getByTestId('review-share').scrollIntoViewIfNeeded();

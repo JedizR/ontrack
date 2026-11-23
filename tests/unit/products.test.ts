@@ -46,10 +46,10 @@ describe('the label reader', () => {
   const label = { kind: 'label', image: JPEG, localDate: new Date().toISOString().slice(0, 10), locale: 'en' };
   const run = (provider = mockProvider) =>
     analyze(new Request('http://x/api/analyze', { method: 'POST', headers: { authorization: 'Bearer good' }, body: JSON.stringify(label) }), {
-      caller: async () => ({ id: 'u1' }),
+      caller: async () => ({ id: 'u1', billing: { tier: 'pro' as const } }),
       bump: async () => ({ allowed: true, used: 1, total: 1 }),
       provider: async () => provider,
-      limit: 40,
+      limit: 40, freeLimit: 3,
       cap: 400,
     });
 

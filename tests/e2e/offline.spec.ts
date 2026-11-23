@@ -129,7 +129,7 @@ test('airplane mode: a cold start and every feature work offline, and sync withi
   await test.step('F4, outside the bar: a photo says it waits for a connection', async () => {
     await page.getByTestId('tab-0').click();
     await takePhoto(page);
-    await expect(page.getByTestId('review-error')).toContainText('Photo analysis needs a connection.');
+    await expect(page.getByTestId('review-error')).toContainText('Logging by photo needs a connection.');
     await page.keyboard.press('Escape');
     await expect(page.getByTestId('review-sheet')).toBeHidden();
     await expect(hero(page)).toHaveText('3,769');

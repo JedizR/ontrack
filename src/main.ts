@@ -12,7 +12,7 @@ if (__GALLERY__ && location.pathname.startsWith('/gallery')) {
 
 // end to end tests drive data through the real actions until the screens that log data exist (M5)
 if (import.meta.env.DEV) {
-  void Promise.all([import('./lib/actions'), import('./lib/db/store.svelte'), import('./lib/sync/engine.svelte')]).then(([actions, { db }, { sync }]) =>
-    Object.assign(window, { ontrack: { actions, db, sync } }),
+  void Promise.all([import('./lib/actions'), import('./lib/db/store.svelte'), import('./lib/sync/engine.svelte'), import('./lib/sheets.svelte')]).then(([actions, { db }, { sync }, { sheets }]) =>
+    Object.assign(window, { ontrack: { actions, db, sync, sheets } }),
   );
 }

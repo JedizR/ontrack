@@ -105,6 +105,15 @@ test('a hardgainer watches the number build, tunes the pace and saves the plan i
   expect(await plans(page)).toMatchObject([{ goal: 'gain', ratePctPerWeek: 0.5, delta: 330, proteinG: 108, effectiveFrom: TODAY, source: 'onboarding' }]);
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('ot-ui')!).draft)).toBeNull();
 
+  // R5, the owner: the plans follow Save the plan, once; Continue with Free leaves the account on the free plan
+  await expect(page.getByTestId('paywall-hero')).toContainText('Every meal, one photo away');
+  await expect(page.getByTestId('paywall-year')).toHaveAttribute('aria-checked', 'true');
+  await page.getByTestId('paywall-free').click();
+  await expect(page.getByTestId('paywall')).toHaveCount(0);
+  await page.reload();
+  await expect(page.getByTestId('dock')).toBeVisible();
+  await expect(page.getByTestId('paywall')).toHaveCount(0); // never twice
+
   // Today's first state (R2): the weigh-in from onboarding is done, and the first meal is one tap from the empty list
   await expect(page.getByTestId('weigh-card')).toContainText('Weighed in');
   await page.getByTestId('first-meal').click();
@@ -285,6 +294,7 @@ test('maintain with lifting and cardio: no pace, no experience question, and Tra
   expect(await plans(page)).toMatchObject([{ goal: 'maintain', delta: 0 }]);
 
   // five days of both, under a year of lifting assumed: the three day hybrid
+  await page.getByTestId('paywall-free').click();
   await page.getByTestId('tab-1').click();
   await expect(page.getByTestId('train-suggest').getByRole('heading')).toHaveText('Suggested for your week, Full body and cardio 3 days');
   await expect(page.getByTestId('train-suggest')).toContainText('Fits 3 days a week.');
@@ -299,6 +309,7 @@ test('gaining on cardio alone: Train adds the two strength sessions to the week,
   await expect(page.getByTestId('plan-training')).toHaveText('Cardio 3 days a week, 30 min each. Edit in Train.');
   await page.getByTestId('plan-save').click();
   await signIn(page);
+  await page.getByTestId('paywall-free').click();
   await page.getByTestId('tab-1').click();
   await expect(page.getByTestId('train-suggest').getByRole('heading')).toHaveText('Suggested for your week, Minimal 2 days');
   await expect(page.getByTestId('train-suggest')).toContainText('Adds the two strength sessions a week that health guidelines advise.');
@@ -352,7 +363,7 @@ test('pregnancy leads to advice and maintenance', async ({ page }) => {
   await choose(page, 'choice-lose');
   await page.getByTestId('screen-pregnant').click();
   await page.getByTestId('continue').click();
-  await expect(page.getByTestId('step-advice')).toContainText('Plan this with your clinician');
+  await expect(page.getByTestId('step-advice')).toContainText('Plan this with your doctor');
   await expect(page.getByTestId('advice-continue')).toHaveText('Track with a maintenance target');
   await page.getByTestId('advice-continue').click();
   await expect(page.getByTestId('step-sex')).toBeVisible();

@@ -3,6 +3,7 @@
      pinned totals with Save meal and the main action. A failure replaces the skeleton with its message, Try again and
      Add by hand, which keeps the photo and builds the meal from Search. -->
 <script lang="ts">
+  import Chip from '$lib/components/Chip.svelte';
   import { untrack } from 'svelte';
   import Sheet from '$lib/components/Sheet.svelte';
   import Sparkles from '@lucide/svelte/icons/sparkles';
@@ -25,7 +26,7 @@
   import { t } from '$lib/i18n';
   import ItemList from './ItemList.svelte';
   import ShareToMap from './ShareToMap.svelte';
-  import { lineOf, lineWithMine, scaled, type Line } from './items';
+  import { differ, lineOf, lineWithMine, scaled, type Line } from './items';
   import { MAX_TEXT, type AnalysisItem, type AnalyzeRequest } from '../../../shared/analysis';
   import type { Meal, MealItem } from '../../../shared/records';
 
@@ -56,6 +57,8 @@
   let shareRow = $state<ShareToMap | null>(null);
   let original = $state.raw<Blob | null>(null); // the photo as taken: its location, if any, is read only when sharing
   let limit = $state(0);
+  /** R5: the plan the last answer counted against, and the free logs left after it */
+  let usage = $state<{ left: number; plan: 'free' | 'pro' } | null>(null);
   let thumb: Blob | null = null;
   let ai: Meal['ai'];
   let run = 0; // an answer for a sheet since closed or reopened is dropped
@@ -112,14 +115,15 @@
     const res = await analyzeMeal(request);
     if (mine !== run) return;
     if (!res.ok) {
-      if ('usage' in res && res.usage) limit = res.usage.limit;
+      if ('usage' in res && res.usage) { limit = res.usage.limit; usage = { left: 0, plan: res.usage.plan ?? 'pro' }; }
       status = res.error;
       return;
     }
+    usage = res.usage ? { left: Math.max(0, res.usage.limit - res.usage.usedToday), plan: res.usage.plan ?? 'pro' } : null;
     const { analysis } = res;
     title = analysis.title;
     // the model named it and weighed it; numbers the user corrected for that food before come back as Yours (F15)
-    lines = analysis.items.map((i) => lineWithMine(toItem(i)));
+    lines = analysis.items.map((i) => ({ ...lineWithMine(toItem(i)), ...(i.alternatives?.length ? { alts: i.alternatives } : {}) }));
     hidden = analysis.items.some((i) => i.hiddenFat);
     // R2, the owner: most Thai cooking uses oil, so an item that may hide it starts at a teaspoon, not none
     oil = hidden ? 'tsp' : 'none';
@@ -129,6 +133,14 @@
     if (hidden && !oilFood) oilFood = (await loadFoods().catch(() => [])).find((f) => f.id === OIL_ID) ?? null;
   }
 
+  // R5: one tap swaps a line for what the AI says it may also be, at the same grams, from the table
+  async function swap(i: number, foodId: string) {
+    const f = (await loadFoods().catch(() => [] as Food[])).find((x) => x.id === foodId);
+    const l = lines[i];
+    if (!f || !l) return;
+    haptic();
+    lines[i] = lineWithMine({ ...itemFor(f, scaled(l).grams ?? l.base.grams ?? 100), confidence: 'high' });
+  }
   const toItem = (i: AnalysisItem): MealItem => ({
     name: i.name, grams: i.grams, kcal: i.kcal, protein: i.protein, carbs: i.carbs, fat: i.fat, source: i.source, confidence: i.confidence,
     ...(i.foodId ? { foodId: i.foodId } : {}),
@@ -141,7 +153,7 @@
 
   const message = $derived.by(() => {
     if (status === 'not_food') return kind === 'photo' ? t.review.notFood : t.review.notFoodText;
-    if (status === 'daily_limit') return t.review.limit(num(limit));
+    if (status === 'daily_limit') return usage?.plan === 'free' ? t.review.limitFree(num(limit)) : t.review.limit(num(limit));
     if (status === 'offline') return kind === 'photo' ? t.review.offline : t.review.offlineText;
     if (status === 'busy') return t.review.busy;
     return kind === 'photo' ? t.review.failed : t.review.failedText;
@@ -197,13 +209,14 @@
 <Sheet bind:open={() => sheets.review !== null, (v) => { if (!v) close(); }} title={t.review.title} layer="base" testid="review-sheet" footer={status === 'ready' ? footer : undefined}>
   {#if kind === 'photo'}
     {#if photoUrl}
-      <!-- U1c: while it is read, a lavender line sweeps the photo, its band tinting what it has passed -->
-      <div class="shadow-card relative overflow-hidden rounded-md">
-        <img src={photoUrl} alt={t.review.photo} class="block aspect-[4/3] w-full object-cover" data-testid="review-photo" />
+      <!-- U1c: while it is read, a lavender line sweeps the photo, its band tinting what it has passed. R5, the owner: 3:4,
+           as the camera took it, centred, at most 48 percent of the screen high -->
+      <div class="@container"><div class="shadow-card relative mx-auto aspect-[3/4] h-[min(48svh,calc(100cqw*4/3))] overflow-hidden rounded-md">
+        <img src={photoUrl} alt={t.review.photo} class="block size-full object-cover" data-testid="review-photo" />
         {#if status === 'loading'}<div class="scan-sweep" aria-hidden="true" data-testid="review-sweep" out:fade={{ duration: dur('--d-fade') }}></div>{/if}
-      </div>
+      </div></div>
     {:else if status === 'loading'}
-      <Skeleton class="aspect-[4/3] w-full rounded-md" />
+      <div class="@container"><Skeleton class="mx-auto aspect-[3/4] h-[min(48svh,calc(100cqw*4/3))] rounded-md" /></div>
     {/if}
   {/if}
 
@@ -247,6 +260,18 @@
         </div>
       {/if}
     </ItemList>
+    <!-- R5: when the AI was torn between foods, the others as chips under the list: a question without asking one -->
+    {#each lines as l, i (l)}
+      {#if l.alts?.length}
+        {@const parts = differ([l.base.name, ...l.alts.map((a) => a.name)])}
+        <div class="mt-3" data-testid="review-alts">
+          <p class="text-caption text-ink-2">{t.review.couldBe(parts[0])}</p>
+          <div class="mt-1.5 flex flex-wrap gap-2">
+            {#each l.alts as a, k (a.foodId)}<Chip onclick={() => swap(i, a.foodId)}>{parts[k + 1].charAt(0).toUpperCase() + parts[k + 1].slice(1)}</Chip>{/each}
+          </div>
+        </div>
+      {/if}
+    {/each}
     <!-- the fix: say what is wrong in a few words; the estimate is made again from the photo or the words and your note -->
     <form class="border-line mt-4 flex flex-col gap-2 border-t pt-4" onsubmit={(e) => { e.preventDefault(); fix(); }} data-testid="review-fix">
       <label for="review-fix-text" class="text-eyebrow text-ink-2">{t.review.fix}</label>
@@ -255,6 +280,7 @@
         <Button size="md" disabled={!fixText.trim()} type="submit" data-testid="review-fix-send"><Sparkles size={20} strokeWidth={2.25} aria-hidden="true" />{t.review.fixSend}</Button>
       </div>
     </form>
+    {#if usage?.plan === 'free'}<p class="text-caption text-ink-2 mt-3" data-testid="review-free-left">{t.review.freeLeft(num(usage.left))}</p>{/if}
     {#if kind === 'photo'}
       <ShareToMap bind:this={shareRow} bind:checked={share} file={original} title={t.social.share} line={t.social.shareLine} testid="review-share" />
     {/if}
@@ -262,7 +288,8 @@
     <div class="mt-4" role="alert" data-testid="review-error">
       <p class="text-body">{message}</p>
       <div class="mt-4 flex flex-wrap gap-2">
-        {#if status !== 'daily_limit'}<Button variant="primary" onclick={() => sheets.review && void start(sheets.review)} data-testid="review-retry">{t.review.retry}</Button>{/if}
+        {#if status !== 'daily_limit'}<Button variant="primary" onclick={() => sheets.review && void start(sheets.review)} data-testid="review-retry">{t.review.retry}</Button>
+        {:else if usage?.plan === 'free'}<Button variant="primary" onclick={() => (sheets.paywall = { from: 'limit' })} data-testid="review-pro">{t.review.getPro}</Button>{/if}
         <Button onclick={byHand} data-testid="review-by-hand">{t.review.byHand}</Button>
       </div>
     </div>

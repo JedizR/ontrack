@@ -16,6 +16,10 @@
   import Button from '$lib/components/Button.svelte';
   import TrainIcon from '$lib/components/TrainIcon.svelte';
   import Wordmark from '$lib/components/Wordmark.svelte';
+  import Count from '$lib/components/Count.svelte';
+  import Sparkles from '@lucide/svelte/icons/sparkles';
+  import { FREE_AI_PER_DAY, PRICES, TRIAL_DAYS } from '../../../shared/plans';
+  import { num } from '$lib/model/format';
   import { C } from '$lib/model/engine';
   import { SOURCES } from '$lib/data/sources';
   import { today, yearOf } from '$lib/model/dates';
@@ -58,7 +62,7 @@
   const signin = () => (sheets.signin = true);
 
   // L4: each chapter's sticker colour, from the owner's palette (decoration only)
-  const CHAPTER = ['bg-coral', 'bg-steel', 'bg-peach', 'bg-mist', 'bg-sand'];
+  const CHAPTER = ['bg-coral', 'bg-steel', 'bg-peach', 'bg-mist', 'bg-sand', 'bg-lavender'];
   // L4: playful, never in step: each word, card and tile gets its own tilt and offset from these, by its place
   const TILT = [-7, 5, -4, 8, -6, 3, -8, 6];
   const tilt = (i: number, k = 1) => `${TILT[i % TILT.length] * k}deg`;
@@ -103,6 +107,9 @@
   ].map((x, i) => ({ ...x, ...L.train.cards[i] }));
   const FRIENDS = [UserPlus, MapPin, Lock].map((icon, i) => ({ icon, ...L.friends.points[i] }));
   // each number on the page cites the constant's own source, so the cards cannot drift from the engine
+  // R5, 06 Plans: Free and Pro, the price rolling between monthly and yearly
+  let yearly = $state(true);
+  const SAVE = Math.round((1 - PRICES.year / (PRICES.month * 12)) * 100);
   const SOURCED = [
     { label: L.sources.resting, source: SOURCES[C.mifflin.source]?.short, wash: '[background:var(--wash-1)] text-night' },
     { label: L.sources.training, source: SOURCES[C.metStrength.source]?.short, wash: '[background:var(--wash-2)] text-night' },
@@ -225,7 +232,20 @@
             <h3 class="text-lead">{c.title}</h3>
             <p class="text-callout mt-2 mb-6 max-w-[18rem] text-ink-2">{c.line}</p>
             <!-- every phone is the whole iPhone 16, so they all stand level -->
-            <div class="counter mt-auto w-[min(100%,240px)]" style:--tilt={tilt(i + 1, -0.8)}><Phone src={c.shot} alt={c.alt} /></div>
+            <div class="counter relative mt-auto w-[min(100%,240px)]" style:--tilt={tilt(i + 1, -0.8)}>
+              <Phone src={c.shot} alt={c.alt} />
+              {#if i === 0}
+                <!-- R5, the wow: over the shot's 3:4 photo (24 to 67 percent down the phone, 17 and 18 in from the sides) a beam
+                     reads the plate and each food it finds pops up as a chip, then the meal's total; on a loop while in view -->
+                <div class="scan pointer-events-none absolute top-[24.4%] right-[18%] left-[17%] h-[42.5%] rounded-[6cqw]" role="img" aria-label={L.scan.label} data-testid="landing-scan">
+                  <i class="scan-beam" aria-hidden="true"></i>
+                  {#each L.scan.chips as chip, k (chip)}
+                    <span class="scan-chip bg-snow/90 text-night shadow-float absolute rounded-full px-2 py-0.5 text-[0.7rem] leading-tight font-semibold whitespace-nowrap" style:--k={k} style:top="{[66, 22, 46][k]}%" style:left="{[24, 36, 2][k]}%" aria-hidden="true">{chip}</span>
+                  {/each}
+                  <span class="scan-chip scan-total bg-action text-on-action absolute right-[4%] -bottom-[7%] rounded-full px-2.5 py-1 text-[0.75rem] leading-tight font-semibold" style:--k={3} aria-hidden="true">{L.scan.total}</span>
+                </div>
+              {/if}
+            </div>
           </article>
         {/each}
       </div>
@@ -324,6 +344,40 @@
               </div>
             </article>
           {/each}
+        </div>
+      </section>
+
+      <!-- R5, 06 Plans: Free on a quiet card, Pro the featured card on the feature gradient with its sticker; the switch
+           rolls the price (Count) and the sticker pops in on Yearly. Both start the same way: build your plan first -->
+      <section class="px-4 pt-8 pb-16" id="plans" tabindex="-1" data-testid="landing-plans" use:live>
+        {@render head('06', L.plans.tag, L.plans.title, L.plans.lead)}
+        <div class="mt-10 flex justify-center">
+          <div class="liquid-clear relative grid grid-cols-2 rounded-full p-1" role="radiogroup" aria-label={L.plans.billing} data-testid="landing-billing">
+            <span class="bg-action absolute inset-y-1 left-1 w-[calc(50%-4px)] rounded-full transition-transform duration-[var(--d-ui)] ease-[var(--ease-out)] {yearly ? 'translate-x-full' : ''}" aria-hidden="true"></span>
+            {#each [false, true] as y (y)}
+              <button type="button" role="radio" aria-checked={yearly === y} class="tap text-callout relative min-h-11 rounded-full px-6 font-semibold transition-colors duration-[var(--d-ui)] {yearly === y ? 'text-on-action' : 'text-ink'}" onclick={() => (yearly = y)} data-testid="landing-billing-{y ? 'year' : 'month'}">{y ? L.plans.yearly : L.plans.monthly}</button>
+            {/each}
+          </div>
+        </div>
+        <div class="mx-auto mt-8 grid max-w-[880px] items-stretch gap-4 sm:grid-cols-2">
+          <article class="settle lean bg-surface-2 text-ink flex flex-col rounded-lg p-6" style:--tilt="-3deg" style:--dx="-40px" style:--dy="90px" use:lean data-testid="landing-free">
+            <p class="text-heading">{L.plans.free}</p>
+            <p class="text-callout mt-1 opacity-80">{L.plans.freeLine}</p>
+            <p class="mt-6 flex items-baseline gap-2"><span class="text-display num">{L.plans.zero}</span><span class="text-callout opacity-80">{t.after.forever}</span></p>
+            <ul class="mt-6 flex flex-col gap-2.5">
+              {#each [L.plans.freeAi(num(FREE_AI_PER_DAY)), ...L.plans.freeHas] as f (f)}<li class="text-callout flex items-start gap-2"><Check class="mt-0.5 flex-none" size={18} strokeWidth={2.75} aria-hidden="true" />{f}</li>{/each}
+            </ul>
+          </article>
+          <article class="settle lean relative flex flex-col rounded-lg p-6 [background:var(--grad-feature)] text-night" data-theme="light" style:--tilt="3deg" style:--dx="48px" style:--dy="110px" use:lean data-testid="landing-pro">
+            {#key yearly}{#if yearly}<span class="sticker wiggle absolute -top-4 right-5 flex" use:inview data-reveal style:--t="5s" data-testid="landing-save"><span class="bg-accent text-on-accent text-eyebrow rotate-6 rounded-xs px-3 py-1.5">{L.plans.save(num(SAVE))}</span></span>{/if}{/key}
+            <p class="text-heading flex items-center gap-2">{L.plans.pro}<Sparkles size={22} strokeWidth={2.25} aria-hidden="true" /></p>
+            <p class="text-callout mt-1 opacity-80">{L.plans.proLine}</p>
+            <p class="mt-6 flex items-baseline gap-2"><span class="text-display num">฿<Count value={yearly ? PRICES.year : PRICES.month} /></span><span class="text-callout opacity-80">{yearly ? t.after.aYear : t.after.aMonth}</span></p>
+            <p class="text-caption mt-1 opacity-80" data-testid="landing-pro-line">{yearly ? L.plans.monthOf(num(Math.round(PRICES.year / 12))) : L.plans.trial(num(TRIAL_DAYS))}</p>
+            <ul class="mt-5 flex flex-col gap-2.5">
+              {#each L.plans.proHas as f (f)}<li class="text-callout flex items-start gap-2"><Check class="text-accent-ink mt-0.5 flex-none" size={18} strokeWidth={2.75} aria-hidden="true" />{f}</li>{/each}
+            </ul>
+          </article>
         </div>
       </section>
 

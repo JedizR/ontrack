@@ -20,6 +20,7 @@
   import { picker } from '$lib/picker.svelte';
   import { db } from '$lib/db/store.svelte';
   import { refreshFriends, waiting } from '$lib/friends.svelte';
+  import { membership } from '$lib/billing.svelte';
   import type { SyncState } from '$lib/components/SyncMark.svelte';
 
   const TITLES = [t.tabs.today, t.tabs.train, t.tabs.progress];
@@ -52,6 +53,33 @@
   let Checkin = $state<Component | null>(null);
   const loadCheckin = async () => { Checkin ??= (await import('./flows/checkin/CheckinSheet.svelte')).default; };
   $effect(() => { if (sheets.checkin && !Checkin) void loadCheckin(); });
+  // back from Stripe's Checkout: `?checkout=<session>` is confirmed once signed in, then the address is clean again
+  const back = new URLSearchParams(location.search).get('checkout');
+  if (back) history.replaceState(history.state, '', location.pathname);
+  let returned = back;
+  // R5 freemium: the account's plan, read again at each sign in (the confirmation reads it on the way back from
+  // Checkout), and when the app comes back after its period ended; the plans sheet, its own chunk
+  $effect(() => { if (session.user?.userId) void membership.load(!!returned && returned !== 'cancel'); });
+  let Paywall = $state<Component | null>(null);
+  $effect(() => { if (sheets.paywall && !Paywall) void import('./flows/plans/PaywallSheet.svelte').then((m) => (Paywall = m.default)); });
+  $effect(() => {
+    if (!returned || !session.user || !db.ready) return;
+    const id = returned;
+    returned = null;
+    if (id !== 'cancel') void membership.confirm(id).then((ok) => {
+      if (ok) sheets.paywall = { from: 'welcome' };
+      else toast(t.paywall.failed);
+    });
+  });
+  // the owner: the plans after Save the plan, once, on the phone that saved it (never over a Pro account)
+  $effect(() => {
+    if (!onboarded || !prefs.paywallDue || onboarding) return;
+    prefs.paywallDue = false;
+    if (!membership.pro) sheets.paywall = { from: 'onboarding' };
+  });
+  // R5: the goal sheet, from Progress and Profile
+  let Goal = $state<Component | null>(null);
+  $effect(() => { if (sheets.goal && !Goal) void import('./flows/progress/GoalSheet.svelte').then((m) => (Goal = m.default)); });
   const add = () => (db.ready ? (sheets.add = true) : (sheets.signin = true));
   // R2: the check-in waiting is a dot on Progress, where it lives (the bell is gone)
   const checkinDue = $derived.by(() => {
@@ -126,7 +154,11 @@
     const preload = setTimeout(() => { void loadTab(1); void loadTab(2); loadSheets().catch(() => undefined); loadLog().catch(() => undefined); }, 800); // a failed preload retries on first open
     // a tab can stay open past midnight: Today follows the calendar when it comes back
     const tick = () => { if (document.visibilityState === 'visible') view.tick(); };
-    const back = () => { if (document.visibilityState === 'visible' && social && session.user) void refreshFriends(); };
+    const back = () => {
+      if (document.visibilityState !== 'visible' || !session.user) return;
+      if (social) void refreshFriends();
+      if (membership.stale) void membership.load();
+    };
     document.addEventListener('visibilitychange', tick);
     document.addEventListener('visibilitychange', back);
     const clock = setInterval(() => { tick(); back(); }, 60_000); // a request or an answer from a friend arrives without a reload
@@ -189,5 +221,7 @@
 {#if Log}<Log />{/if}
 {#if Wheel}<Wheel />{/if}
 {#if Checkin}<Checkin />{/if}
+{#if Goal}<Goal />{/if}
+{#if Paywall}<Paywall />{/if}
 {#if FoodMap && sheets.friends}<FoodMap />{/if}
 <Toasts />

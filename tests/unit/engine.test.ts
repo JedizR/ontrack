@@ -4,6 +4,7 @@ import {
   bmi,
   bmr,
   calorieStatus,
+  dayCounts,
   dayMacros,
   dayTarget,
   defaultPace,
@@ -279,9 +280,9 @@ describe('guardrails and paces', () => {
 });
 
 describe('on track', () => {
-  test('gain: 95 to 115 percent', () => {
-    expect(calorieStatus('gain', 2337, 2460, 'male')).toBe('on');
-    expect(calorieStatus('gain', 2330, 2460, 'male')).toBe('below');
+  test('gain: 90 to 115 percent (R5)', () => {
+    expect(calorieStatus('gain', 2214, 2460, 'male')).toBe('on');
+    expect(calorieStatus('gain', 2213, 2460, 'male')).toBe('below');
     expect(calorieStatus('gain', 2829, 2460, 'male')).toBe('on');
     expect(calorieStatus('gain', 2830, 2460, 'male')).toBe('above');
   });
@@ -290,11 +291,26 @@ describe('on track', () => {
     expect(calorieStatus('maintain', 1799, 2000, 'male')).toBe('below');
     expect(calorieStatus('maintain', 2201, 2000, 'male')).toBe('above');
   });
-  test('lose: 90 to 105 percent and not below the floor', () => {
+  test('lose: 90 to 110 percent (R5) and not below the floor', () => {
     expect(calorieStatus('lose', 1314, 1460, 'female')).toBe('on');
-    expect(calorieStatus('lose', 1534, 1460, 'female')).toBe('above');
+    expect(calorieStatus('lose', 1606, 1460, 'female')).toBe('on');
+    expect(calorieStatus('lose', 1607, 1460, 'female')).toBe('above');
     expect(calorieStatus('lose', 1150, 1200, 'female')).toBe('below');
     expect(calorieStatus('lose', 1200, 1200, 'female')).toBe('on');
+  });
+  test('a day counts in its goal direction (R5): under on lose down to the floor, over on gain up to the cap', () => {
+    // lose: well under the target counts, the floor does not move, over the band does not
+    expect(dayCounts('lose', 1250, 1800, 'female')).toBe(true);
+    expect(dayCounts('lose', 1199, 1800, 'female')).toBe(false);
+    expect(dayCounts('lose', 1980, 1800, 'female')).toBe(true);
+    expect(dayCounts('lose', 1981, 1800, 'female')).toBe(false);
+    // gain: over the band counts up to a quarter more, under the band does not
+    expect(dayCounts('gain', 3075, 2460, 'male')).toBe(true);
+    expect(dayCounts('gain', 3076, 2460, 'male')).toBe(false);
+    expect(dayCounts('gain', 2213, 2460, 'male')).toBe(false);
+    // maintain: only the band
+    expect(dayCounts('maintain', 1799, 2000, 'male')).toBe(false);
+    expect(dayCounts('maintain', 2200, 2000, 'male')).toBe(true);
   });
   test('protein: 90 percent or more', () => {
     expect(proteinOnTrack(98, 108)).toBe(true);

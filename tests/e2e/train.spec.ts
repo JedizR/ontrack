@@ -19,13 +19,13 @@ test('build a week: add a session, list exercises, see the analysis with its sou
   await day(page, 1).getByTestId('train-rest').click();
   const sheet = page.getByTestId('train-session-sheet');
   await sheet.getByTestId('session-name').fill('Run');
-  await sheet.getByRole('button', { name: 'Cardio' }).click();
+  await sheet.getByRole('radio', { name: 'Cardio' }).click();
   await sheet.getByRole('radio', { name: 'Hard' }).click();
-  await sheet.getByRole('button', { name: 'Less Minutes a session' }).click();
-  await expect(sheet.getByTestId('session-kcal')).toHaveText('Adds 440 kcal to the day'); // (9 - 1) MET x 60 kg x 55 min
+  await sheet.getByTestId('session-minutes').getByRole('radio', { name: '45' }).click();
+  await expect(sheet.getByTestId('session-kcal')).toHaveText('Adds 360 kcal to the day'); // (9 - 1) MET x 60 kg x 45 min
   await sheet.getByTestId('session-save').click();
-  await expect(day(page, 1)).toContainText('Cardio, 55 min');
-  await expect(page.getByTestId('train-cardio')).toContainText('110 of 150 to 300 minutes a week'); // vigorous counts double
+  await expect(day(page, 1)).toContainText('Cardio, 45 min');
+  await expect(page.getByTestId('train-cardio')).toContainText('90 of 150 to 300 minutes a week'); // vigorous counts double
 
   // exercises for Monday: pull-ups from the picker, filtered to back
   await day(page, 0).getByTestId('train-session').click();
@@ -46,7 +46,7 @@ test('build a week: add a session, list exercises, see the analysis with its sou
 
   // Saturday's session moved to Sunday on its sheet (R2: the week is a grid, a session moves by its day chips)
   await day(page, 5).getByTestId('train-session').click();
-  await sheet.getByRole('group', { name: 'Day' }).getByRole('button', { name: 'Sun' }).click();
+  await sheet.getByRole('radiogroup', { name: 'Day' }).getByRole('radio', { name: 'Sunday' }).click();
   await sheet.getByTestId('session-save').click();
   await expect(day(page, 5).getByTestId('train-rest')).toBeVisible();
   await expect(day(page, 6)).toContainText('Strength, 60 min');
@@ -130,7 +130,7 @@ test('a hybrid template builds a week of lifting and cardio and says how to arra
 
   // Friday's ride moved to Sunday: Friday no longer has both
   await day(page, 4).getByTestId('train-session').last().click(); // the day's second session, its cardio (R2: a column a day)
-  await page.getByTestId('train-session-sheet').getByRole('group', { name: 'Day' }).getByRole('button', { name: 'Sun' }).click();
+  await page.getByTestId('train-session-sheet').getByRole('radiogroup', { name: 'Day' }).getByRole('radio', { name: 'Sunday' }).click();
   await page.getByTestId('session-save').click();
   await expect(points.nth(0)).toContainText('On Monday and Wednesday, lift before your cardio');
 });

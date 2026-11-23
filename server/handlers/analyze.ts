@@ -11,17 +11,20 @@ import { modelOutput } from '../vision/schema.js';
 import { MAX_ITEMS, resolveItems } from '../vision/resolve.js';
 import { labelOutput, toLabel } from '../vision/label.js';
 import { analyzeRequest, MAX_BODY_BYTES, type AnalyzeError } from '../../shared/analysis.js';
+import { FREE_AI_PER_DAY, isPro, PRO_AI_PER_DAY, type Billing } from '../../shared/plans.js';
 
 export type Deps = {
-  caller(request: Request): Promise<{ id: string } | null>;
+  caller(request: Request): Promise<{ id: string; billing?: Billing } | null>;
   bump(userId: string, day: string, limit: number): Promise<Usage>;
   provider(): Promise<VisionProvider>;
+  /** a day's analyses on Pro (fair use), and on the free plan (R5) */
   limit: number;
+  freeLimit: number;
   cap: number;
   timeoutMs?: number;
 };
 
-const STATUS: Record<AnalyzeError, number> = { bad_request: 400, unauthorized: 401, too_large: 413, not_food: 422, daily_limit: 429, busy: 429, provider_error: 502, timeout: 504 };
+const STATUS: Record<AnalyzeError, number> = { bad_request: 400, unauthorized: 401, too_large: 413, not_food: 422, daily_limit: 429, busy: 429, provider_error: 502, timeout: 504, pro_only: 402 };
 const fail = (error: AnalyzeError, extra: object = {}) => json(STATUS[error], { ok: false, error, ...extra });
 const TIMEOUT_MS = 20_000;
 
@@ -31,7 +34,8 @@ export const liveDeps = (): Deps => {
     caller: (r) => caller(r, db),
     bump: (u, d, l) => bumpUsage(db, u, d, l),
     provider: visionProvider,
-    limit: envInt('AI_DAILY_USER_LIMIT', 40),
+    limit: envInt('AI_DAILY_USER_LIMIT', PRO_AI_PER_DAY),
+    freeLimit: envInt('AI_DAILY_FREE_LIMIT', FREE_AI_PER_DAY),
     cap: envInt('AI_DAILY_GLOBAL_CAP', 400),
   };
 };
@@ -51,9 +55,12 @@ export async function analyze(request: Request, deps: Deps = liveDeps()): Promis
   if (image && !(image[0] === 0xff && image[1] === 0xd8)) return fail('bad_request'); // not a JPEG
 
   // the server's UTC day, so a phone cannot pick dates to multiply its quota (it resets at 07:00 in Thailand)
-  const usage = await deps.bump(user.id, new Date().toISOString().slice(0, 10), deps.limit).catch((e: Error) => { console.error('analyze quota failed', e.message); return null; });
+  // R5: the plan sets the day's limit; the count is the same either way, so upgrading mid-day frees the rest at once
+  const pro = isPro(user.billing);
+  const limit = pro ? deps.limit : deps.freeLimit;
+  const usage = await deps.bump(user.id, new Date().toISOString().slice(0, 10), limit).catch((e: Error) => { console.error('analyze quota failed', e.message); return null; });
   if (!usage) return fail('provider_error');
-  const quota = { usedToday: Math.min(usage.used, deps.limit), limit: deps.limit };
+  const quota = { usedToday: Math.min(usage.used, limit), limit, plan: pro ? 'pro' : 'free' };
   if (!usage.allowed) return fail('daily_limit', { usage: quota });
   if (usage.total > deps.cap) return fail('busy');
 
@@ -91,7 +98,7 @@ export async function analyze(request: Request, deps: Deps = liveDeps()): Promis
     console.error('analyze reply did not match the schema', { model: provider.model, ms: Date.now() - started });
     return fail('provider_error');
   }
-  const items = out.data.is_food ? resolveItems(out.data.items) : [];
+  const items = out.data.is_food ? resolveItems(out.data.items, { photo: req.kind === 'photo' }) : [];
   if (!items.length) return fail('not_food', { usage: quota });
   console.info('analyze', { kind: req.kind, model: provider.model, items: items.length, ms: Date.now() - started });
   const kept = { ...out.data, items: out.data.items.slice(0, MAX_ITEMS) };
