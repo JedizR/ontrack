@@ -114,9 +114,10 @@ test('a hardgainer watches the number build, tunes the pace and saves the plan i
   await expect(page.getByTestId('dock')).toBeVisible();
   await expect(page.getByTestId('paywall')).toHaveCount(0); // never twice
 
-  // Today's first state (R2): the weigh-in from onboarding is done, and the first meal is one tap from the empty list
+  // Today's first state: the weigh-in from onboarding is done, and the first-week guide's first meal is one tap away (R6)
   await expect(page.getByTestId('weigh-card')).toContainText('Weighed in');
-  await page.getByTestId('first-meal').click();
+  await expect(page.getByTestId('guide-weigh')).toContainText('Tomorrow morning');
+  await page.getByTestId('guide-go-meal').click();
   await expect(page.getByTestId('add-sheet')).toBeVisible();
 });
 

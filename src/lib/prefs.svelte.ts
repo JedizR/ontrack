@@ -14,10 +14,10 @@ export const PREFS_KEY = 'ot-ui';
 
 /** F23: which reminder cards Today shows, and from what time the nothing logged card does */
 export type Remind = { meal: boolean; mealAt: string; checkin: boolean; easy: boolean };
-interface Saved { theme: Theme; look: Look; fontSize: FontSize; tab: Tab; lastUser: string | null; lastEmail: string | null; draft: Draft | null; paywallDue: boolean; suggestOff: boolean; gapFolded: boolean; locationOk: boolean; remind: Remind; thai: boolean | null; liftAsked: boolean; stylePicked: boolean }
+interface Saved { theme: Theme; look: Look; fontSize: FontSize; tab: Tab; lastUser: string | null; lastEmail: string | null; draft: Draft | null; paywallDue: boolean; suggestOff: boolean; gapFolded: boolean; locationOk: boolean; remind: Remind; thai: boolean | null; liftAsked: boolean; stylePicked: boolean; guideHidden: boolean }
 const DEFAULTS: Saved = {
   theme: 'system', look: 'tray', fontSize: 'system', tab: 0, lastUser: null, lastEmail: null, draft: null, paywallDue: false, suggestOff: false, gapFolded: false, locationOk: false,
-  remind: { meal: true, mealAt: '13:00', checkin: true, easy: true }, thai: null, liftAsked: false, stylePicked: false,
+  remind: { meal: true, mealAt: '13:00', checkin: true, easy: true }, thai: null, liftAsked: false, stylePicked: false, guideHidden: false,
 };
 const load = (): Saved => {
   try { return { ...DEFAULTS, ...JSON.parse(localStorage.getItem(PREFS_KEY) ?? '{}') }; }
@@ -70,6 +70,9 @@ class Prefs {
   get thai() { return this.#s.thai; }
   set thai(v: boolean | null) { this.#s.thai = v; this.#save(); }
   /** Train asked the lifting experience in context (M9a), once per phone and account */
+  /** R6: the first-week guide hidden on this phone, for this account (cleared on sign out) */
+  get guideHidden() { return this.#s.guideHidden; }
+  set guideHidden(v: boolean) { this.#s.guideHidden = v; this.#save(); }
   get liftAsked() { return this.#s.liftAsked; }
   set liftAsked(v: boolean) { this.#s.liftAsked = v; this.#save(); }
   #save() { try { localStorage.setItem(PREFS_KEY, JSON.stringify($state.snapshot(this.#s))); } catch { /* private mode */ } }

@@ -875,6 +875,7 @@ for (const theme of ['light', 'dark'] as const) {
 
       test('settings nothing logged', async ({ page }) => {
         await page.clock.setFixedTime(new Date(`${TODAY}T14:00:00+07:00`));
+        await withPrefs(page, { guideHidden: true }); // the guide would ask for the meal instead (R6)
         await seedAccount(page, { account: SEED.map((r) => (r.collection === 'plan' ? { ...r, data: { ...r.data, goal: 'lose', ratePctPerWeek: 0.5, delta: -330 } } : r)) });
         await page.goto('/');
         await page.getByTestId('nothing-card').waitFor();
@@ -883,6 +884,29 @@ for (const theme of ['light', 'dark'] as const) {
         await page.getByTestId('train-experience').waitFor();
         await page.getByTestId('train-experience').getByRole('button', { name: '1 to 3 years' }).click();
         await shot(page, 'settings', 'train-experience');
+      });
+
+      // R6, the first-week guide: day one (nothing done), day two with two done and the weigh-in due, then all set
+      test('guide', async ({ page }) => {
+        await open(page);
+        await page.getByTestId('guide').evaluate((el) => scrollTo(0, el.getBoundingClientRect().top + scrollY - 60));
+        await shot(page, 'guide', 'day-one');
+      });
+      test('guide later', async ({ page }) => {
+        await page.clock.setFixedTime(new Date('2026-11-12T10:00:00+07:00'));
+        await seedAccount(page, { records: [MEALS[0], { collection: 'slog', id: `slog:${TODAY}:s1`, updatedAt: 1, data: { date: TODAY, sessionKey: 's1', status: 'done' } }] });
+        await page.goto('/');
+        await page.getByTestId('guide').evaluate((el) => scrollTo(0, el.getBoundingClientRect().top + scrollY - 60));
+        await shot(page, 'guide', 'day-two');
+        await page.getByTestId('guide-go-weigh').click();
+        await page.getByTestId('picker-save').click();
+        await expect(page.getByTestId('guide')).toContainText('all set');
+        await page.getByTestId('guide').evaluate((el) => scrollTo(0, el.getBoundingClientRect().top + scrollY - 60));
+        await shot(page, 'guide', 'done');
+        await withPrefs(page, { look: 'bento' });
+        await page.reload();
+        await page.getByTestId('guide').evaluate((el) => scrollTo(0, el.getBoundingClientRect().top + scrollY - 60));
+        await shot(page, 'guide', 'done-bento');
       });
 
       test('today composed', async ({ page }) => {

@@ -219,6 +219,7 @@ test('the sign in sheet carries the small print', async ({ page }) => {
 });
 
 test('reminders (F23): nothing logged from the set time, each card turned off in Settings', async ({ page }) => {
+  await withPrefs(page, { guideHidden: true }); // R6: in the plan's first week the guide asks for the meal instead
   await openAt(page, '14:00', { records: [{ collection: 'weight', id: `weight:${TODAY}`, updatedAt: 2, deleted: true, data: { date: TODAY, kg: 60 } }] });
   // the weigh-in is a standing card (R1), not a reminder: the bell lists its prompt and the switch turns that off
   await expect(page.getByTestId('weigh-card')).toBeVisible();

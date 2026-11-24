@@ -1,7 +1,7 @@
 // Today and logging without a photo (F3, F5, F6), on the mock backend. "Today" is frozen at 2026-11-11, a Wednesday
 // and a training day for the seeded plan: 2,460 kcal, 2,220 on rest days.
 import { expect, test, type Page } from '@playwright/test';
-import { MEALS, TODAY, fieldFill, open, pickerSave, swipeAt, wheelType } from './helpers';
+import { MEALS, TODAY, fieldFill, open, pickerSave, seedAccount, swipeAt, wheelType } from './helpers';
 
 const hero = (page: Page) => page.getByTestId('hero-value');
 const meals = (page: Page) => page.getByTestId('meal');
@@ -12,7 +12,9 @@ test('search a food, pick a portion and add it: Today updates at once', { tag: '
   await open(page);
   await expect(hero(page)).toHaveText('0');
   await expect(kcalOf(page)).toHaveText('of 2,460 kcal');
-  await expect(page.getByTestId('first-meal')).toContainText('Log your first meal');
+  // R6: on the plan's first day the first-week guide asks for the first meal, so the empty list does not repeat it
+  await expect(page.getByTestId('guide-meal')).toContainText('Log a meal');
+  await expect(page.getByTestId('first-meal')).toHaveCount(0);
 
   await page.getByTestId('add').click();
   await page.getByTestId('add-search').click();
@@ -219,4 +221,59 @@ test('a rest day takes an activity for that day only (R5): the box asks, the tar
   await page.locator('[data-sonner-toast]').getByRole('button', { name: 'Undo' }).click();
   await expect(kcalOf(page)).toHaveText('of 2,220 kcal');
   await expect(page.getByTestId('rest-add')).toBeVisible();
+});
+
+// R6, the first-week guide. The seeded plan starts on TODAY, a Wednesday with a strength session, check-ins on Wednesdays
+test('first-week guide, day one: the steps come from the records, each Add opens its sheet, hide comes back with Undo', async ({ page }) => {
+  await open(page);
+  const guide = page.getByTestId('guide');
+  await expect(guide).toContainText('Three steps to start');
+  await expect(guide).toContainText('Your first check-in is Wednesday, Nov 25.');
+  // the onboarding weigh-in is today's, so the guide's is tomorrow's, with nothing to tap yet
+  await expect(page.getByTestId('guide-weigh')).toContainText('Tomorrow morning, before you eat');
+  await expect(page.getByTestId('guide-go-weigh')).toHaveCount(0);
+  // the workout points at Done on the hero instead of repeating it
+  await expect(page.getByTestId('guide-train')).toContainText('Tap Done on Strength once you’ve trained');
+  await expect(page.getByTestId('guide-go-train')).toHaveCount(0);
+
+  await page.getByTestId('guide-go-meal').click();
+  await expect(page.getByTestId('add-sheet')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByTestId('add-sheet')).toBeHidden();
+
+  await page.getByTestId('session-done').click();
+  await expect(guide).toContainText('1 of 3 done');
+  await expect(page.getByTestId('guide-train').getByTestId('guide-done')).toBeVisible();
+
+  await page.getByTestId('guide-hide').click();
+  await expect(guide).toBeHidden();
+  await page.locator('[data-sonner-toast]').getByRole('button', { name: 'Undo' }).click();
+  await expect(guide).toBeVisible();
+  await page.getByTestId('guide-hide').click();
+  await expect(guide).toBeHidden();
+  // hidden, the empty list offers the first meal again, and a reload keeps it hidden on this phone
+  await expect(page.getByTestId('first-meal')).toBeVisible();
+  await page.reload();
+  await expect(page.getByTestId('dock')).toBeVisible();
+  await expect(guide).toHaveCount(0);
+});
+
+test('first-week guide, day two: the weigh-in is due, the last step lands as all set, and the next day it is gone', async ({ page }) => {
+  const day2 = '2026-11-12';
+  await page.clock.setFixedTime(new Date(`${day2}T10:00:00+07:00`));
+  // day one logged a meal and its workout; Thursday has no session, so the guide names Friday's
+  await seedAccount(page, { records: [MEALS[0], { collection: 'slog', id: `slog:${TODAY}:s1`, updatedAt: 1, data: { date: TODAY, sessionKey: 's1', status: 'done' } }] });
+  await page.goto('/');
+  const guide = page.getByTestId('guide');
+  await expect(guide).toContainText('2 of 3 done');
+  await expect(page.getByTestId('guide-weigh')).toContainText('In the morning, before you eat');
+  await page.getByTestId('guide-go-weigh').click();
+  await pickerSave(page, '60.4');
+  await expect(guide).toContainText('You’re all set');
+  await expect(guide).toContainText('Keep logging. Your first check-in is Wednesday, Nov 25.');
+
+  await page.clock.setFixedTime(new Date('2026-11-13T10:00:00+07:00'));
+  await page.reload();
+  await expect(page.getByTestId('dock')).toBeVisible();
+  await expect(guide).toHaveCount(0);
 });

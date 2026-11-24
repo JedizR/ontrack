@@ -2,6 +2,16 @@
 
 Changes to a doc's decision, and choices made on the owner's behalf. Newest first, one line each: what, why.
 
+## R6
+
+The owner, 24 Nov: build the first-week guide (Next on the course roadmap, moved to Now). Branch `feat-first-week-guide`.
+- **One status card with three rows, not coach marks or a one-step card.** The steps have days of their own (the weigh-in is tomorrow's on day one, the workout waits for a training day), so the rows show what comes when; one card keeps Today's one-card rhythm. The head's line is the payoff: the first check-in's date, which these steps feed.
+- **Read from the records, never stored:** a meal, a weigh-in after the plan's first day (onboarding saves that day's), any session marked Done (a rest day's activity included). The same on every device, and nothing to migrate. Only hiding is stored, per phone (`prefs.guideHidden`, cleared on sign out like the other per-account dismissals).
+- **Done is not repeated.** The workout row says "Tap Done on Strength once you've trained" and has no button: two Done buttons for one session would split where it is marked, and Done before training would be a false tick.
+- **Its own place under the hero, not in the one-card slot.** In the slot, the noon protein suggestions and evening easy adds would hide it most afternoons, and they matter more on a given day. It replaces only what it repeats: the empty list's "Log your first meal" row and the nothing logged card, while the meal step is open.
+- **A cross hides the whole guide, with Undo; no per-step skip.** The steps are small, and someone who would rather not weigh in hides it in one tap. It ends by itself after 7 days, or the day after all three are done.
+- **The first 7 days count from the first plan** (`effectiveFrom`), so existing accounts never see it; the check-in date uses `baselineFrom`, as the check-in itself does.
+
 ## R5
 
 The owner's list of 22 November 2026: the camera, a looser on track, the goal anywhere, a rest day's activity, a smarter AI, a smaller toast, freemium, and a consistency pass. Branch `r5-freemium`.

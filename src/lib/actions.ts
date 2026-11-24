@@ -449,6 +449,7 @@ export async function signOut(force = false): Promise<'ok' | 'unsent'> {
     prefs.paywallDue = false;
     prefs.suggestOff = false;
     prefs.liftAsked = false;
+    prefs.guideHidden = false;
     // the next account answers the location notice for itself (M9a)
     prefs.locationOk = false;
     location.reload();
