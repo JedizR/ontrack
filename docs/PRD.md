@@ -198,6 +198,12 @@ IDs are stable. Tests and commits refer to them.
 - Tray is the default: white shells holding grey boxes, nested corners, glass on the header, the dock and sheet backdrops. Bento is flat: no card inside a card, one corner radius, no glass, a black selected-tab pill. Everything else is the same in both.
 - Picked on Today's one-time "Pick your style" card (a tap restyles the app at once, "Use" keeps it) or in Settings, at the top. It is a per-device choice. The landing page is always Tray.
 
+### F28 First-week guide
+- Problem: new users do not know what to do first, and many never log a second day. Metric: activation, new users who log food on 3 of their first 7 days.
+- In the plan's first 7 days, Today shows "Your first week" under the hero: three steps (log a meal, weigh in, mark a workout done), how many are done, and the first check-in's date as the reason they matter.
+- Each step is read from the account's records, so it matches on every device. A step that can be done now has Add; the workout points at Done on the hero instead of repeating it. Day one's weigh-in is tomorrow's, since onboarding saved that day's.
+- All three done shows "You're all set" for that day, then the guide is gone. A cross hides it on this phone, with Undo. No streaks, no deadlines, no guilt words.
+
 ## 6. Not in scope
 
 Ruled out by the owner:

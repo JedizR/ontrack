@@ -114,9 +114,10 @@ test('a hardgainer watches the number build, tunes the pace and saves the plan i
   await expect(page.getByTestId('dock')).toBeVisible();
   await expect(page.getByTestId('paywall')).toHaveCount(0); // never twice
 
-  // Today's first state (R2): the weigh-in from onboarding is done, and the first meal is one tap from the empty list
+  // Today's first state: the weigh-in from onboarding is done, and the first-week guide's first meal is one tap away (R6)
   await expect(page.getByTestId('weigh-card')).toContainText('Weighed in');
-  await page.getByTestId('first-meal').click();
+  await expect(page.getByTestId('guide-weigh')).toContainText('Tomorrow morning');
+  await page.getByTestId('guide-go-meal').click();
   await expect(page.getByTestId('add-sheet')).toBeVisible();
 });
 
@@ -195,6 +196,7 @@ test("Other goals shows two more goals; Gain weight leads with the faster pace (
 });
 
 test('the in-between goal is a gentle cut with the cut\'s protein and no pace to pick (vector K)', async ({ page }) => {
+  test.slow(); // 30.8 s once on CI's runner (R6's PR)
   await openFresh(page);
   await onboard(page, { goal: 'recomp', sex: 'female', year: '1996', height: '165', weight: '70', neat: 'light', days: 3 });
   await expect(kcal(page)).toHaveText('1,930');
@@ -275,6 +277,7 @@ test('losing fat in imperial units: the paces show live, a cap is explained, and
 });
 
 test('maintain with lifting and cardio: no pace, no experience question, and Train suggests a hybrid program', async ({ page }) => {
+  test.slow(); // onboarding, sign in, then Train: past 30 s on CI's runner (R6's PR)
   await openFresh(page);
   await onboard(page, { goal: 'maintain', days: 5, kind: 'both' });
   await expect(page.getByTestId('plan-pace')).toHaveCount(0);

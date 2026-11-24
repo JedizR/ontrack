@@ -1,6 +1,6 @@
 # Build plan: what is next
 
-Every planned milestone has shipped (M0 to M9, then the rounds L5 and R1 to R4b; v2.3.0 is live; R5 is built on `r5-freemium`). This is the backlog from 23 November 2026, most useful first. Claude owns the order (`docs/DIRECTIONS.md` section 1), but the owner usually arrives with their own list from the phone: that list goes first. The old milestone plans are in `docs/archive/BUILD-PLAN-SHIPPED.md`.
+Every planned milestone has shipped (M0 to M9, then the rounds L5 and R1 to R6; v2.5.0 is live). This is the backlog from 23 November 2026, most useful first. Claude owns the order (`docs/DIRECTIONS.md` section 1), but the owner usually arrives with their own list from the phone: that list goes first. The old milestone plans are in `docs/archive/BUILD-PLAN-SHIPPED.md`.
 
 Each item: what, why, where to start, and when it is done. Ship a round as one branch, shown on localhost, released when the owner says (`docs/WORKFLOW.md` sections 2 and 5).
 
@@ -59,6 +59,7 @@ Nice to have: a monthly recap, milestones without streaks, progress photos, Ask 
 - **Unused tokens:** `--glass-*`, `--bar-*`, `--blur-glass`, `--blur-bar`, `--fade-h`, `--spring-reveal` in `design/tokens.css` (only `contrast.test.ts` still reads `glass-solid` and `bar-solid`).
 - **Bento's corners are untested:** the `unnested` corner gate in the stress matrix runs only in Tray.
 - **More stale comments:** `Header.svelte` line 19 ("fades into the canvas"), `SupplementSheet.svelte` ("the one violet featured card").
+- **Per-phone dismissals on an account switch** (found in R6's review): when a session expires and another account signs in without signing out, the database is wiped but `prefs.paywallDue`, `suggestOff`, `liftAsked` and `guideHidden` stay. Clear them where the wipe happens (`session.svelte.ts`), as sign out does.
 - **`--grad-streak`** is still named streak although the box is Consistency and the app has no streaks. Rename with `scripts/gradients.sh`.
 
 ## 7. Engine questions (need `science-check` before any number changes)

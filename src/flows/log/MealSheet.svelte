@@ -19,6 +19,7 @@
   import { t } from '$lib/i18n';
   import ItemList from './ItemList.svelte';
   import Thumb from './Thumb.svelte';
+  import Skeleton from '$lib/components/Skeleton.svelte';
   import ShareToMap from './ShareToMap.svelte';
   import { lineOf, scaled, type Line } from './items';
   import type { Meal } from '../../../shared/records';
@@ -97,7 +98,14 @@
 
 <Sheet bind:open={() => sheets.meal !== null, (v) => { if (!v) close(); }} title={title.trim() || items[0]?.name || t.meal.title} layer="base" testid="meal-sheet" {footer}>
   {#if meal}
-    {#if meal.thumb && id}<Thumb {id} class="mb-4 aspect-[4/3] w-full rounded-lg" />{/if}
+    <!-- R6, the owner: the photo in the camera's 3:4, framed as Review shows it after the shot -->
+    {#if meal.thumb && id}
+      <div class="@container mb-4" data-testid="meal-photo">
+        <Thumb {id} class="mx-auto block aspect-[3/4] h-[min(48svh,calc(100cqw*4/3))] rounded-md">
+          {#snippet fallback()}<Skeleton class="mx-auto aspect-[3/4] h-[min(48svh,calc(100cqw*4/3))] rounded-md" />{/snippet}
+        </Thumb>
+      </div>
+    {/if}
     <div class="grid grid-cols-[1fr_auto] gap-3">
       <div class="flex min-w-0 flex-col gap-2">
         <label for="meal-title" class="text-caption text-ink-2">{t.meal.name}</label>

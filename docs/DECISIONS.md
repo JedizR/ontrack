@@ -2,6 +2,20 @@
 
 Changes to a doc's decision, and choices made on the owner's behalf. Newest first, one line each: what, why.
 
+## R6
+
+The owner, 24 Nov: build the first-week guide (Next on the course roadmap, moved to Now). Branch `feat-first-week-guide`.
+- **One status card with three rows, not coach marks or a one-step card.** The steps have days of their own (the weigh-in is tomorrow's on day one, the workout waits for a training day), so the rows show what comes when; one card keeps Today's one-card rhythm. The head's line is the payoff: the first check-in's date, which these steps feed.
+- **Read from the records, never stored:** a meal, a weigh-in after the plan's first day (onboarding saves that day's), any session marked Done (a rest day's activity included). The same on every device, and nothing to migrate. Only hiding is stored, per phone (`prefs.guideHidden`, cleared on sign out like the other per-account dismissals).
+- **Done is not repeated.** The workout row says "Tap Done on Strength once you've trained" and has no button: two Done buttons for one session would split where it is marked, and Done before training would be a false tick.
+- **Its own place under the hero, not in the one-card slot.** In the slot, the noon protein suggestions and evening easy adds would hide it most afternoons, and they matter more on a given day. It replaces only what it repeats: the empty list's "Log your first meal" row and the nothing logged card, while the meal step is open.
+- **A cross hides the whole guide, with Undo; no per-step skip.** The steps are small, and someone who would rather not weigh in hides it in one tap. It ends by itself after 7 days, or the day after all three are done.
+- **The first 7 days count from the first plan** (`effectiveFrom`), so existing accounts never see it. The check-in date is the first day `checkinDueOn` is true, the check-in's own rule, so a goal changed in Settings (a plan from tomorrow) moves it the same day.
+- **Pro is 149 baht a month, 990 a year** (the team, 25 Nov; was 199 and 990): the price of Kalguroo, the Thai app our users compare with, for cost-sensitive Thai users, and under the 199 that reads as a streaming plan. `PRICES` in `shared/plans.ts` sets the plans sheet, the landing's Plans, Checkout and the yearly saving (45 percent, was 59); the Terms say it too. In the financial model, at its mild price sensitivity, revenue is about 4 percent lower than at 199 but the first monthly profit moves from month 13 to 26 and the 36-month result from minus 14,400 to minus 128,800 baht, so 149 is a bet on price-sensitive buyers, to test against 199 once billing is live.
+- **The Meal sheet shows its photo in 3:4** (the owner, 25 Nov), framed as Review shows the shot (the camera has been 3:4 since R5; the thumbnail keeps the photo's own shape), with a placeholder of the same size while it loads.
+- **No drop shadow at the screen's edges in Tray** (the owner, 25 Nov: remove the top and bottom edge fade): the header capsule, the dock and the dock's plus drop `--shadow-liquid` and `--shadow-action` in Tray, as class overrides on the two components; the glass keeps its rim, and every other glass chip and primary button keeps its drop.
+- **From the code review:** the date above (it read only plans already in effect, a week early on the day of a goal change); a last step saved to a past day from the strip still shows "You're all set" while Today is open (the records' dates alone hid it); a supplement with no calories (creatine) is not "Log a meal", as it is not a row in the list.
+
 ## R5
 
 The owner's list of 22 November 2026: the camera, a looser on track, the goal anywhere, a rest day's activity, a smarter AI, a smaller toast, freemium, and a consistency pass. Branch `r5-freemium`.

@@ -27,9 +27,10 @@
 <!-- DESIGN.md section 7, Dock: a floating glass pill with three tabs (OneFin's dark nav pill, in the theme's colours), and
      the plus to its right as the ink circle of the action family, white on dark. 12 px above the safe area so it clears
      Safari's bar. ui-flat: no glass, a solid surface with a hairline, since rows scroll under it. The selected tab sits on a solid ink pill with its icon and label in the page colour, as the picked day: white on black in light, black on white in dark (ui-flat, the owner); the pill is 8 inside the
-     dock on every side, so the two full radii nest. Unselected tabs are ink-2: their labels are text and need 4.5 to 1. -->
+     dock on every side, so the two full radii nest. Unselected tabs are ink-2: their labels are text and need 4.5 to 1.
+     25 Nov, the owner: in Tray, no drop shadow on the dock or the plus, so nothing fades at the screen's foot; the glass keeps its rim. -->
 <div class="fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+12px)] z-30 mx-auto flex max-w-[480px] items-center gap-3 px-4" data-testid="dock">
-  <nav class="{tray ? 'liquid-clear [--liquid-clear:blur(14px)_saturate(160%)_brightness(1.08)] [--liquid-tint:var(--surface)] [--liquid-tint-share:30%]' : 'liquid'} relative grid h-[var(--dock-h)] flex-1 grid-cols-3 items-center rounded-full px-2" aria-label={t.tabs.label} use:swipe={swipeOpts}>
+  <nav class="{tray ? 'liquid-clear [--liquid-clear:blur(14px)_saturate(160%)_brightness(1.08)] [--liquid-tint:var(--surface)] [--liquid-tint-share:30%] [--shadow-liquid:0_0_transparent]' : 'liquid'} relative grid h-[var(--dock-h)] flex-1 grid-cols-3 items-center rounded-full px-2" aria-label={t.tabs.label} use:swipe={swipeOpts}>
     <!-- U1c: one grey pill that slides to the tab picked, rather than one per tab switching on and off -->
     <span
       class="{tray ? 'bg-ink/12' : 'bg-ink'} absolute inset-y-2 left-2 w-[calc((100%-var(--s-4))/3)] rounded-full transition-transform duration-[var(--d-ui)] ease-[var(--spring-default)]"
@@ -55,7 +56,7 @@
     {/each}
   </nav>
   <button
-    class="bg-action text-on-action shadow-pill active:bg-action-press grid size-[var(--dock-h)] flex-none place-items-center rounded-full transition-[transform,background-color] duration-[var(--d-press)] active:scale-[0.97]"
+    class="bg-action text-on-action {tray ? '' : 'shadow-pill'} active:bg-action-press grid size-[var(--dock-h)] flex-none place-items-center rounded-full transition-[transform,background-color] duration-[var(--d-press)] active:scale-[0.97]"
     aria-label={t.shell.add}
     data-testid="add"
     onclick={onadd}

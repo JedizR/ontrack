@@ -1243,6 +1243,27 @@ export const en = {
     use: (name: string) => `Use ${name}`,
     later: 'Change it any time: tap your profile at the top right, then Settings.',
   },
+  /** R6, the first-week guide on Today: three steps in the plan's first 7 days, the first check-in as their payoff */
+  guide: {
+    eyebrow: 'Your first week',
+    start: 'Three steps to start',
+    count: (n: string) => `${n} of 3 done`,
+    line: (date: string) => `Your first check-in is ${date}. It tunes your target from your meals and weigh-ins.`,
+    doneTitle: 'You’re all set',
+    doneLine: (date: string) => `Keep logging. Your first check-in is ${date}.`,
+    hide: 'Hide the guide',
+    hidden: 'Guide hidden',
+    add: 'Add',
+    meal: 'Log a meal',
+    mealLine: 'A photo, a sentence or a barcode',
+    weigh: 'Weigh in',
+    weighTomorrow: 'Tomorrow morning, before you eat',
+    weighLine: 'In the morning, before you eat',
+    train: 'Mark a workout done',
+    trainToday: (name: string) => `Tap Done on ${name} once you’ve trained`,
+    trainNext: (name: string, day: string) => `Next: ${name} on ${day}`,
+    trainNone: 'Add your training first',
+  },
   /** S1b, PRD F16 and F17: friends, profiles and the food map. Never a weight, a target, a day's total, a streak or a ranking. */
   social: {
     open: 'Friends and map',

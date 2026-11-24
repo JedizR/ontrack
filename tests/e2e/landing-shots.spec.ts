@@ -33,7 +33,7 @@ const real: Real | null = process.env.LANDING_SEED ? JSON.parse(readFileSync(pro
 // the real account's day at its own clock, without the day's reminder cards (the shot is the day itself)
 async function openReal(page: Page, r: Real) {
   await page.clock.setFixedTime(new Date(`${r.today}T${r.time}:00+07:00`));
-  await withPrefs(page, { remind: { meal: true, mealAt: '13:00', checkin: false, easy: false } });
+  await withPrefs(page, { remind: { meal: true, mealAt: '13:00', checkin: false, easy: false }, guideHidden: true });
   await seedAccount(page, { account: r.records });
   await page.goto('/');
   await expect(page.getByTestId('dock')).toBeVisible();
@@ -47,7 +47,7 @@ test('today', async ({ page }) => {
 });
 
 test('photo', async ({ page }) => {
-  await withPrefs(page, { photoOk: true });
+  await withPrefs(page, { photoOk: true, guideHidden: true });
   const s = await open(page);
   await vision(page, s, { fixture: 'basil-pork' });
   await page.getByTestId('add').click();
@@ -93,7 +93,7 @@ test('supplement', async ({ page }) => {
 });
 
 test('train', async ({ page }) => {
-  await withPrefs(page, { suggestOff: true, liftAsked: true }); // the week itself, without O1's suggestion card or the experience question
+  await withPrefs(page, { suggestOff: true, liftAsked: true, guideHidden: true }); // the week itself, without O1's suggestion card or the experience question
   if (real) await openReal(page, real);
   else await open(page);
   await page.getByTestId('tab-1').click();

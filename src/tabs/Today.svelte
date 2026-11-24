@@ -25,6 +25,7 @@
   import { t } from '$lib/i18n';
   import Card from '$lib/components/Card.svelte';
   import StyleCard from '../flows/style/StyleCard.svelte';
+  import FirstWeek from '../flows/guide/FirstWeek.svelte';
   import { sessionTitle } from '$lib/session-title';
   import Button from '$lib/components/Button.svelte';
   import Row from '$lib/components/Row.svelte';
@@ -55,6 +56,7 @@
   import { dayView, mealSource, planFor, recentFoods, totals } from '$lib/model/day';
   import { weightText } from '$lib/model/units';
   import { checkinDueOn } from '$lib/model/progress';
+  import { firstWeek } from '$lib/model/guide';
   import { addDays, daysBetween, stampOn, timeOf } from '$lib/model/dates';
   import { proteinBand, sessionKcal, V } from '$lib/model/engine';
   import { num } from '$lib/model/format';
@@ -151,7 +153,34 @@
   const weights = $derived(db.live('weight').map((r) => r.data.date));
   const lastWeigh = $derived(weights.filter((d) => d <= view.today).sort().at(-1));
   const weighedOn = $derived(db.live('weight').find((r) => r.data.date === view.date)?.data);
-  const nothingCard = $derived(remind.meal && !view.past && !closed && logged.length === 0 && view.time >= remind.mealAt);
+  // R6, the first-week guide: the plan's first 7 days, read from the records, on today only; hidden per phone. A supplement
+  // with no calories is not a meal; the check-in date is the check-in's own rule
+  const week1 = $derived.by(() => {
+    if (prefs.guideHidden || !profile || !plans.length) return null;
+    const p = profile;
+    return firstWeek({ start: plans.map((r) => r.data.effectiveFrom).sort()[0], today: view.today, dueOn: (d) => checkinDueOn(plans, p.checkinWeekday, d), meals: allMeals.filter((r) => !isTaken(r.data)).map((r) => r.data.date), weights, logs, sessions });
+  });
+  // a last step saved to a past day (the strip) still gets its all set while Today is open
+  let guideWas = -1;
+  let doneOn = $state('');
+  $effect(() => {
+    const n = week1?.done ?? -1;
+    if (guideWas >= 0 && guideWas < 3 && n === 3) doneOn = view.today;
+    guideWas = n;
+  });
+  const guide = $derived.by(() => {
+    if (!week1 || view.past) return null;
+    const finished = week1.finished || (week1.complete && doneOn === view.today);
+    return !week1.complete || finished ? { ...week1, finished } : null;
+  });
+  // while the guide asks for the first meal, it is the one place that does
+  const guideMeal = $derived(!!guide && !guide.meal);
+  function hideGuide() {
+    haptic();
+    prefs.guideHidden = true;
+    undoToast(t.guide.hidden, () => (prefs.guideHidden = false));
+  }
+  const nothingCard = $derived(remind.meal && !view.past && !closed && logged.length === 0 && view.time >= remind.mealAt && !guideMeal);
   // Finish day: on today from 20:00, on any past day (section 6)
   const finishable = $derived(view.past || view.time >= `${String(V.finishDayHour).padStart(2, '0')}:00`);
   function addEasy(item: MealItem) {
@@ -403,6 +432,9 @@
          collapses or slides for a change of day; within a day, the one card and the meals come and go with motion -->
     {#key view.date}
     <div class="flex flex-col gap-3" in:fade={{ duration: dur('--d-fade') }}>
+    {#if guide}
+      <div in:collapse out:collapse={{ leave: true }}><FirstWeek {guide} onmeal={() => (sheets.add = true)} onweigh={() => weighIn(view.today)} ontrain={() => { prefs.tab = 1; scrollTo({ top: 0 }); }} onhide={hideGuide} data-testid="guide" {...rise(2)} /></div>
+    {/if}
     <!-- the owner, 20 Nov: the two styles, offered once on this device, under the hero and above the meals -->
     {#if !prefs.stylePicked && !view.past}
       <div out:collapse={{ leave: true }}><StyleCard /></div>
@@ -486,7 +518,7 @@
           </Row>
         </SwipeRow>
       {:else}
-        {#if allMeals.length || view.past}
+        {#if allMeals.length || view.past || guideMeal}
           <p class="text-body text-ink-2 py-4" data-testid="meals-empty">{t.today.noMeals}</p>
         {:else}
           <!-- R2: a new account's first meal is one tap from here, as the Getting started card's was -->

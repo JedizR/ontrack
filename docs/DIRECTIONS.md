@@ -28,7 +28,7 @@ Everything the owner has asked for that still holds, gathered from every session
 - **On track is loose and directional** (22 Nov): "a missed day is just a day". A day off target in the goal's own direction still counts; nothing resets.
 - **The goal can change anywhere it shows** (22 Nov): Progress and Profile open the goal, people move from losing fat to building muscle.
 - **A rest day can take an activity** (22 Nov), for that day only; the program and next week never change.
-- **Freemium** (22 Nov): a fair free tier (all tracking, a few AI logs a day), Pro for unlimited AI and the AI features, the plans shown after Save the plan and at a limit, prices in round baht from the pricing model, Stripe used properly with a 0 THB bill while it is a preview.
+- **Freemium** (22 Nov): a fair free tier (all tracking, a few AI logs a day), Pro for unlimited AI and the AI features, the plans shown after Save the plan and at a limit, prices in round baht from the pricing model, Stripe used properly with a 0 THB bill while it is a preview. **Pro is 149 baht a month and 990 a year** (25 Nov): Thai users are cost-sensitive, and 199 reads as a streaming plan.
 - **Well thought, one-hand UX is the bar** (23 Nov): the owner loved the "Any activity today?" drawer (type tiles with icons, quick minutes, effort, the kcal it adds over the action) and wants that quality everywhere, starting with Train's Add a session. Keep checking animations, words (not too many, never confusing or redundant) and cards on every page.
 - **Two styles** (21 Nov): Tray is the default, Bento is the flat option, and the user picks on Today's one-time card or in Profile, Settings. The landing page is always Tray with its full glass.
 
@@ -48,7 +48,7 @@ Everything the owner has asked for that still holds, gathered from every session
 - **Gradients** are made on https://photogradient.com/ (or `scripts/gradients.sh`), each one unique, grainy, calm and fresh: salmon and pink as the main colours, white and light purple as support, only a little blue, never dark colours. Dark mode uses the same light gradients. One gradient per screen, except Progress's two hero boxes. Settings never has a gradient.
 - **Glass** follows iOS 26 Liquid Glass and callstack/liquid-glass. The Add sheet's glass is the one that rendered right on the iPhone and is the material everywhere. The dock is glass; the header becomes the landing's glass capsule when scrolled, and its title moves in to 24 px.
 - **Tray layout:** each page leads with one white card holding small grey boxes, compact, so the main content fits one screen height. Bento keeps the grouping without the shell.
-- **No fades** at the top or bottom of a page, header or sheet (18 Nov). The week strip keeps its soft edge before today, except when yesterday is picked (19 Nov). In Safari, no coloured band above or below the page.
+- **No fades** at the top or bottom of a page, header or sheet (18 Nov). In Tray, no drop shadow on the header capsule, the dock or its plus either (25 Nov): the glass keeps only its rim. The week strip keeps its soft edge before today, except when yesterday is picked (19 Nov). In Safari, no coloured band above or below the page.
 - **Corners:** one consistent system, nested corners concentric.
 - **Feel:** the owner judges by feel on the iPhone (13 Nov: "UI 70%, UX 30%"). Every in-page change gets a small, good transition; numbers count; Done spreads ink from the button with a green burst, and Undo plays it back; light and dark changes ease.
 - **Selected states are obvious,** in dark mode too.

@@ -2,8 +2,9 @@
 // (docs/DECISIONS.md, R5; the pricing model in /Users/admin/destination/assignment/Ontrack-financial-model.xlsx).
 import * as z from 'zod/mini';
 
-/** Pro's prices in baht (the R5 model: the top of the Thai band, under Cal AI and MacroFactor). Stripe bills in satang. */
-export const PRICES = { month: 199, year: 990 } as const;
+/** Pro's prices in baht. R6 (the team, 25 Nov): 149 a month matches Kalguroo, the Thai app our users compare with, and the
+ *  year stays at 990 where Thai apps cluster (45 percent off). Stripe bills in satang. */
+export const PRICES = { month: 149, year: 990 } as const;
 /** Days of Pro before the first bill, on either plan. */
 export const TRIAL_DAYS = 7;
 export type Interval = keyof typeof PRICES;
