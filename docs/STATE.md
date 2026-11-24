@@ -8,6 +8,7 @@ Where things stand. Read first, update last, keep it to one screen. History live
 - **Stripe:** `STRIPE_SECRET_KEY` (test mode) is set in Vercel for Production only, so a preview's Checkout answers "not available". The plan lives in `app_metadata.billing`; no Supabase migration.
 - **Open, CI:** the full CI shards (the `full-ci` label or a tag) have failed since at least v2.3.0. The onboarding tests that click on Your plan, `app.spec` tabs, `screens` onboarding gain and `measure` vector A time out with "element is not stable": in the traces, Linux WebKit paints a frame only every few seconds under the shard's parallel load. Quick CI and the full local run are green. The likely fix is fewer workers in the full shards or no glass and blur under test on Linux; check with one manual full run.
 - **The owner** accepts the open list in BUILD-PLAN item 0 for now.
+- **In progress, R6 (24 Nov):** the first-week guide (PRD F28, DECISIONS R6) on `feat-first-week-guide`, built and verified locally (`pnpm verify` green), waiting for the owner's look on localhost. Not merged or deployed. The course document `docs/assignment/final-document-for-presentation-filled.docx` (untracked, built from the owner's original beside it) now has the guide in Now.
 - **Next:** `docs/BUILD-PLAN.md`; its first section is what is left before Ontrack is a finished app.
 
 ## The app at v2.4.0
