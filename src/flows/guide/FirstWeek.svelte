@@ -53,7 +53,8 @@
       title={guide.finished ? t.guide.doneTitle : guide.done ? t.guide.count(num(guide.done)) : t.guide.start}
       line={guide.finished ? t.guide.doneLine(when) : t.guide.line(when)}
     />
-    <button type="button" class="text-ink-2 active:bg-ink/10 -mt-2 -mr-2 grid size-11 flex-none place-items-center rounded-full transition-colors duration-[var(--d-press)]" aria-label={t.guide.hide} onclick={onhide} data-testid="guide-hide">
+    <!-- DESIGN.md section 7: close is a quiet glyph in a 44 rounded square, grey when pressed, as the sheets' close -->
+    <button type="button" class="text-ink-2 active:bg-surface-2 -mt-2 -mr-2 grid size-11 flex-none place-items-center rounded-sm transition-colors duration-[var(--d-press)]" aria-label={t.guide.hide} onclick={onhide} data-testid="guide-hide">
       <X size={20} strokeWidth={2.25} aria-hidden="true" />
     </button>
   </div>
