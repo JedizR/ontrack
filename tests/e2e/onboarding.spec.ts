@@ -196,6 +196,7 @@ test("Other goals shows two more goals; Gain weight leads with the faster pace (
 });
 
 test('the in-between goal is a gentle cut with the cut\'s protein and no pace to pick (vector K)', async ({ page }) => {
+  test.slow(); // 30.8 s once on CI's runner (R6's PR)
   await openFresh(page);
   await onboard(page, { goal: 'recomp', sex: 'female', year: '1996', height: '165', weight: '70', neat: 'light', days: 3 });
   await expect(kcal(page)).toHaveText('1,930');
@@ -276,6 +277,7 @@ test('losing fat in imperial units: the paces show live, a cap is explained, and
 });
 
 test('maintain with lifting and cardio: no pace, no experience question, and Train suggests a hybrid program', async ({ page }) => {
+  test.slow(); // onboarding, sign in, then Train: past 30 s on CI's runner (R6's PR)
   await openFresh(page);
   await onboard(page, { goal: 'maintain', days: 5, kind: 'both' });
   await expect(page.getByTestId('plan-pace')).toHaveCount(0);
