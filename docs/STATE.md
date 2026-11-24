@@ -4,7 +4,8 @@ Where things stand. Read first, update last, keep it to one screen. History live
 
 ## Now (25 November 2026)
 
-- **Live:** v2.5.0 at https://ontrack-black.vercel.app, from `main`, tag `v2.5.0`. R6 (`docs/DECISIONS.md` R6): the first-week guide on Today (PRD F28: log a meal, weigh in, mark a workout done, in the plan's first 7 days, with the first check-in's date), and no drop shadow on Tray's header capsule, dock or plus. Before it, v2.4.0 (PR #57) shipped R5, the owner's list of 22 Nov: the 3:4 camera, directional on track, freemium with Stripe at 0 THB, rest day activity and more.
+- **Live:** v2.5.0 at https://ontrack-black.vercel.app, from `main`, tag `v2.5.0`. R6 (`docs/DECISIONS.md` R6): the first-week guide on Today (PRD F28: log a meal, weigh in, mark a workout done, in the plan's first 7 days, with the first check-in's date), no drop shadow on Tray's header capsule, dock or plus, Pro at 149 baht a month, and the Meal sheet's photo in 3:4. Before it, v2.4.0 (PR #57) shipped R5, the owner's list of 22 Nov: the 3:4 camera, directional on track, freemium with Stripe at 0 THB, rest day activity and more.
+- **Pro:** 149 baht a month or 990 a year since v2.5.0 (was 199); the financial model in `/Users/admin/destination/assignment/` is updated to match.
 - **Stripe:** `STRIPE_SECRET_KEY` (test mode) is set in Vercel for Production only, so a preview's Checkout answers "not available". The plan lives in `app_metadata.billing`; no Supabase migration.
 - **Open, CI:** the full CI shards (the `full-ci` label or a tag) have failed since at least v2.3.0. The onboarding tests that click on Your plan, `app.spec` tabs, `screens` onboarding gain and `measure` vector A time out with "element is not stable": in the traces, Linux WebKit paints a frame only every few seconds under the shard's parallel load. Quick CI and the full local run are green. The likely fix is fewer workers in the full shards or no glass and blur under test on Linux; check with one manual full run.
 - **The owner** accepts the open list in BUILD-PLAN item 0 for now.
@@ -37,7 +38,7 @@ Each screen in detail: `docs/SCREENS.md`. The look and the two styles: `docs/DES
 
 | Version | Date | What |
 | --- | --- | --- |
-| v2.5.0 | 25 Nov | R6: the first-week guide on Today (three steps in the plan's first 7 days); no drop shadow at Tray's screen edges |
+| v2.5.0 | 25 Nov | R6: the first-week guide on Today (three steps in the plan's first 7 days); no drop shadow at Tray's screen edges; Pro at 149 baht a month; the Meal sheet's photo in 3:4 |
 | v2.4.0 | 23 Nov | R5: freemium (Free and Pro, Stripe test mode at 0 THB), the 3:4 camera, on track in the goal's direction, rest day activity, Session sheet tiles, AI resolver checks, smaller glass toast, landing Plans |
 | v2.3.0 | 21 Nov | R4b: styles renamed Tray (default) and Bento, landing always Tray, Today's style card, check-in sheet, cardio named by machine, landing shots from real data |
 | v2.2.0 | 20 Nov | R4: the flat style and the style switch; CI pinned to ubuntu-24.04 (PR #55) |

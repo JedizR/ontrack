@@ -22,9 +22,9 @@ test('a free account gets its daily AI logs, then the plans, then Pro through Ch
   await expect(page.getByTestId('review-error')).toContainText("You have used today's 3 free AI logs.");
   await page.getByTestId('review-pro').click();
   await expect(page.getByTestId('paywall-hero')).toContainText("Today's free AI logs are used");
-  await expect(page.getByTestId('paywall-save')).toHaveText('Save 59%');
+  await expect(page.getByTestId('paywall-save')).toHaveText('Save 45%');
   await page.getByTestId('paywall-month').click();
-  await expect(page.getByTestId('paywall-fine')).toContainText('7 days free, then ฿199 a month.');
+  await expect(page.getByTestId('paywall-fine')).toContainText('7 days free, then ฿149 a month.');
 
   // the mock's Checkout comes straight back, as a 0 THB bill does: welcome, and Pro in Settings with its trial
   await page.getByTestId('paywall-go').click();

@@ -176,7 +176,7 @@ States:
 
 **Quick add**, title "Quick add". Calories typed on the number pad in Display, focused on open. Optional protein, carbs and fat as three small fields on the decimal pad, an optional name. Pinned "Add 300 kcal". "Enter up to 10,000 kcal at a time." past the limit.
 
-**Meal sheet** for a logged meal: the Review layout in edit mode. "Name" and "Time", the items, "On the map" for a meal with a photo (below), pinned total and primary "Save changes", a bookmark button "Save meal" ("Saved" once it is; a second tap takes it out again, with Undo) and a danger "Delete meal" with an undo toast.
+**Meal sheet** for a logged meal: the Review layout in edit mode, its photo on top in the camera's 3:4 as Review shows it (R6). "Name" and "Time", the items, "On the map" for a meal with a photo (below), pinned total and primary "Save changes", a bookmark button "Save meal" ("Saved" once it is; a second tap takes it out again, with Undo) and a danger "Delete meal" with an undo toast.
 
 **Scan sheet** (PRD F22). Packaged food logged from its barcode. One sheet with steps and a back chevron between them. The common case: plus, hold the pack up (it reads by itself), Add. It opens from the Add camera on a barcode read (at Finding) or a label photo (at Reading), or on Back at its own camera.
 

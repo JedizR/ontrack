@@ -28,7 +28,7 @@ Everything the owner has asked for that still holds, gathered from every session
 - **On track is loose and directional** (22 Nov): "a missed day is just a day". A day off target in the goal's own direction still counts; nothing resets.
 - **The goal can change anywhere it shows** (22 Nov): Progress and Profile open the goal, people move from losing fat to building muscle.
 - **A rest day can take an activity** (22 Nov), for that day only; the program and next week never change.
-- **Freemium** (22 Nov): a fair free tier (all tracking, a few AI logs a day), Pro for unlimited AI and the AI features, the plans shown after Save the plan and at a limit, prices in round baht from the pricing model, Stripe used properly with a 0 THB bill while it is a preview.
+- **Freemium** (22 Nov): a fair free tier (all tracking, a few AI logs a day), Pro for unlimited AI and the AI features, the plans shown after Save the plan and at a limit, prices in round baht from the pricing model, Stripe used properly with a 0 THB bill while it is a preview. **Pro is 149 baht a month and 990 a year** (25 Nov): Thai users are cost-sensitive, and 199 reads as a streaming plan.
 - **Well thought, one-hand UX is the bar** (23 Nov): the owner loved the "Any activity today?" drawer (type tiles with icons, quick minutes, effort, the kcal it adds over the action) and wants that quality everywhere, starting with Train's Add a session. Keep checking animations, words (not too many, never confusing or redundant) and cards on every page.
 - **Two styles** (21 Nov): Tray is the default, Bento is the flat option, and the user picks on Today's one-time card or in Profile, Settings. The landing page is always Tray with its full glass.
 
