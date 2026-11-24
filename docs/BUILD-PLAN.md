@@ -59,6 +59,7 @@ Nice to have: a monthly recap, milestones without streaks, progress photos, Ask 
 - **Unused tokens:** `--glass-*`, `--bar-*`, `--blur-glass`, `--blur-bar`, `--fade-h`, `--spring-reveal` in `design/tokens.css` (only `contrast.test.ts` still reads `glass-solid` and `bar-solid`).
 - **Bento's corners are untested:** the `unnested` corner gate in the stress matrix runs only in Tray.
 - **More stale comments:** `Header.svelte` line 19 ("fades into the canvas"), `SupplementSheet.svelte` ("the one violet featured card").
+- **Per-phone dismissals on an account switch** (found in R6's review): when a session expires and another account signs in without signing out, the database is wiped but `prefs.paywallDue`, `suggestOff`, `liftAsked` and `guideHidden` stay. Clear them where the wipe happens (`session.svelte.ts`), as sign out does.
 - **`--grad-streak`** is still named streak although the box is Consistency and the app has no streaks. Rename with `scripts/gradients.sh`.
 
 ## 7. Engine questions (need `science-check` before any number changes)

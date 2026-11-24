@@ -1,7 +1,7 @@
 // Today and logging without a photo (F3, F5, F6), on the mock backend. "Today" is frozen at 2026-11-11, a Wednesday
 // and a training day for the seeded plan: 2,460 kcal, 2,220 on rest days.
 import { expect, test, type Page } from '@playwright/test';
-import { MEALS, TODAY, fieldFill, open, pickerSave, seedAccount, swipeAt, wheelType } from './helpers';
+import { MEALS, SUPPLEMENTS, TODAY, fieldFill, open, pickerSave, seedAccount, swipeAt, wheelType } from './helpers';
 
 const hero = (page: Page) => page.getByTestId('hero-value');
 const meals = (page: Page) => page.getByTestId('meal');
@@ -276,4 +276,22 @@ test('first-week guide, day two: the weigh-in is due, the last step lands as all
   await page.reload();
   await expect(page.getByTestId('dock')).toBeVisible();
   await expect(guide).toHaveCount(0);
+});
+
+test('first-week guide: creatine taken is not a meal', async ({ page }) => {
+  await open(page, '/', [SUPPLEMENTS[1], SUPPLEMENTS[3]]);
+  await expect(page.getByTestId('taken')).toContainText('Creatine');
+  await expect(page.getByTestId('guide')).toContainText('Three steps to start');
+});
+
+test('first-week guide: the last step saved to yesterday from the strip still shows all set today', async ({ page }) => {
+  await page.clock.setFixedTime(new Date('2026-11-12T10:00:00+07:00'));
+  await seedAccount(page, { records: [MEALS[0], { collection: 'weight', id: 'weight:2026-11-12', updatedAt: 1, data: { date: '2026-11-12', kg: 60.2 } }] });
+  await page.goto('/');
+  const guide = page.getByTestId('guide');
+  await expect(guide).toContainText('2 of 3 done');
+  await page.getByTestId('week').getByRole('button', { name: /Wednesday, November 11/ }).click();
+  await page.getByTestId('session-done').click();
+  await page.getByTestId('week-today').click();
+  await expect(guide).toContainText('You’re all set');
 });

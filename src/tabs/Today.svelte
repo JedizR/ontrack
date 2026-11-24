@@ -55,7 +55,7 @@
   import { easyAdds, easyDue } from '$lib/model/easy';
   import { dayView, mealSource, planFor, recentFoods, totals } from '$lib/model/day';
   import { weightText } from '$lib/model/units';
-  import { baselineFrom, checkinDueOn } from '$lib/model/progress';
+  import { checkinDueOn } from '$lib/model/progress';
   import { firstWeek } from '$lib/model/guide';
   import { addDays, daysBetween, stampOn, timeOf } from '$lib/model/dates';
   import { proteinBand, sessionKcal, V } from '$lib/model/engine';
@@ -153,11 +153,25 @@
   const weights = $derived(db.live('weight').map((r) => r.data.date));
   const lastWeigh = $derived(weights.filter((d) => d <= view.today).sort().at(-1));
   const weighedOn = $derived(db.live('weight').find((r) => r.data.date === view.date)?.data);
-  // R6, the first-week guide: the plan's first 7 days, read from the records, on today only; hidden per phone
+  // R6, the first-week guide: the plan's first 7 days, read from the records, on today only; hidden per phone. A supplement
+  // with no calories is not a meal; the check-in date is the check-in's own rule
+  const week1 = $derived.by(() => {
+    if (prefs.guideHidden || !profile || !plans.length) return null;
+    const p = profile;
+    return firstWeek({ start: plans.map((r) => r.data.effectiveFrom).sort()[0], today: view.today, dueOn: (d) => checkinDueOn(plans, p.checkinWeekday, d), meals: allMeals.filter((r) => !isTaken(r.data)).map((r) => r.data.date), weights, logs, sessions });
+  });
+  // a last step saved to a past day (the strip) still gets its all set while Today is open
+  let guideWas = -1;
+  let doneOn = $state('');
+  $effect(() => {
+    const n = week1?.done ?? -1;
+    if (guideWas >= 0 && guideWas < 3 && n === 3) doneOn = view.today;
+    guideWas = n;
+  });
   const guide = $derived.by(() => {
-    if (prefs.guideHidden || view.past || !profile || !plans.length) return null;
-    const start = plans.map((p) => p.data.effectiveFrom).sort()[0];
-    return firstWeek({ start, today: view.today, checkinFrom: baselineFrom(plans, view.today) ?? start, checkinWeekday: profile.checkinWeekday, meals: allMeals.map((r) => r.data.date), weights, logs, sessions });
+    if (!week1 || view.past) return null;
+    const finished = week1.finished || (week1.complete && doneOn === view.today);
+    return !week1.complete || finished ? { ...week1, finished } : null;
   });
   // while the guide asks for the first meal, it is the one place that does
   const guideMeal = $derived(!!guide && !guide.meal);

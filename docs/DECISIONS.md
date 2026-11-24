@@ -10,7 +10,8 @@ The owner, 24 Nov: build the first-week guide (Next on the course roadmap, moved
 - **Done is not repeated.** The workout row says "Tap Done on Strength once you've trained" and has no button: two Done buttons for one session would split where it is marked, and Done before training would be a false tick.
 - **Its own place under the hero, not in the one-card slot.** In the slot, the noon protein suggestions and evening easy adds would hide it most afternoons, and they matter more on a given day. It replaces only what it repeats: the empty list's "Log your first meal" row and the nothing logged card, while the meal step is open.
 - **A cross hides the whole guide, with Undo; no per-step skip.** The steps are small, and someone who would rather not weigh in hides it in one tap. It ends by itself after 7 days, or the day after all three are done.
-- **The first 7 days count from the first plan** (`effectiveFrom`), so existing accounts never see it; the check-in date uses `baselineFrom`, as the check-in itself does.
+- **The first 7 days count from the first plan** (`effectiveFrom`), so existing accounts never see it. The check-in date is the first day `checkinDueOn` is true, the check-in's own rule, so a goal changed in Settings (a plan from tomorrow) moves it the same day.
+- **From the code review:** the date above (it read only plans already in effect, a week early on the day of a goal change); a last step saved to a past day from the strip still shows "You're all set" while Today is open (the records' dates alone hid it); a supplement with no calories (creatine) is not "Log a meal", as it is not a row in the list.
 
 ## R5
 

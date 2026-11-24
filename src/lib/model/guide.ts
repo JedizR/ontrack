@@ -2,7 +2,6 @@
 // workout done), each read from the account's own records, so the guide is the same on every device and nothing about
 // it is stored but the choice to hide it. Day one already holds the onboarding weigh-in, so its weigh-in is tomorrow's.
 import { addDays, daysBetween, weekdayOf } from './dates';
-import { V } from './engine';
 import type { Session, SessionLog } from '../../../shared/records';
 
 /** the guide's span: the plan's first week, the day it was saved included (a product choice, not a science one) */
@@ -21,7 +20,10 @@ export type Guide = {
   weigh: { done: boolean; tomorrow: boolean };
   train: { done: boolean; step: TrainStep };
   done: number;
-  /** all three done, the last of them today: the guide's one finished day */
+  /** all three done */
+  complete: boolean;
+  /** all three done, the last of them dated today: the guide's one finished day (Today also keeps it for a last step
+   *  saved to a past day while it is open) */
   finished: boolean;
   /** the first weekly check-in */
   checkin: string;
@@ -31,9 +33,8 @@ export type GuideInput = {
   /** the first plan's day */
   start: string;
   today: string;
-  /** where the check-in counts its 14 days from (baselineFrom), and its weekday (0 Monday) */
-  checkinFrom: string;
-  checkinWeekday: number;
+  /** whether the weekly check-in is due on a day: `checkinDueOn` itself, so a plan saved to start tomorrow counts */
+  dueOn: (date: string) => boolean;
   meals: string[];
   weights: string[];
   logs: SessionLog[];
@@ -42,7 +43,7 @@ export type GuideInput = {
 
 const first = (dates: string[]) => dates.sort()[0];
 
-/** The guide for today, or null outside the plan's first week and once it was finished on an earlier day. */
+/** The guide for today, or null outside the plan's first week. */
 export function firstWeek(g: GuideInput): Guide | null {
   const age = daysBetween(g.start, g.today);
   if (age < 0 || age >= GUIDE_DAYS) return null;
@@ -62,10 +63,10 @@ export function firstWeek(g: GuideInput): Guide | null {
     }
   const ons = [mealOn, weighOn, doneOn];
   const done = ons.filter(Boolean).length;
-  const finished = done === 3 && (ons as string[]).sort().at(-1) === g.today;
-  if (done === 3 && !finished) return null;
-  // the first weekday the check-in falls on once the plan has stood its 14 days, the first day counted
-  let checkin = addDays(g.checkinFrom, V.checkinEveryDays - 1);
-  while (weekdayOf(checkin) !== g.checkinWeekday) checkin = addDays(checkin, 1);
-  return { meal: !!mealOn, weigh: { done: !!weighOn, tomorrow: age === 0 }, train: { done: !!doneOn, step }, done, finished, checkin };
+  const complete = done === 3;
+  const finished = complete && (ons as string[]).sort().at(-1) === g.today;
+  // the first day the check-in is due; a plan stands 14 days and the weekday follows, so it lands within weeks
+  let checkin = g.today;
+  for (let i = 0; i < 60 && !g.dueOn(checkin); i++) checkin = addDays(checkin, 1);
+  return { meal: !!mealOn, weigh: { done: !!weighOn, tomorrow: age === 0 }, train: { done: !!doneOn, step }, done, complete, finished, checkin };
 }
