@@ -157,7 +157,8 @@
   const inRange = $derived(weeks.flatMap((w) => w.days).filter((d) => d.date >= from && d.date <= today));
   const sessionBars = $derived(weeks.map(({ training: k }) => ({ avg: k.done, target: k.planned, reached: k.planned > 0 && k.done >= k.planned })));
   // R7b, the owner: a dot a day, green with a workout done (a rest day's activity too), grey a training day without, an outline a rest day
-  const dots = $derived(inRange.map((d) => ({ date: d.date, state: d.sessions.some((s) => s.status === 'done') ? 'done' : d.sessions.length ? 'missed' : 'rest' }) as const));
+  // the owner (25 Nov): always this week and the three before it, as a habit tracker's month; the range sets the boxes
+  const dots = $derived((acct ? acct.weeks(today, 5).flatMap((w) => w.days) : []).map((d) => ({ date: d.date, state: d.sessions.some((s) => s.status === 'done') ? 'done' : d.sessions.length ? 'missed' : 'rest' }) as const));
   const daily = $derived(span < 4 * U.daysPerWeek);
   // calories in against calories out: what living takes (the plan's baseline) plus the sessions done
   const outOf = (d: (typeof inRange)[number]) => (d.living ?? 0) + (d.exercise ?? 0);
