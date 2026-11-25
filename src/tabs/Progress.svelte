@@ -267,7 +267,7 @@
             {#if daily}<DayChart days={proDays} band={pBand} from={shortDate(from)} to={shortDate(today)} label={t.progress.bars(num(weeks.length))} />
             {:else}<WeekBars weeks={proBars} from={shortDate(weeks[0].start)} to={shortDate(today)} label={t.progress.bars(num(weeks.length))} />{/if}
           {:else}
-            <TrainDots days={dots} label={t.progress.trainDots(num(dots.filter((d) => d.state === 'done').length), num(dots.filter((d) => d.state !== 'rest').length))} />
+            <TrainDots days={dots} {today} label={t.progress.trainDots(num(dots.filter((d) => d.state === 'done').length), num(dots.filter((d) => d.state !== 'rest').length))} />
           {/if}
         {/key}
         <!-- small text pills, equal and left under the chart, the chosen one filled (the 44 tap is the button, the pill is 32) -->
