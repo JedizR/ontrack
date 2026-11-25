@@ -10,11 +10,14 @@
   let { days, today, label }: { days: Dot[]; today: string; label: string } = $props();
 
   const WEEKS = 4;
-  const P = 36; // a square's pitch: 28 across, 8 between
-  const S = 28;
-  const CORNER = 7;
   const HEAD = 22; // the weekday letters
   const LEFT = 54; // the row labels
+  // the owner (25 Nov): as wide as the other charts, the squares a little smaller; seven columns share the width
+  let w = $state(320);
+  const colW = $derived((w - LEFT) / 7);
+  const S = $derived(Math.min(24, colW - 8));
+  const rowH = $derived(S + 8);
+  const CORNER = $derived(S / 4);
   const SUNDAY_FIRST = [6, 0, 1, 2, 3, 4, 5]; // weekdayOf counts Monday as 0
   // the Sunday that starts this week, then three weeks back
   const start = $derived(addDays(today, -((weekdayOf(today) + 1) % 7) - 7 * (WEEKS - 1)));
@@ -33,17 +36,18 @@
   const CLS = { done: 'fill-success', missed: 'fill-ink-3', rest: 'fill-none stroke-ink-3', faint: 'fill-track' } as const;
 </script>
 
-<div data-testid="train-dots">
-  <svg width={LEFT + 7 * P} height={HEAD + WEEKS * P} role="img" aria-label={label} class="mx-auto block">
+<!-- a tab kept mounted but hidden measures 0 wide (U2): keep the last width -->
+<div bind:clientWidth={null, (v) => { if (v) w = v; }} data-testid="train-dots">
+  <svg width={w} height={HEAD + WEEKS * rowH} role="img" aria-label={label} class="block">
     {#each SUNDAY_FIRST as d, c (d)}
-      <text x={LEFT + c * P + P / 2} y={HEAD - 9} text-anchor="middle" class="fill-ink-2 text-caption">{t.week.letters[d]}</text>
+      <text x={LEFT + c * colW + colW / 2} y={HEAD - 9} text-anchor="middle" class="fill-ink-2 text-caption">{t.week.letters[d]}</text>
     {/each}
     {#each rows as r, i (i)}
-      <text x={LEFT - 10} y={HEAD + i * P + P / 2 + 4} text-anchor="end" class="fill-ink-2 text-caption num">{r}</text>
+      <text x={0} y={HEAD + i * rowH + rowH / 2 + 4} class="fill-ink-2 text-caption num">{r}</text>
     {/each}
     {#each cells as d (d.date)}
       {@const inset = d.state === 'rest' ? 0.75 : 0}
-      <rect x={LEFT + d.col * P + (P - S) / 2 + inset} y={HEAD + d.row * P + (P - S) / 2 + inset} width={S - 2 * inset} height={S - 2 * inset} rx={CORNER - inset} stroke-width={d.state === 'rest' ? 1.5 : 0} class={CLS[d.state]} data-testid="dot-{d.state}" />
+      <rect x={LEFT + d.col * colW + (colW - S) / 2 + inset} y={HEAD + d.row * rowH + (rowH - S) / 2 + inset} width={S - 2 * inset} height={S - 2 * inset} rx={CORNER - inset} stroke-width={d.state === 'rest' ? 1.5 : 0} class={CLS[d.state]} data-testid="dot-{d.state}" />
     {/each}
   </svg>
   <div class="text-caption text-ink-2 mt-2 flex flex-wrap justify-center gap-x-4 gap-y-1" aria-hidden="true">
