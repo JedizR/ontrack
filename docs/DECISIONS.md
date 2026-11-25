@@ -2,6 +2,11 @@
 
 Changes to a doc's decision, and choices made on the owner's behalf. Newest first, one line each: what, why.
 
+## The launch deck and the AI price (25 to 26 Nov)
+
+- **The financial model prices the AI on Qwen3.8-Omni-Flash** (the team: use a Chinese model's price). It takes photos, text, labels and voice like Gemini Flash; Alibaba Cloud's Singapore region with the International scope keeps data out of mainland China. At the model's own tokens (4,000 in, 1,000 out, no caching) a meal log costs about 0.04 baht against 0.14 on Gemini 2.5 Flash: the first profitable month moves from 26 to 9, the 36-month result from -128,775 to +288,634 baht, the cash needed from 177,340 to 53,794. Qwen replaced option 1 (Gemini 2.5 Flash-Lite) in the price table; the Gemini rows stay as the comparison, and Price Sensitivity rows 92 to 99 were rerun. Not done: the app still calls Gemini. Switching needs a Qwen provider behind `server/vision/provider.ts` and a run of the Thai photo eval first. Gemini 3.x list prices double on 1 Jan 2027.
+- **The final deck** (`docs/assignment/Ontrack-launch-presentation.pptx`, untracked): the team's draft order, each part in the class's own tool (Interview Snapshot, the Day 7 hypothesis, jobs to be done, why, how and what, a LEGO-style one-page spec, RICE and MoSCoW, X = Y × Z, the North Star tests and tree, an early OKR, Now / Next / Later as a board with the problem on each card), plus an FAQ and the AI price scenarios as backups. Built by `scratchpad/deck/deck4.js` and `copy4.js`; checked in Google Slides' own render.
+
 ## R7b
 
 The owner, 25 Nov, after v2.6.1 on their iPhone (set to English): macro in any language, the Whey chip hugging its name, where the light is, and Progress's Train chart as GitHub's dots.
