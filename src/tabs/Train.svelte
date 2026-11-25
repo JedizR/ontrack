@@ -76,14 +76,17 @@
   const recs = $derived(analysis?.recommendations.slice(0, 3) ?? []);
 
   // R1: this week as the program has it, and what is up next (Fitbit's weekly goal, Nike Training Club's next workout)
-  const monday = $derived(addDays(view.today, -todayIs));
-  const statusOf = (s: Session) => db.get('slog', ids.slog(addDays(monday, s.weekday), s.key))?.status;
+  // the owner (25 Nov): the week runs Sunday to Saturday; weekdays are stored Monday first, so Sunday (6) moves to the front
+  const col = (weekday: number) => (weekday + 1) % 7;
+  const SUNDAY_FIRST = [6, 0, 1, 2, 3, 4, 5];
+  const sunday = $derived(addDays(view.today, -col(todayIs)));
+  const statusOf = (s: Session) => db.get('slog', ids.slog(addDays(sunday, col(s.weekday)), s.key))?.status;
   // R3, the owner: no set by set logging. A session is marked Done, as cardio is, and the week adds up what was marked
   const doneSessions = $derived(sessions.filter((s) => statusOf(s) === 'done'));
   const weekDone = $derived(doneSessions.length);
   const next = $derived.by(() => {
-    const sorted = [...sessions].sort((a, b) => a.weekday - b.weekday);
-    const upcoming = sorted.find((s) => s.weekday >= todayIs && !statusOf(s));
+    const sorted = [...sessions].sort((a, b) => col(a.weekday) - col(b.weekday));
+    const upcoming = sorted.find((s) => col(s.weekday) >= col(todayIs) && !statusOf(s));
     // today's session stays up with its tick once done, unless another is still due today
     const finished = upcoming?.weekday === todayIs ? undefined : sorted.filter((s) => s.weekday === todayIs && statusOf(s) === 'done').at(-1);
     const s = finished ?? upcoming ?? sorted[0];
@@ -96,7 +99,7 @@
   const levels = $derived(lit ? weekLevels(Object.fromEntries(MUSCLES.map((m) => [m, lit.muscles[m].sets]))) : {});
   // this week in two numbers, from the sessions marked Done: kcal burned and planned sets
   // R5: an activity added on a rest day counts toward the week's burn
-  const extras = $derived(db.live('slog').map((r) => r.data).filter((l) => l.extra && l.date >= monday && l.date <= view.today).map((l) => l.extra!));
+  const extras = $derived(db.live('slog').map((r) => r.data).filter((l) => l.extra && l.date >= sunday && l.date <= view.today).map((l) => l.extra!));
   const weekKcal = $derived(plan ? Math.round([...doneSessions, ...extras].reduce((a, s) => a + sessionKcal(s, plan.weightKg), 0)) : 0);
   const weekSets = $derived(doneSessions.reduce((a, s) => a + (s.exercises ?? []).reduce((n, e) => n + e.sets, 0), 0));
   const litNames = $derived((Object.keys(levels) as (keyof typeof M)[]).map((m) => M[m]).join(', '));
@@ -262,7 +265,8 @@
     <section class="rounded-lg p-3 pt-4 {tray ? 'bg-surface shadow-card' : 'bg-surface-2 [&_.bg-surface-2]:bg-surface'}" aria-label={t.train.week} data-testid="train-week">
       <h2 class="text-subhead px-1">{t.train.week}</h2>
       <div class="mt-3 grid grid-cols-7 gap-1">
-        {#each t.train.weekdays as dayName, d (dayName)}
+        {#each SUNDAY_FIRST as d (d)}
+          {@const dayName = t.train.weekdays[d]}
           {@const list = sessions.filter((s) => s.weekday === d)}
           <div class="relative flex min-w-0 flex-col items-center gap-1 rounded-md py-2" data-testid="train-day-{d}">
             <!-- R3, the owner: today's ring is drawn over the session icons, not behind them -->
