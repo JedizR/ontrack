@@ -327,7 +327,7 @@ for (const theme of ['light', 'dark'] as const) {
         await page.getByTestId('recent-more').scrollIntoViewIfNeeded();
         await shot(page, 'history', 'add-recent');
         await page.getByTestId('recent-more').click();
-        await expect(page.getByTestId('history-sheet')).toHaveCSS('transform', 'none');
+        await expect(page.getByTestId('all-meals-sheet')).toHaveCSS('transform', 'none');
         await shot(page, 'history', 'all');
         await page.getByTestId('history-find').fill('pizza');
         await shot(page, 'history', 'none');
@@ -731,6 +731,12 @@ for (const theme of ['light', 'dark'] as const) {
         await top('progress-intake');
         await shot(page, 'progress', 'intake');
         await showMetric(page, 'Training');
+        // R7b, the owner: the Train chart as GitHub's dots, at the default range and at all of it
+        await top('progress-chart-training');
+        await shot(page, 'progress', 'train-dots');
+        await page.getByTestId('range-0').click();
+        await shot(page, 'progress', 'train-dots-all');
+        await page.getByTestId('range-28').click();
         await top('progress-training');
         await shot(page, 'progress', 'training');
         await top('progress-checkins');

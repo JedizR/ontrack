@@ -1100,6 +1100,11 @@ export const en = {
     // the training card (PRD F20), for the range in view
     training: 'Training',
     sessionBars: (n: string) => `Sessions done each week against planned, ${n} weeks`,
+    /** R7b, the owner: training as a dot per day, as GitHub draws commits */
+    trainDots: (done: string, planned: string) => `Workouts by day: ${done} of ${planned} training days done`,
+    dotDone: 'Workout',
+    dotMissed: 'No workout',
+    dotRest: 'Rest day',
     sessionsLine: 'Sessions marked done each week. The line is what you planned.',
     strength: 'Strength sessions',
     strengthLine: (n: string) => `${n} a week on average`,

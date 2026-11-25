@@ -20,6 +20,8 @@ Everything the owner has asked for that still holds, gathered from every session
 - **The camera works like the iPhone's** (25 Nov): a macro toggle for phones whose main camera cannot focus close (the owner's iPhone 14 Pro), zoom chips with a slider for phones without macro, a white shutter, and a white light button with a black line icon.
 - **Speaking is multilingual** (25 Nov): the mic in Describe takes Thai, English or both, not English only.
 - **Recent shows five, then all** (25 Nov): a way under Recent to every meal ever logged.
+- **Pills hug their content** (25 Nov): the Whey chip is as wide as its name, not stretched.
+- **Training reads as GitHub's dots** (25 Nov): Progress's Train chart is a dot a day, green with a workout, grey without, an outline on a rest day. The other charts stay as they are.
 - **Training is marked, not logged** (18 Nov). No set by set logging and no workout timer: every session, lifting or cardio, is marked Done. The focus is calorie tracking. Editing the schedule must be easy and update the calorie target at once. Cardio has a setup (machine, speed, incline, time). The owner's own program: a 4 day upper and lower split, 60 minutes, then 30 minutes of cardio.
 - **Today's figure is calories eaten,** not left (17 Nov). Food suggestions are data driven: your own logged foods first, then the table.
 - **Progress always shows its chart;** with no data it says so in the middle of the chart. Keep cards short.

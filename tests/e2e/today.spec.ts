@@ -304,7 +304,7 @@ test('R7: Recent shows five, and All 8 meals finds an old one and logs it again 
   await page.getByTestId('add').click();
   await expect(page.getByTestId('recent').getByRole('button', { name: /^Add .* again$/ })).toHaveCount(5);
   await page.getByTestId('recent-more').click();
-  const sheet = page.getByTestId('history-sheet');
+  const sheet = page.getByTestId('all-meals-sheet');
   await expect(sheet.getByTestId('history-row')).toHaveCount(8);
   await sheet.getByTestId('history-find').fill('old meal 3');
   await expect(sheet.getByTestId('history-row')).toHaveCount(1);
