@@ -2,6 +2,17 @@
 
 Changes to a doc's decision, and choices made on the owner's behalf. Newest first, one line each: what, why.
 
+## R7
+
+The owner, 25 Nov, five problems with Add a meal (on their iPhone 14 Pro), then deploy. Branch `feat-r7-add-camera`.
+- **Macro is the ultra-wide lens, found by its name.** Safari does not expose focus distance or a macro mode; on an iPhone the close-focusing lens is the ultra-wide, which `enumerateDevices` names ("Back Ultra Wide Camera") once the camera is allowed. The toggle opens it with `deviceId` and frames it at 2x so the view matches the main camera's; it shows only where such a lens exists, and a lens that will not open returns the main camera without the toggle. Shortcut: an iPhone set to another language names its lenses in that language, and Android names none this way, so those phones get zoom only.
+- **Zoom is the camera's own where the browser offers it, else the picture is scaled and the shot cropped.** Chrome on Android has `zoom` in the track's capabilities; Safari mostly does not. The digital zoom stops at 3x, past which a 1920 by 1440 frame (asked for now, was 1280 by 960) is under the photo's 1024 px. Chips 1x, 2x, 3x, the chosen one showing the exact zoom, with a drag along them or a pinch for anything between: the iPhone camera's own controls, which the owner pointed to.
+- **The shutter row is the iPhone's:** macro left, the white shutter centred, the white light right; a side with nothing keeps its space so the shutter stays put. The light moved from the picture to the row in the Add sheet; the other scanners keep it on the picture, white. A shutter tap just after a lens switch waits for the first frame instead of doing nothing.
+- **Voice goes to the analysis provider to be written down, not to the browser's recognition.** Safari's recognition takes one language at a time and needs Siri on; a lightweight Whisper in the page is tens of megabytes to download on a phone and slow on Thai. Gemini, already behind `/api/analyze`, writes down mixed Thai and English. The phone records a 16 kHz mono WAV of up to 15 s (640 KB as base64, under the body limit), the server checks it is a WAV and answers with the words; the words land in the field to be read and fixed, then Find the foods analyses them as before. A browser that cannot record falls back to its recognition in the phone's language (was English).
+- **A recording is not counted as an analysis,** since the description it becomes is counted when it is sent; two counts for one voice log would halve a free day. Shortcut: a signed-in user can transcribe without a daily count, bounded by 15 s a call; count it if it is abused. The privacy page says what is recorded and where it goes.
+- **Creatine is not pinned; the kind list opens creatine once it is set up.** Without the pill, creatine is two taps from the plus (the plus, Creatine) instead of re-running its setup. Whey stays the one pill. Only creatine: every other kind keeps its pill and can be set up again, a second tub of the same kind (the code review).
+- **All meals ever logged, in a sheet over Add,** as Saved meals is: Recent keeps five, and "All N meals you logged" lists every distinct meal newest first with a search by name or food, each logged again in one tap with Undo.
+
 ## R6
 
 The owner, 24 Nov: build the first-week guide (Next on the course roadmap, moved to Now). Branch `feat-first-week-guide`.

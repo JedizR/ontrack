@@ -268,7 +268,7 @@ export function createMockServer() {
         ...deps,
         provider: async () => {
           const name = space.vision;
-          return name ? { model: 'mock', analyze: async () => fixture(name) } : mockProvider;
+          return name ? { ...mockProvider, analyze: async () => fixture(name) } : mockProvider;
         },
       });
     }

@@ -61,7 +61,7 @@ IDs are stable. Tests and commits refer to them.
 - Every edit shows at once, offline included.
 
 ### F4 Log by photo
-- The plus opens one camera: Meal, Label, or a barcode, read in any mode. Photos picks one already taken. Before the first photo, one sentence says it goes to Google's Gemini to be read and is discarded.
+- The plus opens one camera: Meal, Label, or a barcode, read in any mode. Photos picks one already taken. It works like the phone's own camera (R7): a white shutter, a light, zoom from 1x to 3x by chips, a drag or a pinch, and a macro toggle for close-ups where the phone has an ultra-wide lens. Before the first photo, one sentence says it goes to Google's Gemini to be read and is discarded.
 - From shutter to a reviewable list in under 8 seconds on 4G for a typical plate, the wait shown in words.
 - The review sheet lists each component with grams, calories and a source label (Database, Estimate or Yours). Grams are editable with a stepper and portion chips (Half, Same, One and a half, Double). Items, the name and the "Eaten at" time can be changed; items can be removed or added.
 - "Cooked with oil?" appears when an item may hide fat, starts at 1 tsp, and is its own item. Table items carry no hidden fat.
@@ -70,10 +70,10 @@ IDs are stable. Tests and commits refer to them.
 - The original photo is never stored. A 320 px thumbnail is.
 
 ### F5 Log without a photo
-- Describe: the field at the top of the plus, typed or spoken where the browser can listen, gives the same review sheet.
+- Describe: the field at the top of the plus, typed or spoken, gives the same review sheet. Speaking takes Thai, English or both (R7): up to 15 seconds, written down into the field to be read and fixed first.
 - Search the bundled food table (works offline; Thai script and romanised names find Thai dishes), pick a portion, add.
 - Quick add: calories, optional protein, carbs and fat, optional name, on the phone's number pad.
-- Recent and Saved meals log again in one tap from the plus, with Undo. Any logged meal can be saved from its bookmark.
+- Recent and Saved meals log again in one tap from the plus, with Undo. Recent shows five, then every meal ever logged, with a search (R7). Any logged meal can be saved from its bookmark.
 
 ### F6 Weigh-ins
 - Log weight in one sheet on a wheel that starts at the last weigh-in and takes typing. One value per day; logging again replaces it.
@@ -158,7 +158,7 @@ IDs are stable. Tests and commits refer to them.
 - Progress's Training view shows sessions done against planned per week, strength sessions, and cardio minutes against the WHO range, for the selected range.
 
 ### F21 Supplements
-- Whey and creatine sit in one line at the top of the plus, with a plus for any other (plant protein, casein, mass gainer or something else). Brands differ a lot (owner's call), so setup leads with the user's own tub: scan its barcode (F22) or photograph its label, and the values per scoop are filled in for the user to confirm. "Use typical values for now" comes second; it is labelled Typical wherever its numbers show, with one quiet way to set it from the tub.
+- Whey sits at the top of the plus, with a plus for any other (plant protein, casein, mass gainer, creatine or something else); creatine is logged from there once set up (R7). Brands differ a lot (owner's call), so setup leads with the user's own tub: scan its barcode (F22) or photograph its label, and the values per scoop are filled in for the user to confirm. "Use typical values for now" comes second; it is labelled Typical wherever its numbers show, with one quiet way to set it from the tub.
 - Logging takes three taps from the plus: the supplement, the scoops (half steps, from the last amount used), Add. The sheet shows calories and protein for the chosen amount as it changes. Optionally mixed with water or milk, remembered for next time.
 - A logged supplement counts toward the day like any meal item: it can be edited or deleted with undo, works offline and syncs.
 - A supplement with no calories, such as creatine, is logged as taken and shown compactly, without a 0 kcal line.

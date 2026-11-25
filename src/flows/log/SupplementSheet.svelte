@@ -332,7 +332,10 @@
   {#if step === 'kind'}
     <div data-testid="supplement-kinds">
       {#each kinds as k (k)}
-        <Row title={t.supplement.kinds[k]} caption={t.supplement.fromTub} onclick={() => pick(k)} testid="kind-{k}">
+        <!-- R7: a kind already set up (creatine, which the Add row leaves out) opens at its amount, ready to log -->
+        <!-- R7: creatine, not pinned on Add, opens its amount once set up; any other kind can be set up again (a second tub) -->
+          {@const mine = k === 'creatine' ? db.live('supplement').find((r) => r.data.kind === k) : undefined}
+        <Row title={mine ? mine.data.name : t.supplement.kinds[k]} caption={mine ? t.supplement.amount(num(mine.data.lastScoops, 1), !!mine.data.lastMix && !noCalories(mine.data)) : t.supplement.fromTub} onclick={() => { if (mine) sheets.supplement = { id: mine.id }; else pick(k); }} testid="kind-{k}">
           {#snippet trailing()}<ChevronRight class="text-ink-2 flex-none" size={24} strokeWidth={2} aria-hidden="true" />{/snippet}
         </Row>
       {/each}

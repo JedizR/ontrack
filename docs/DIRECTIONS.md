@@ -15,8 +15,11 @@ Everything the owner has asked for that still holds, gathered from every session
 
 - **Thai food is the main reason the app exists** (17 Nov). Least friction and the most accurate analysis. Every protein variant of a dish is its own row (pad kra pao with chicken, pork, beef, duck, shrimp, and with rice, and with rice and egg). Oil is counted by default, because most Thai cooking uses it. Nutrition comes from the food table; the AI names the dish and estimates the portion, and calibrates, never invents.
 - **Remembered corrections.** When a user fixes a food's nutrition, the same food later uses their numbers. Fixing a result should be by typing what is wrong and letting the AI recalculate, not by editing a name while the numbers stay.
-- **Supplements are one tap.** Whey and creatine sit at the very top of the plus, in one line. Brands differ, so setup encourages the user to set it from their own tub (per scoop), with a default.
+- **Supplements are one tap.** Whey sits at the very top of the plus. Creatine is not a preset there (25 Nov): it is added and logged from the plus beside it. Brands differ, so setup encourages the user to set it from their own tub (per scoop), with a default.
 - **The plus is camera first** (18 Nov). One in-app camera: Meal and Label, and a barcode is read in any mode. No guide frames; a small chip says barcodes are read. Typing a barcode number only when the camera cannot open.
+- **The camera works like the iPhone's** (25 Nov): a macro toggle for phones whose main camera cannot focus close (the owner's iPhone 14 Pro), zoom chips with a slider for phones without macro, a white shutter, and a white light button with a black line icon.
+- **Speaking is multilingual** (25 Nov): the mic in Describe takes Thai, English or both, not English only.
+- **Recent shows five, then all** (25 Nov): a way under Recent to every meal ever logged.
 - **Training is marked, not logged** (18 Nov). No set by set logging and no workout timer: every session, lifting or cardio, is marked Done. The focus is calorie tracking. Editing the schedule must be easy and update the calorie target at once. Cardio has a setup (machine, speed, incline, time). The owner's own program: a 4 day upper and lower split, 60 minutes, then 30 minutes of cardio.
 - **Today's figure is calories eaten,** not left (17 Nov). Food suggestions are data driven: your own logged foods first, then the table.
 - **Progress always shows its chart;** with no data it says so in the middle of the chart. Keep cards short.

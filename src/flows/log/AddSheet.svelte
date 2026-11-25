@@ -34,7 +34,9 @@
   import type { Meal, MealItem, Supplement } from '../../../shared/records';
 
   // logged supplements are not repeated here: they sit at the top
-  const recent = $derived(recentMeals(db.live('meal').filter((r) => r.data.method !== 'supplement')));
+  // R7, the owner: five here, then every meal ever logged in the history sheet
+  const history = $derived(recentMeals(db.live('meal').filter((r) => r.data.method !== 'supplement'), Infinity));
+  const recent = $derived(history.slice(0, 5));
   const supplements = $derived(db.live('supplement').sort((a, b) => a.data.name.localeCompare(b.data.name)));
   // a milk's values come from the food table, loaded when a supplement was last mixed with one
   let foods = $state<Food[] | null>(null);
@@ -55,7 +57,8 @@
   // R5, the owner: whey is the one preset (its setup until it has one); every supplement set up joins it in the row, and
   // the plus sets up another (creatine included)
   const whey = $derived(supplements.find((r) => r.data.kind === 'whey'));
-  const pills = $derived([{ k: 'whey' as const, r: whey }, ...supplements.filter((r) => r.id !== whey?.id).map((r) => ({ k: r.data.kind, r }))]);
+  // R7, the owner: creatine is not pinned; it logs from the plus beside the row, which opens a kind already set up
+  const pills = $derived([{ k: 'whey' as const, r: whey }, ...supplements.filter((r) => r.id !== whey?.id && r.data.kind !== 'creatine').map((r) => ({ k: r.data.kind, r }))]);
   const SHORT: Partial<Record<Supplement['kind'], string>> = t.add.pinned;
   const saved = $derived(db.live('saved').sort((a, b) => b.data.uses - a.data.uses || b.data.lastUsedAt.localeCompare(a.data.lastUsedAt)));
   const kcalOf = (items: MealItem[]) => num(Math.round(totals(items).kcal));
@@ -207,6 +210,7 @@
               {#snippet trailing()}{@render again(t.add.again(title), () => logged(relog(m), title))}{/snippet}
             </Row>
           {/each}
+          {#if history.length > recent.length}<Row title={t.add.allRecent(num(history.length))} chevron onclick={() => (sheets.history = true)} testid="recent-more" />{/if}
         </div>
       {:else}
         <p class="text-callout text-ink-2 mt-3" data-testid="recent-empty">{t.add.noRecent}</p>

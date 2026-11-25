@@ -278,7 +278,7 @@ async function walkLogging(page: Page, dir: string, part: (typeof LOGGING)[numbe
     await page.getByTestId('add').click();
     await page.getByTestId('supplement-entry').click(); // the plus beside the pinned whey (R5)
     await sheet('supplement-sheet', 'supplement-kinds');
-    await page.getByTestId('kind-whey').click();
+    await page.getByTestId('kind-gainer').click(); // R7: one not set up yet; whey, set up, opens its amount
     await checkPage(page, 'supplement-source', dir);
     await close('supplement-sheet');
     // the Scan sheet (B1): no camera here, so the typed number, then the product and its label

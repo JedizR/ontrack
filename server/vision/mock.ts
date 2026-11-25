@@ -41,4 +41,8 @@ export const mockProvider: VisionProvider = {
     const h = createHash('sha256').update(i.image ?? said).digest();
     return fixture(FOOD[h[0] % FOOD.length]);
   },
+  // R7: a mixed Thai and English sentence, as the owner speaks; a clip of silence (all zero samples) says nothing
+  async transcribe(audio) {
+    return audio.subarray(44).some((b) => b !== 0) ? 'ข้าวมันไก่ with soup' : '';
+  },
 };

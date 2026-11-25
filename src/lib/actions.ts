@@ -18,8 +18,8 @@ import { supplementItems } from '$lib/model/supplements';
 import { productItem } from '$lib/model/products';
 import { fetchOff } from '$lib/data/off';
 import { allJson, mealsCsv } from '$lib/model/export';
-import { avatarPhoto, preparePhoto } from '$lib/photo';
-import type { AnalyzeRequest, AnalyzeResponse, LabelResponse } from '../../shared/analysis';
+import { avatarPhoto, base64, preparePhoto } from '$lib/photo';
+import type { AnalyzeRequest, AnalyzeResponse, LabelResponse, VoiceResponse } from '../../shared/analysis';
 import { COLLECTIONS, foodSchema, ids, productSchema, recSchema, SCHEMAS, socialSchema, type Checkin, type Collection, type DataOf, type Meal, type MealItem, type Plan, type Product, type Profile, type Program, type Saved, type SessionLog, type Supplement, type Weight } from '../../shared/records';
 
 const uid = () => crypto.randomUUID();
@@ -294,7 +294,7 @@ export async function mealThumb(mealId: string): Promise<Blob | null> {
 /** Photo or text analysis on the server (TECH-SPEC section 7). Never throws; no connection is `offline`. */
 type Failed = Extract<AnalyzeResponse, { ok: false }> | { ok: false; error: 'offline'; usage?: undefined };
 export type Analyzed = Extract<AnalyzeResponse, { ok: true }> | Failed;
-export const analyzeMeal = (req: Exclude<AnalyzeRequest, { kind: 'label' }>) => analyze<Extract<AnalyzeResponse, { ok: true }>>(req);
+export const analyzeMeal = (req: Extract<AnalyzeRequest, { kind: 'photo' | 'text' }>) => analyze<Extract<AnalyzeResponse, { ok: true }>>(req);
 /** A pack's nutrition label read by the vision provider (B1): printed values only. Never throws. */
 export type LabelResult = Extract<LabelResponse, { ok: true }> | Failed;
 export async function readLabel(file: Blob, localDate: string): Promise<LabelResult> {
@@ -302,6 +302,11 @@ export async function readLabel(file: Blob, localDate: string): Promise<LabelRes
   const photo = await preparePhoto(file).catch(() => null);
   if (!photo) return { ok: false, error: 'bad_request' };
   return analyze<Extract<LabelResponse, { ok: true }>>({ kind: 'label', image: photo.image, localDate, locale: 'en' });
+}
+/** R7: a voice clip written down by the provider, for the Describe field. Never throws. */
+export type Transcribed = Extract<VoiceResponse, { ok: true }> | Failed;
+export async function transcribe(audio: Uint8Array): Promise<Transcribed> {
+  return analyze<Extract<VoiceResponse, { ok: true }>>({ kind: 'voice', audio: await base64(new Blob([audio as BlobPart], { type: 'audio/wav' })), locale: 'en' });
 }
 const ANALYZE_WAIT_MS = 55_000; // two provider tries of 20 s each, plus the checks around them
 async function analyze<R extends { ok: true }>(req: AnalyzeRequest): Promise<R | Failed> {

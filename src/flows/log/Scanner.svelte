@@ -8,6 +8,7 @@
   import { untrack, type Snippet } from 'svelte';
   import Flashlight from '@lucide/svelte/icons/flashlight';
   import FlashlightOff from '@lucide/svelte/icons/flashlight-off';
+  import Flower from '@lucide/svelte/icons/flower-2';
   import Button from '$lib/components/Button.svelte';
   import Segmented from '$lib/components/Segmented.svelte';
   import Camera from '@lucide/svelte/icons/camera';
@@ -37,6 +38,16 @@
   let wrong = $state(false);
   let video = $state<HTMLVideoElement>();
   let stream: MediaStream | null = null;
+  // R7, the owner: a far-focusing main camera (the iPhone Pros) needs the macro lens, the ultra-wide that focuses close;
+  // any camera can zoom, so a phone that cannot focus close backs off and zooms in. The camera's own zoom where the
+  // browser offers it, else the picture is scaled and the shot cropped to match.
+  let macroId = $state<string | null>(null);
+  let macro = $state(false);
+  let zoom = $state(1);
+  let native = $state<{ min: number; max: number } | null>(null);
+  const zMin = $derived(native ? Math.max(1, native.min) : 1);
+  const zMax = $derived(native ? Math.min(native.max, 6) : 3); // a scaled 1920 frame past 3x is under the photo's 1024 px
+  const STOPS = [1, 2, 3];
   let run = 0; // each start gets a number, so a late answer from an earlier one is ignored
 
   function stop() {
@@ -56,15 +67,32 @@
     let s: MediaStream;
     try {
       // R5: 4:3, the phone camera's whole field (16:9 is a crop of it); a portrait phone hands it back as 3:4
-      s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 960 }, aspectRatio: { ideal: 4 / 3 } }, audio: false });
+      // R7: a larger frame, so a zoomed shot still has the pixels the photo needs
+      const lens = macro && macroId ? { deviceId: { exact: macroId } } : { facingMode: { ideal: 'environment' } };
+      s = await navigator.mediaDevices.getUserMedia({ video: { ...lens, width: { ideal: 1920 }, height: { ideal: 1440 }, aspectRatio: { ideal: 4 / 3 } }, audio: false });
     } catch (e) {
+      // a macro lens that will not open: back to the main camera, without the toggle
+      if (me === run && macro) { macro = false; macroId = ''; zoom = 1; return void start(); }
       if (me === run) problem = cameraProblem(e);
       return;
     }
     if (me !== run) return void s.getTracks().forEach((tr) => tr.stop());
     stream = s;
     const track = s.getVideoTracks()[0];
-    torch = (track?.getCapabilities?.() as { torch?: boolean } | undefined)?.torch ? false : null;
+    const caps = track?.getCapabilities?.() as { torch?: boolean; zoom?: { min: number; max: number } } | undefined;
+    torch = caps?.torch ? false : null;
+    native = caps?.zoom && caps.zoom.max > 1 ? { min: caps.zoom.min, max: caps.zoom.max } : null;
+    // a camera that lists a zoom but does not move to it gets the scaled picture instead
+    const want = zoom;
+    if (native) void track.applyConstraints({ advanced: [{ zoom } as MediaTrackConstraintSet] }).then(() => {
+      const got = (track.getSettings() as { zoom?: number }).zoom;
+      if (me === run && (got === undefined || Math.abs(got - want) > 0.05)) native = null;
+    }, () => { if (me === run) native = null; });
+    // the lenses have names only once the camera is allowed: the ultra-wide is the macro lens on an iPhone
+    if (onphoto && macroId === null) void Promise.resolve().then(() => navigator.mediaDevices.enumerateDevices()).then((all) => {
+      const wide = all.find((d) => d.kind === 'videoinput' && /ultra ?wide/i.test(d.label));
+      if (wide && wide.deviceId !== track?.getSettings?.().deviceId) macroId = wide.deviceId;
+    }, () => {});
     if (video) {
       video.srcObject = s;
       void video.play().catch(() => {}); // not awaited: the reader waits for frames anyway, and a stalled play must not hold it
@@ -107,18 +135,58 @@
     await track.applyConstraints({ advanced: [{ torch: on } as MediaTrackConstraintSet] }).then(() => (torch = on), () => {});
   }
 
+  /** A zoom between the camera's limits: its own zoom where it has one, else the picture's scale (the shot crops to it). */
+  function setZoom(z: number) {
+    zoom = Math.round(Math.min(zMax, Math.max(zMin, z)) * 10) / 10;
+    const track = stream?.getVideoTracks()[0];
+    if (native && track) void track.applyConstraints({ advanced: [{ zoom } as MediaTrackConstraintSet] }).catch(() => {});
+  }
+  /** Macro: the close-focusing lens, framed at 2x to match the main camera's view, or back. */
+  function toggleMacro() {
+    haptic();
+    macro = !macro;
+    zoom = macro ? 2 : 1;
+    void start();
+  }
+  // pinch on the picture (one finger still scrolls the sheet), or drag along the zoom chips, to zoom anywhere between them
+  let pinch: { d: number; z: number } | null = null;
+  const dist = (e: TouchEvent) => Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+  function pinchStart(e: TouchEvent) { if (e.touches.length === 2) pinch = { d: dist(e), z: zoom }; }
+  function pinchMove(e: TouchEvent) {
+    if (!pinch || e.touches.length !== 2) return;
+    setZoom((pinch.z * dist(e)) / pinch.d);
+  }
+  let drag: { x: number; z: number; moved: boolean } | null = null;
+  function dragStart(e: PointerEvent) { drag = { x: e.clientX, z: zoom, moved: false }; }
+  function dragMove(e: PointerEvent) {
+    if (!drag) return;
+    const dx = e.clientX - drag.x;
+    if (!drag.moved && Math.abs(dx) < 6) return;
+    if (!drag.moved) (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    drag.moved = true;
+    setZoom(drag.z + dx / 44); // a chip's width (44 px) is one step
+  }
+  function dragEnd() { setTimeout(() => (drag = null)); }
+  const zoomText = (z: number) => `${Number.isInteger(z) ? z : z.toFixed(1)}×`;
+
   /** The frame on screen, as a JPEG: the camera stops and the sheet takes it from here. */
   async function snap() {
-    if (!video || video.readyState < 2 || mode === 'barcode') return;
+    if (!video || mode === 'barcode') return;
     const me = run; // a barcode read while the frame encodes wins; this photo is dropped
+    // R7: just after a lens switch the reader is ready before the first frame; a tap then waits for it, briefly
+    const v = video;
+    if (v.readyState < 2) await new Promise((r) => { v.addEventListener('loadeddata', r, { once: true }); setTimeout(r, 1500); });
+    if (v.readyState < 2 || me !== run) return;
     // what the viewfinder shows and no more: its object-cover crop of the frame, from the centre
-    const vw = video.videoWidth, vh = video.videoHeight;
-    const box = video.clientWidth / video.clientHeight || vw / vh;
-    const [sw, sh] = vw / vh > box ? [Math.round(vh * box), vh] : [vw, Math.round(vw / box)];
+    const vw = v.videoWidth, vh = v.videoHeight;
+    const box = v.clientWidth / v.clientHeight || vw / vh;
+    // a scaled picture (no zoom in the camera) is cropped to what it shows
+    const scale = native ? 1 : zoom;
+    const [sw, sh] = (vw / vh > box ? [vh * box, vh] : [vw, vw / box]).map((n) => Math.round(n / scale));
     const c = document.createElement('canvas');
     c.width = sw;
     c.height = sh;
-    c.getContext('2d')?.drawImage(video, (vw - sw) / 2, (vh - sh) / 2, sw, sh, 0, 0, sw, sh);
+    c.getContext('2d')?.drawImage(v, (vw - sw) / 2, (vh - sh) / 2, sw, sh, 0, 0, sw, sh);
     const frame = await new Promise<Blob | null>((r) => c.toBlob(r, 'image/jpeg', 0.9));
     if (!frame || me !== run) return;
     haptic();
@@ -150,8 +218,8 @@
          field stay in sight on a short phone -->
     {#snippet viewfinder()}
       <!-- dark until the camera starts; the caption under it says so -->
-      <div class="bg-toast relative {side ? 'aspect-[3/4] h-full flex-none' : 'aspect-[4/3] w-full'} overflow-hidden rounded-md">
-        <video bind:this={video} class="size-full object-cover" playsinline muted autoplay aria-label={t.scan.viewfinder} data-testid="scanner-video"></video>
+      <div class="bg-toast relative {side ? 'aspect-[3/4] h-full flex-none' : 'aspect-[4/3] w-full'} touch-pan-y overflow-hidden rounded-md" ontouchstart={pinchStart} ontouchmove={pinchMove} ontouchend={() => (pinch = null)} role="application" aria-label={t.scan.zoom} data-vaul-no-drag>
+        <video bind:this={video} class="size-full object-cover transition-transform duration-[var(--d-press)]" style={native || zoom === 1 ? undefined : `transform: scale(${zoom})`} playsinline muted autoplay aria-label={t.scan.viewfinder} data-testid="scanner-video"></video>
         <!-- the framing guide: wide for a barcode, the rest dimmed by the scrim -->
         {#if onphoto}
           <!-- the owner (19 Nov): no frame; a small glass chip says a barcode is read at any time, its dot breathing while live -->
@@ -163,14 +231,23 @@
         {:else}
           <div class="border-toast-ink pointer-events-none absolute top-1/2 -translate-y-1/2 rounded-sm border-2 shadow-[0_0_0_999px_var(--scrim)] {mode === 'label' ? 'inset-x-[22%] h-[82%]' : 'inset-x-[10%] h-[40%]'}" aria-hidden="true" data-testid="scanner-frame"></div>
         {/if}
-        {#if torch !== null}
-          <button type="button" class="bg-toast text-toast-ink absolute right-3 bottom-3 grid size-11 place-items-center rounded-sm transition-transform duration-[var(--d-press)] active:scale-[0.97]" aria-label={torch ? t.scan.lightOff : t.scan.lightOn} aria-pressed={torch} onclick={light} data-testid="scanner-light">
-            {#if torch}<FlashlightOff size={22} strokeWidth={2} />{:else}<Flashlight size={22} strokeWidth={2} />{/if}
+        {#if torch !== null && !embedded}
+          <button type="button" class="text-night absolute right-3 bottom-3 grid size-11 place-items-center rounded-full bg-snow transition-transform duration-[var(--d-press)] active:scale-[0.95]" aria-label={torch ? t.scan.lightOff : t.scan.lightOn} aria-pressed={torch} onclick={light} data-testid="scanner-light">
+            {#if torch}<Flashlight size={22} strokeWidth={2} />{:else}<FlashlightOff size={22} strokeWidth={2} />{/if}
           </button>
         {/if}
+        {#if onphoto && live && mode !== 'barcode'}
+          <!-- R7, the owner's iPhone camera: zoom chips at the foot of the picture; a drag along them zooms in between -->
+          <div class="liquid-clear absolute bottom-3 left-1/2 flex -translate-x-1/2 touch-none rounded-full p-1" role="group" aria-label={t.scan.zoom} onpointerdown={dragStart} onpointermove={dragMove} onpointerup={dragEnd} onpointercancel={dragEnd} data-testid="scanner-zoom">
+            {#each STOPS.filter((z) => z <= zMax) as z, i (z)}
+              {@const on = zoom >= z && (i === STOPS.length - 1 || zoom < STOPS[i + 1] || STOPS[i + 1] > zMax)}
+              <button type="button" class="text-caption num grid size-11 place-items-center rounded-full font-semibold transition-colors duration-[var(--d-press)] {on ? 'text-night bg-snow' : 'text-night'}" aria-pressed={on} aria-label={t.scan.zoomTo(String(z))} onclick={() => { if (!drag?.moved) setZoom(z); }} data-testid="zoom-{z}">{on ? zoomText(zoom) : `${z}×`}</button>
+            {/each}
+          </div>
+        {/if}
         {#if embedded}
-          <!-- in the Add sheet the hint rides on the picture, clear of the light -->
-          <p class="text-caption text-toast-ink absolute bottom-3 left-3 right-16 font-semibold" aria-live="polite" data-testid="scanner-hint">{problem === 'busy' ? t.scan.busy : problem ? t.scan[problem === 'none' ? 'noCamera' : problem] : !live ? t.scan.starting : mode === 'meal' ? t.scan.holdMeal : mode === 'label' ? t.scan.holdLabel : slow ? t.scan.slow : t.scan.hold}</p>
+          <!-- in the Add sheet the hint rides on the picture, over the zoom chips -->
+          <p class="text-caption text-toast-ink absolute {onphoto && live && mode !== 'barcode' ? 'bottom-18' : 'bottom-3'} left-3 right-3 font-semibold" aria-live="polite" data-testid="scanner-hint">{problem === 'busy' ? t.scan.busy : problem ? t.scan[problem === 'none' ? 'noCamera' : problem] : !live ? t.scan.starting : mode === 'meal' ? t.scan.holdMeal : mode === 'label' ? t.scan.holdLabel : slow ? t.scan.slow : t.scan.hold}</p>
         {/if}
       </div>
     {/snippet}
@@ -183,7 +260,22 @@
       <!-- R5, the owner: the two photo modes across the full width, then the shutter in the middle under them (a camera's
            ring around the ink) -->
       <Segmented bind:value={mode} label={t.scan.modes} options={[{ value: 'meal', label: t.scan.modeMeal }, { value: 'label', label: t.scan.modeLabel }]} />
-      <button type="button" class="group border-action disabled:border-surface-3 grid size-15 place-items-center self-center rounded-full border-[3px] p-1 transition-[transform,border-color] duration-[var(--d-press)] active:scale-[0.94]" aria-label={t.scan.shutter} disabled={!live} onclick={snap} data-testid="scanner-shutter"><span class="bg-action group-disabled:bg-surface-3 size-full rounded-full transition-colors duration-[var(--d-ui)]" aria-hidden="true"></span></button>
+      <!-- R7, the owner: macro on the left, the white shutter in the middle, the light on the right, as the iPhone's camera
+           has them; a side with nothing to offer keeps its space so the shutter stays centred -->
+      <div class="grid grid-cols-[3rem_auto_3rem] items-center justify-center gap-8" data-testid="scanner-controls">
+        {#if macroId && mode !== 'barcode'}
+          <button type="button" class="text-night relative grid size-12 place-items-center rounded-full bg-snow transition-transform duration-[var(--d-press)] active:scale-[0.95]" aria-label={macro ? t.scan.macroOff : t.scan.macroOn} aria-pressed={macro} onclick={toggleMacro} data-testid="scanner-macro">
+            <Flower size={22} strokeWidth={2} />
+            {#if !macro}<span class="bg-night absolute h-0.5 w-7 rotate-45 rounded-full ring-2 ring-snow" aria-hidden="true"></span>{/if}
+          </button>
+        {:else}<span></span>{/if}
+        <button type="button" class="group grid size-16 place-items-center rounded-full border-[3px] border-snow p-1 transition-[transform,opacity] duration-[var(--d-press)] active:scale-[0.94] disabled:opacity-60" aria-label={t.scan.shutter} disabled={!live} onclick={snap} data-testid="scanner-shutter"><span class="shadow-pill size-full rounded-full bg-snow" aria-hidden="true"></span></button>
+        {#if torch !== null}
+          <button type="button" class="text-night grid size-12 place-items-center rounded-full bg-snow transition-transform duration-[var(--d-press)] active:scale-[0.95]" aria-label={torch ? t.scan.lightOff : t.scan.lightOn} aria-pressed={torch} onclick={light} data-testid="scanner-light">
+            {#if torch}<Flashlight size={22} strokeWidth={2} />{:else}<FlashlightOff size={22} strokeWidth={2} />{/if}
+          </button>
+        {:else}<span></span>{/if}
+      </div>
     {:else if onphoto}
       <Segmented bind:value={mode} label={t.scan.modes} options={[{ value: 'meal', label: t.scan.modeMeal }, { value: 'label', label: t.scan.modeLabel }]} />
     {/if}

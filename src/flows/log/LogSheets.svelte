@@ -11,6 +11,7 @@
   import SupplementSheet from './SupplementSheet.svelte';
   import ScanSheet from './ScanSheet.svelte';
   import SavedSheet from './SavedSheet.svelte';
+  import HistorySheet from './HistorySheet.svelte';
   import ActivitySheet from './ActivitySheet.svelte';
 </script>
 
@@ -25,4 +26,5 @@
 <SupplementSheet />
 <ScanSheet />
 <SavedSheet />
+<HistorySheet />
 <ActivitySheet />
