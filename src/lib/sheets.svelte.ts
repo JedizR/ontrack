@@ -14,6 +14,8 @@ export const sheets = $state({
   listen: false,
   /** every saved meal (R1), over Add */
   saved: false,
+  /** R7: every meal ever logged, newest first, over Add */
+  history: false,
   /** the Scan sheet (B1, F22) */
   scan: false,
   /** what the Add sheet's camera hands the Scan sheet: a barcode read, or a label photo */
@@ -47,4 +49,4 @@ export const sheets = $state({
 });
 
 /** The sheets the logging flow owns, loaded together. */
-export const logOpen = () => sheets.add || sheets.saved || sheets.scan || sheets.search || sheets.quick || sheets.how || sheets.describe || sheets.review !== null || sheets.meal !== null || sheets.session !== null || sheets.supplement !== null || sheets.activity !== null;
+export const logOpen = () => sheets.add || sheets.saved || sheets.history || sheets.scan || sheets.search || sheets.quick || sheets.how || sheets.describe || sheets.review !== null || sheets.meal !== null || sheets.session !== null || sheets.supplement !== null || sheets.activity !== null;

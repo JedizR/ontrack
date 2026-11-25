@@ -115,6 +115,15 @@ test('F21: creatine is logged as taken, a chip on Today with no 0 kcal row, and 
   await expect(page.getByText('Creatine taken')).toBeHidden(); // one undo at a time
   await page.getByRole('button', { name: 'Undo' }).click();
   await expect(page.getByTestId('taken-chip')).toHaveText('Creatine');
+  // R7, the owner: creatine is not pinned on Add; the plus lists it by its name and opens its amount, taken in two taps
+  await page.getByTestId('add').click();
+  await expect(page.getByTestId('add-sheet')).toHaveCSS('transform', 'none');
+  await expect(page.getByTestId('add-sheet').getByText('Creatine')).toHaveCount(0);
+  await page.getByTestId('supplement-entry').click();
+  await expect(page.getByTestId('kind-creatine')).toContainText('Creatine');
+  await page.getByTestId('kind-creatine').click();
+  await expect(page.getByTestId('supplement-zero')).toBeVisible();
+  await expect(page.getByTestId('tub-type')).toHaveCount(0);
 });
 
 test("F21, O1: a mass gainer set up as its label prints it: 4 scoops in a 165 g serving", async ({ page }) => {

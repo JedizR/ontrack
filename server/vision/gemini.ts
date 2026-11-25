@@ -9,6 +9,9 @@ import { SYSTEM_PROMPT, userText } from './prompt.js';
 import { LABEL_JSON_SCHEMA, LABEL_PROMPT, LABEL_TEXT } from './label.js';
 
 const THINKING = { minimal: ThinkingLevel.MINIMAL, low: ThinkingLevel.LOW, medium: ThinkingLevel.MEDIUM };
+// R7, voice: words only, in the script they were said in, so the Describe field shows what the person said
+const VOICE_PROMPT = 'Write down exactly what the speaker says about their meal, word for word. Keep each word in the language and script it was spoken in: Thai in Thai script, English in English, both when they mix. Do not translate, explain or add words. If nothing is said, answer with empty text.';
+const VOICE_JSON_SCHEMA = { type: 'object', properties: { text: { type: 'string' } }, required: ['text'] };
 
 export function geminiProvider(apiKey: string, model: string, fallback = '', thinking = ''): VisionProvider {
   const level = THINKING[thinking.trim().toLowerCase() as keyof typeof THINKING] ?? ThinkingLevel.MINIMAL;
@@ -42,6 +45,18 @@ export function geminiProvider(apiKey: string, model: string, fallback = '', thi
       // the fallback's portions and dishes were never checked (docs/EVAL-NOTES.md): it is never "high"
       if (used !== model && Array.isArray(out?.items)) for (const it of out.items) if (it?.confidence === 'high') it.confidence = 'medium';
       return out;
+    },
+    async transcribe(audio, signal) {
+      if (!apiKey || !model) throw Object.assign(new Error('Gemini is not configured'), { status: 500 });
+      const call = (m: string) => ai.models.generateContent({
+        model: m,
+        contents: [{ role: 'user', parts: [{ inlineData: { mimeType: 'audio/wav', data: Buffer.from(audio).toString('base64') } }, { text: VOICE_PROMPT }] }],
+        config: { responseMimeType: 'application/json', responseJsonSchema: VOICE_JSON_SCHEMA, thinkingConfig: { thinkingLevel: level }, abortSignal: signal },
+      });
+      const { res, model: used } = await withFallback(model, fallback, call);
+      provider.model = used;
+      const out = JSON.parse(res.text ?? 'null') as { text?: unknown } | null;
+      return typeof out?.text === 'string' ? out.text : '';
     },
   };
   return provider;

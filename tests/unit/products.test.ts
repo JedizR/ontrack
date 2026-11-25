@@ -73,11 +73,11 @@ describe('the label reader', () => {
     const ok = await run();
     expect(ok.status).toBe(200);
     expect(await ok.json()).toMatchObject({ ok: true, model: 'mock', label: { servingG: 25, perServing: { kcal: 120 } }, usage: { usedToday: 1, limit: 40 } });
-    const no = await run({ model: 'mock', analyze: async () => fixture('not-label') });
+    const no = await run({ ...mockProvider, analyze: async () => fixture('not-label') });
     expect(no.status).toBe(422);
     expect(await no.json()).toMatchObject({ ok: false, error: 'not_food' });
     // a meal's answer where a label's was asked for is a provider error, not a label
-    expect((await run({ model: 'mock', analyze: async () => fixture('chicken-rice') })).status).toBe(502);
+    expect((await run({ ...mockProvider, analyze: async () => fixture('chicken-rice') })).status).toBe(502);
   });
 });
 

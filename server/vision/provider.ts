@@ -8,6 +8,8 @@ export interface VisionProvider {
   model: string;
   /** the model's reply, parsed but not yet validated. Throws `{ status }` on an HTTP failure. */
   analyze(input: VisionInput): Promise<unknown>;
+  /** R7: a WAV of speech written down word for word, in the languages spoken. Throws `{ status }` on an HTTP failure. */
+  transcribe(audio: Uint8Array, signal?: AbortSignal): Promise<string>;
 }
 
 /** The provider `VISION_PROVIDER` names. The mock's fixtures load only when it is chosen. */

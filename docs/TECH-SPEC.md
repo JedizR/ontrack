@@ -333,7 +333,11 @@ Header `Authorization: Bearer <access token>`. Body, at most 900 KB:
 type AnalyzeRequest =
   | { kind: 'photo'; image: string /* base64 JPEG, 1024 px longest edge */; localDate: string; locale: 'en'; hint?: string /* the user's correction */ }
   | { kind: 'text'; text: string /* at most 500 characters */; localDate: string; locale: 'en' }
-  | { kind: 'label'; image: string /* a nutrition label, as a photo */; localDate: string; locale: 'en' };
+  | { kind: 'label'; image: string /* a nutrition label, as a photo */; localDate: string; locale: 'en' }
+  | { kind: 'voice'; audio: string /* base64 WAV, 16 kHz mono 16-bit, at most 15 s (480,044 bytes) */; locale: 'en' };
+// R7: voice answers { ok: true; text: string /* the words said, in their own script, at most 500 characters */; model: string }
+// or an error. It is not counted toward the day's analyses; the description it becomes is, when sent. A body that is not a
+// RIFF WAVE is bad_request, a longer one too_large. The provider's `transcribe(audio)` writes it down (mock: a fixed line).
 
 // shared/analysis.ts
 type AnalysisItem = {

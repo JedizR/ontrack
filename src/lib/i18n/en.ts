@@ -262,6 +262,15 @@ export const en = {
     again: (title: string) => `Add ${title} again`,
     noRecent: 'Meals you log show here, ready to add again in one tap.',
     logged: (title: string) => `Added ${title}`,
+    /** R7: under Recent's five, to every meal ever logged */
+    allRecent: (n: string) => `All ${n} meals you logged`,
+  },
+  /** R7: every meal ever logged, newest first, each added again in one tap */
+  meals: {
+    title: 'Your meals',
+    find: 'Find a meal',
+    last: (day: string) => `Last ${day}`,
+    none: 'No meal matches that.',
   },
   describe: {
     title: 'Describe',
@@ -271,6 +280,13 @@ export const en = {
     analyse: 'Find the foods',
     speak: 'Speak',
     stop: 'Stop',
+    /** R7: the clip, written down by the server in the languages said */
+    listening: 'Listening. Speak Thai, English or both.',
+    writing: 'Writing down what you said',
+    nothing: 'Nothing came through. Try again a little closer to the phone.',
+    offline: "You're offline. Type it instead, or try again when you're back.",
+    failed: "That didn't come through. Try again, or type it.",
+    micOff: "The microphone is off for Ontrack. Allow it for this site in your browser's settings, or type it.",
   },
   review: {
     title: 'Review',
@@ -411,6 +427,11 @@ export const en = {
     slow: 'Still looking. Move closer, hold steady, or type the number.',
     lightOn: 'Turn on the light',
     lightOff: 'Turn off the light',
+    /** R7: the close-focusing lens, and the zoom chips on the picture */
+    macroOn: 'Use the macro lens',
+    macroOff: 'Use the main lens',
+    zoom: 'Zoom',
+    zoomTo: (n: string) => `Zoom to ${n} times`,
     typeIt: 'Type the number',
     field: 'Barcode number',
     fieldHint: 'The 8 or 13 digits under the bars',

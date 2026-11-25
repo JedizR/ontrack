@@ -25,6 +25,18 @@ const post = (body: unknown, d = deps(), auth = 'Bearer good') =>
 const read = async (r: Response) => ({ status: r.status, body: await r.json() });
 
 describe('POST /api/analyze', () => {
+  test('voice (R7): a WAV comes back as words, uncounted; anything else is refused', async () => {
+    const bump = vi.fn();
+    const clip = (samples: number, fill = 1) => { const b = Buffer.alloc(44 + samples * 2, fill); b.write('RIFF', 0); b.write('WAVE', 8); return b.toString('base64'); };
+    const voice = (audio: string) => ({ kind: 'voice', audio, locale: 'en' });
+    expect(await read(await post(voice(clip(1600)), deps({ bump })))).toEqual({ status: 200, body: { ok: true, text: 'ข้าวมันไก่ with soup', model: 'mock' } });
+    expect((await read(await post(voice(clip(1600, 0)), deps({ bump })))).body.text).toBe('');
+    expect((await read(await post(voice(JPEG), deps({ bump })))).status).toBe(400);
+    expect((await read(await post(voice(clip(0)), deps({ bump })))).status).toBe(400); // a header and no sound
+    expect((await read(await post(voice(clip(16_000 * 16)), deps({ bump })))).body.error).toBe('too_large');
+    expect(bump).not.toHaveBeenCalled();
+  });
+
   test('refuses a missing or wrong token before reading the body', async () => {
     const bump = vi.fn();
     expect((await read(await post(photo, deps({ bump }), ''))).status).toBe(401);
@@ -75,27 +87,27 @@ describe('POST /api/analyze', () => {
 
   test('a 5xx is retried once, then reported as a provider error', async () => {
     const analyze = vi.fn(async () => fixture('fail'));
-    expect(await read(await post(text, deps({ provider: async () => ({ model: 'm', analyze }) })))).toEqual({ status: 502, body: { ok: false, error: 'provider_error' } });
+    expect(await read(await post(text, deps({ provider: async () => ({ ...mockProvider, model: 'm', analyze }) })))).toEqual({ status: 502, body: { ok: false, error: 'provider_error' } });
     expect(analyze).toHaveBeenCalledTimes(2);
     const flaky = vi.fn().mockRejectedValueOnce(Object.assign(new Error('x'), { status: 503 })).mockResolvedValueOnce(fixture('oats-banana'));
-    expect((await post(text, deps({ provider: async () => ({ model: 'm', analyze: flaky }) }))).status).toBe(200);
+    expect((await post(text, deps({ provider: async () => ({ ...mockProvider, model: 'm', analyze: flaky }) }))).status).toBe(200);
     const refused = vi.fn(async () => { throw Object.assign(new Error('x'), { status: 400 }); });
-    expect((await post(text, deps({ provider: async () => ({ model: 'm', analyze: refused }) }))).status).toBe(502);
+    expect((await post(text, deps({ provider: async () => ({ ...mockProvider, model: 'm', analyze: refused }) }))).status).toBe(502);
     expect(refused).toHaveBeenCalledTimes(1);
     const limited = vi.fn(async () => { throw Object.assign(new Error('x'), { status: 429 }); });
-    expect((await read(await post(text, deps({ provider: async () => ({ model: 'm', analyze: limited }) })))).body.error).toBe('busy');
+    expect((await read(await post(text, deps({ provider: async () => ({ ...mockProvider, model: 'm', analyze: limited }) })))).body.error).toBe('busy');
     expect(limited).toHaveBeenCalledTimes(1);
   });
 
   test('a provider that does not answer in time is retried once, then 504', async () => {
     const analyze = vi.fn((i: { signal?: AbortSignal }) => new Promise((_, reject) => i.signal?.addEventListener('abort', () => reject(new Error('aborted')))));
-    expect(await read(await post(text, deps({ timeoutMs: 20, provider: async () => ({ model: 'm', analyze }) })))).toEqual({ status: 504, body: { ok: false, error: 'timeout' } });
+    expect(await read(await post(text, deps({ timeoutMs: 20, provider: async () => ({ ...mockProvider, model: 'm', analyze }) })))).toEqual({ status: 504, body: { ok: false, error: 'timeout' } });
     expect(analyze).toHaveBeenCalledTimes(2);
   });
 
   test('a reply that breaks the schema is a provider error', async () => {
     const analyze = async () => ({ is_food: true, title: 'x', items: [{ name: 'Rice' }] });
-    expect((await read(await post(text, deps({ provider: async () => ({ model: 'm', analyze }) })))).body.error).toBe('provider_error');
+    expect((await read(await post(text, deps({ provider: async () => ({ ...mockProvider, model: 'm', analyze }) })))).body.error).toBe('provider_error');
   });
 
   test('the quota counts on the server day, whatever date the phone sends', async () => {
@@ -107,8 +119,8 @@ describe('POST /api/analyze', () => {
 
   test('items with blank names are dropped; none left is not food', async () => {
     const reply = (names: string[]) => async () => ({ is_food: true, title: 't', items: names.map((name) => ({ ...(fixture('oats-banana') as { items: object[] }).items[0], name })) });
-    const ok = await read(await post(text, deps({ provider: async () => ({ model: 'm', analyze: reply(['Oats', '  ']) }) })));
+    const ok = await read(await post(text, deps({ provider: async () => ({ ...mockProvider, model: 'm', analyze: reply(['Oats', '  ']) }) })));
     expect(ok.body.analysis.items.map((i: { name: string }) => i.name)).toEqual(['Oats']);
-    expect((await read(await post(text, deps({ provider: async () => ({ model: 'm', analyze: reply([' ']) }) })))).body.error).toBe('not_food');
+    expect((await read(await post(text, deps({ provider: async () => ({ ...mockProvider, model: 'm', analyze: reply([' ']) }) })))).body.error).toBe('not_food');
   });
 });

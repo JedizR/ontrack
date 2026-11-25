@@ -10,7 +10,7 @@ import { visionProvider, type VisionInput, type VisionProvider } from '../vision
 import { modelOutput } from '../vision/schema.js';
 import { MAX_ITEMS, resolveItems } from '../vision/resolve.js';
 import { labelOutput, toLabel } from '../vision/label.js';
-import { analyzeRequest, MAX_BODY_BYTES, type AnalyzeError } from '../../shared/analysis.js';
+import { analyzeRequest, MAX_BODY_BYTES, MAX_TEXT, MAX_VOICE_BYTES, type AnalyzeError } from '../../shared/analysis.js';
 import { FREE_AI_PER_DAY, isPro, PRO_AI_PER_DAY, type Billing } from '../../shared/plans.js';
 
 export type Deps = {
@@ -51,6 +51,7 @@ export async function analyze(request: Request, deps: Deps = liveDeps()): Promis
   try { parsed = analyzeRequest.safeParse(JSON.parse(text)); } catch { return fail('bad_request'); }
   if (!parsed.success) return fail('bad_request');
   const req = parsed.data;
+  if (req.kind === 'voice') return voice(new Uint8Array(Buffer.from(req.audio, 'base64')), deps);
   const image = req.kind !== 'text' ? new Uint8Array(Buffer.from(req.image, 'base64')) : undefined;
   if (image && !(image[0] === 0xff && image[1] === 0xd8)) return fail('bad_request'); // not a JPEG
 
@@ -65,22 +66,11 @@ export async function analyze(request: Request, deps: Deps = liveDeps()): Promis
   if (usage.total > deps.cap) return fail('busy');
 
   const provider = await deps.provider();
-  const input: VisionInput = req.kind === 'photo' ? { image, hint: req.hint, locale: req.locale } : req.kind === 'label' ? { image, label: true, locale: req.locale } : { text: req.text, locale: req.locale };
   const started = Date.now();
-  let raw: unknown;
-  for (let attempt = 1; ; attempt++) {
-    try {
-      raw = await within((signal) => provider.analyze({ ...input, signal }), deps.timeoutMs ?? TIMEOUT_MS);
-      break;
-    } catch (e) {
-      const timedOut = e instanceof Timeout;
-      const status = (e as { status?: number }).status ?? 0;
-      if (attempt === 1 && (timedOut || status >= 500)) continue;
-      console.error('analyze provider failed', { model: provider.model, attempt, status, timedOut, ms: Date.now() - started });
-      // the provider's own rate limit (the free tier's daily cap) reads as busy, not broken
-      return fail(timedOut ? 'timeout' : status === 429 ? 'busy' : 'provider_error');
-    }
-  }
+  const input: VisionInput = req.kind === 'photo' ? { image, hint: req.hint, locale: req.locale } : req.kind === 'label' ? { image, label: true, locale: req.locale } : { text: req.text, locale: req.locale };
+  const got = await attempt(provider, (signal) => provider.analyze({ ...input, signal }), deps);
+  if (!got.ok) return got.res;
+  const raw = got.value;
 
   if (req.kind === 'label') {
     const read = labelOutput.safeParse(raw);
@@ -103,4 +93,38 @@ export async function analyze(request: Request, deps: Deps = liveDeps()): Promis
   console.info('analyze', { kind: req.kind, model: provider.model, items: items.length, ms: Date.now() - started });
   const kept = { ...out.data, items: out.data.items.slice(0, MAX_ITEMS) };
   return json(200, { ok: true, analysis: { title: out.data.title.trim().slice(0, 120), items, model: provider.model, raw: kept }, usage: quota });
+}
+
+/** The provider with a timeout and one retry on a timeout or a 5xx; a failure is the response to send. */
+async function attempt<T>(provider: VisionProvider, run: (signal: AbortSignal) => Promise<T>, deps: Deps): Promise<{ ok: true; value: T } | { ok: false; res: Response }> {
+  const started = Date.now();
+  for (let n = 1; ; n++) {
+    try {
+      return { ok: true, value: await within(run, deps.timeoutMs ?? TIMEOUT_MS) };
+    } catch (e) {
+      const timedOut = e instanceof Timeout;
+      const status = (e as { status?: number }).status ?? 0;
+      if (n === 1 && (timedOut || status >= 500)) continue;
+      console.error('analyze provider failed', { model: provider.model, attempt: n, status, timedOut, ms: Date.now() - started });
+      // the provider's own rate limit (the free tier's daily cap) reads as busy, not broken
+      return { ok: false, res: fail(timedOut ? 'timeout' : status === 429 ? 'busy' : 'provider_error') };
+    }
+  }
+}
+
+/**
+ * R7, voice: a short WAV written down by the provider, for the Describe field to show and the person to fix. It is not
+ * an analysis and is not counted: the description it becomes is, when it is sent. Never stored or logged.
+ * shortcut: a signed-in caller can transcribe without a daily count, bounded by 15 s a call; count it if it is abused.
+ */
+async function voice(audio: Uint8Array, deps: Deps): Promise<Response> {
+  const tag = (at: number) => String.fromCharCode(...audio.subarray(at, at + 4));
+  if (audio.length <= 44 || tag(0) !== 'RIFF' || tag(8) !== 'WAVE') return fail('bad_request');
+  if (audio.length > MAX_VOICE_BYTES) return fail('too_large');
+  const provider = await deps.provider();
+  const started = Date.now();
+  const got = await attempt(provider, (signal) => provider.transcribe(audio, signal), deps);
+  if (!got.ok) return got.res;
+  console.info('analyze', { kind: 'voice', model: provider.model, ms: Date.now() - started });
+  return json(200, { ok: true, text: String(got.value ?? '').trim().slice(0, MAX_TEXT), model: provider.model });
 }

@@ -318,6 +318,21 @@ for (const theme of ['light', 'dark'] as const) {
         await sheet('session-sheet', 'session-menu');
       });
 
+      // R7, the owner: Recent's five, the way to every meal under them, the history sheet, and nothing found
+      test('meals history', async ({ page }) => {
+        const old = [1, 2, 3, 4, 5].map((d) => ({ collection: 'meal', id: `h${d}`, updatedAt: 1, data: { date: `2026-11-0${d}`, at: new Date(`2026-11-0${d}T12:00:00+07:00`).toISOString(), title: ['Khao man gai', 'Som tam with sticky rice', 'Greek yogurt and berries', 'Tuna sandwich', 'Pork congee'][d - 1], method: d % 2 ? 'photo' : 'search', items: [{ name: 'Item', kcal: 150 * d, protein: 10, carbs: 20, fat: 5, source: 'db' }] } }));
+        await open(page, '/', [...MEALS, ...old]);
+        await page.getByTestId('add').click();
+        await expect(page.getByTestId('add-sheet')).toHaveCSS('transform', 'none');
+        await page.getByTestId('recent-more').scrollIntoViewIfNeeded();
+        await shot(page, 'history', 'add-recent');
+        await page.getByTestId('recent-more').click();
+        await expect(page.getByTestId('history-sheet')).toHaveCSS('transform', 'none');
+        await shot(page, 'history', 'all');
+        await page.getByTestId('history-find').fill('pizza');
+        await shot(page, 'history', 'none');
+      });
+
       // SCREENS.md section 8, Train: no exercises listed, the Session sheet and picker, recommendations with a source,
       // Templates and the confirm, a template's analysis, and no program at all
       test('train', async ({ page }) => {
@@ -490,8 +505,12 @@ for (const theme of ['light', 'dark'] as const) {
         await shot(page, 'supplements', 'label-edit');
         await close();
         await page.getByTestId('add').click();
-        await page.getByTestId('supplement').filter({ hasText: 'Creatine' }).click();
+        // R7: creatine is not pinned; the plus lists it by its name and opens its amount
+        await page.getByTestId('supplement-entry').click();
         await settled();
+        await shot(page, 'supplements', 'kinds-set-up');
+        await page.getByTestId('kind-creatine').click();
+        await expect(page.getByTestId('supplement-zero')).toBeVisible();
         await shot(page, 'supplements', 'amount-taken');
         await close();
         await page.getByTestId('meal').filter({ hasText: 'Whey protein' }).getByRole('button').first().click();
@@ -532,8 +551,13 @@ for (const theme of ['light', 'dark'] as const) {
             g.fillStyle = '#8a8378';
             g.fillRect(0, 0, 640, 480);
             setInterval(() => g.fillRect(0, 0, 1, 1), 100);
-            return c.captureStream(10);
-          } } });
+            // R7: a light, and an ultra-wide lens for macro, so the shutter row shows all three
+            const s = c.captureStream(10);
+            const tr = s.getVideoTracks()[0];
+            tr.getCapabilities = () => ({ torch: true }) as MediaTrackCapabilities;
+            tr.applyConstraints = async () => {};
+            return s;
+          }, enumerateDevices: async () => [{ kind: 'videoinput', label: 'Back Ultra Wide Camera', deviceId: 'uw', groupId: 'g' }] } });
         });
         const s = await open(page);
         await page.getByTestId('add').click();
@@ -542,6 +566,11 @@ for (const theme of ['light', 'dark'] as const) {
         // the plus opens on the camera (18 Nov): Meal first, a barcode read in any mode
         await expect(page.getByTestId('scanner-hint')).toHaveText('Frame the whole plate.', { timeout: 15_000 });
         await shot(page, 'scan', 'camera');
+        // R7: macro on, framed at 2x, the light on
+        await page.getByTestId('scanner-macro').click();
+        await expect(page.getByTestId('scanner-hint')).toHaveText('Frame the whole plate.');
+        await page.getByTestId('scanner-light').click();
+        await shot(page, 'scan', 'camera-macro');
         await page.keyboard.press('Escape');
         await expect(page.getByTestId('add-sheet')).toBeHidden();
         // typing the number is the way out when the camera cannot open (19 Nov)

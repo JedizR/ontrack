@@ -41,7 +41,7 @@
   <ul>
     <li>Your log is yours. There are no ads, no selling of data and no analytics or tracking scripts.</li>
     <li>Friends see only what you choose to share. Your weight, your targets and your food log are never shared.</li>
-    <li>Photos, labels and meal descriptions you analyse go to Google's Gemini service, which names the foods.</li>
+    <li>Photos, labels and meal descriptions you analyse go to Google's Gemini service, which names the foods. So does what you say to the mic in Describe, which Gemini writes down for you.</li>
     <li>You can export your data, or delete your account and everything in it, from Settings.</li>
   </ul>
 
@@ -65,9 +65,10 @@
     <li>Ontrack sets no cookies. Your sign in is kept in the browser's storage on your phone.</li>
   </ul>
 
-  <h2>Photos, labels and meal descriptions</h2>
+  <h2>Photos, labels, meal descriptions and your voice</h2>
   <p>When you analyse a meal photo, a nutrition label or a meal you describe in words, Ontrack sends it through its own server (<code>/api/analyze</code>) to Google's Gemini API. Before a photo leaves your phone, it is shrunk to 1024 pixels and saved again as a new picture, which drops its location and the other details a camera stores in the file. The request carries no name, email or account details.</p>
-  <p>Ontrack's server does not save the photo or the words. Its logs note only how long the analysis took, which model ran and how many foods it found. What Ontrack keeps is the result, the foods and grams it found, with the meal, and the small 320 pixel copy of the photo.</p>
+  <p>When you tap Speak in Describe, your phone records what you say, up to 15 seconds, and sends the recording the same way, for Gemini to write it down in the languages you spoke. The words come back into the field for you to read and fix before anything is analysed. Ontrack asks for the microphone only then, and stops it when you tap Stop.</p>
+  <p>Ontrack's server does not save the photo, the recording or the words. Its logs note only how long the analysis took, which model ran and how many foods it found. What Ontrack keeps is the result, the foods and grams it found, with the meal, and the small 320 pixel copy of the photo.</p>
   <p>The AI only names foods and estimates grams. Calories, protein, carbs and fat come from food tables whenever there is a match.</p>
   <p>Each account can run up to 40 analyses a day, and the app as a whole has a daily cap, so the service stays within its free limits. The count starts again at midnight UTC, which is 7 in the morning in Thailand.</p>
   <p>Ontrack uses Gemini's paid tier. Under Google's terms for paid services, Google does not use what is sent, or the answers, to improve its products; it keeps them for a limited time to detect abuse and meet legal duties. Even so, leave people, documents and anything private out of the photos you analyse.</p>

@@ -295,3 +295,23 @@ test('first-week guide: the last step saved to yesterday from the strip still sh
   await page.getByTestId('week-today').click();
   await expect(guide).toContainText('You’re all set');
 });
+
+// R7, the owner: Recent keeps five; under them every meal ever logged opens over Add, found by name and logged again
+test('R7: Recent shows five, and All 8 meals finds an old one and logs it again with undo', async ({ page }) => {
+  const old = [1, 2, 3, 4].map((d) => ({ collection: 'meal', id: `h${d}`, updatedAt: 1, data: { date: `2026-11-0${d}`, at: new Date(`2026-11-0${d}T12:00:00+07:00`).toISOString(), title: `Old meal ${d}`, method: 'quick', items: [{ name: `Old meal ${d}`, kcal: 100 * d, protein: 0, carbs: 0, fat: 0, source: 'manual' }] } }));
+  await open(page, '/', [...MEALS, ...old]);
+  await expect(hero(page)).toHaveText('1,840');
+  await page.getByTestId('add').click();
+  await expect(page.getByTestId('recent').getByRole('button', { name: /^Add .* again$/ })).toHaveCount(5);
+  await page.getByTestId('recent-more').click();
+  const sheet = page.getByTestId('history-sheet');
+  await expect(sheet.getByTestId('history-row')).toHaveCount(8);
+  await sheet.getByTestId('history-find').fill('old meal 3');
+  await expect(sheet.getByTestId('history-row')).toHaveCount(1);
+  await sheet.getByTestId('history-log').click();
+  await expect(sheet).toBeHidden();
+  await expect(page.getByTestId('add-sheet')).toBeHidden();
+  await expect(hero(page)).toHaveText('2,140');
+  await page.getByRole('button', { name: 'Undo' }).click();
+  await expect(hero(page)).toHaveText('1,840');
+});

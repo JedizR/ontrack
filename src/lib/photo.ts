@@ -14,7 +14,7 @@ function draw(src: CanvasImageSource, w: number, h: number, edge: number) {
 }
 const jpeg = (c: HTMLCanvasElement, quality: number) =>
   new Promise<Blob>((ok, no) => c.toBlob((b) => (b ? ok(b) : no(new Error('the photo could not be encoded'))), 'image/jpeg', quality));
-const base64 = (b: Blob) =>
+export const base64 = (b: Blob) =>
   new Promise<string>((ok, no) => {
     const r = new FileReader();
     r.onload = () => ok(String(r.result).slice(String(r.result).indexOf(',') + 1));

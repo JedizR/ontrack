@@ -5,6 +5,10 @@ import * as z from 'zod/mini';
 /** Base64 of a 1024 px JPEG at quality 0.8 is about 200 to 400 KB; the whole body is capped at 900 KB. */
 export const MAX_BODY_BYTES = 900_000;
 export const MAX_TEXT = 500;
+/** R7, voice: a WAV of 16 kHz mono 16-bit speech, at most 15 s (480 KB, 640 KB as base64), written down by the provider */
+export const VOICE_RATE = 16_000;
+export const MAX_VOICE_SECONDS = 15;
+export const MAX_VOICE_BYTES = 44 + VOICE_RATE * 2 * MAX_VOICE_SECONDS;
 
 const date = z.string().check(z.regex(/^\d{4}-\d{2}-\d{2}$/));
 const image = z.string().check(z.minLength(1), z.regex(/^[A-Za-z0-9+/]+={0,2}$/));
@@ -13,6 +17,8 @@ export const analyzeRequest = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('text'), text: z.string().check(z.minLength(1), z.maxLength(MAX_TEXT)), localDate: date, locale: z.literal('en') }),
   /** a pack's nutrition label (B1, F22): read, never estimated */
   z.object({ kind: z.literal('label'), image, localDate: date, locale: z.literal('en') }),
+  /** R7: what was said about a meal, in Thai, English or both, back as words for the Describe field */
+  z.object({ kind: z.literal('voice'), audio: image, locale: z.literal('en') }),
 ]);
 export type AnalyzeRequest = z.infer<typeof analyzeRequest>;
 
@@ -52,4 +58,6 @@ export type LabelRead = {
 };
 /** A label's column: protein, carbs or fat the photo does not show is null, for the user to fill in (M9a). */
 export type LabelMacros = { kcal: number; protein: number | null; carbs: number | null; fat: number | null };
+/** R7: the words said, in the script they were said in; empty when nothing was */
+export type VoiceResponse = { ok: true; text: string; model: string } | { ok: false; error: AnalyzeError };
 export type LabelResponse = { ok: true; label: LabelRead; model: string; usage: Usage } | { ok: false; error: AnalyzeError; usage?: Usage };
