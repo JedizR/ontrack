@@ -116,6 +116,7 @@ Signing in to services and handling keys; approving a deploy; anything that spen
 - Tests answer the style card for you (`stylePicked: true` in `useSpace` and `seedAccount`); call `showStyleCard(page)` to see it.
 
 **Safari and WebKit**
+- A browser feature behind a permission (camera, microphone, location) must also be allowed in `vercel.json`'s `Permissions-Policy`. Dev, preview tests and e2e never send that header, so only production blocks it (R7 shipped Speak with `microphone=()`; `pnpm smoke:prod` checks it now).
 - Headless WebKit draws no backdrop blur. No regex lookbehind before Safari 16.4. `@property` colour transitions fall back to instant before 16.4. Never `scrollIntoView` (it pans iOS). Safari's bars take their colour from the page; nothing fixed within 4 px of an edge (`edge.ts`).
 
 **CSS, Svelte and Tailwind**
