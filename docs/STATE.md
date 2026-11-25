@@ -11,6 +11,7 @@ Where things stand. Read first, update last, keep it to one screen. History live
 - **The owner** accepts the open list in BUILD-PLAN item 0 for now.
 - **Open, R7 on a real phone:** macro needs the iPhone to name its ultra-wide in English ("Back Ultra Wide Camera"); another language or Android shows zoom only. Safari's zoom is the scaled picture, so past 2x the photo is softer. Both untested on a device until the owner tries them.
 - **Open, landing shots:** they still show v2.4.0's faint drop shadow around the dock. Regenerate them (WORKFLOW section 7) next time the owner's account export and photos are at hand; demo data would be worse than the real day.
+- **Final deck:** `docs/assignment/Ontrack-launch-presentation.pptx` (untracked; `docs/DECISIONS.md`, the launch deck). The financial model in `/Users/admin/destination/assignment/` now prices the AI on Qwen3.8-Omni-Flash (first profit month 9); the app itself still calls Gemini.
 - **Course document:** `docs/assignment/final-document-for-presentation-filled.docx` (untracked, built from the owner's original beside it) has the first-week guide in Now.
 - **Next:** `docs/BUILD-PLAN.md`; its first section is what is left before Ontrack is a finished app.
 

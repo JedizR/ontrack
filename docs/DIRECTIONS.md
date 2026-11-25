@@ -21,7 +21,9 @@ Everything the owner has asked for that still holds, gathered from every session
 - **Speaking is multilingual** (25 Nov): the mic in Describe takes Thai, English or both, not English only.
 - **Recent shows five, then all** (25 Nov): a way under Recent to every meal ever logged.
 - **Pills hug their content** (25 Nov): the Whey chip is as wide as its name, not stretched.
-- **Training reads as GitHub's dots** (25 Nov): Progress's Train chart is a dot a day, green with a workout, grey without, an outline on a rest day. The other charts stay as they are.
+- **Training reads as a habit grid** (25 Nov): Progress's Train chart is four weeks of seven rounded squares, Sunday to Saturday, rows named by their Sunday ("1 NOV"), green with a workout, grey without, an outline on a rest day, the days to come faint, and as tall as the other charts. The other charts stay as they are.
+- **The week starts on Sunday** on Train (25 Nov): Your week runs Sunday to Saturday.
+- **The business is priced on a Chinese model** (25 Nov): the financial model and the deck use Qwen3.8-Omni-Flash's price for the AI, not Gemini's. The app still runs on Gemini until the switch is built and tested.
 - **Training is marked, not logged** (18 Nov). No set by set logging and no workout timer: every session, lifting or cardio, is marked Done. The focus is calorie tracking. Editing the schedule must be easy and update the calorie target at once. Cardio has a setup (machine, speed, incline, time). The owner's own program: a 4 day upper and lower split, 60 minutes, then 30 minutes of cardio.
 - **Today's figure is calories eaten,** not left (17 Nov). Food suggestions are data driven: your own logged foods first, then the table.
 - **Progress always shows its chart;** with no data it says so in the middle of the chart. Keep cards short.
@@ -75,6 +77,8 @@ Everything the owner has asked for that still holds, gathered from every session
 - The footer (14 Nov, the L5 session): "Keep your calories" over the Ontrack wordmark, solid and centred at equal width, then a minimal footer: the wellness line ("general wellness guidance, not medical advice") centred, mail, privacy and terms with faint dividers, the year at the far left and the version at the far right. The owner tried a "You are what you eat" quote there and removed it; no moving lines, numbers or blob.
 
 ## 7. How the owner wants to work
+
+- **Decks for the class** (25 Nov): black cards on a white background, the app's type, concise. Words read as written by people (news and pitch-deck sentence patterns, no AI tics such as "it's not X, it's Y"); the teacher marks down AI-written work. Build slides around the class's own frameworks.
 
 - **Local first.** Work on one branch, show it on localhost (the owner's own `pnpm dev --host` on :5173 serves their iPhone), no long CI while iterating. Deploy only when the owner says so. "If the tests fully pass, deploy; otherwise fix and try again."
 - **The gate is two phrases:** "let me see it on localhost", then "approved, deploy". If "wait" or a new ask follows "deploy", stop at once and take the new ask first.
