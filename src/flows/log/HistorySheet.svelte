@@ -43,7 +43,7 @@
   }
 </script>
 
-<Sheet bind:open={sheets.history} title={t.meals.title} layer="nested" testid="history-sheet">
+<Sheet bind:open={sheets.history} title={t.meals.title} layer="nested" testid="all-meals-sheet">
   <input type="search" bind:value={find} placeholder={t.meals.find} aria-label={t.meals.find} enterkeyhint="search" class="input-field mb-2 w-full" data-testid="history-find" />
   {#if shown.length}
     <div data-testid="history-all">

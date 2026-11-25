@@ -51,5 +51,8 @@ const SHORT = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' 
 /** "Nov 9": a day on a chart axis or in a list. */
 export const shortDate = (date: string) => SHORT.format(local(date));
 const MONTH = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' });
+const MONTH_SHORT = new Intl.DateTimeFormat('en-US', { month: 'short' });
+/** "Nov": a month over a column of days (Progress's training dots). */
+export const monthShort = (date: string) => MONTH_SHORT.format(local(date));
 /** "November 2026": a month heading. */
 export const monthTitle = (date: string) => MONTH.format(local(date));

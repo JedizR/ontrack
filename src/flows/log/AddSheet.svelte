@@ -149,9 +149,10 @@
     <!-- one row that scrolls sideways once it holds more than two -->
     <div class="mb-3 flex gap-2 overflow-x-auto [scrollbar-width:none]" data-testid="add-pinned">
       {#each pills as { k, r } (r?.id ?? k)}
-        <button type="button" class="bg-surface-2 active:bg-surface-3 flex min-h-12 min-w-[9rem] flex-1 items-center gap-1.5 rounded-full px-3 py-1 text-left transition-[background-color,transform] duration-[var(--d-press)] active:scale-[0.98]" onclick={() => supplement(r?.id ?? null, r ? undefined : 'whey')} data-testid={r ? 'supplement' : `add-pin-${k}`}>
+        <button type="button" class="bg-surface-2 active:bg-surface-3 flex min-h-12 max-w-64 flex-none items-center gap-1.5 rounded-full py-1 pr-4 pl-3 text-left transition-[background-color,transform] duration-[var(--d-press)] active:scale-[0.98]" onclick={() => supplement(r?.id ?? null, r ? undefined : 'whey')} data-testid={r ? 'supplement' : `add-pin-${k}`}>
           <span class="text-ink-2 inline-grid flex-none"><ShakerIcon /></span>
-          <span class="min-w-0 flex-1 leading-tight">
+          <!-- R7b, the owner: the pill hugs its name -->
+          <span class="min-w-0 leading-tight">
             <span class="text-callout block truncate font-semibold">{SHORT[k] ?? r?.data.name}</span>
             <!-- set up, its last amount (and Typical when its values are the label's typical ones), as its old row said -->
             {#if r}{#snippet typ()}<SourceLabel source="typical" />{/snippet}<span class="text-caption text-ink-2 block"><Facts facts={[t.supplement.amount(num(r.data.lastScoops, 1), !!r.data.lastMix && !noCalories(r.data)), r.data.typical && typ]} /></span>{/if}

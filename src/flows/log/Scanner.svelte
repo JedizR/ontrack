@@ -13,9 +13,10 @@
   import Segmented from '$lib/components/Segmented.svelte';
   import Camera from '@lucide/svelte/icons/camera';
   import ScanBarcode from '@lucide/svelte/icons/scan-barcode';
-  import { barcodeDetector, cameraProblem, type Detector } from '$lib/scanner';
+  import { barcodeDetector, cameraProblem, ultraWide, type Detector } from '$lib/scanner';
   import { productCode } from '$lib/barcode';
   import { haptic } from '$lib/haptics';
+  import { isIOS } from '$lib/platform';
   import { t } from '$lib/i18n';
 
   /** `typing`: the user chose Type the number; the sheet's back chevron sets it false to bring the camera back */
@@ -48,6 +49,13 @@
   const zMin = $derived(native ? Math.max(1, native.min) : 1);
   const zMax = $derived(native ? Math.min(native.max, 6) : 3); // a scaled 1920 frame past 3x is under the photo's 1024 px
   const STOPS = [1, 2, 3];
+  /** The light: where the camera lists one, or on an iPhone's back camera, whose Safari turns it on without always
+   *  listing it (the first tap checks it took) */
+  function lightOf(track: MediaStreamTrack): false | null {
+    const c = (track.getCapabilities?.() as { torch?: boolean | boolean[] } | undefined)?.torch;
+    const listed = c === true || (Array.isArray(c) && c.includes(true));
+    return listed || (c === undefined && isIOS() && track.getSettings?.().facingMode !== 'user') ? false : null;
+  }
   let run = 0; // each start gets a number, so a late answer from an earlier one is ignored
 
   function stop() {
@@ -79,8 +87,10 @@
     if (me !== run) return void s.getTracks().forEach((tr) => tr.stop());
     stream = s;
     const track = s.getVideoTracks()[0];
-    const caps = track?.getCapabilities?.() as { torch?: boolean; zoom?: { min: number; max: number } } | undefined;
-    torch = caps?.torch ? false : null;
+    const caps = track?.getCapabilities?.() as { zoom?: { min: number; max: number } } | undefined;
+    // a macro lens that turned out to face the user (an iPad's front ultra-wide): the main camera, without the toggle
+    if (macro && track?.getSettings?.().facingMode === 'user') { macro = false; macroId = ''; zoom = 1; return void start(); }
+    torch = track ? lightOf(track) : null;
     native = caps?.zoom && caps.zoom.max > 1 ? { min: caps.zoom.min, max: caps.zoom.max } : null;
     // a camera that lists a zoom but does not move to it gets the scaled picture instead
     const want = zoom;
@@ -90,10 +100,12 @@
     }, () => { if (me === run) native = null; });
     // the lenses have names only once the camera is allowed: the ultra-wide is the macro lens on an iPhone
     if (onphoto && macroId === null) void Promise.resolve().then(() => navigator.mediaDevices.enumerateDevices()).then((all) => {
-      const wide = all.find((d) => d.kind === 'videoinput' && /ultra ?wide/i.test(d.label));
-      if (wide && wide.deviceId !== track?.getSettings?.().deviceId) macroId = wide.deviceId;
+      const wide = ultraWide(all);
+      if (wide && wide !== track?.getSettings?.().deviceId) macroId = wide;
     }, () => {});
     if (video) {
+      // some cameras list their light only once frames flow
+      if (torch === null) video.addEventListener('playing', () => { if (me === run && torch === null) torch = lightOf(track); }, { once: true });
       video.srcObject = s;
       void video.play().catch(() => {}); // not awaited: the reader waits for frames anyway, and a stalled play must not hold it
     }
@@ -132,7 +144,11 @@
     const track = stream?.getVideoTracks()[0];
     if (!track || torch === null) return;
     const on = !torch;
-    await track.applyConstraints({ advanced: [{ torch: on } as MediaTrackConstraintSet] }).then(() => (torch = on), () => {});
+    haptic();
+    await track.applyConstraints({ advanced: [{ torch: on } as MediaTrackConstraintSet] }).catch(() => {});
+    // a light that did not come on (an iPhone lens without one): the button goes, rather than doing nothing again
+    const got = (track.getSettings() as { torch?: boolean }).torch;
+    torch = got === undefined || got === on ? on : on ? null : false;
   }
 
   /** A zoom between the camera's limits: its own zoom where it has one, else the picture's scale (the shot crops to it). */

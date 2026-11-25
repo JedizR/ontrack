@@ -28,3 +28,14 @@ export function cameraProblem(e: unknown): 'denied' | 'busy' | 'none' {
   if (name === 'NotReadableError' || name === 'AbortError') return 'busy';
   return 'none';
 }
+
+// R7b: Safari names a lens in the phone's language ("Back Ultra Wide Camera", "Cámara ultra gran angular", 背面超広角カメラ):
+// the word for ultra-wide in the scripts Apple ships, never a front lens. Android names none this way (zoom only).
+// shortcut: a language outside this list gets zoom only; add its word
+const ULTRA = /ultra|超广角|超廣角|超広角|울트라|초광각|อัลตร้า|มุมกว้างพิเศษ|сверхширок|надширок|siêu rộng|अल्ट्रा|אולטרה|فائق|υπερευρυ/i;
+const FRONT = /front|avant|vorder|前|전면|ด้านหน้า|фронт|trước|सामने|קדמ|أمامي|μπροστ/i;
+/** The back ultra-wide camera's id, the iPhone's close-focusing lens, or null. */
+export function ultraWide(devices: MediaDeviceInfo[]): string | null {
+  const d = devices.find((d) => d.kind === 'videoinput' && ULTRA.test(d.label) && !FRONT.test(d.label) && !(d as InputDeviceInfo).getCapabilities?.().facingMode?.includes('user'));
+  return d?.deviceId ?? null;
+}

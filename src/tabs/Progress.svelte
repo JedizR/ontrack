@@ -14,6 +14,7 @@
   import EmptyState from '$lib/components/EmptyState.svelte';
   import TrendChart from '$lib/components/TrendChart.svelte';
   import WeekBars from '$lib/components/WeekBars.svelte';
+  import TrainDots from '$lib/components/TrainDots.svelte';
   import { db } from '$lib/db/store.svelte';
   import { view } from '$lib/view.svelte';
   import { sheets } from '$lib/sheets.svelte';
@@ -122,7 +123,6 @@
   const thisWeek = $derived(weeks.at(-1)?.training);
   const avgKcal = $derived(complete.length ? Math.round(mean(complete.map((d) => d.intake))) : null);
   const avgProtein = $derived(complete.length ? Math.round(mean(complete.map((d) => d.protein))) : null);
-  const sessionBars = $derived(weeks.map(({ training: k }) => ({ avg: k.done, target: k.planned, reached: k.planned > 0 && k.done >= k.planned })));
 
   // R2, the AI week recap (WHOOP's weekly report, numbers as slots): this week so far, once a day is fully logged
   const weekReq = $derived.by((): CoachRequest | null => {
@@ -155,6 +155,9 @@
   ];
   let show = $state<Show>('weight');
   const inRange = $derived(weeks.flatMap((w) => w.days).filter((d) => d.date >= from && d.date <= today));
+  const sessionBars = $derived(weeks.map(({ training: k }) => ({ avg: k.done, target: k.planned, reached: k.planned > 0 && k.done >= k.planned })));
+  // R7b, the owner: a dot a day, green with a workout done (a rest day's activity too), grey a training day without, an outline a rest day
+  const dots = $derived(inRange.map((d) => ({ date: d.date, state: d.sessions.some((s) => s.status === 'done') ? 'done' : d.sessions.length ? 'missed' : 'rest' }) as const));
   const daily = $derived(span < 4 * U.daysPerWeek);
   // calories in against calories out: what living takes (the plan's baseline) plus the sessions done
   const outOf = (d: (typeof inRange)[number]) => (d.living ?? 0) + (d.exercise ?? 0);
@@ -264,7 +267,7 @@
             {#if daily}<DayChart days={proDays} band={pBand} from={shortDate(from)} to={shortDate(today)} label={t.progress.bars(num(weeks.length))} />
             {:else}<WeekBars weeks={proBars} from={shortDate(weeks[0].start)} to={shortDate(today)} label={t.progress.bars(num(weeks.length))} />{/if}
           {:else}
-            <WeekBars weeks={sessionBars} from={shortDate(weeks[0].start)} to={shortDate(today)} label={t.progress.sessionBars(num(weeks.length))} />
+            <TrainDots days={dots} label={t.progress.trainDots(num(dots.filter((d) => d.state === 'done').length), num(dots.filter((d) => d.state !== 'rest').length))} />
           {/if}
         {/key}
         <!-- small text pills, equal and left under the chart, the chosen one filled (the 44 tap is the button, the pill is 32) -->

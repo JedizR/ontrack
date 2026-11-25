@@ -2,6 +2,14 @@
 
 Changes to a doc's decision, and choices made on the owner's behalf. Newest first, one line each: what, why.
 
+## R7b
+
+The owner, 25 Nov, after v2.6.1 on their iPhone (set to English): macro in any language, the Whey chip hugging its name, where the light is, and Progress's Train chart as GitHub's dots.
+- **Macro in any language:** Safari names a lens in the phone's language (a Spanish iPhone says "Cámara ultra gran angular"), so the match is the word for ultra-wide in the languages Apple ships (ultra, 超广角, 超広角, 울트라, อัลตร้า, сверхширок and others) and never a front lens (an iPad's front ultra-wide); a lens that opens facing the user puts the main camera back. Shortcut: a language outside the list gets zoom only. The localized names in the test are best guesses, not read from a device.
+- **The light on iPhone:** WebKit's iOS camera code handles the torch, but Safari does not always list it in the camera's capabilities, and the button showed only when listed. On an iPhone's back camera it now shows anyway; a tap that does not turn the light on removes the button. Elsewhere it shows when listed, also once frames flow (some cameras list it late).
+- **The Whey chip hugs its name** (was stretched to the row), at most 16 rem before it truncates.
+- **Train as dots, not weekly bars:** one dot a day reads like GitHub's commits, which the owner pointed to; done green (the success colour), a training day without a workout grey, a rest day an outline of the same grey. Rows are weekdays and columns weeks, at one dot size for every range so the card's height never jumps; a range longer than the card scrolls, opening on the latest week, as GitHub's phone view does. Only the chart: Weight, Kcal and Protein, and the Training card's weekly bars under it, are unchanged.
+
 ## R7
 
 The owner, 25 Nov, five problems with Add a meal (on their iPhone 14 Pro), then deploy. Branch `feat-r7-add-camera`.
