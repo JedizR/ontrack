@@ -10,14 +10,15 @@
   let { days, today, label }: { days: Dot[]; today: string; label: string } = $props();
 
   const WEEKS = 4;
-  const HEAD = 22; // the weekday letters
+  // the owner (25 Nov): the same height as the other charts, so the range pills stay put when the chart changes. The
+  // calories chart is 134 px over a one-line legend; this grid is too, its squares 22 px on a 29 px pitch
+  const HEIGHT = 134;
+  const HEAD = 18; // the weekday letters
   const LEFT = 54; // the row labels
-  // the owner (25 Nov): as wide as the other charts, the squares a little smaller; seven columns share the width
-  let w = $state(320);
-  const colW = $derived((w - LEFT) / 7);
-  const S = $derived(Math.min(24, colW - 8));
-  const rowH = $derived(S + 8);
-  const CORNER = $derived(S / 4);
+  const PITCH = (HEIGHT - HEAD) / WEEKS;
+  const S = 22;
+  const CORNER = 5.5;
+  const width = LEFT + 7 * PITCH;
   const SUNDAY_FIRST = [6, 0, 1, 2, 3, 4, 5]; // weekdayOf counts Monday as 0
   // the Sunday that starts this week, then three weeks back
   const start = $derived(addDays(today, -((weekdayOf(today) + 1) % 7) - 7 * (WEEKS - 1)));
@@ -36,21 +37,20 @@
   const CLS = { done: 'fill-success', missed: 'fill-ink-3', rest: 'fill-none stroke-ink-3', faint: 'fill-track' } as const;
 </script>
 
-<!-- a tab kept mounted but hidden measures 0 wide (U2): keep the last width -->
-<div bind:clientWidth={null, (v) => { if (v) w = v; }} data-testid="train-dots">
-  <svg width={w} height={HEAD + WEEKS * rowH} role="img" aria-label={label} class="block">
+<div data-testid="train-dots">
+  <svg {width} height={HEIGHT} role="img" aria-label={label} class="mx-auto block">
     {#each SUNDAY_FIRST as d, c (d)}
-      <text x={LEFT + c * colW + colW / 2} y={HEAD - 9} text-anchor="middle" class="fill-ink-2 text-caption">{t.week.letters[d]}</text>
+      <text x={LEFT + c * PITCH + PITCH / 2} y={HEAD - 6} text-anchor="middle" class="fill-ink-2 text-caption">{t.week.letters[d]}</text>
     {/each}
     {#each rows as r, i (i)}
-      <text x={0} y={HEAD + i * rowH + rowH / 2 + 4} class="fill-ink-2 text-caption num">{r}</text>
+      <text x={LEFT - 10} y={HEAD + i * PITCH + PITCH / 2 + 4} text-anchor="end" class="fill-ink-2 text-caption num">{r}</text>
     {/each}
     {#each cells as d (d.date)}
       {@const inset = d.state === 'rest' ? 0.75 : 0}
-      <rect x={LEFT + d.col * colW + (colW - S) / 2 + inset} y={HEAD + d.row * rowH + (rowH - S) / 2 + inset} width={S - 2 * inset} height={S - 2 * inset} rx={CORNER - inset} stroke-width={d.state === 'rest' ? 1.5 : 0} class={CLS[d.state]} data-testid="dot-{d.state}" />
+      <rect x={LEFT + d.col * PITCH + (PITCH - S) / 2 + inset} y={HEAD + d.row * PITCH + (PITCH - S) / 2 + inset} width={S - 2 * inset} height={S - 2 * inset} rx={CORNER - inset} stroke-width={d.state === 'rest' ? 1.5 : 0} class={CLS[d.state]} data-testid="dot-{d.state}" />
     {/each}
   </svg>
-  <div class="text-caption text-ink-2 mt-2 flex flex-wrap justify-center gap-x-4 gap-y-1" aria-hidden="true">
+  <div class="text-caption text-ink-2 mt-1 flex flex-wrap justify-center gap-x-4 gap-y-1" aria-hidden="true">
     <span class="inline-flex items-center gap-1.5"><svg width="10" height="10" aria-hidden="true"><rect width="10" height="10" rx="2.6" class="fill-success" /></svg>{t.progress.dotDone}</span>
     <span class="inline-flex items-center gap-1.5"><svg width="10" height="10" aria-hidden="true"><rect width="10" height="10" rx="2.6" class="fill-ink-3" /></svg>{t.progress.dotMissed}</span>
     <span class="inline-flex items-center gap-1.5"><svg width="10" height="10" aria-hidden="true"><rect x="0.75" y="0.75" width="8.5" height="8.5" rx="2" stroke-width="1.5" class="fill-none stroke-ink-3" /></svg>{t.progress.dotRest}</span>
