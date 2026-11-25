@@ -18,6 +18,7 @@ check "analyze, no session" "$(code -X POST -H 'content-type: application/json' 
 check "account deletion, no session" "$(code -X DELETE "$U/api/account")" 401
 check "keep-alive, no secret" "$(code "$U/api/cron/keepalive")" 401
 check "location allowed for the food map" "$(curl -sI "$U/" | grep -ci 'geolocation=(self)')" 1
+check "microphone allowed for Speak (R7)" "$(curl -sI "$U/" | grep -ci 'microphone=(self)')" 1
 v=$(node -p "require('./package.json').version")
 entry=$(curl -s "$U/" | grep -o '/assets/index-[A-Za-z0-9_-]*\.js' | head -1)
 settings=$(curl -s "$U$entry" | grep -o 'SettingsSheet-[A-Za-z0-9_-]*\.js' | head -1)
