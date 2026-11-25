@@ -9,6 +9,7 @@ The owner, 25 Nov, after v2.6.1 on their iPhone (set to English): macro in any l
 - **The light on iPhone:** WebKit's iOS camera code handles the torch, but Safari does not always list it in the camera's capabilities, and the button showed only when listed. On an iPhone's back camera it now shows anyway; a tap that does not turn the light on removes the button. Elsewhere it shows when listed, also once frames flow (some cameras list it late).
 - **The Whey chip hugs its name** (was stretched to the row), at most 16 rem before it truncates.
 - **Train as dots, not weekly bars:** one dot a day reads like GitHub's commits, which the owner pointed to; done green (the success colour), a training day without a workout grey, a rest day an outline of the same grey. Rows are weekdays and columns weeks, at one dot size for every range so the card's height never jumps; a range longer than the card scrolls, opening on the latest week, as GitHub's phone view does. Only the chart: Weight, Kcal and Protein, and the Training card's weekly bars under it, are unchanged.
+- **The dots fill the month ahead** (the owner, 25 Nov, a habit tracker's grid): every day through the end of this month is drawn, still to come in the faint track colour, so the empty days ahead show. No workout moved from the surface grey to ink-3 (and the rest day's outline with it) so it stays apart from the faint days. v2.6.3.
 
 ## R7
 
