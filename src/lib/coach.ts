@@ -8,9 +8,11 @@ import { session } from '$lib/session.svelte';
 import { num } from '$lib/model/format';
 import { programSchema, type Program } from '../../shared/records';
 import type { AnalyzeError } from '../../shared/analysis';
+import { FREE_ADVICE_PER_MONTH } from '../../shared/plans';
 import type { CoachFacts, CoachPick, CoachRequest, CoachResponse, CoachText, CoachTextResponse, ProgramRequest } from '../../shared/coach';
 
-export type CoachAnswer = { source: 'ai' | 'template'; text: CoachText; picks?: CoachPick[] };
+/** `left`: the free plan's AI answers left this month, when the server said; `limited`: none left (27 Nov) */
+export type CoachAnswer = { source: 'ai' | 'template'; text: CoachText; picks?: CoachPick[]; left?: number; limited?: boolean };
 
 /** Each `{{id}}` in the text replaced by that fact's value. */
 export function fill(text: CoachText, facts: CoachFacts): CoachText {
@@ -37,7 +39,7 @@ function hash(s: string) {
 }
 /** What identifies a request: the facts in id order, so how the caller built the object does not matter. */
 const keyOf = (r: CoachRequest) =>
-  `${PREFIX}${r.kind}:${hash(JSON.stringify([r.localDate, r.question ?? '', Object.entries(r.facts).sort(([a], [b]) => (a < b ? -1 : 1)), r.candidates ?? []]))}`;
+  `${PREFIX}${r.kind}:${hash(JSON.stringify([r.localDate, r.question ?? '', Object.entries(r.facts).sort(([a], [b]) => (a < b ? -1 : 1)), r.candidates ?? [], r.history ?? []]))}`;
 
 // storage can be absent or full (a private window); then nothing is kept and every call asks
 function recall(key: string): Kept | null {
@@ -72,10 +74,13 @@ async function post(req: CoachRequest | ProgramRequest): Promise<CoachResponse |
     return null;
   }
 }
-async function fetchAnswer(req: CoachRequest): Promise<CoachTextResponse | null> {
+async function fetchAnswer(req: CoachRequest): Promise<CoachTextResponse | 'month_limit' | null> {
   const body = await post(req);
+  if (body && !body.ok && body.error === 'month_limit') return 'month_limit';
   return body?.ok && body.kind === req.kind && Array.isArray(body.text?.lines) ? body : null;
 }
+/** What the free plan has left this month, from a response's usage */
+const leftOf = (u: CoachTextResponse['usage'] | undefined) => (u && 'usedThisMonth' in u ? Math.max(0, u.limit - u.usedThisMonth) : undefined);
 
 // ----- the template -----
 /** The words the coach would have written, from the same facts and the catalog: no AI, the same on every call. */
@@ -119,9 +124,11 @@ export async function askCoach(req: CoachRequest): Promise<CoachAnswer> {
   const key = keyOf(req);
   const kept = recall(key);
   const body = kept ?? (await fetchAnswer(req));
+  if (body === 'month_limit') return { source: 'template', text: { lines: [t.ask.monthLimit(num(FREE_ADVICE_PER_MONTH))] }, limited: true };
   if (!body) return template(req);
   if (!kept) remember(key, body);
-  return { source: 'ai', text: fill(body.text, req.facts), ...(body.picks ? { picks: body.picks } : {}) };
+  const left = kept ? undefined : leftOf((body as CoachTextResponse).usage);
+  return { source: 'ai', text: fill(body.text, req.facts), ...(body.picks ? { picks: body.picks } : {}), ...(left !== undefined ? { left } : {}) };
 }
 
 // ----- the program -----
@@ -140,6 +147,6 @@ export async function askProgram(question: string, program: Program, profile: Pr
     const checked = programSchema.safeParse(body.program);
     if (checked.success && typeof body.summary === 'string') return { ok: true, program: checked.data, summary: body.summary, source: 'ai' };
   }
-  const why: Partial<Record<AnalyzeError, string>> = { unauthorized: p.signedOut, daily_limit: p.limit, busy: p.busy, timeout: p.busy };
+  const why: Partial<Record<AnalyzeError, string>> = { unauthorized: p.signedOut, daily_limit: p.limit, month_limit: p.monthLimit(num(FREE_ADVICE_PER_MONTH)), busy: p.busy, timeout: p.busy };
   return { ok: false, error: (body && !body.ok && why[body.error]) || p.failed };
 }

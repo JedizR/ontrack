@@ -107,6 +107,24 @@ test.describe('reduced motion', () => {
   });
 });
 
+// 05 Sources: a card turns over to what its source found, and back; each turns on its own
+test('a source card turns over to what it found, and back', async ({ page }) => {
+  await openFresh(page);
+  const card = page.getByTestId('source-card-0');
+  const back = page.getByTestId('source-back-0');
+  await card.scrollIntoViewIfNeeded();
+  await expect(card).toHaveAttribute('aria-pressed', 'false');
+  await expect(back).toBeHidden();
+  await card.click();
+  await expect(card).toHaveAttribute('aria-pressed', 'true');
+  await expect(back).toBeVisible();
+  await expect(back).toContainText('498 adults measured at rest');
+  await expect(page.getByTestId('source-card-1')).toHaveAttribute('aria-pressed', 'false');
+  await card.click();
+  await expect(card).toHaveAttribute('aria-pressed', 'false');
+  await expect(back).toBeHidden();
+});
+
 // L2, P1: every photo gradient keeps its words at 4.5 to 1 (3 to 1 for large words: the hero's violet words, the haze's
 // reached figure), measured on the images themselves in 8 px blocks under the grain's mean (9.5 percent toward mid grey),
 // as the eye reads through the grain. Their eight colours are in contrast.test.ts.

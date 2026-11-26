@@ -1,10 +1,12 @@
-<!-- SCREENS.md section 7, Scan sheet (B1, F22): the camera or the typed number, then the product from the user's products
-     or Open Food Facts with live calories, portion chips and the amount, Add. A product Open Food Facts does not have, or
-     has without nutrition, is read from a photo of its label (printed values only) or typed, confirmed on the Label step
-     and kept for the next scan. A macro the photo did not show stays empty until typed (M9a). A product with the user's
-     numbers (Yours) has Use default values: Open Food Facts' numbers for its barcode again (F15, M9a). -->
+<!-- SCREENS.md section 7, Scan sheet (B1, F22): the camera or the typed number, then the product from the user's products,
+     the ones other users added, or Open Food Facts with live calories, portion chips and the amount, Add. A product none
+     of them has, or Open Food Facts has without nutrition, is read from a photo of its label (printed values only) or typed,
+     confirmed on the Label step, kept for the next scan and added for everyone (shareProduct). A macro the photo did not
+     show stays empty until typed (M9a). A product with the user's numbers (Yours) has Use default values: Open Food Facts'
+     numbers for its barcode again (F15, M9a). -->
 <script lang="ts">
   import { untrack } from 'svelte';
+  import ScanBarcode from '@lucide/svelte/icons/scan-barcode';
   import Sheet from '$lib/components/Sheet.svelte';
   import Count from '$lib/components/Count.svelte';
   import Facts from '$lib/components/Facts.svelte';
@@ -16,7 +18,7 @@
   import Scanner from './Scanner.svelte';
   import { sheets } from '$lib/sheets.svelte';
   import { view } from '$lib/view.svelte';
-  import { findProduct, logProduct, readLabel, saveProduct, undoToast, type Found, type LabelResult } from '$lib/actions';
+  import { findProduct, logProduct, readLabel, saveProduct, shareProduct, undoToast, type Found, type LabelResult } from '$lib/actions';
   import { OFF_SOURCE } from '$lib/data/sources';
   import { MAX_AMOUNT, ZERO, labelProblem, per100From, portionsOf, scaleTo, servingsNear, startOf, type LabelMacros, type Macros } from '$lib/model/products';
   import { stampOn, today } from '$lib/model/dates';
@@ -162,6 +164,8 @@
       ...(keep.lastG ? { lastG: keep.lastG } : {}),
     };
     saveProduct(p, code);
+    // nobody had it: now everyone does. Then it is found, so a correction in this sheet stays the user's own
+    if (found?.kind === 'missing' || found?.kind === 'empty') { shareProduct(code, p); found = { kind: 'found', code, product: p }; }
     product = p;
     grams = startOf(p);
     correcting = false;
@@ -292,7 +296,8 @@
     </div>
   {:else if step === 'new'}
     <div class="flex flex-col gap-3" data-testid="product-new">
-      <p class="text-body">{found?.kind === 'empty' ? t.scan.empty : t.scan.missing}</p>
+      <span class="bg-accent text-on-accent grid size-12 place-items-center rounded-sm" aria-hidden="true"><ScanBarcode size={24} /></span>
+      <p class="text-body">{found?.kind === 'empty' ? t.scan.empty(found.name) : t.scan.missing}</p>
       <p class="text-caption text-ink-2 num">{t.scan.code(code)}</p>
       <Button variant="plain" class="-ml-5 self-start" onclick={typeIt} data-testid="label-type">{t.scan.typeLabel}</Button>
     </div>

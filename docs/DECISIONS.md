@@ -2,6 +2,20 @@
 
 Changes to a doc's decision, and choices made on the owner's behalf. Newest first, one line each: what, why.
 
+## R8, before the first user test (27 Nov)
+
+The owner's list for the 28 Nov test (20+ people scanning a QR code and using the app freely).
+
+- **Production skipped every JavaScript duration.** The CSS minifier writes `640ms` as `.64s`, and `ms()` read that as 0.64 ms, so Building your plan lasted about 4 ms on every phone but the owner's (on the dev server), and every count-up and timed motion ran 1000 times too fast. `toMs` reads both units.
+- **Your plan keeps only Same target every day** under the pace (the owner): Your training, How your target is calculated and Body fat went. The breakdown stays on Today's target; Body fat stays in Settings, Plan.
+- **Both means lifting then cardio on every training day** (the owner: "4 days, both" reads as 4 days of each), not taking turns. Keys `d<weekday>` and `d<weekday>c`.
+- **The free plan gets real AI** (the owner): 5 AI meal logs a day (was 3) and 10 AI answers a month shared by Ask Ontrack and Adjust with AI, counted by the server per UTC month in `ai_advice` (migration 0007). The automatic words (week recap, check-in, session, protein picks) stay the engine's own on Free, so the allowance goes to what people ask for. Pro is unchanged. Briefly every account was opened to Pro's AI behind a switch; the owner's limits replaced it the same hour.
+- **Ask Ontrack is a personal advisor** (the owner: knows the user, refuses what is off topic, super concise): its own prompt, told the profile, plan, today and program as well as the week (`askFacts`), the last three turns sent with the question, one or two sentences at most 45 words. It may write a plain number for a general food or training fact ("two eggs add about 12 g of protein"); the user's own numbers stay slots and it still never sets a target. Shown from the first day, not only once a day is fully logged.
+- **Barcodes the app does not know are added by the people who scan them** (the owner): "We don't have this yet", photograph the label, and the confirmed product goes into a shared `barcodes` table (migration 0007) that every signed in user reads before Open Food Facts. First label wins, nobody edits or deletes, and each row is checked against the product schema on read.
+- **The Train grid is centred on the squares** (the owner): the SVG keeps the date column's width again on the right, and scales down where it does not fit.
+- **The landing's Sources cards turn over** to what each source found, and back (the owner).
+- **Gros Michel banana** (kluai hom thong) is its own food on USDA's raw banana (SR Legacy 173944): no food table gives the cultivar its own values, and it is the same AAA dessert type as Cavendish. Pad thai already matched INMU T9 exactly.
+
 ## The launch deck and the AI price (25 to 26 Nov)
 
 - **The financial model prices the AI on Qwen3.8-Omni-Flash** (the team: use a Chinese model's price). It takes photos, text, labels and voice like Gemini Flash; Alibaba Cloud's Singapore region with the International scope keeps data out of mainland China. At the model's own tokens (4,000 in, 1,000 out, no caching) a meal log costs about 0.04 baht against 0.14 on Gemini 2.5 Flash: the first profitable month moves from 26 to 9, the 36-month result from -128,775 to +288,634 baht, the cash needed from 177,340 to 53,794. Qwen replaced option 1 (Gemini 2.5 Flash-Lite) in the price table; the Gemini rows stay as the comparison, and Price Sensitivity rows 92 to 99 were rerun. Not done: the app still calls Gemini. Switching needs a Qwen provider behind `server/vision/provider.ts` and a run of the Thai photo eval first. Gemini 3.x list prices double on 1 Jan 2027.

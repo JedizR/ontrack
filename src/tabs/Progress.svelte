@@ -18,15 +18,14 @@
   import { db } from '$lib/db/store.svelte';
   import { view } from '$lib/view.svelte';
   import { sheets } from '$lib/sheets.svelte';
-  import { membership } from '$lib/billing.svelte';
   import { prefs } from '$lib/prefs.svelte';
   import { accountOf, checkinDueOn } from '$lib/model/progress';
   import { baseline, dayCounts, effectiveRate, proteinBand, roundTarget, weeklyEee, U, V } from '$lib/model/engine';
   import DayChart from '$lib/components/DayChart.svelte';
   import AskSheet from '../flows/progress/AskSheet.svelte';
   import Sparkles from '@lucide/svelte/icons/sparkles';
-  import { planFor } from '$lib/model/day';
-  import { addDays, dayTitle, daysBetween, shortDate } from '$lib/model/dates';
+  import { dayView, planFor } from '$lib/model/day';
+  import { addDays, dayTitle, daysBetween, shortDate, yearOf } from '$lib/model/dates';
   import { kgToLb, weightText } from '$lib/model/units';
   import { haptic } from '$lib/haptics';
   import Check from '@lucide/svelte/icons/check';
@@ -37,7 +36,7 @@
   import { num } from '$lib/model/format';
   import HistorySheet from '../flows/progress/HistorySheet.svelte';
   import CoachCard from '$lib/components/CoachCard.svelte';
-  import { weekFacts } from '$lib/model/coach';
+  import { askFacts, weekFacts } from '$lib/model/coach';
   import type { CoachRequest } from '../../shared/coach';
   import type { Checkin } from '../../shared/records';
   const tray = $derived(prefs.tray);
@@ -134,6 +133,18 @@
     return { kind: 'week', facts: weekFacts({ week: w, proteinG: plan.proteinG, units: profile.units, trend, logs: db.live('slog').map((r) => r.data) }), localDate: today };
   });
 
+  // Ask Ontrack (27 Nov): open from the first day, told who the user is, their plan, their day and program, then the week
+  const asked = $derived.by(() => {
+    if (!plan || !profile) return null;
+    const program = db.get('program', 'program');
+    const meals = db.live('meal').map((r) => r.data).filter((m) => m.date === today).sort((a, b) => b.at.localeCompare(a.at));
+    const d = dayView({ plan, sex: profile.sex, mode: profile.calorieMode, date: today, sessions: program?.sessions ?? [], logs: db.live('slog').map((r) => r.data), meals });
+    const weighed = db.live('weight').map((r) => r.data).filter((w) => w.date <= today).sort((a, b) => a.date.localeCompare(b.date)).at(-1);
+    return askFacts({
+      week: weekReq?.facts ?? {}, profile, year: yearOf(today), goal: plan.goal, ratePct: plan.ratePctPerWeek, goalWeightKg: plan.goalWeightKg, weightKg: weighed?.kg,
+      day: { ...d, sessions: d.sessions.map((s) => ({ name: s.session.name, done: s.status === 'done' })) }, meals: meals.map((m) => m.title).filter(Boolean), program,
+    });
+  });
   const checkins = $derived(db.live('checkin').map((r) => r.data).sort((a, b) => b.date.localeCompare(a.date)));
   const due = $derived(!!profile && checkinDueOn(plans, profile.checkinWeekday, today) && !checkins.some((c) => c.date === today));
   function outcome(c: Checkin) {
@@ -308,12 +319,20 @@
       </div>
     </section>
 
-    <CoachCard req={weekReq} eyebrow={t.progress.yourWeek} testid="progress-coach">
-      {#snippet action()}
-        <Button variant="plain" size="sm" class="-ml-4 mt-1 -mb-2" onclick={() => (membership.pro ? (asking = true) : (sheets.paywall = { from: 'ask' }))} data-testid="ask-open"><Sparkles size={16} strokeWidth={2.25} aria-hidden="true" />{t.ask.open}</Button>
-      {/snippet}
-    </CoachCard>
-    {#if weekReq}<AskSheet bind:open={asking} facts={weekReq.facts} localDate={today} />{/if}
+    {#snippet askOpen()}
+      <Button variant="plain" size="sm" class="-ml-4 mt-1 -mb-2" onclick={() => (asking = true)} data-testid="ask-open"><Sparkles size={16} strokeWidth={2.25} aria-hidden="true" />{t.ask.open}</Button>
+    {/snippet}
+    {#if weekReq}
+      <CoachCard req={weekReq} eyebrow={t.progress.yourWeek} testid="progress-coach" action={askOpen} />
+    {:else if asked}
+      <!-- before a day of the week is fully logged there is no recap yet, but Ask is open (27 Nov) -->
+      <section class="rounded-lg p-5 {tray ? 'bg-surface shadow-card' : 'bg-surface-2'}" data-testid="progress-ask">
+        <p class="text-eyebrow text-ink-2">{t.ask.title}</p>
+        <p class="text-callout mt-2">{t.ask.lead}</p>
+        {@render askOpen()}
+      </section>
+    {/if}
+    {#if asked}<AskSheet bind:open={asking} facts={asked} localDate={today} />{/if}
 
     <!-- what the chart shows, in more detail: the goal for weight, the weeks and maintenance for calories, the meters for training -->
     {#if show === 'weight' && goalFrac}

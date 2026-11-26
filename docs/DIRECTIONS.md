@@ -21,7 +21,7 @@ Everything the owner has asked for that still holds, gathered from every session
 - **Speaking is multilingual** (25 Nov): the mic in Describe takes Thai, English or both, not English only.
 - **Recent shows five, then all** (25 Nov): a way under Recent to every meal ever logged.
 - **Pills hug their content** (25 Nov): the Whey chip is as wide as its name, not stretched.
-- **Training reads as a habit grid** (25 Nov): Progress's Train chart is four weeks of seven rounded squares, Sunday to Saturday, rows named by their Sunday ("1 NOV"), green with a workout, grey without, an outline on a rest day, the days to come faint, and as tall as the other charts. The other charts stay as they are.
+- **Training reads as a habit grid** (25 Nov; centred on its squares, the dates to their left, 27 Nov): Progress's Train chart is four weeks of seven rounded squares, Sunday to Saturday, rows named by their Sunday ("1 NOV"), green with a workout, grey without, an outline on a rest day, the days to come faint, and as tall as the other charts. The other charts stay as they are.
 - **The week starts on Sunday** on Train (25 Nov): Your week runs Sunday to Saturday.
 - **The business is priced on a Chinese model** (25 Nov): the financial model and the deck use Qwen3.8-Omni-Flash's price for the AI, not Gemini's. The app still runs on Gemini until the switch is built and tested.
 - **Training is marked, not logged** (18 Nov). No set by set logging and no workout timer: every session, lifting or cardio, is marked Done. The focus is calorie tracking. Editing the schedule must be easy and update the calorie target at once. Cardio has a setup (machine, speed, incline, time). The owner's own program: a 4 day upper and lower split, 60 minutes, then 30 minutes of cardio.
@@ -37,6 +37,10 @@ Everything the owner has asked for that still holds, gathered from every session
 - **A rest day can take an activity** (22 Nov), for that day only; the program and next week never change.
 - **Freemium** (22 Nov): a fair free tier (all tracking, a few AI logs a day), Pro for unlimited AI and the AI features, the plans shown after Save the plan and at a limit, prices in round baht from the pricing model, Stripe used properly with a 0 THB bill while it is a preview. **Pro is 149 baht a month and 990 a year** (25 Nov): Thai users are cost-sensitive, and 199 reads as a streaming plan.
 - **Well thought, one-hand UX is the bar** (23 Nov): the owner loved the "Any activity today?" drawer (type tiles with icons, quick minutes, effort, the kcal it adds over the action) and wants that quality everywhere, starting with Train's Add a session. Keep checking animations, words (not too many, never confusing or redundant) and cards on every page.
+- **Both means both on each day** (27 Nov): "4 days a week, both" is 4 training days, each a lift then cardio after it, not 2 and 2.
+- **The free plan is usable, with real AI** (27 Nov): 5 AI meal logs a day and 10 AI answers a month (Ask Ontrack and Adjust with AI together), generous in general; Pro takes the limits off.
+- **Ask Ontrack is a personal advisor** (27 Nov): it knows everything about the user, stays on their food, weight and training (no jailbreaks, nothing off topic), and answers super concisely.
+- **Users fill in missing barcodes** (27 Nov): a barcode we do not know opens a drawer asking for a label photo, and what they confirm goes into the shared database so the next scan finds it.
 - **Two styles** (21 Nov): Tray is the default, Bento is the flat option, and the user picks on Today's one-time card or in Profile, Settings. The landing page is always Tray with its full glass.
 
 ## 3. Onboarding
@@ -46,6 +50,8 @@ Everything the owner has asked for that still holds, gathered from every session
 - Never auto-advance: a choice selects, Continue moves on. Tapping a disabled Continue shakes the choices a little. The disabled Continue must look disabled and still look good on the glass.
 - The "building your plan" wait and the calorie count-up always play, even with Reduce motion on.
 - Metric is selected by default.
+- The first goal reads "Lose weight", not "Lose fat" (27 Nov).
+- Your plan keeps only the target, the pace, the goal weight and "Same target every day" (27 Nov): no Your training, no How your target is calculated, no Body fat.
 - Use the fewest words that carry the message; tuck what is not essential behind a chevron.
 
 ## 4. Look
@@ -71,6 +77,7 @@ Everything the owner has asked for that still holds, gathered from every session
 
 ## 6. The landing page
 
+- Sources cards turn over (27 Nov): a tap flips a card horizontally to a short summary of what the source found, centred; another tap flips it back.
 - Glass throughout, the hero's calm sky gradient (keep it), the check-in section's gradient (keep it).
 - Every phone is the whole iPhone 16 at its real 71.6 by 147.6 mm ratio. Demo screens are real app screens (`landing-shots.spec.ts`), Tray, made from the owner's own account and real food photos.
 - The ink Sign in (black, white words). The bar's parent has 36 px side padding; the bar's glass appears on scroll.

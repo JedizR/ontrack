@@ -9,10 +9,13 @@
   import Sheet from '$lib/components/Sheet.svelte';
   import Skeleton from '$lib/components/Skeleton.svelte';
   import { askCoach, type CoachAnswer } from '$lib/coach';
+  import Button from '$lib/components/Button.svelte';
+  import { sheets } from '$lib/sheets.svelte';
+  import { num } from '$lib/model/format';
   import { haptic } from '$lib/haptics';
   import { t } from '$lib/i18n';
   import type { CoachFacts } from '../../../shared/coach';
-  import { MAX_QUESTION } from '../../../shared/coach';
+  import { MAX_ANSWER, MAX_HISTORY, MAX_QUESTION } from '../../../shared/coach';
 
   let { open = $bindable(false), facts, localDate }: { open?: boolean; facts: CoachFacts; localDate: string } = $props();
 
@@ -32,7 +35,9 @@
     await tick();
     // the sheet's own list scrolls, never the page (scrollIntoView pans iOS's whole viewport)
     list?.closest('.overflow-y-auto')?.scrollTo({ top: 1e6, behavior: 'smooth' });
-    const a = await askCoach({ kind: 'ask', facts, question, localDate });
+    // the chat so far goes with the question, so "and tomorrow?" makes sense (27 Nov)
+    const history = turns.filter((x) => x.a).slice(-MAX_HISTORY).map((x) => ({ q: x.q, a: x.a!.text.lines.join(' ').slice(0, MAX_ANSWER) }));
+    const a = await askCoach({ kind: 'ask', facts, question, localDate, ...(history.length ? { history } : {}) });
     const i = turns.findIndex((x) => x.q === question && !x.a);
     if (i >= 0) turns[i].a = a;
   }
@@ -76,6 +81,8 @@
             {#if turn.a.text.headline}<p class="text-subhead">{turn.a.text.headline}</p>{/if}
             {#each turn.a.text.lines as line, k (k)}<p class="text-body mt-1">{line}</p>{/each}
             {#if turn.a.source === 'ai'}<p class="text-caption text-ink-2 mt-2 flex items-center gap-1"><Sparkles size={14} strokeWidth={2.25} aria-hidden="true" />{t.coach.written}</p>{/if}
+            {#if turn.a.left !== undefined}<p class="text-caption text-ink-2 mt-1" data-testid="ask-left">{t.ask.left(num(turn.a.left))}</p>{/if}
+            {#if turn.a.limited}<Button variant="primary" size="sm" class="mt-3" onclick={() => { open = false; sheets.paywall = { from: 'ask' }; }} data-testid="ask-pro">{t.ask.pro}</Button>{/if}
           </div>
         {:else}
           <div class="flex w-3/4 flex-col gap-2" aria-label={t.ask.thinking}>

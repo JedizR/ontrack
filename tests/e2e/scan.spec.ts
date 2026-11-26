@@ -3,7 +3,7 @@
 // camera. Open Food Facts answers from tests/fixtures/off/ (dev/mock-backend.ts); labels from tests/fixtures/vision/.
 // "Today" is 2026-11-11. Mama tom yum, 8850987101021: 472.73 kcal in 100 g, a 55 g serving, so 260 kcal.
 import { expect, test, type Page } from '@playwright/test';
-import { open, vision } from './helpers';
+import { open, seedAccount, space, TODAY, vision } from './helpers';
 
 const hero = (page: Page) => page.getByTestId('hero-value');
 const sheet = (page: Page) => page.getByTestId('scan-sheet');
@@ -77,7 +77,8 @@ test('F22: an unknown barcode is read from a label photo, saved, then scanned ag
   await camera(page, 'NotFoundError');
   await open(page);
   await scan(page, '8850999220017');
-  await expect(page.getByTestId('product-new')).toContainText('This barcode is not in Open Food Facts yet. Photograph the nutrition label and Ontrack keeps it for your next scan.');
+  await expect(sheet(page).locator('[data-slot="drawer-title"]')).toHaveText("We don't have this yet");
+  await expect(page.getByTestId('product-new')).toContainText("Photograph its nutrition label and we'll add it for everyone. The next scan finds it in one tap.");
   await expect(page.getByTestId('product-new')).toContainText('Barcode 8850999220017');
   await photo(page, 'label-photo');
 
@@ -113,6 +114,34 @@ test('F22: an unknown barcode is read from a label photo, saved, then scanned ag
   await expect(page.getByTestId('label-type')).toBeVisible();
 });
 
+test('F22: a label one user photographs is found at once by the next user who scans that barcode', async ({ browser }) => {
+  const s = space('barcodes');
+  const phone = async (email: string) => {
+    const page = await (await browser.newContext({ ...test.info().project.use })).newPage();
+    await camera(page, 'NotFoundError');
+    await page.clock.setFixedTime(new Date(`${TODAY}T10:00:00+07:00`));
+    await seedAccount(page, { space: s, email });
+    await page.goto('/');
+    await expect(page.getByTestId('dock')).toBeVisible();
+    return page;
+  };
+  const nan = await phone('nan@example.com');
+  await scan(nan, '8850999220017');
+  await photo(nan, 'label-photo');
+  await nan.getByTestId('label-save').click();
+  await expect(nan.getByTestId('product-source')).toHaveText('Label');
+  await expect(nan.locator('[data-sonner-toast]').filter({ hasText: 'Added for everyone. Thank you' })).toBeVisible();
+
+  // someone else, who has never seen this barcode, gets the product without a photo
+  const rin = await phone('rin@example.com');
+  await scan(rin, '8850999220017');
+  await expect(rin.getByTestId('product-kcal')).toHaveText('120');
+  await expect(rin.getByTestId('product-source')).toHaveText('Label');
+  await expect(sheet(rin).locator('[data-slot="drawer-title"]')).toHaveText('Rice crackers, seaweed');
+  await rin.getByTestId('product-add').click();
+  await expect(hero(rin)).toHaveText('120');
+});
+
 test('F22: camera denied falls back to typing; wrong digits are caught', async ({ page }) => {
   await camera(page, 'NotAllowedError');
   await open(page);
@@ -133,7 +162,7 @@ test('F22: no nutrition and a photo that is not a label lead to typing the numbe
   await page.reload();
   await vision(page, space, { fixture: 'not-label' });
   await scan(page, '8851234567898');
-  await expect(page.getByTestId('product-new')).toContainText('Open Food Facts has this product without its nutrition.');
+  await expect(page.getByTestId('product-new')).toContainText("Green tea, honey lemon has no nutrition yet. Photograph its label and we'll add it for everyone.");
   await photo(page, 'label-photo');
   await expect(page.getByTestId('label-failed')).toContainText('We could not read a nutrition label in that photo. Take it straight on and close enough to read.');
   await page.getByTestId('label-type').click();

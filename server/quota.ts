@@ -4,6 +4,19 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 export type Usage = { allowed: boolean; used: number; total: number };
 
+/** The free plan's AI advice this month so far (27 Nov); the server's own client reads it, no user can. */
+export async function adviceUsed(db: SupabaseClient, userId: string, month: string): Promise<number> {
+  const r = await db.from('ai_advice').select('count').eq('user_id', userId).eq('month', month).maybeSingle();
+  if (r.error) throw r.error;
+  return (r.data as { count: number } | null)?.count ?? 0;
+}
+/** The free plan's AI advice (27 Nov): counts one for the user's month (its first day, UTC) and returns the month's count. */
+export async function bumpAdvice(db: SupabaseClient, userId: string, month: string): Promise<number> {
+  const r = await db.rpc('bump_ai_advice', { p_user: userId, p_month: month });
+  if (r.error) throw r.error;
+  return Number(r.data);
+}
+
 export async function bumpUsage(db: SupabaseClient, userId: string, day: string, limit: number): Promise<Usage> {
   const bump = await db.rpc('bump_ai_usage', { p_user: userId, p_day: day, p_limit: limit });
   if (bump.error) throw bump.error;

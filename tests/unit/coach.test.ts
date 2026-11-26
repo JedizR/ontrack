@@ -8,7 +8,7 @@ import { validateProgram, PROGRAM_JSON_SCHEMA } from '../../server/coach/program
 import type { CoachInput, CoachProvider } from '../../server/coach/provider';
 import { coachRequest, MAX_BODY_BYTES, type CoachFacts, type CoachRequest, type ProgramRequest } from '../../shared/coach';
 import { en } from '../../src/lib/i18n/en';
-import { checkinFacts, gapCandidates, gapFacts, sessionFacts, weekFacts } from '../../src/lib/model/coach';
+import { askFacts, checkinFacts, gapCandidates, gapFacts, sessionFacts, weekFacts } from '../../src/lib/model/coach';
 import type { DayStats, WeekStats } from '../../src/lib/model/progress';
 import type { Food } from '../../src/lib/data/foods';
 import { TEMPLATES } from '../../src/lib/data/templates';
@@ -84,10 +84,17 @@ describe('the slot rule', () => {
     expect(r('session', { headline: 'Stronger than last time' })).toEqual({ ok: true, text: { headline: 'Stronger than last time', lines: [] } });
     expect(r('session', { headline: 'Done', lines: ['A.', 'B.'] })).toMatchObject({ ok: false });
     expect(r('session', { lines: [] })).toMatchObject({ ok: false, why: 'headline' });
-    // ask: one to four lines, a hundred words
+    // ask (27 Nov): one or two lines, 45 words, plain numbers allowed for a general fact
     expect(r('ask', { lines: [] })).toMatchObject({ ok: false });
-    expect(r('ask', { lines: [Array(101).fill('w').join(' ')] })).toMatchObject({ ok: false, why: 'too long' });
-    expect(r('ask', { lines: [Array(100).fill('w').join(' ')] })).toMatchObject({ ok: true });
+    expect(r('ask', { lines: ['A.', 'B.', 'C.'] })).toMatchObject({ ok: false, why: 'lines' });
+    expect(r('ask', { lines: [Array(46).fill('w').join(' ')] })).toMatchObject({ ok: false, why: 'too long' });
+    expect(r('ask', { lines: [Array(45).fill('w').join(' ')] })).toMatchObject({ ok: true });
+    expect(r('ask', { lines: ['Two eggs add about 12 g of protein to your {{avg_kcal}}.'] })).toMatchObject({ ok: true });
+    expect(r('ask', { lines: ['{{nope}} left.'] })).toMatchObject({ ok: false, why: 'unknown slot' });
+    // but never a calorie amount to aim for, nor the user's own number copied out of its slot
+    expect(r('ask', { lines: ['Aim for 1,800 kcal today.'] })).toMatchObject({ ok: false, why: 'a target' });
+    expect(r('ask', { lines: ['You averaged 2,310 kcal.'] })).toMatchObject({ ok: false, why: 'a fact as digits' });
+    expect(r('ask', { lines: ['A banana has about 105 kcal.'] })).toMatchObject({ ok: true });
   });
   test('gap: three distinct candidates, each with a short reason and no digits or slots', () => {
     const pick = (id: string, reason = 'Lots of protein') => ({ id, reason });
@@ -245,8 +252,11 @@ describe('POST /api/coach', () => {
     return {
       caller: async (r) => (r.headers.get('authorization') === 'Bearer good' ? { id: 'u1', billing: { tier: 'pro' as const } } : null),
       bump: async (_u, _d, limit) => { used++; return { allowed: used <= limit, used, total: used }; },
+      adviceUsed: async () => used,
+      advice: async () => ++used,
       provider: async () => mockCoach,
       limit: 40,
+      freeAdvice: 10,
       cap: 400,
       ...o,
     };
@@ -415,11 +425,27 @@ describe('the app side', () => {
         picks: [{ id: 'tuna', reason: '25.5 g protein for 116 kcal' }, { id: 'chicken', reason: '30.5 g protein for 151 kcal' }, { id: 'yogurt', reason: '15 g protein for 100 kcal' }],
       });
     });
-    test('the free plan (R5) gets no coach words: pro_only, before any count', async () => {
+    test('the free plan (27 Nov): the automatic words stay Pro, before any count; Ask and Adjust count by the month', async () => {
     let bumped = 0;
-    const d: Deps = { caller: async () => ({ id: 'u1', billing: { tier: 'free' as const } }), bump: async () => { bumped++; return { allowed: true, used: 1, total: 1 }; }, provider: async () => mockCoach, limit: 40, cap: 400 };
-    const r = await coach(new Request('http://x/api/coach', { method: 'POST', headers: { authorization: 'Bearer good' }, body: JSON.stringify(KINDS[0]) }), d);
-    expect([r.status, ((await r.json()) as { error: string }).error, bumped]).toEqual([402, 'pro_only', 0]);
+    const months: string[] = [];
+    const d: Deps = {
+      caller: async () => ({ id: 'u1', billing: { tier: 'free' as const } }), bump: async () => { bumped++; return { allowed: true, used: 1, total: 1 }; },
+      adviceUsed: async () => months.length, advice: async (_u, month) => { months.push(month); return months.length; }, freeAdvice: 2, provider: async () => mockCoach, limit: 40, cap: 400,
+    };
+    const send = async (body: unknown) => { const r = await coach(new Request('http://x/api/coach', { method: 'POST', headers: { authorization: 'Bearer good' }, body: JSON.stringify(body) }), d); return [r.status, await r.json()] as const; };
+    const week = await send(KINDS[0]);
+    expect([week[0], week[1].error, bumped, months.length]).toEqual([402, 'pro_only', 0, 0]);
+    const ask = KINDS.find((k) => k.kind === 'ask')!;
+    expect(await send(ask)).toMatchObject([200, { ok: true, usage: { usedThisMonth: 1, limit: 2 } }]);
+    expect(await send(ask)).toMatchObject([200, { usage: { usedThisMonth: 2, limit: 2 } }]);
+    expect(await send(ask)).toEqual([429, { ok: false, error: 'month_limit', usage: { usedThisMonth: 2, limit: 2 } }]);
+    expect(months[0]).toMatch(/^\d{4}-\d{2}-01$/);
+    expect(bumped).toBe(0);
+    // a reply that keeps breaking the rules is not counted
+    const counted = months.length;
+    const d2: Deps = { ...d, adviceUsed: async () => 0, provider: async () => ({ model: 'm', write: async () => ({ headline: '', lines: [], picks: [] }) }) };
+    const r = await coach(new Request('http://x/api/coach', { method: 'POST', headers: { authorization: 'Bearer good' }, body: JSON.stringify(ask) }), d2);
+    expect([r.status, months.length]).toEqual([502, counted]);
   });
   test('an ask offers the facts it has', () => {
       expect(template(ASK).text.lines).toEqual([en.coach.ask.offline, 'Label: 2,310 kcal', 'Label: 2,400 kcal', 'Label: 6 of 7']);
@@ -431,7 +457,7 @@ describe('the app side', () => {
     const store = new Map<string, string>();
     const calls = vi.fn();
     let fetchWith: (r: Request) => Promise<Response>;
-    const d: Deps = { caller: async () => ({ id: 'u1', billing: { tier: 'pro' as const } }), bump: async () => ({ allowed: true, used: 1, total: 1 }), provider: async () => mockCoach, limit: 40, cap: 400 };
+    const d: Deps = { caller: async () => ({ id: 'u1', billing: { tier: 'pro' as const } }), bump: async () => ({ allowed: true, used: 1, total: 1 }), adviceUsed: async () => 0, advice: async () => 1, freeAdvice: 10, provider: async () => mockCoach, limit: 40, cap: 400 };
     beforeEach(() => {
       store.clear();
       calls.mockClear();
@@ -633,5 +659,27 @@ describe('gapFacts and gapCandidates', () => {
     expect(c).toHaveLength(12);
     expect(c[0].id).toBe('f29');
     expect(coachRequest.safeParse({ kind: 'gap', facts: gapFacts({ kcalLeft: 500, proteinLeft: 40 }), localDate: DATE, candidates: c }).success).toBe(true);
+  });
+});
+
+describe('askFacts (27 Nov)', () => {
+  test('tells Ask who the user is, their day and their program, and keeps the week', () => {
+    const f = askFacts({
+      week: { avg_kcal: { label: 'Average intake', value: '1,800 kcal' } },
+      profile: { sex: 'male', birthYear: 2005, heightCm: 165, units: 'metric', experience: 'beginner' },
+      year: 2026, goal: 'lose', ratePct: 0.75, goalWeightKg: 67, weightKg: 80.5,
+      day: { target: 1964, eaten: { kcal: 1200, protein: 80 }, macros: { proteinG: 163, carbsG: 180, fatG: 51 }, sessions: [{ name: 'Upper B', done: true }, { name: 'Cardio', done: false }] },
+      meals: ['Khao man gai', 'Whey protein'],
+      program: { name: 'Upper lower 4 days', sessions: [3, 0, 6].map((weekday, i) => ({ key: `k${i}`, weekday, name: 'Upper A', type: 'strength' as const, minutes: 60, intensity: 'moderate' as const })) },
+    });
+    expect(f.age.value).toBe('21 years');
+    expect(f.kcal_left.value).toBe('764 kcal');
+    expect(f.protein_left.value).toBe('83 g');
+    expect(f.meals_today.value).toBe('Khao man gai, Whey protein');
+    expect(f.training_done.value).toBe('1 of 2');
+    expect(f.training_days.value).toBe('Sun, Mon, Thu');
+    expect(f.avg_kcal.value).toBe('1,800 kcal');
+    expect(Object.keys(f).length).toBeLessThanOrEqual(30);
+    for (const v of Object.values(f)) expect(v.value.length).toBeLessThanOrEqual(40);
   });
 });

@@ -2,7 +2,7 @@
 import { env } from '../env.js';
 import type { CoachRequest, ProgramRequest } from '../../shared/coach.js';
 
-export type CoachInput = Pick<CoachRequest, 'kind' | 'facts' | 'question' | 'candidates'> & { signal?: AbortSignal };
+export type CoachInput = Pick<CoachRequest, 'kind' | 'facts' | 'question' | 'candidates' | 'history'> & { signal?: AbortSignal };
 export type ProgramInput = Pick<ProgramRequest, 'kind' | 'question' | 'program' | 'profile'> & { signal?: AbortSignal };
 export interface CoachProvider {
   /** the model id returned with each answer */

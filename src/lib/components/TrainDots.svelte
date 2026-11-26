@@ -18,7 +18,8 @@
   const PITCH = (HEIGHT - HEAD) / WEEKS;
   const S = 22;
   const CORNER = 5.5;
-  const width = LEFT + 7 * PITCH;
+  // the owner (27 Nov): the squares centred on the screen, the dates left of them; so the same space again on the right
+  const width = 2 * LEFT + 7 * PITCH;
   const SUNDAY_FIRST = [6, 0, 1, 2, 3, 4, 5]; // weekdayOf counts Monday as 0
   // the Sunday that starts this week, then three weeks back
   const start = $derived(addDays(today, -((weekdayOf(today) + 1) % 7) - 7 * (WEEKS - 1)));
@@ -38,7 +39,7 @@
 </script>
 
 <div data-testid="train-dots">
-  <svg {width} height={HEIGHT} role="img" aria-label={label} class="mx-auto block">
+  <svg {width} height={HEIGHT} viewBox="0 0 {width} {HEIGHT}" role="img" aria-label={label} class="mx-auto block h-auto max-w-full">
     {#each SUNDAY_FIRST as d, c (d)}
       <text x={LEFT + c * PITCH + PITCH / 2} y={HEAD - 6} text-anchor="middle" class="fill-ink-2 text-caption">{t.week.letters[d]}</text>
     {/each}

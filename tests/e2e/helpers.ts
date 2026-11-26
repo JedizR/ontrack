@@ -280,10 +280,9 @@ export async function onboard(page: Page, a: Answers) {
   await expect(plan).toBeVisible({ timeout: 15_000 }); // Building your plan plays for about 4 s (O2)
   const goal = a.goal === 'weight' ? 'gain' : a.goal;
   if (a.pace !== undefined && goal !== 'maintain' && goal !== 'recomp') await page.getByTestId('plan-pace').getByRole('radio', { name: PACE[goal][a.pace as 0.5] }).click();
-  await openDisclosures(page, plan);
 }
 
-/** Your plan keeps what is behind the number closed until asked for (O2): open every one in the page or sheet. */
+/** Open every disclosure in the page or sheet. */
 export async function openDisclosures(page: Page, within = page.locator('body')) {
   const closed = within.locator('button[aria-expanded="false"][aria-controls^="d"]');
   for (let n = await closed.count(); n > 0; n = await closed.count()) {

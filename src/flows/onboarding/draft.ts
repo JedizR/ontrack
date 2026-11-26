@@ -137,12 +137,14 @@ const SPREAD = [[], [0], [0, 3], [0, 2, 4], [0, 1, 3, 4], [0, 1, 2, 3, 4], [0, 1
 
 /** Session defaults for "What do you train?": interface defaults from the onboarding research, not science. */
 const KIND_DEFAULTS = { strength: { minutes: 60, intensity: 'moderate' }, cardio: { minutes: 30, intensity: 'moderate' } } as const;
-/** The week an answer to "What do you train?" and n days make (O1): lifting or cardio each day, or both taking turns, lifting first. */
+/** The week an answer to "What do you train?" and n days make (O1): lifting or cardio each day, or both on every one of
+ *  the n days, lifting first and cardio after it (the owner, 27 Nov: "4 days, both" reads as 4 days of each). */
 export function sessionsFor(kind: TrainKind, days: number): Session[] {
-  return (SPREAD[days] ?? []).map((weekday, i) => {
-    const type = kind === 'cardio' || (kind === 'both' && i % 2 === 1) ? 'cardio' : 'strength';
-    return { key: `d${weekday}`, weekday, name: t.train.types[type], type, ...KIND_DEFAULTS[type] };
-  });
+  const one = (weekday: number, type: 'strength' | 'cardio', key: string): Session => ({ key, weekday, name: t.train.types[type], type, ...KIND_DEFAULTS[type] });
+  return (SPREAD[days] ?? []).flatMap((weekday) =>
+    // the cardio's key is SessionSheet's link to the lift before it (`<key>-c`), so Cardio after shows on and goes with it
+    kind === 'both' ? [one(weekday, 'strength', `d${weekday}`), one(weekday, 'cardio', `d${weekday}-c`)] : [one(weekday, kind === 'cardio' ? 'cardio' : 'strength', `d${weekday}`)],
+  );
 }
 
 /** The week the answers make; the session names are data from here on, taken from the catalog once. */
@@ -169,7 +171,8 @@ export function inputOf(d: Draft, year: number): PlanInput {
     age,
     heightCm,
     weightKg,
-    bodyFatPct: d.bodyFatPct,
+    // Body fat left Your plan (27 Nov): an old draft's value no longer moves a target nobody can see it in
+    bodyFatPct: undefined,
     neat: d.neat ?? 'seated',
     sessions: programOf(d).sessions,
     goal,
@@ -227,7 +230,6 @@ export function toRecords(d: Draft, date: string, at: string): { profile: Profil
       sex: input.sex,
       birthYear: d.birthYear ?? 0,
       heightCm: input.heightCm,
-      ...(d.bodyFatPct ? { bodyFatPct: d.bodyFatPct } : {}),
       neat: input.neat,
       experience: input.experience,
       units: d.units,
