@@ -84,7 +84,7 @@ test('airplane mode: a cold start and every feature work offline, and sync withi
     await page.getByTestId('train-day-1').getByTestId('train-rest').click();
     const sheet = page.getByTestId('train-session-sheet');
     await sheet.getByTestId('session-name').fill('Run');
-    await sheet.getByRole('button', { name: 'Cardio' }).click();
+    await sheet.getByRole('radio', { name: 'Cardio' }).click(); // the type tiles are radios since R5
     await sheet.getByTestId('session-save').click();
     await expect(page.getByTestId('train-day-1')).toContainText('Cardio, 60 min');
   });
