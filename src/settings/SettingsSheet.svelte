@@ -29,7 +29,7 @@
   import { thaiByLanguage } from '$lib/data/foods';
   import { membership } from '$lib/billing.svelte';
   import { localDayOf, shortDate } from '$lib/model/dates';
-  import { FREE_AI_PER_DAY } from '../../shared/plans';
+  import { FREE_ADVICE_PER_MONTH, FREE_AI_PER_DAY } from '../../shared/plans';
   import { deleteAccount, exportAll, exportMeals, saveSettings, signOut, syncNow } from '$lib/actions';
   import type { Profile } from '../../shared/records';
 
@@ -150,7 +150,7 @@
         <Group id="set-g-membership" title={t.membership.title}>
           {@const b = membership.current}
           {@const until = b.periodEnd ? shortDate(localDayOf(b.periodEnd)) : ''}
-          <Box title={membership.pro ? t.membership.pro : t.membership.free} caption={!membership.pro ? t.membership.freeLine(num(FREE_AI_PER_DAY)) : b.cancelAt ? t.membership.ends(until) : b.trial ? t.membership.trialEnds(until) : until ? t.membership.renews(until) : undefined} wrap testid="set-plan">
+          <Box title={membership.pro ? t.membership.pro : t.membership.free} caption={!membership.pro ? t.membership.freeLine(num(FREE_AI_PER_DAY), num(FREE_ADVICE_PER_MONTH)) : b.cancelAt ? t.membership.ends(until) : b.trial ? t.membership.trialEnds(until) : until ? t.membership.renews(until) : undefined} wrap testid="set-plan">
             {#snippet trailing()}
               {#if !membership.pro}<Button variant="primary" size="sm" onclick={() => (sheets.paywall = { from: 'settings' })} data-testid="set-plan-pro">{t.membership.upgrade}</Button>
               {:else if b.subscription}<Button size="sm" disabled={membership.busy} onclick={changePlan} data-testid="set-plan-change">{b.cancelAt ? t.membership.resume : t.membership.cancel}</Button>{/if}

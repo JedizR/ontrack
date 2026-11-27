@@ -61,7 +61,7 @@ function ask({ facts: f, question = '' }: CoachInput) {
     [/train|session|workout|lift|gym|best/, [SESSIONS(f), BESTS(f)]],
   ];
   const matched = topics.filter(([re]) => re.test(q));
-  const lines = some(matched.flatMap(([, l]) => l)).slice(0, 4);
+  const lines = some(matched.flatMap(([, l]) => l)).slice(0, 2);
   if (lines.length) return reply({ lines });
   return reply({ lines: [matched.length ? 'I do not have that in your numbers yet.' : 'I can answer questions about your protein, weight, calories and training.'] });
 }

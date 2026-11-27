@@ -36,8 +36,8 @@ export type AnalysisItem = Macros & {
   alternatives?: { foodId: string; name: string; kcal: number }[];
 };
 export type Analysis = { title: string; items: AnalysisItem[]; model: string; raw: unknown };
-/** pro_only (R5): a Pro feature asked for on the free plan */
-export type AnalyzeError = 'bad_request' | 'unauthorized' | 'too_large' | 'not_food' | 'daily_limit' | 'busy' | 'provider_error' | 'timeout' | 'pro_only';
+/** pro_only (R5): a Pro feature asked for on the free plan; month_limit (27 Nov): the free plan's AI advice for the month is used */
+export type AnalyzeError = 'bad_request' | 'unauthorized' | 'too_large' | 'not_food' | 'daily_limit' | 'busy' | 'provider_error' | 'timeout' | 'pro_only' | 'month_limit';
 /** `plan` (R5): which plan's limit this is, so the app can offer Pro when a free limit is reached */
 type Usage = { usedToday: number; limit: number; plan?: 'free' | 'pro' };
 export type AnalyzeResponse = { ok: true; analysis: Analysis; usage: Usage } | { ok: false; error: AnalyzeError; usage?: Usage };

@@ -1,7 +1,7 @@
 <!-- SCREENS.md section 4, Your plan (O1, O2): the target counting up from nothing, protein, carbs and fat counting in behind it, the pace as a
-     live control with what to expect, the training the answers set and where to change it, how the target was
-     calculated (each line opens its source), fine tuning, any guardrail in one line, and Save this plan. Computed before
-     it renders: no loading screen. -->
+     live control with what to expect, the goal weight, Same target every day (the owner, 27 Nov: the training, how the
+     target is worked out and body fat went), any guardrail in one line, and Save this plan. Computed before it renders:
+     no loading screen. -->
 <script lang="ts">
   import { prefs } from '$lib/prefs.svelte';
   import { untrack } from 'svelte';
@@ -13,7 +13,6 @@
   import Button from '$lib/components/Button.svelte';
   import Switch from '$lib/components/Switch.svelte';
   import Segmented from '$lib/components/Segmented.svelte';
-  import Disclosure from '$lib/components/Disclosure.svelte';
   import { inview } from '../landing/inview';
   import { U, V, dayMacros, floorFor, guardrails, plan } from '$lib/model/engine';
   import { evenEee, kgPerWeek, targetParts, targetWith, trainingDayEee } from '$lib/model/day';
@@ -22,9 +21,8 @@
   import { picker } from '$lib/picker.svelte';
   import { db } from '$lib/db/store.svelte';
   import { ms } from '$lib/haptics';
-  import Breakdown from '../plan/Breakdown.svelte';
-    import { t } from '$lib/i18n';
-  import { LIMITS, START, goalWeightOf, inputOf, minGoalWeightKg, paceChoices, programOf, weightWheel, type Draft } from './draft';
+  import { t } from '$lib/i18n';
+  import { LIMITS, START, goalWeightOf, inputOf, minGoalWeightKg, paceChoices, weightWheel, type Draft } from './draft';
   const tray = $derived(prefs.tray);
 
   let { d, year, set, back, onsave }: {
@@ -84,20 +82,6 @@
     noFasterGain: t.pace.noFasterGain(num(V.fasterGainMaxBmi)),
   };
 
-  // the training the answers set, in the open (SCREENS.md section 4)
-  const sessions = $derived(programOf(d).sessions);
-  const training = $derived.by(() => {
-    const lift = sessions.filter((s) => s.type === 'strength');
-    const cardio = sessions.filter((s) => s.type === 'cardio');
-    if (!sessions.length) return t.plan.noTraining;
-    const line = !cardio.length ? t.plan.lifting(num(lift.length), num(lift[0].minutes))
-      : !lift.length ? t.plan.cardio(num(cardio.length), num(cardio[0].minutes))
-      : t.plan.both(num(lift.length), num(cardio.length));
-    return `${line} ${t.plan.change}`;
-  });
-
-  const trainingLine = $derived(sessions.length ? t.plan.trainingShort(num(sessions.length)) : t.plan.noTrainingShort);
-
   const pct = (share: number) => num(share * U.percent);
   const flags = $derived(
     n.flags.map((f) =>
@@ -108,18 +92,8 @@
     ),
   );
 
-  const bodyFat = $derived(input.bodyFatPct != null && input.bodyFatPct >= V.bodyFatRange.min && input.bodyFatPct <= V.bodyFatRange.max);
-
-  // the wheel sheets answer a number, 0 for Clear, or null when dismissed
+  // the wheel sheet answers a number, 0 for Clear, or null when dismissed
   const round = (x: number, places: number) => Math.round(x * 10 ** places) / 10 ** places;
-  async function askBodyFat() {
-    const { min, max } = V.bodyFatRange;
-    // whole percent on the wheel: a stored 18.5 shows as 19 and stays 18.5 unless the wheel moves
-    const was = d.bodyFatPct ? Math.round(d.bodyFatPct) : undefined;
-    const v = await picker.ask({ title: t.plan.bodyFat, value: was ?? START.bodyFatPct, min, max, unit: t.after.percent, hint: t.plan.bodyFatHint, clearable: was !== undefined, range: () => t.plan.bodyFatRange(num(min), num(max)) });
-    if (v === null || v === was) return;
-    set({ bodyFatPct: v === 0 ? undefined : v });
-  }
   async function askGoalWeight() {
     const metric = d.units === 'metric';
     const shownKg = (kg: number) => round(metric ? kg : kgToLb(kg), 1);
@@ -171,7 +145,9 @@
     <!-- the goal weight, its own section (O2) -->
     <div class="reveal" use:inview>
       <Card list class="bg-surface shadow-card mx-0! rounded-lg" aria-label={t.plan.goalWeight}>
-        <Row title={t.plan.goalWeight} caption={t.plan.goalWeightHint} value={goalWeightOf(d) ? weightText(goalWeightOf(d)!, d.units) : t.plan.noneYet} chevron onclick={askGoalWeight} testid="tune-goalweight" />
+        {@const goal = goalWeightOf(d)}
+        <!-- the unit one level down (DESIGN.md section 5, rule 5) -->
+        <Row title={t.plan.goalWeight} caption={t.plan.goalWeightHint} value={goal ? num(d.units === 'metric' ? goal : kgToLb(goal), 1) : t.plan.noneYet} unit={goal ? (d.units === 'metric' ? t.after.kg : t.after.lb) : undefined} chevron onclick={askGoalWeight} testid="tune-goalweight" />
       </Card>
     </div>
 
@@ -192,25 +168,11 @@
       {#if c.why}<p class="text-callout text-ink-2" data-testid="pace-why">{WHY[c.why]}</p>{/if}
     </div>
 
-    <!-- what is behind the number, closed until asked for (O2) -->
     <div class="reveal" use:inview>
       <Card list class="bg-surface shadow-card mx-0! rounded-lg">
-        <Disclosure title={t.plan.yourTraining} line={trainingLine} testid="plan-training-box">
-          <p class="text-body" data-testid="plan-training">{training}</p>
-        </Disclosure>
-        <div class="border-line border-t">
-          <Disclosure title={t.plan.how} line={matched ? t.plan.howTraining : t.plan.howEven} testid="plan-how">
-            <div class="-mx-6 px-6" data-testid="plan-breakdown"><Breakdown {parts} goal={n.goal} rate={n.ratePctPerWeek} {bodyFat} /></div>
-          </Disclosure>
-        </div>
-        <div class="border-line border-t">
-          <Disclosure title={t.plan.tune} testid="plan-tune">
-            <Row title={t.plan.bodyFat} value={d.bodyFatPct ? `${num(d.bodyFatPct, 1)} ${t.after.percent}` : t.plan.noneYet} onclick={askBodyFat} testid="tune-bodyfat" />
-            <Row title={t.plan.even}>
-              {#snippet trailing()}<Switch checked={!!d.even} label={t.plan.even} onchange={(even) => set({ even })} testid="tune-even" />{/snippet}
-            </Row>
-          </Disclosure>
-        </div>
+        <Row title={t.plan.even}>
+          {#snippet trailing()}<Switch checked={!!d.even} label={t.plan.even} onchange={(even) => set({ even })} testid="tune-even" />{/snippet}
+        </Row>
       </Card>
     </div>
     {#each flags as f (f)}<p class="text-callout text-attention" data-testid="plan-flag">{f}</p>{/each}

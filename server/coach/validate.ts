@@ -11,7 +11,8 @@ const RULES: Record<Exclude<CoachKind, 'gap'>, { headline: number; lines: [numbe
   week: { headline: 6, lines: [2, 3], words: 40 },
   checkin: { headline: 0, lines: [1, 2], words: 40 },
   session: { headline: 8, lines: [0, 1], words: 40 },
-  ask: { headline: 0, lines: [1, 4], words: 100 },
+  // Ask Ontrack (27 Nov): super concise
+  ask: { headline: 0, lines: [1, 2], words: 45 },
 };
 const PICKS = 3;
 const REASON_WORDS = 8;
@@ -25,11 +26,23 @@ const sentences = (s: string) => s.split(/[.?]+(?:\s+|$)/).filter((x) => x.trim(
 export const sanitise = (s: string) =>
   s.replace(/\s*[\u{2013}\u{2014}]\s*/gu, ', ').replace(/[\p{Extended_Pictographic}\u{FE0F}\u{200D}]/gu, '').replace(/!+/g, '.').replace(/\s+/g, ' ').replace(/ ([.,?])/g, '$1').trim();
 
-/** Why `s` breaks the slot rule, or null: a slot that was not given, a digit outside a slot, or a stray brace. */
-export function slotProblem(s: string, slots: ReadonlySet<string>) {
+/** Why `s` breaks the slot rule, or null: a slot that was not given, a digit outside a slot (unless `digits`), or a stray brace. */
+export function slotProblem(s: string, slots: ReadonlySet<string>, digits = false) {
   for (const [, id] of s.matchAll(/\{\{([^{}]*)\}\}/g)) if (!slots.has(id)) return 'unknown slot';
   const bare = s.replace(/\{\{[^{}]*\}\}/g, '');
-  return /\p{Nd}/u.test(bare) ? 'digit' : /[{}]/.test(bare) ? 'stray brace' : null;
+  return !digits && /\p{Nd}/u.test(bare) ? 'digit' : /[{}]/.test(bare) ? 'stray brace' : null;
+}
+
+/**
+ * Ask's plain numbers (R8) are for general facts only: never a calorie amount to aim for, and never one of the user's own
+ * numbers copied out of its slot (two or more digits, so "2 eggs" is fine). Null when the line is fine.
+ */
+export function askNumberProblem(s: string, facts: CoachRequest['facts']) {
+  const bare = s.replace(/\{\{[^{}]*\}\}/g, '');
+  if (/\b(aim|target|eat|stay|keep|limit|cut|drop|go|reduce|increase|raise|lower|set)\b[^.]{0,40}?\d[\d,.]*\s*(kcal|calories|cal)\b/i.test(bare)) return 'a target';
+  const NUM = /\d[\d,.]*\d|\d/g;
+  const own = new Set(Object.values(facts).flatMap((f) => f.value.match(NUM) ?? []).filter((n) => n.replace(/\D/g, '').length >= 2));
+  return (bare.match(NUM) ?? []).some((n) => own.has(n)) ? 'a fact as digits' : null;
 }
 
 /**
@@ -59,7 +72,8 @@ export function validate(req: Pick<CoachRequest, 'kind' | 'facts' | 'candidates'
   if (lines.length < rule.lines[0] || lines.length > rule.lines[1] || lines.some((l) => !l || l.length > MAX_LINE)) return bad('lines');
   const slots = new Set(Object.keys(req.facts));
   for (const s of [headline, ...lines]) {
-    const why = slotProblem(s, slots);
+    // Ask may give a general fact in plain numbers ("two eggs add about 12 g"); the user's own numbers stay slots
+    const why = slotProblem(s, slots, req.kind === 'ask') ?? (req.kind === 'ask' ? askNumberProblem(s, req.facts) : null);
     if (why) return bad(why);
   }
   if (words([headline, ...lines].join(' ')) > rule.words) return bad('too long');

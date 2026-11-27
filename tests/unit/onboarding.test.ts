@@ -258,8 +258,10 @@ describe('"What do you train?" (O1, F20)', () => {
     expect(shape('cardio', 2)).toEqual([[0, 'cardio', 30], [3, 'cardio', 30]]);
   });
   test('both: the two take turns, lifting first', () => {
-    expect(shape('both', 4)).toEqual([[0, 'strength', 60], [1, 'cardio', 30], [3, 'strength', 60], [4, 'cardio', 30]]);
-    expect(shape('both', 1)).toEqual([[0, 'strength', 60]]);
+    // the owner (27 Nov): both on every training day, lifting then cardio
+    expect(shape('both', 4)).toEqual([0, 1, 3, 4].flatMap((d) => [[d, 'strength', 60], [d, 'cardio', 30]]));
+    expect(shape('both', 1)).toEqual([[0, 'strength', 60], [0, 'cardio', 30]]);
+    expect(new Set(sessionsFor('both', 7).map((s) => s.key)).size).toBe(14);
   });
   test('no days, no sessions; every week saves as a program', () => {
     expect(sessionsFor('both', 0)).toEqual([]);

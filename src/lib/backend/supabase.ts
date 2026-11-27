@@ -195,6 +195,23 @@ export function createSupabaseBackend(sb: SupabaseClient, settingsUrl?: string, 
         return ((r.data as { program: Program } | null)?.program) ?? null;
       },
     },
+
+    products: {
+      async get(code) {
+        await userId();
+        // a slow answer must not hold the scan: Open Food Facts is asked next either way
+        const r = await sb.from('barcodes').select('product').eq('code', code).abortSignal(AbortSignal.timeout(3000)).maybeSingle();
+        check(r);
+        return (r.data as { product: unknown } | null)?.product ?? null;
+      },
+      async add(code, product) {
+        await userId();
+        const r = await sb.from('barcodes').insert({ code, product });
+        if (r.error?.code === '23505') return false; // someone added it first
+        check(r);
+        return true;
+      },
+    },
   };
 }
 

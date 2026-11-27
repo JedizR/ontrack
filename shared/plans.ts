@@ -8,8 +8,13 @@ export const PRICES = { month: 149, year: 990 } as const;
 /** Days of Pro before the first bill, on either plan. */
 export const TRIAL_DAYS = 7;
 export type Interval = keyof typeof PRICES;
-/** AI logs (a meal photo, a description, a label) a day on the free plan; Pro is unlimited, with a fair use cap. */
-export const FREE_AI_PER_DAY = 3;
+/** AI logs (a meal photo, a description, a label) a day on the free plan; Pro is unlimited, with a fair use cap. The
+ *  owner (27 Nov, before the user test): a free plan that is usable, 5 a day (was 3). */
+export const FREE_AI_PER_DAY = 5;
+/** The owner (27 Nov): AI advice on the free plan, Ask Ontrack answers and Adjust with AI together, 10 a calendar month
+ *  (UTC). The automatic words (the week recap, the check-in, a session) stay the app's own on free. */
+export const FREE_ADVICE_PER_MONTH = 10;
+export const ADVICE_KINDS = ['ask', 'program'] as const;
 export const PRO_AI_PER_DAY = 100;
 
 /** The account's plan as the server keeps it (Supabase `app_metadata.billing`, written only by the server). */

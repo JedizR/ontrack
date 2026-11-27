@@ -152,22 +152,43 @@ export type Found =
   | { kind: 'found'; code: string; product: Product }
   | { kind: 'empty'; code: string; name: string; brand?: string }
   | { kind: 'missing' | 'offline' | 'failed'; code: string };
-/** The user's saved product first, at once and offline too, then Open Food Facts; `fresh` asks Open Food Facts only, for
- * Use default values (F15). Never throws. */
+/** The user's saved product first, at once and offline too, then the one other users added from its label, then Open
+ * Food Facts; `fresh` asks Open Food Facts only, for Use default values (F15). Never throws. */
 export async function findProduct(code: string, fresh = false): Promise<Found> {
   const mine = fresh ? undefined : db.get('product', code);
   if (mine) return { kind: 'found', code, product: copy(mine) };
   if (!navigator.onLine) return { kind: 'offline', code };
+  let off: Found;
   try {
     const p = await fetchOff(code);
-    if (!p) return { kind: 'missing', code };
-    const { per100, ...rest } = p;
-    const name = p.name || p.brand || t.scan.unnamed;
-    if (!per100) return { kind: 'empty', code, name, ...(p.brand ? { brand: p.brand } : {}) };
-    return { kind: 'found', code, product: { ...rest, name, per100, source: 'off' } };
+    if (!p) off = { kind: 'missing', code };
+    else {
+      const { per100, ...rest } = p;
+      const name = p.name || p.brand || t.scan.unnamed;
+      if (!per100) off = { kind: 'empty', code, name, ...(p.brand ? { brand: p.brand } : {}) };
+      else return { kind: 'found', code, product: { ...rest, name, per100, source: 'off' } };
+    }
   } catch {
-    return { kind: navigator.onLine ? 'failed' : 'offline', code };
+    off = { kind: navigator.onLine ? 'failed' : 'offline', code };
   }
+  // what other users added only where Open Food Facts has no numbers (or did not answer): a shared row never replaces it
+  const shared = fresh ? null : await sharedProduct(code);
+  return shared ? { kind: 'found', code, product: shared } : off;
+}
+/** What another user added for this barcode. It is someone else's data, so it is parsed like any outside input; an error
+ * or a bad row is no product, and the lookup goes on to Open Food Facts. */
+async function sharedProduct(code: string): Promise<Product | null> {
+  const r = await online((b) => b.products.get(code));
+  const p = r.ok ? productSchema.safeParse(r.value) : null;
+  if (!p?.success) return null;
+  const { lastG: _, ...rest } = p.data;
+  return { ...rest, source: 'label' };
+}
+/** Adds a product the user just saved from its label for everyone to scan (F22), once Open Food Facts had nothing. Best
+ * effort: the user's own copy never waits on it, and a failure says nothing. */
+export function shareProduct(code: string, p: Product) {
+  const { lastG: _, ...rest } = p;
+  void online((b) => b.products.add(code, { ...rest, source: 'label' })).then((r) => r.ok && r.value && toast(t.scan.shared));
 }
 const kept = (p: Program) => p.sessions.map(({ exercises: _, ...s }) => s);
 /**

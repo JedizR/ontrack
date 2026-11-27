@@ -100,6 +100,10 @@ export function createMockBackend(opts: { base?: string; fetch?: typeof fetch; s
       photo: async (path) => (await call(`/social/photo/${encodeURIComponent(path)}`))?.blob() ?? null,
       program: async (id) => (await ask<{ program: Program | null }>('program', { id })).program,
     },
+    products: {
+      get: async (code) => (await ask<{ product: unknown }>('barcode', { code })).product ?? null,
+      add: async (code, product) => (await ask<{ added: boolean }>('addBarcode', { code, product })).added,
+    },
   };
 }
 

@@ -26,7 +26,12 @@ export function haptic() {
 
 export const reducedMotion = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 /** A duration token in ms ("--d-step"): JavaScript keeps to the tokens too. A wait's pacing, which is not motion. */
-export const ms = (token: `--d-${string}`) => parseFloat(getComputedStyle(document.documentElement).getPropertyValue(token)) || 0;
+export const ms = (token: `--d-${string}`) => toMs(getComputedStyle(document.documentElement).getPropertyValue(token));
+/** "640ms" or ".64s" in ms: the production build's CSS minifier writes durations in seconds. */
+export const toMs = (css: string) => {
+  const v = css.trim();
+  return (parseFloat(v) || 0) * (v.endsWith('ms') ? 1 : v.endsWith('s') ? 1000 : 1);
+};
 /** A motion token's duration in ms ("--d-count"), 0 under reduced motion. */
 export const dur = (token: `--d-${string}`) => (reducedMotion() ? 0 : ms(token));
 

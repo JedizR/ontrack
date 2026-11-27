@@ -146,6 +146,11 @@ for (const theme of ['light', 'dark'] as const) {
           await shot(page, 'landing', `scroll-${String(i).padStart(2, '0')}`);
         }
         await page.screenshot({ path: `screenshots/landing/full-${theme}-${d.name}.png`, fullPage: true });
+        // 27 Nov: a Sources card turned over to what the source found
+        await page.getByTestId('source-card-0').scrollIntoViewIfNeeded();
+        await page.getByTestId('source-card-0').click();
+        await page.waitForTimeout(800);
+        await shot(page, 'landing', 'source-flipped');
       });
 
       // S1b: the landing's 04 Friends section whole, at rest (reduced motion shows each reveal's end state)
@@ -228,10 +233,6 @@ for (const theme of ['light', 'dark'] as const) {
         await page.getByTestId('plan-pace').getByRole('radio', { name: 'Faster' }).click();
         await shot(page, 'onboarding', 'plan-lose-faster');
         await page.screenshot({ path: `screenshots/onboarding/plan-lose-full-${theme}-${d.name}.png`, fullPage: true });
-        await openDisclosures(page);
-        await go('line-goal');
-        await page.getByTestId('plan-breakdown').scrollIntoViewIfNeeded();
-        await shot(page, 'onboarding', 'plan-source-open');
         await go('plan-save');
         await page.getByTestId('signin-sheet').waitFor();
         await shot(page, 'onboarding', 'save-signin');
@@ -746,6 +747,11 @@ for (const theme of ['light', 'dark'] as const) {
         await shot(page, 'progress', 'history');
         await page.keyboard.press('Escape');
         await page.getByTestId('history-sheet').waitFor({ state: 'detached' });
+        // 27 Nov: Ask Ontrack answers in a sentence or two
+        await page.getByTestId('ask-open').click();
+        await page.getByTestId('ask-chip').first().click();
+        await page.getByTestId('ask-a').waitFor();
+        await shot(page, 'progress', 'ask-answer');
       });
 
       test('progress adherence', async ({ page }) => {

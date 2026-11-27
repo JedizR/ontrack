@@ -10,6 +10,9 @@ export const MAX_FACTS = 30;
 export const MAX_CANDIDATES = 12;
 export const MAX_QUESTION = 200;
 export const MAX_PROGRAM_QUESTION = 300;
+/** Ask Ontrack (27 Nov): the earlier turns of the chat it is sent, so a follow up makes sense */
+export const MAX_HISTORY = 3;
+export const MAX_ANSWER = 400;
 /** A slot id: lower case letters and underscores, so it can never be mistaken for a number */
 export const SLOT = /^[a-z_]{1,24}$/;
 export const COACH_KINDS = ['week', 'checkin', 'session', 'gap', 'ask'] as const;
@@ -27,6 +30,8 @@ export const coachRequest = z.object({
   localDate: z.string().check(z.regex(/^\d{4}-\d{2}-\d{2}$/)),
   /** ask only */
   question: z.optional(str(1, MAX_QUESTION)),
+  /** ask only: the chat so far, oldest first, each answer as the user saw it */
+  history: z.optional(z.array(z.object({ q: str(1, MAX_QUESTION), a: str(0, MAX_ANSWER) })).check(z.maxLength(MAX_HISTORY))),
   /** gap only: at least one, so there is something to pick */
   candidates: z.optional(z.array(candidate).check(z.maxLength(MAX_CANDIDATES))),
 }).check(z.refine((r) => (r.kind !== 'ask' || !!r.question) && (r.kind !== 'gap' || !!r.candidates?.length)));
@@ -50,7 +55,9 @@ export const coachBody = z.union([coachRequest, programRequest]);
 /** Text with its slots still in it, as `{{id}}` */
 export type CoachText = { headline?: string; lines: string[] };
 export type CoachPick = { id: string; reason: string };
-type Usage = { usedToday: number; limit: number };
+/** Pro counts by the day; the free plan's advice (Ask and Adjust with AI) by the month (27 Nov) */
+export type CoachUsage = { usedToday: number; limit: number } | { usedThisMonth: number; limit: number };
+type Usage = CoachUsage;
 export type CoachTextResponse = { ok: true; kind: CoachKind; text: CoachText; picks?: CoachPick[]; model: string; usage: Usage };
 /** `summary` is plain words with no digits; `program` has passed `programSchema` */
 export type ProgramResponse = { ok: true; kind: 'program'; program: Program; summary: string; model: string; usage: Usage };

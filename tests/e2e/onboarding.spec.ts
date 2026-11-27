@@ -3,22 +3,13 @@
 // and what the answers change afterwards. Each test is a fresh browser in
 // its own mock space, which opens on the landing page (L1).
 import { expect, test, type Page } from '@playwright/test';
-import { EMAIL, PACE, TODAY, choose, onboard, openDisclosures, openFresh, pickerSave, seedAccount, signIn, space, startPlan, useSpace, wheelType, withPrefs } from './helpers';
+import { EMAIL, PACE, TODAY, choose, onboard, openFresh, pickerSave, seedAccount, signIn, space, startPlan, useSpace, wheelType, withPrefs } from './helpers';
 
 type Hook = { ontrack: { db: { get(c: string, id: string): unknown; live(c: string): { data: unknown }[] } } };
 const record = (page: Page, c: string, id: string) => page.evaluate(([c, id]) => (window as unknown as Hook).ontrack.db.get(c, id), [c, id] as const);
 const plans = (page: Page) => page.evaluate(() => (window as unknown as Hook).ontrack.db.live('plan').map((r) => r.data)) as Promise<Record<string, unknown>[]>;
 const kcal = (page: Page) => page.getByTestId('plan-kcal');
 const pace = (page: Page, name: string) => page.getByTestId('plan-pace').getByRole('radio', { name });
-
-/** The breakdown's lines add up to the target shown. */
-async function sumsExactly(page: Page) {
-  const values = await page.getByTestId('plan-breakdown').locator('[data-testid^="line-"]').evaluateAll((rows) =>
-    rows.map((r) => [r.getAttribute('data-testid'), Number(r.querySelector('.num')!.textContent!.replace(/[,+]| kcal/g, ''))] as const));
-  const total = values.find(([k]) => k === 'line-total')![1];
-  expect(values.filter(([k]) => k !== 'line-total').reduce((a, [, v]) => a + v, 0)).toBe(total);
-  expect(Number((await kcal(page).innerText()).replace(/,/g, ''))).toBe(total);
-}
 
 test('a hardgainer watches the number build, tunes the pace and saves the plan in under 90 seconds', { tag: '@smoke' }, async ({ page }) => {
   test.slow(); // R2: ten steps now with the goal weight; past 30 s on CI's runner
@@ -60,28 +51,22 @@ test('a hardgainer watches the number build, tunes the pace and saves the plan i
   await expect(page.getByTestId('build-percent')).toBeVisible();
   await expect(page.getByTestId('build-row').last()).toHaveAttribute('data-done', 'true');
   await expect(page.getByTestId('your-plan')).toBeVisible();
-  // what is behind the number starts closed (O2)
-  await expect(page.getByTestId('plan-how').getByRole('button')).toHaveAttribute('aria-expanded', 'false');
-  await openDisclosures(page);
+  // the owner (27 Nov): only Same target every day under the pace; the training, the breakdown and body fat went
+  await expect(page.getByTestId('plan-how')).toHaveCount(0);
+  await expect(page.getByTestId('tune-bodyfat')).toHaveCount(0);
 
   // 4 lifting sessions of 60 min, the standard pace for a beginner, counted up to
   await expect(kcal(page)).toHaveText('2,460');
   await expect(page.getByTestId('plan-rest')).toHaveText('2,220 on rest days');
   await expect(page.getByTestId('plan-protein')).toHaveText('108');
   await expect(page.getByTestId('plan-expect')).toContainText('Expect to gain about 0.3 kg a week.');
-  await expect(page.getByTestId('plan-training')).toHaveText('Lifting 4 days a week, 60 min each. Edit in Train.');
   await expect(pace(page, 'Standard')).toHaveAttribute('aria-checked', 'true');
   await expect(page.getByTestId('pace-why')).toHaveCount(0); // BMI 19.6: every gain pace is offered
-  await sumsExactly(page);
 
   // F19: the faster pace says what to expect and that it is being checked, inside the surplus cap
   await pace(page, 'Faster').click();
   await expect(page.getByTestId('pace-faster')).toHaveText('A faster gain, with more of it as fat than at the lean pace. Being checked');
   await expect(kcal(page)).toHaveText('2,530'); // the 20 percent surplus cap binds: 75 kcal over the standard pace, rounded
-  await page.getByTestId('line-goal').click();
-  await expect(page.getByTestId('line-goal')).toContainText('Helms ER');
-  await expect(page.getByTestId('line-goal').getByTestId('provisional')).toHaveText('Being checked');
-  await sumsExactly(page);
   await pace(page, 'Standard').click();
   await expect(page.getByTestId('pace-faster')).toHaveCount(0);
 
@@ -175,7 +160,7 @@ test("Other goals shows two more goals; Gain weight leads with the faster pace (
   await expect(page.getByTestId('step-goal').getByRole('radio')).toHaveCount(3);
   await page.getByTestId('goal-more').click();
   await expect(page.getByTestId('goal-more')).toHaveCount(0);
-  await expect(page.getByTestId('step-goal').getByRole('radio')).toHaveText([/Build muscle/, /Lose fat/, /Maintain/, /Gain weight/, /Lose fat and build muscle/]);
+  await expect(page.getByTestId('step-goal').getByRole('radio')).toHaveText([/Build muscle/, /Lose weight/, /Maintain/, /Gain weight/, /Lose fat and build muscle/]);
   await expect(page.getByTestId('choice-weight')).toBeFocused();
   await page.getByTestId('back').click();
   await expect(page.getByTestId('landing')).toBeVisible();
@@ -186,7 +171,6 @@ test("Other goals shows two more goals; Gain weight leads with the faster pace (
   await expect(page.getByTestId('plan-protein')).toHaveText('108');
   await expect(pace(page, 'Faster')).toHaveAttribute('aria-checked', 'true');
   await expect(page.getByTestId('pace-faster')).toContainText('Being checked');
-  await sumsExactly(page);
   await pace(page, 'Standard').click(); // the other paces stay a tap away
   await expect(kcal(page)).toHaveText('2,460');
   await pace(page, 'Faster').click();
@@ -205,7 +189,6 @@ test('the in-between goal is a gentle cut with the cut\'s protein and no pace to
   await expect(page.getByTestId('plan-pace')).toHaveCount(0);
   await expect(page.getByTestId('plan-expect')).toContainText('Expect to lose about 0.2 kg a week.');
   await expect(page.getByTestId('plan-recomp')).toBeVisible();
-  await sumsExactly(page);
   // back on the goal, the two stay shown with the pick
   for (let i = 0; i < 9; i++) await page.getByTestId('back').click(); // R2: one more, the goal weight
   await expect(page.getByTestId('choice-recomp')).toHaveAttribute('aria-checked', 'true');
@@ -251,11 +234,10 @@ test('no number shows before screening is answered and the body is known', async
   await expect(page.getByTestId('so-far')).toBeVisible();
 });
 
-test('losing fat in imperial units: the paces show live, a cap is explained, and Google keeps the draft', async ({ page }) => {
+test('losing weight in imperial units: the paces show live, a cap is explained, and Google keeps the draft', async ({ page }) => {
   await openFresh(page);
   // 5 ft 6 in, 200 lb: BMI 32, so all three paces are offered
   await onboard(page, { goal: 'lose', sex: 'female', year: '1990', units: 'imperial', height: '5 6', weight: '200', neat: 'light', days: 0 });
-  await expect(page.getByTestId('plan-training')).toHaveText('No training yet. Add it in Train.');
   for (const name of ['Gentle', 'Steady', 'Faster']) await expect(pace(page, name)).toBeVisible();
   await expect(pace(page, 'Steady')).toHaveAttribute('aria-checked', 'true');
   const steady = await kcal(page).innerText();
@@ -266,7 +248,6 @@ test('losing fat in imperial units: the paces show live, a cap is explained, and
   await expect(page.getByTestId('plan-expect')).toContainText(' lb a week.');
   await expect(page.getByTestId('pace-why')).toHaveCount(0);
   await expect(page.getByTestId('plan-rest')).toHaveCount(0); // no sessions: one number a day
-  await sumsExactly(page);
 
   await page.getByTestId('plan-save').click();
   await page.getByTestId('signin-google').click(); // leaves the page and comes back signed in
@@ -282,9 +263,6 @@ test('maintain with lifting and cardio: no pace, no experience question, and Tra
   await onboard(page, { goal: 'maintain', days: 5, kind: 'both' });
   await expect(page.getByTestId('plan-pace')).toHaveCount(0);
   await expect(page.getByTestId('plan-expect')).toContainText('Expect your weight to hold steady.');
-  await expect(page.getByTestId('plan-training')).toHaveText('Lifting 3 days and cardio 2 days a week. Edit in Train.');
-  await expect(page.getByTestId('line-goal')).toHaveCount(0);
-  await sumsExactly(page);
   // back goes to what is trained: the experience question was never asked
   await page.getByTestId('back').click();
   await expect(page.getByTestId('step-kind')).toBeVisible();
@@ -293,7 +271,9 @@ test('maintain with lifting and cardio: no pace, no experience question, and Tra
   await expect(page.getByTestId('your-plan')).toBeVisible({ timeout: 1000 }); // Building your plan played once this visit
   await page.getByTestId('plan-save').click();
   await signIn(page);
-  await expect.poll(() => record(page, 'program', 'program')).toMatchObject({ sessions: [{ type: 'strength' }, { type: 'cardio' }, { type: 'strength' }, { type: 'cardio' }, { type: 'strength' }] });
+  // both on each of the five days: lifting, then cardio the same day (the owner, 27 Nov)
+  await expect.poll(async () => ((await record(page, 'program', 'program')) as { sessions: { type: string; weekday: number }[] }).sessions.map((s) => [s.weekday, s.type]))
+    .toEqual([0, 1, 2, 3, 4].flatMap((d) => [[d, 'strength'], [d, 'cardio']]));
   expect(await plans(page)).toMatchObject([{ goal: 'maintain', delta: 0 }]);
 
   // five days of both, under a year of lifting assumed: the three day hybrid
@@ -309,7 +289,6 @@ test('maintain with lifting and cardio: no pace, no experience question, and Tra
 test('gaining on cardio alone: Train adds the two strength sessions to the week, keeping the cardio', async ({ page }) => {
   await openFresh(page);
   await onboard(page, { goal: 'gain', days: 3, kind: 'cardio' });
-  await expect(page.getByTestId('plan-training')).toHaveText('Cardio 3 days a week, 30 min each. Edit in Train.');
   await page.getByTestId('plan-save').click();
   await signIn(page);
   await page.getByTestId('paywall-free').click();
@@ -326,7 +305,6 @@ test('a medical condition leads to advice, then a maintenance target only', asyn
   await onboard(page, { goal: 'gain', screening: ['medical'] });
   await expect(page.getByTestId('plan-flag')).toHaveText('From your answers at the start, Ontrack sets a maintenance target only.');
   await expect(page.getByTestId('plan-pace')).toHaveCount(0);
-  await expect(page.getByTestId('line-goal')).toHaveCount(0);
   await page.getByTestId('plan-save').click();
   await signIn(page);
   await expect.poll(() => plans(page)).toMatchObject([{ goal: 'maintain', flags: ['maintainOnly'] }]);

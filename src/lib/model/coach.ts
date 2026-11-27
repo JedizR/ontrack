@@ -7,11 +7,11 @@ import { proteinOnTrack, roundTarget, type Goal } from '$lib/model/engine';
 import { LIBRARY } from '$lib/data/exercises';
 import type { Food } from '$lib/data/foods';
 import { num } from './format';
-import { weightText, type Units } from './units';
+import { heightText, weightText, type Units } from './units';
 import { lastSets, newBests, totals } from './workout';
 import type { WeekStats } from './progress';
 import { MAX_CANDIDATES, type CoachCandidate, type CoachFacts } from '../../../shared/coach';
-import type { Checkin, SessionLog, Workout } from '../../../shared/records';
+import type { Checkin, Profile, Program, SessionLog, Workout } from '../../../shared/records';
 
 type Id = keyof typeof t.coach.facts;
 /** The facts with a value: each gets its label from the catalog, the others are left out. */
@@ -55,6 +55,60 @@ export function weekFacts({ week, proteinG, units, trend, logs }: WeekInput): Co
     ['weight_change', trend && change(trend.now - trend.was, units)],
     ['new_bests', bests > 0 && t.coach.values.lifts(num(bests))],
   ]);
+}
+
+export type AskInput = {
+  /** the week recap's facts, when a day of this week is fully logged */
+  week: CoachFacts;
+  profile: Pick<Profile, 'sex' | 'birthYear' | 'heightCm' | 'units' | 'experience'>;
+  year: number;
+  goal: Goal;
+  /** the plan's pace, percent of body weight a week */
+  ratePct: number;
+  goalWeightKg?: number;
+  /** the latest weigh-in, kg */
+  weightKg?: number;
+  /** today as Today shows it: the target, what was eaten, the macros, the sessions and whether each is done */
+  day: { target: number; eaten: { kcal: number; protein: number }; macros: { proteinG: number; carbsG: number; fatG: number }; sessions: { name: string; done: boolean }[] };
+  /** today's meals by title, newest first */
+  meals: string[];
+  program?: Program;
+};
+/** Names joined with commas while they fit a fact's value (40 characters). */
+const fit = (names: string[], max = 40) =>
+  names.reduce((s, n) => { const next = s ? `${s}, ${n}` : n.slice(0, max); return next.length <= max ? next : s; }, '');
+/**
+ * What Ask Ontrack is told (the owner, 27 Nov: "it knows all about the user"): who they are, their plan, their day, their
+ * program, then the week recap's facts. Every value is the engine's or the user's own; the model refers to each by slot.
+ */
+export function askFacts({ week, profile: p, year, goal, ratePct, goalWeightKg, weightKg, day, meals, program }: AskInput): CoachFacts {
+  const u = p.units;
+  const sessions = program?.sessions ?? [];
+  const days = [...new Set(sessions.map((s) => s.weekday))].sort((a, b) => ((a + 1) % 7) - ((b + 1) % 7));
+  const own = facts([
+    ['goal', t.coach.values.goal[goal]],
+    ['pace', goal !== 'maintain' && ratePct > 0 && t.progress.rate(signed(goal === 'lose' ? -ratePct : ratePct))],
+    ['sex', p.sex !== 'unspecified' && t.sex[p.sex]],
+    ['age', t.coach.values.years(num(year - p.birthYear))],
+    ['height', heightText(p.heightCm, u)],
+    ['weight_now', weightKg != null && weightText(weightKg, u)],
+    ['goal_weight', goalWeightKg != null && weightText(goalWeightKg, u)],
+    ['experience', t.experience[p.experience]],
+    ['target_today', kcal(day.target)],
+    ['protein_target', grams(day.macros.proteinG)],
+    ['carbs_target', grams(day.macros.carbsG)],
+    ['fat_target', grams(day.macros.fatG)],
+    ['eaten_today', kcal(day.eaten.kcal)],
+    ['protein_today', grams(Math.round(day.eaten.protein))],
+    ['kcal_left', day.target > day.eaten.kcal && kcal(day.target - day.eaten.kcal)],
+    ['protein_left', day.macros.proteinG > day.eaten.protein && grams(Math.round(day.macros.proteinG - day.eaten.protein))],
+    ['meals_today', fit(meals)],
+    ['training_today', fit(day.sessions.map((s) => s.name))],
+    ['training_done', day.sessions.length > 0 && t.checkin.of(num(day.sessions.filter((s) => s.done).length), num(day.sessions.length))],
+    ['program', sessions.length > 0 && (fit([program?.name ?? '']) || t.coach.values.sessions(num(sessions.length)))],
+    ['training_days', fit(days.map((d) => t.train.weekdaysShort[d]))],
+  ]);
+  return { ...own, ...week };
 }
 
 export type CheckinFactsInput = Pick<Checkin, 'stats' | 'proposal'> & {

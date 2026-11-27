@@ -9,6 +9,7 @@
   import Check from '@lucide/svelte/icons/check';
   import Lock from '@lucide/svelte/icons/lock';
   import MapPin from '@lucide/svelte/icons/map-pin';
+  import Repeat from '@lucide/svelte/icons/repeat';
   import Scale from '@lucide/svelte/icons/scale';
   import ScanBarcode from '@lucide/svelte/icons/scan-barcode';
   import TrendingUp from '@lucide/svelte/icons/trending-up';
@@ -18,7 +19,7 @@
   import Wordmark from '$lib/components/Wordmark.svelte';
   import Count from '$lib/components/Count.svelte';
   import Sparkles from '@lucide/svelte/icons/sparkles';
-  import { FREE_AI_PER_DAY, PRICES, TRIAL_DAYS } from '../../../shared/plans';
+  import { FREE_ADVICE_PER_MONTH, FREE_AI_PER_DAY, PRICES, TRIAL_DAYS } from '../../../shared/plans';
   import { num } from '$lib/model/format';
   import { C } from '$lib/model/engine';
   import { SOURCES } from '$lib/data/sources';
@@ -115,7 +116,9 @@
     { label: L.sources.training, source: SOURCES[C.metStrength.source]?.short, wash: '[background:var(--wash-2)] text-night' },
     { label: L.sources.gain, source: SOURCES[C.gainPace.source]?.short, wash: '[background:var(--wash-3)] text-night' },
     { label: L.sources.thai, source: L.sources.thaiSource, wash: '[background:var(--wash-4)] text-night' },
-  ];
+  ].map((c, i) => ({ ...c, insight: L.sources.insights[i] }));
+  // 05: which cards are turned over to what their source found; each turns on its own
+  let turned = $state([false, false, false, false]);
 
   // the floating Build your plan: once the hero's action has scrolled away, until the closing call is on screen
   let heroAction = $state(true);
@@ -336,12 +339,23 @@
         {@render head('05', L.sources.tag, L.sources.title, L.sources.lead)}
         <div class="mx-auto mt-12 grid max-w-[1200px] gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {#each SOURCED as c, i (i)}
-            <article class="settle lean relative flex min-h-52 flex-col justify-between gap-8 rounded-lg p-4 {c.wash}" style:--tilt={tilt(i + 2, 1)} style:--dx="{[-40, 48, -32, 56][i]}px" style:--dy="90px" use:lean>
-              <span class="grid size-12 place-items-center rounded-sm {i === 3 ? 'bg-accent text-on-accent' : 'liquid-clear'}" aria-hidden="true"><BookOpen size={22} /></span>
-              <div>
-                <p class="text-callout font-medium opacity-80">{c.label}</p>
-                <p class="text-lead mt-1 text-balance">{c.source}</p>
+            <!-- the card keeps its scroll tilt and lean; the turn is the inner grid, two faces in one cell. The button is a clear
+                 layer over the card, so no button carries the wash (no gradient on a button) and it has the landing's press -->
+            <article class="settle lean relative [perspective:1000px]" style:--tilt={tilt(i + 2, 1)} style:--dx="{[-40, 48, -32, 56][i]}px" style:--dy="90px" use:lean>
+              <div class="turn grid w-full text-left" data-on={turned[i]}>
+                <span class="side side-front relative flex min-h-52 flex-col justify-between gap-8 rounded-lg p-4 {c.wash}" aria-hidden={turned[i]}>
+                  <span class="grid size-12 place-items-center rounded-sm {i === 3 ? 'bg-accent text-on-accent' : 'liquid-clear'}" aria-hidden="true"><BookOpen size={22} /></span>
+                  <Repeat class="text-night/60 absolute top-4 right-4" size={16} aria-hidden="true" />
+                  <span class="block">
+                    <span class="text-callout block font-medium opacity-80">{c.label}</span>
+                    <span class="text-lead mt-1 block text-balance">{c.source}</span>
+                  </span>
+                </span>
+                <span class="side side-back flex flex-col items-center justify-center rounded-lg p-6 text-center {c.wash}" aria-hidden={!turned[i]} data-testid="source-back-{i}">
+                  <span class="text-callout block text-balance">{c.insight}</span>
+                </span>
               </div>
+              <button type="button" class="tap absolute inset-0 z-10 cursor-pointer rounded-lg" aria-pressed={turned[i]} aria-label="{c.label}, {c.source}. {L.sources.showFound}" onclick={() => (turned[i] = !turned[i])} data-testid="source-card-{i}"></button>
             </article>
           {/each}
         </div>
@@ -365,7 +379,7 @@
             <p class="text-callout mt-1 opacity-80">{L.plans.freeLine}</p>
             <p class="mt-6 flex items-baseline gap-2"><span class="text-display num">{L.plans.zero}</span><span class="text-callout opacity-80">{t.after.forever}</span></p>
             <ul class="mt-6 flex flex-col gap-2.5">
-              {#each [L.plans.freeAi(num(FREE_AI_PER_DAY)), ...L.plans.freeHas] as f (f)}<li class="text-callout flex items-start gap-2"><Check class="mt-0.5 flex-none" size={18} strokeWidth={2.75} aria-hidden="true" />{f}</li>{/each}
+              {#each [L.plans.freeAi(num(FREE_AI_PER_DAY)), L.plans.freeAdvice(num(FREE_ADVICE_PER_MONTH)), ...L.plans.freeHas] as f (f)}<li class="text-callout flex items-start gap-2"><Check class="mt-0.5 flex-none" size={18} strokeWidth={2.75} aria-hidden="true" />{f}</li>{/each}
             </ul>
           </article>
           <article class="settle lean relative flex flex-col rounded-lg p-6 [background:var(--grad-feature)] text-night" data-theme="light" style:--tilt="3deg" style:--dx="48px" style:--dy="110px" use:lean data-testid="landing-pro">
@@ -428,6 +442,26 @@
   /* the floating action: hidden until shown, in every motion setting, without leaving its place */
   .float-cta:not([data-shown]) { opacity: 0; scale: 0.9; translate: -50% 8px; }
   .float-cta { transform-origin: 50% 100%; }
+
+  /* 05 Sources: a card turns over to what its source found. The faces share one grid cell, so the card keeps the front's
+     height; the face turned away is hidden outright as well as by backface-visibility, as Safari shows a glass tile
+     (backdrop-filter) through the back of its card. Motion welcome: a turn of rotateY, the faces swapped at the half, 90 degrees
+     (--ease-framer is symmetric, so the half of the time is the half of the turn). Reduced motion: no turn, a cross fade */
+  .turn { transform-style: preserve-3d; }
+  .side { grid-area: 1 / 1; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+  @media (prefers-reduced-motion: no-preference) {
+    .turn { transition: transform var(--d-appear) var(--ease-framer), scale var(--d-press); }
+    /* the press shows on the card under the clear button */
+    article:has(> button:active) .turn { scale: 0.98; }
+    .turn[data-on='true'] { transform: rotateY(180deg); }
+    .side-back { transform: rotateY(180deg); }
+    .side { transition: visibility 0s linear calc(var(--d-appear) / 2); }
+    .turn[data-on='true'] .side-front, .turn[data-on='false'] .side-back { visibility: hidden; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .side { transition: opacity var(--d-fade) linear; }
+    .turn[data-on='true'] .side-front, .turn[data-on='false'] .side-back { opacity: 0; }
+  }
 
   /* MOTION.md: every recipe only when motion is welcome. With reduced motion the end state shows at once. */
   @media (prefers-reduced-motion: no-preference) {

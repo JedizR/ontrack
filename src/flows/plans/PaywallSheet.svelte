@@ -17,7 +17,7 @@
   import { num } from '$lib/model/format';
   import { t } from '$lib/i18n';
   import { toast } from 'svelte-sonner';
-  import { FREE_AI_PER_DAY, PRICES, TRIAL_DAYS, type Interval } from '../../../shared/plans';
+  import { FREE_ADVICE_PER_MONTH, FREE_AI_PER_DAY, PRICES, TRIAL_DAYS, type Interval } from '../../../shared/plans';
 
   const p = t.paywall;
   const from = $derived(sheets.paywall?.from ?? 'onboarding');
@@ -37,8 +37,7 @@
     { label: p.rows.targets, free: true, pro: true },
     { label: p.rows.training, free: true, pro: true },
     { label: p.rows.recap, free: p.basic, pro: p.byAi },
-    { label: p.rows.ask, free: false, pro: true },
-    { label: p.rows.adjust, free: false, pro: true },
+    { label: p.rows.advice, free: p.perMonth(num(FREE_ADVICE_PER_MONTH)), pro: p.unlimited },
     { label: p.rows.friends, free: true, pro: true },
   ];
 

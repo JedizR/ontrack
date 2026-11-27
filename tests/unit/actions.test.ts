@@ -2,10 +2,12 @@
 import 'fake-indexeddb/auto';
 import { beforeAll, expect, test, vi } from 'vitest';
 import { db } from '../../src/lib/db/store.svelte';
-import { changeProgram, deleteMeal, findPeople, logReviewed, findProduct, forgetFood, listFriends, logAgain, logProduct, logSaved, logSupplement, logWeight, rememberFoods, removeSupplement, saveMeal, savePlan, saveProduct, saveProfile, saveProgram, saveSaved, saveSocial, saveSupplement, shareMeal, unshareMeal } from '../../src/lib/actions';
+import { changeProgram, deleteMeal, findPeople, logReviewed, findProduct, forgetFood, listFriends, logAgain, logProduct, logSaved, logSupplement, logWeight, rememberFoods, removeSupplement, saveMeal, savePlan, saveProduct, saveProfile, saveProgram, saveSaved, saveSocial, saveSupplement, shareMeal, shareProduct, unshareMeal } from '../../src/lib/actions';
 import { session } from '../../src/lib/session.svelte';
 import { createMockServer, MOCK_CODE } from '../../dev/mock-backend';
 import { createMockBackend } from '../../src/lib/backend/mock';
+import { BackendError } from '../../src/lib/backend';
+import type { Backend } from '../../src/lib/backend/types';
 import { readFileSync } from 'node:fs';
 import { foodKey, withMine, type Food } from '../../src/lib/data/foods';
 import foods from '../../src/lib/data/foods.json';
@@ -209,6 +211,54 @@ test('products (B1): a label confirmed is kept under its barcode and found offli
     expect(await findProduct('8851717040016')).toEqual({ kind: 'offline', code: '8851717040016' });
   } finally {
     vi.unstubAllGlobals();
+  }
+});
+
+test('products (F22): a label added for everyone is found where Open Food Facts has nothing, after the user\'s own; it never replaces Open Food Facts; a bad row or an error is ignored', async () => {
+  const server = createMockServer();
+  const phone = async (email: string) => {
+    const b = createMockBackend({ base: 'http://mock', fetch: (u, i) => server(new Request(u, i)), space: 'actions-barcodes' });
+    await b.auth.sendEmailCode(email);
+    await b.auth.verifyEmailCode(email, MOCK_CODE);
+    return b;
+  };
+  const off = readFileSync('tests/fixtures/off/8850987101021.json', 'utf8');
+  vi.stubGlobal('fetch', vi.fn(async (url: string) => (url.includes('8850000000031') ? new Response(off) : new Response('{"status":0}', { status: 404 }))));
+  vi.stubGlobal('navigator', { onLine: true });
+  const code = '8850000000017';
+  const known = '8850000000031'; // Open Food Facts has it, and someone adds a label over it
+  const crackers: Product = { name: 'Rice crackers', brand: 'Kobe', source: 'yours', unit: 'g', per100: { kcal: 480, protein: 8, carbs: 72, fat: 18 }, servingG: 25, lastG: 50 };
+  try {
+    session.backend = await phone('a@example.com');
+    expect(await findProduct(code)).toEqual({ kind: 'missing', code });
+    shareProduct(code, crackers);
+    shareProduct(known, { ...crackers, name: 'Better crackers' });
+
+    // another user finds it, as a label and without the first user's amount (review, 27 Nov: never over Open Food Facts)
+    const b = await phone('b@example.com');
+    session.backend = b;
+    const { lastG: _, ...shared } = crackers;
+    await vi.waitFor(async () => expect(await findProduct(code)).toEqual({ kind: 'found', code, product: { ...shared, source: 'label' } }));
+    expect(await findProduct(known)).toMatchObject({ kind: 'found', product: { source: 'off' } });
+    expect(await findProduct(known, true)).toMatchObject({ kind: 'found', product: { source: 'off' } });
+    // the first label stays
+    expect(await b.products.add(code, { ...crackers, name: 'Second' })).toBe(false);
+    expect(await findProduct(code)).toMatchObject({ product: { name: 'Rice crackers' } });
+    // the user's own product comes first
+    saveProduct({ ...crackers, name: 'Mine' }, code);
+    expect(await findProduct(code)).toMatchObject({ product: { name: 'Mine', source: 'yours' } });
+
+    // a row that is not a product, a failing lookup and no backend at all: on to Open Food Facts, never a throw
+    const other = '8850000000024';
+    session.backend = { products: { get: async () => ({ name: '', per100: 5 }) } } as unknown as Backend;
+    expect(await findProduct(other)).toEqual({ kind: 'missing', code: other });
+    session.backend = { products: { get: async () => { throw new BackendError('server'); } } } as unknown as Backend;
+    expect(await findProduct(other)).toEqual({ kind: 'missing', code: other });
+    session.backend = null;
+    expect(await findProduct(other)).toEqual({ kind: 'missing', code: other });
+  } finally {
+    vi.unstubAllGlobals();
+    session.backend = null;
   }
 });
 

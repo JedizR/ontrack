@@ -3,7 +3,7 @@
 import { GoogleGenAI, ThinkingLevel } from '@google/genai';
 import { withFallback } from '../call.js';
 import type { CoachProvider } from './provider.js';
-import { COACH_JSON_SCHEMA, SYSTEM_PROMPT, userText } from './prompt.js';
+import { ASK_PROMPT, COACH_JSON_SCHEMA, SYSTEM_PROMPT, userText } from './prompt.js';
 import { PROGRAM_JSON_SCHEMA, PROGRAM_PROMPT, programText } from './program.js';
 
 export function geminiCoach(apiKey: string, model: string, fallback = ''): CoachProvider {
@@ -12,7 +12,7 @@ export function geminiCoach(apiKey: string, model: string, fallback = ''): Coach
     model,
     async write(i) {
       if (!apiKey || !model) throw Object.assign(new Error('Gemini is not configured'), { status: 500 });
-      const [system, text, schema] = i.kind === 'program' ? [PROGRAM_PROMPT, programText(i), PROGRAM_JSON_SCHEMA] : [SYSTEM_PROMPT, userText(i), COACH_JSON_SCHEMA];
+      const [system, text, schema] = i.kind === 'program' ? [PROGRAM_PROMPT, programText(i), PROGRAM_JSON_SCHEMA] : [i.kind === 'ask' ? ASK_PROMPT : SYSTEM_PROMPT, userText(i), COACH_JSON_SCHEMA];
       const call = (m: string) => ai.models.generateContent({
         model: m,
         contents: [{ role: 'user', parts: [{ text }] }],

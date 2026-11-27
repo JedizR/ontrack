@@ -4,7 +4,6 @@
      lifting and cardio. -->
 <script lang="ts">
   import { sheets } from '$lib/sheets.svelte';
-  import { membership } from '$lib/billing.svelte';
   import { prefs } from '$lib/prefs.svelte';
   import type { Component } from 'svelte';
   import Repeat from '@lucide/svelte/icons/repeat';
@@ -296,7 +295,7 @@
       <div class="flex flex-wrap items-center justify-between gap-x-2">
         <Button variant="plain" size="sm" class="-ml-2" disabled={sessions.length >= MAX_SESSIONS} onclick={() => add(todayIs)} data-testid="train-add">{t.train.addSession}</Button>
         <!-- R2: the coach changes the week from a sentence -->
-        <Button variant="plain" size="sm" class="-mr-2" onclick={() => (membership.pro ? (aiOpen = true) : (sheets.paywall = { from: 'adjust' }))} data-testid="program-ai-open"><Sparkles size={16} strokeWidth={2.25} aria-hidden="true" />{t.aiProgram.open}</Button>
+        <Button variant="plain" size="sm" class="-mr-2" onclick={() => (aiOpen = true)} data-testid="program-ai-open"><Sparkles size={16} strokeWidth={2.25} aria-hidden="true" />{t.aiProgram.open}</Button>
       </div>
     </section>
 

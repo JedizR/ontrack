@@ -1,5 +1,5 @@
 // The one interface both backends implement (TECH-SPEC section 5). The sync engine and the actions only see this.
-import type { Program, Rec } from '../../../shared/records.ts';
+import type { Product, Program, Rec } from '../../../shared/records.ts';
 
 export type User = { userId: string; email?: string };
 
@@ -57,6 +57,13 @@ export interface Backend {
     photo(path: string): Promise<Blob | null>;
     /** a friend's training program while they show it, otherwise null */
     program(userId: string): Promise<Program | null>;
+  };
+  /** Products anyone added from a label (supabase/migrations/0007). The first one added for a barcode stays. */
+  products: {
+    /** what was added for this barcode, unchecked (it came from another user: parse it before use), or null */
+    get(code: string): Promise<unknown | null>;
+    /** adds it for everyone: true when this was the first, false when someone added that barcode before */
+    add(code: string, product: Product): Promise<boolean>;
   };
 }
 
